@@ -19,7 +19,6 @@ public:
     //  环境变量展开
     static str expand(const str& s, const std::map<str, str>& kvs);
     static str expand(const str& s, std::function<int(const str& key, str& val)> provider);
-
 };
 
 #endif //TMPL_H
