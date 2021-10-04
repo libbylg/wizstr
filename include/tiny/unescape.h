@@ -5,6 +5,8 @@
 #ifndef UNESCAPE_H
 #define UNESCAPE_H
 
+namespace tiny {
+
 class unescape {
 public:
     static str html(const str& s);
@@ -15,4 +17,6 @@ public:
 
     static str& sql(const str& s);
 }
+
+} // namespace tiny
 #endif //UNESCAPE_H

@@ -5,6 +5,8 @@
 #ifndef ESCAPE_H
 #define ESCAPE_H
 
+namespace tiny {
+
 class escape {
 public:
     static str html(const str& s);
@@ -16,4 +18,5 @@ public:
     static str& sql(const str& s);
 };
 
+} // namespace tiny
 #endif //ESCAPE_H

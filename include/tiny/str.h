@@ -28,16 +28,18 @@ public:
     typedef char_type* iterator;
 
     typedef std::reverse_iterator<iterator> reverse_iterator;
-    typedef const reverse_iterator const_reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    //typedef const reverse_iterator const_reverse_iterator;
 
     static const pos_type npos = -1;
 
 public:
-    explicit str(const char_type* str);
-    str(str&& other) noexcept;
-    str(const str& other);
-    explicit str(char_type ch, size_type size);
     explicit str();
+    explicit str(const char_type* s);
+    str(const char_type* s, size_type n);
+    str(char_type ch, size_type size);
+    str(str&& s) noexcept;
+    str(const str& s);
     str& operator=(str&& other) noexcept;
     str& operator=(const str& other);
 
@@ -76,36 +78,45 @@ public:
     //  对接 C 接口
     const char_type* data() const;
     char_type* data();
-    void attach(size_type cap, size_type len, char_type* buf);
-    void detach(size_type& cap, size_type& len, char_type*& buf);
+    void attach(char_type* buf, size_type len, size_type cap);
 
     //  首尾追加
     str& append(const str& str);
     str& append(char_type ch);
-    str& append(const char_type* str, int len);
+    str& append(const char_type* str, size_type len);
     str& append(const char_type* str);
     str& prepend(const str& str);
     str& prepend(char_type ch);
-    str& prepend(const char_type* str, int len);
+    str& prepend(const char_type* str, size_type len);
     str& prepend(const char_type* str);
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     str& insert(pos_type position, const str& str);
     str& insert(pos_type position, char_type ch);
-    str& insert(pos_type position, const char_type* s, int size);
+    str& insert(pos_type position, const char_type* s, size_type n);
     str& insert(pos_type position, const char_type* s);
 
+    //  首尾操作
     void push_back(const str& other);
     void push_back(char_type ch);
+    void push_front(const str& other);
+    void push_front(char_type ch);
+    char_type pop_back();
+    char_type pop_front();
 
-    void pop_back();
+    //  部分数据移动：柔性移动和裁剪移动
+    str& flex_move(pos_type pos, size_type n, int offset);
+    str& flex_move(pos_type pos, size_type n, int offset, char_type fill_ch);
+    str& clip_move(pos_type pos, size_type n, int offset);
+    str& clip_move(pos_type pos, size_type n, int offset, char_type fill_ch);
 
-    str& remove(pos_type position, int n);
+    str& remove(pos_type pos);
+    str& remove(pos_type pos, size_type n);
     str& remove(char_type ch, bool ignore_case = false);
     str& remove(const char_type* str, bool ignore_case = false);
     str& remove(const str& str, bool ignore_case = false);
     str& remove(const std::regex& rx);
-    str& remove(std::function<int(int c, bool& match)> func);
+    str& remove(std::function<int(char_type c, bool& match)> func);
 
     str& erase(pos_type pos = 0, pos_type len = npos);
     iterator erase(const_iterator p);
@@ -147,22 +158,23 @@ public:
     bool remove_suffix(char_type c, bool ignore_case = false);
 
     //  填充
-    str& fill(char_type ch, size_type n = -1);
+    str& fill(char_type ch);
+    str& fill(pos_type pos, char_type ch, size_type n);
 
     //  查找
-    int index_of(const str& str, int from = 0, bool ignore_case = false) const;
-    int index_of(const char_type* s, int from = 0, bool ignore_case = false) const;
-    int index_of(char_type ch, int from = 0, bool ignore_case = false) const;
-    int index_of(const std::regex& rx, int from = 0) const;
-    int index_of(std::regex& rx, int from = 0) const;
-    int index_of(std::function<int(int c, bool& match)> func, int from = 0) const;
+    int index_of(const str& str, pos_type from = 0, bool ignore_case = false) const;
+    int index_of(const char_type* s, pos_type from = 0, bool ignore_case = false) const;
+    int index_of(char_type ch, pos_type from = 0, bool ignore_case = false) const;
+    int index_of(const std::regex& rx, pos_type from = 0) const;
+    int index_of(std::regex& rx, pos_type from = 0) const;
+    int index_of(std::function<int(char_type c, bool& match)> func, pos_type from = 0) const;
 
-    int last_index_of(const str& str, int from = -1, bool ignore_case = false) const;
-    int last_index_of(char_type ch, int from = -1, bool ignore_case = false) const;
-    int last_index_of(const char_type* str, int from = -1, bool ignore_case = false) const;
-    int last_index_of(const std::regex& rx, int from = -1) const;
-    int last_index_of(std::regex& rx, int from = -1) const;
-    int last_index_of(std::function<int(int c, bool& match)> func, int from = -1) const;
+    int last_index_of(const str& str, pos_type from = -1, bool ignore_case = false) const;
+    int last_index_of(char_type ch, pos_type from = -1, bool ignore_case = false) const;
+    int last_index_of(const char_type* str, pos_type from = -1, bool ignore_case = false) const;
+    int last_index_of(const std::regex& rx, pos_type from = -1) const;
+    int last_index_of(std::regex& rx, pos_type from = -1) const;
+    int last_index_of(std::function<int(char_type c, bool& match)> func, pos_type from = -1) const;
 
     //  匹配
     bool is_match(std::regex& rx) const;
@@ -186,39 +198,39 @@ public:
     bool is_numeric() const;
 
     //  提取子串
-    str left(int n) const;
-    str right(int n) const;
-    str mid(pos_type position, int n = -1) const;
+    str left(size_type n) const;
+    str right(size_type n) const;
+    str mid(pos_type position, size_type n = -1) const;
 
     //  定宽对齐调整
-    str& ljust(int width, char_type fill = ' ', bool truncate = false);
-    str& rjust(int width, char_type fill = ' ', bool truncate = false);
-    str& center(int width, char_type fill = ' ', bool truncate = false);
-    str& zfill(int width, char_type fill = ' ', bool truncate = false);
+    str& ljust(size_type width, char_type fill = ' ', bool truncate = false);
+    str& rjust(size_type width, char_type fill = ' ', bool truncate = false);
+    str& center(size_type width, char_type fill = ' ', bool truncate = false);
+    str& zfill(size_type width, char_type fill = ' ', bool truncate = false);
 
     //  子串替换
-    str& replace(pos_type position, int n, const str& after);
-    str& replace(pos_type position, int n, char_type after);
-    str& replace(pos_type position, int n, const char_type* unicode, int size);
+    str& replace(pos_type position, size_type n, const str& after);
+    str& replace(pos_type position, size_type n, char_type after);
+    str& replace(pos_type position, size_type n, const char_type* unicode, size_type size);
     str& replace(char_type before, char_type after, bool ignore_case = false);
-    str& replace(const char_type* before, int blen, const char_type* after, int alen, bool ignore_case = false);
+    str& replace(const char_type* before, size_type blen, const char_type* after, size_type alen, bool ignore_case = false);
     str& replace(const str& before, const str& after, bool ignore_case = false);
     str& replace(char_type ch, const str& after, bool ignore_case = false);
     str& replace(const std::regex& rx, const str& after);
     str& replace(std::function<int(char_type key, char_type& val)> func);
 
     //  基于本字符串生成新字符串
-    str repeated(int times) const;             //  返回本字符串重复 times 次后的副本
+    str repeated(size_type times) const;       //  返回本字符串重复 times 次后的副本
     str join(const std::vector<str>& s) const; //  用本字符串连接所有的s
     str join(const str& s, ...) const;         //  用本字符串连接所有的s
     str join(const char_type* s, ...) const;   //  用本字符串连接所有的s
 
     //  容量、内存管理
-    void reserve(int size);                     //  容量预留
-    void resize(int size);                      //  重新调整字符串长度，多出的部分未初始化
-    void resize(int size, char_type fill_char); //  重新调整字符串长度，多出的部分用指定字符串填充
-    void shrink_to_fit();                       //  内存调整到和字符串实际有效长度一致
-    void squeeze();                             //  内存紧缩
+    void reserve(size_type size);                   //  容量预留
+    void resize(size_type size);                    //  重新调整字符串长度，多出的部分未初始化
+    void resize(size_type size, char_type fill_ch); //  重新调整字符串长度，多出的部分用指定字符串填充
+    void shrink_to_fit();                           //  内存调整到和字符串实际有效长度一致
+    void squeeze();                                 //  内存紧缩
 
     //  Title 化：首字母大写
     str& title();
@@ -230,17 +242,17 @@ public:
     std::vector<str> split(const str& sep, bool ignore_case = false) const;
     std::vector<str> split(const char_type* sep, bool ignore_case = false) const;
     std::vector<str> split(char_type sep, bool ignore_case = false) const;
-    std::vector<str> split(const std::regex& rx) const;
-    std::vector<str> split(const std::regex& rx, std::function<int(const str& line)> output_func) const;
-    std::vector<str> split(std::function<int(int c, bool& match)>& chars_func) const;
+    std::vector<str> split(const std::regex& r) const;
+    std::vector<str> split(std::function<int(char_type c, bool& match)>& chars_func) const;
     std::vector<str> split_lines(bool keep_ends = false) const;
     std::vector<str> split_path() const;
-    void split(const str& sep, bool case_sensitive, std::function<int(const str& line)> output_func) const;
-    void split(const char_type* sep, bool case_sensitive, std::function<int(const str& line)> output_func) const;
-    void split(char_type sep, bool case_sensitive, std::function<int(const str& line)> output_func) const;
-    void split(std::function<int(int c, bool& match)>& chars_func, std::function<int(const str& line)> output_func) const;
-    void split_lines(bool keep_ends, std::function<int(const str& line)> output_func) const;
-    void split_path(std::function<int(const str& line)> output_func) const;
+    void split(const str& sep, bool case_sensitive, std::function<int(const char_type* s, size_type n)> output_func) const;
+    void split(const char_type* sep, bool case_sensitive, std::function<int(const char_type* s, size_type n)> output_func) const;
+    void split(char_type sep, bool case_sensitive, std::function<int(const char_type* s, size_type n)> output_func) const;
+    void split(const std::regex& rx, std::function<int(const char_type* s, size_type n)> output_func) const;
+    void split(std::function<int(char_type c, bool& match)>& chars_func, std::function<int(const char_type* s, size_type n)> output_func) const;
+    void split_lines(bool keep_ends, std::function<int(const char_type* s, size_type n)> output_func) const;
+    void split_path(std::function<int(const char_type* s, size_type n)> output_func) const;
 
     //  大小写转换
     str& to_lower();  //  转换成大写
@@ -254,13 +266,13 @@ public:
     str& trim();       //  同时去掉左边和右边的空白
 
     //  展开
-    str expand(const std::map<str, str>& kvs);
-    str expand(std::function<int(const str& key, str& val)> provider);
-    str expand_envs(const char_type* key, const char_type* val);
-    str expand_envs();
-    str expand_tabs(int tab_size = 8);
-    str expand_tmpl(const std::map<str, str>& kvs);
-    str expand_tmpl(std::function<int(const str& key, str& val)> provider);
+    str expand(const std::map<str, str>& kvs) const;
+    str expand(std::function<int(const str& key, str& val)> provider) const;
+    str expand_envs(const char_type* key, const char_type* val) const;
+    str expand_envs() const;
+    str expand_tabs(size_type tab_size = 8) const;
+    str expand_tmpl(const std::map<str, str>& kvs) const;
+    str expand_tmpl(std::function<int(const str& key, str& val)> provider) const;
 
     //  字符串交换
     void swap(str& other);
@@ -273,7 +285,7 @@ public:
 
     //  bool 映射
     bool to_bool(bool* ok = nullptr) const;
-    str& assign(bool v) const;
+    str& assign(bool v);
 
     //  字符串转换为数字
     double to_double(bool* ok = nullptr) const;
@@ -325,8 +337,8 @@ public:
     bool operator==(const char_type* other) const;
     bool operator>(const char_type* other) const;
     bool operator>=(const char_type* other) const;
-    reference operator[](pos_type position);
-    const_reference operator[](pos_type position) const;
+    str::char_type& operator[](pos_type position);
+    const str::char_type& operator[](pos_type position) const;
 
 private:
 #ifdef _WIN32
@@ -335,15 +347,8 @@ private:
 #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
 #endif
 
-    struct layout_small {
-        char_type data[15];
-        int8_t len;
-    };
-
-    struct layout_large {
-        char_type* data;
-        size_type len;
-        size_type cap;
+    struct layout_tmplt {
+        char_type _data[16];
     };
 
     struct layout_trait {
@@ -354,16 +359,162 @@ private:
         enum : uint8_t {
             type_bits = 1,
             type_mask = uint8_t(uint8_t(-1) << (sizeof(int8_t) * 8 - type_bits)),
-            type_index = uint8_t(sizeof(layout_large) - 1),
+            type_index = uint8_t(sizeof(layout_tmplt) - 1),
         };
         enum : size_type {
-            small_cap_max = size_type((sizeof(layout_large) - 1) - 1), //  small 布局时，容量是固定大小(不算 \0 不算最后的len)
+            small_cap_max = size_type((sizeof(layout_tmplt) - 1) - 1), //  small 布局时，容量是固定大小(不算 \0 不算最后的len)
             large_cap_max = size_type((size_type(-1) << type_bits) + 1),
         };
         enum {
             large_cap_mask = size_type(-1) << (sizeof(size_type) * 8 - type_bits),
             large_cap_shift = type_bits,
         };
+    };
+
+    struct layout_small {
+        char_type _data[15];
+        int8_t _len;
+
+        void init(const char_type* s, size_type n) {
+            ASSERT(n >= 0);
+            ASSERT(n <= layout_trait::small_cap_max);
+
+            if (n == 0) {
+                _data[n] = '\0';
+                _len = 0;
+                return;
+            }
+
+            if (s != nullptr) {
+                memcpy(_data, s, sizeof(char_type) * n);
+            }
+            _data[n] = '\0';
+            _len = int8_t(n);
+        }
+
+        inline char_type* begin() {
+            return _data;
+        }
+
+        inline const char_type* begin() const {
+            return _data;
+        }
+
+        inline char_type* end() {
+            return _data + _len;
+        };
+
+        inline const char_type* end() const {
+            return _data + _len;
+        }
+
+        inline size_type len() const {
+            return _len;
+        }
+
+        inline void len(size_type n) {
+            ASSERT(n >= 0);
+            ASSERT(n <= layout_trait::small_cap_max);
+            _len = n;
+        }
+
+        inline size_type cap() const {
+            return size_type(layout_trait::small_cap_max);
+        }
+    };
+
+    struct layout_large {
+        char_type* _data;
+        size_type _len;
+        size_type _cap;
+
+        void init(const char_type* s, size_type n) {
+            ASSERT(n >= 0);
+            ASSERT(n <= layout_trait::large_cap_max);
+
+            char_type* new_data = (char_type*)malloc(sizeof(char_type) * (n + 1));
+            ASSERT(new_data != nullptr);
+            if (s != nullptr) {
+                memcpy(new_data, s, sizeof(char_type) * (n + 1));
+            }
+            new_data[n] = '\0';
+            _data = new_data;
+            _len = n;
+            cap(n);
+        }
+
+        inline char_type* begin() {
+            return _data;
+        }
+
+        inline const char_type* begin() const {
+            return _data;
+        }
+
+        inline char_type* end() {
+            return _data + _len;
+        };
+
+        inline const char_type* end() const {
+            return _data + _len;
+        }
+
+        inline size_type len() const {
+            return _len;
+        }
+
+        inline void len(size_type n) {
+            ASSERT(n >= 0);
+            ASSERT(n <= layout_trait::large_cap_max);
+            ASSERT(n <= cap());
+            _len = n;
+        }
+
+        inline size_type cap() const {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+            return size_type(_cap ^ layout_trait::large_cap_mask);
+#else
+            return size_type(_cap >> layout_trait::large_cap_shift);
+#endif
+        }
+
+        inline void cap(size_type n) {
+            ASSERT(n >= 0);
+            ASSERT(n <= layout_trait::large_cap_max);
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+            _cap = size_type(layout_trait::large_cap_mask | n);
+#else
+            _cap = str::size_type(n << layout_trait::large_cap_shift);
+#endif
+        }
+
+        //  对象内部数据释放
+        void destroy() {
+            if (_data != nullptr) {
+                free(_data);
+            }
+        }
+
+        //  attach 指定的缓冲区，但对象内部数据覆盖问题不考虑
+        void attach(size_type c, size_type n, char_type* d) {
+            ASSERT(c >= 0);
+            ASSERT(c <= layout_trait::large_cap_max);
+            ASSERT(n >= 0);
+            ASSERT(n <= layout_trait::large_cap_max);
+            ASSERT(n <= c);
+            ASSERT(d != nullptr);
+
+            cap(c);
+            _len = n;
+            _data = d;
+        }
+
+        //  detach 指定的缓冲区，但不考虑对象数据引用问题
+        void detach(size_type& c, size_type& n, char_type*& d) {
+            c = cap();
+            n = _len;
+            d = _data;
+        }
     };
 
     //  小端序：内存的高地址存数值高位
@@ -374,100 +525,77 @@ private:
     //  大端序  xxxx-xxxx xxxx-xxxx xxxx-xxxx 1xxx-xxxx 数值最低位    data[15]&0x80 len  14       data[15]&0x80  len     cap>>1
     //  小端序  xxxx-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxx1 数值最高位    data[15]&0x80 len  14       data[15]&0x80  len     cap^0x80000000
     union layout_t {
-        struct layout_small small;
-        struct layout_large large;
-        uint8_t data[16];
-        constexpr layout_trait::type type() const {
-            return (0 == (data[layout_trait::type_index] & layout_trait::type_mask)) ? layout_trait::type::small : layout_trait::type::large;
+        layout_small small;
+        layout_large large;
+        layout_tmplt tmplt;
+        inline layout_trait::type type() const {
+            return (0 == (tmplt._data[layout_trait::type_index] & layout_trait::type_mask)) ? layout_trait::type::small : layout_trait::type::large;
         }
 
         inline char_type* begin() {
             if (type() == layout_trait::type::small) {
-                return small.data;
+                return small.begin();
             }
-            return large.data;
+            return large.begin();
         }
 
         inline const char_type* begin() const {
-            return begin();
+            if (type() == layout_trait::type::small) {
+                return small.begin();
+            }
+            return large.begin();
         }
 
         inline size_type cap() const {
             if (type() == layout_trait::type::small) {
-                //  small 布局采用的是固定大小
-                return size_type(layout_trait::small_cap_max);
+                return small.cap();
             }
-
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-            return size_type(large.cap ^ layout_trait::large_cap_mask);
-#else
-            return large.cap >> layout_trait::large_cap_shift;
-#endif
+            return large.cap();
         }
 
         inline char_type* end() {
             if (type() == layout_trait::type::small) {
-                return small.data + small.len;
+                return small.end();
             }
-            return large.data + large.len;
+            return large.end();
         };
 
         inline const char_type* end() const {
-            return end();
+            if (type() == layout_trait::type::small) {
+                return small.end();
+            }
+            return large.end();
         }
 
         inline size_type len() const {
             if (type() == layout_trait::type::small) {
-                return small.len;
+                return small.len();
             }
-            return large.len;
+            return large.len();
         }
 
         inline void len(size_type n) {
-            ASSERT(n >= 0);
             if (type() == layout_trait::type::small) {
-                ASSERT(n <= layout_trait::small_cap_max);
-                small.len = n;
-            } else {
-                large.len = n;
+                return small.len(n);
             }
+            return large.len(n);
         }
 
         //  n 为初始化的长度，s 为需要拷贝的字符串的长度（不含\0）
         void init(const char_type* s, size_type n) {
-            ASSERT(n >= 0);
-            if (n == 0) {
-                small.data[n] = '\0';
-                small.len = 0;
-            } else if (n <= layout_trait::small_cap_max) {
-                if (s != nullptr) {
-                    memcpy(small.data, s, sizeof(char_type) * n);
-                }
-                small.data[n] = '\0';
-                small.len = int8_t(n);
-            } else {
-                ASSERT(n <= layout_trait::large_cap_max);
-                char_type* new_data = (char_type*)malloc(sizeof(char_type) * (n + 1));
-                ASSERT(new_data != nullptr);
-                if (s != nullptr) {
-                    memcpy(new_data, s, sizeof(char_type) * (n + 1));
-                }
-                new_data[n] = '\0';
-                large.data = new_data;
-                large.len = n;
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-                large.cap = size_type(layout_trait::large_cap_mask | n);
-#else
-                large.cap = str::size_type(n << layout_trait::large_cap_shift);
-#endif
+            if (n <= layout_trait::small_cap_max) {
+                small.init(s, n);
+                return;
             }
+
+            large.init(s, n);
         }
 
         //  对象内部数据释放
         void destroy() {
             //  释放老数据
             if (type() == layout_trait::type::large) {
-                free(large.data);
+                large.destroy();
             }
         }
 
@@ -481,45 +609,41 @@ private:
                 return;
             }
 
+            //  如果容量不够时：首先数据需要拷贝，其次 large 场景缓冲区需要重新分配
+
             //  容量不够时需要重新分配存储空间
-            char_type* new_data = (char_type*)malloc(sizeof(char_type) * n);
+            size_type new_cap = n;
+            char_type* new_data = (char_type*)malloc(sizeof(char_type) * new_cap);
             ASSERT(new_data != nullptr);
 
             //  还原数据
             size_type old_len = len();
-            memcpy(new_data, begin(), sizeof(char_type) * len());
+            memcpy(new_data, begin(), sizeof(char_type) * old_len);
 
-            //  释放旧
-            if (type() == layout_trait::type::large) {
-                free(large.data);
-            }
+            //  如果需要，先释放旧缓冲区
+            destroy();
 
-            //  保存新数据,len 长度不变
-            large.data = new_data;
-            large.data[old_len] = '\0';
-
-            //  改变容量
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-            large.cap = size_type(layout_trait::large_cap_mask | n);
-#else
-            large.cap = str::size_type(n << layout_trait::large_cap_shift);
-#endif
+            //  将 large 关联到对应的缓冲区
+            large.attach(new_cap, old_len, new_data);
         }
 
-        //  改变长度和\0，但是内容不调整
+        //  改变长度和，追加\0，但是内容不调整
         void resize(size_type n) {
+            //  先预留内存
             reserve(n);
+            //  直接改变长度
             len(n);
+            //  增加结尾
             begin()[n] = '\0';
         }
 
         //  往缓冲区填入数据，但必须由外部保证填入的数据不会溢出
-        void fill(pos_type pos, const char_type* d, size_type n) {
+        void fill(pos_type pos, const char_type* s, size_type n) {
             ASSERT(pos >= 0);
             ASSERT(n >= 0);
-            ASSERT(d != nullptr);
+            ASSERT(s != nullptr);
             ASSERT(cap() >= len() + n);
-            memcpy(begin() + pos, d, n * sizeof(char_type));
+            memcpy(begin() + pos, s, n * sizeof(char_type));
         }
 
         //  往缓冲区填入数据，但必须由外部保证填入的数据不会溢出
@@ -529,13 +653,54 @@ private:
             ASSERT(cap() >= len() + n);
             std::fill(begin() + pos, begin() + pos + n, c);
         }
+
+        //  高阶操作：移动 [pos, pos+n) 范围内的部分数据：
+        //  当 offset < 0 时，向左移，超出 0     位置时，自动扩容，但中间部分数据为随机值；
+        //  当 offset > 0 时，向右移，超出 len() 位置时，自动扩容，但中间部分数据为随机值；
+        //  如果不发生扩容，字符串长度不变
+        void flexmove(pos_type pos, size_type n, int offset) {
+        }
+
+        void flexmove(pos_type pos, size_type n, int offset, char_type fill_ch) {
+        }
+
+        //  高阶操作：移动 [pos, pos+n) 范围内的部分数据：
+        //  当 offset < 0 时，向左移，超出 0     位置时，超出的部分会被截断
+        //  当 offset > 0 时，向右移，超出 len() 位置时，超出的部分会被阶段
+        //  不管如何移动，字符串总长度不变
+        void clipmove(pos_type pos, size_type n, int offset) {
+        }
+
+        void clipmove(pos_type pos, size_type n, int offset, char_type fill_ch) {
+        }
     };
 
     union layout_t layout;
 
-    static_assert(sizeof(union layout_t) == 2 * sizeof(uintptr_t));
-    static_assert(sizeof(uintptr_t) == 8);
+    static_assert(sizeof(uintptr_t) == 8, "仅支持 64 位系统");
+    static_assert(sizeof(layout_tmplt) == sizeof(layout_small), "确保内存布局是兼容的");
+    static_assert(sizeof(layout_tmplt) == sizeof(layout_large), "确保内存布局是兼容的");
+    static_assert(sizeof(layout_tmplt) == sizeof(layout_t), "确保内存布局是兼容的");
+    static_assert((sizeof(layout_tmplt) % sizeof(uintptr_t)) == 0, "确保布局是指针的整数倍");
 };
+
+extern bool operator!=(const str& s1, const str& s2);
+extern bool operator!=(const str::char_type* s1, const str& s2);
+extern const str operator+(const str& s1, const str& s2);
+extern const str operator+(const str& s1, const str::char_type* s2);
+extern const str operator+(const char* s1, const str& s2);
+extern const str operator+(str::char_type ch, const str& s);
+extern const str operator+(const str& s, str::char_type ch);
+extern bool operator<(const str& s1, const str& s2);
+extern bool operator<(const str::char_type* s1, const str& s2);
+extern bool operator<=(const str& s1, const str& s2);
+extern bool operator<=(const str::char_type* s1, const str& s2);
+extern bool operator==(const str& s1, const str& s2);
+extern bool operator==(const str::char_type* s1, const str& s2);
+extern bool operator>(const str& s1, const str& s2);
+extern bool operator>(const str::char_type* s1, const str& s2);
+extern bool operator>=(const str& s1, const str& s2);
+extern bool operator>=(const str::char_type* s1, const str& s2);
 
 } // namespace tiny
 
