@@ -461,57 +461,68 @@ str& str::fill(str::pos_type pos, str::char_type ch, str::size_type n) {
     return *this;
 }
 
-int str::index_of(const str& str, str::pos_type from, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-int str::index_of(const str::char_type* s, str::pos_type from, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-int str::index_of(str::char_type ch, str::pos_type from, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-int str::index_of(const std::regex& rx, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-int str::index_of(std::regex& rx, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-int str::index_of(std::function<int(str::char_type c, bool& match)> func, str::pos_type from) const {
+str::pos_type str::index_of(const str& str, str::pos_type from, bool ignore_case) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::last_index_of(const str& str, str::pos_type from, bool ignore_case) const {
+str::pos_type str::index_of(const str::char_type* s, str::pos_type from, bool ignore_case) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::last_index_of(str::char_type ch, str::pos_type from, bool ignore_case) const {
+str::pos_type str::index_of(str::char_type ch, str::pos_type from, bool ignore_case) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::last_index_of(const str::char_type* str, str::pos_type from, bool ignore_case) const {
+str::pos_type str::index_of(const std::regex& rx, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::last_index_of(const std::regex& rx, str::pos_type from) const {
+str::pos_type str::index_of(std::regex& rx, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::last_index_of(std::regex& rx, str::pos_type from) const {
+str::pos_type str::index_of(std::function<int(str::char_type c, bool& match)> func, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::last_index_of(std::function<int(str::char_type c, bool& match)> func, str::pos_type from) const {
+
+str::pos_type str::last_index_of(const str& str, str::pos_type from, bool ignore_case) const {
+    ASSERT(false); //  TODO
+    return false;
+}
+
+
+str::pos_type str::last_index_of(str::char_type ch, str::pos_type from, bool ignore_case) const {
+    ASSERT(false); //  TODO
+    return false;
+}
+
+
+str::pos_type str::last_index_of(const str::char_type* str, str::pos_type from, bool ignore_case) const {
+    ASSERT(false); //  TODO
+    return false;
+}
+
+
+str::pos_type str::last_index_of(const std::regex& rx, str::pos_type from) const {
+    ASSERT(false); //  TODO
+    return false;
+}
+
+
+str::pos_type str::last_index_of(std::regex& rx, str::pos_type from) const {
+    ASSERT(false); //  TODO
+    return false;
+}
+
+
+str::pos_type str::last_index_of(std::function<int(str::char_type c, bool& match)> func, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
@@ -853,7 +864,7 @@ str& str::swap_case() {
 
         return ch;
     });
-    
+
     return *this;
 }
 

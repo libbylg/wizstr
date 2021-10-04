@@ -162,19 +162,19 @@ public:
     str& fill(pos_type pos, char_type ch, size_type n);
 
     //  查找
-    int index_of(const str& str, pos_type from = 0, bool ignore_case = false) const;
-    int index_of(const char_type* s, pos_type from = 0, bool ignore_case = false) const;
-    int index_of(char_type ch, pos_type from = 0, bool ignore_case = false) const;
-    int index_of(const std::regex& rx, pos_type from = 0) const;
-    int index_of(std::regex& rx, pos_type from = 0) const;
-    int index_of(std::function<int(char_type c, bool& match)> func, pos_type from = 0) const;
+    pos_type index_of(const str& str, pos_type from = 0, bool ignore_case = false) const;
+    pos_type index_of(const char_type* s, pos_type from = 0, bool ignore_case = false) const;
+    pos_type index_of(char_type ch, pos_type from = 0, bool ignore_case = false) const;
+    pos_type index_of(const std::regex& rx, pos_type from = 0) const;
+    pos_type index_of(std::regex& rx, pos_type from = 0) const;
+    pos_type index_of(std::function<int(char_type c, bool& match)> func, pos_type from = 0) const;
 
-    int last_index_of(const str& str, pos_type from = -1, bool ignore_case = false) const;
-    int last_index_of(char_type ch, pos_type from = -1, bool ignore_case = false) const;
-    int last_index_of(const char_type* str, pos_type from = -1, bool ignore_case = false) const;
-    int last_index_of(const std::regex& rx, pos_type from = -1) const;
-    int last_index_of(std::regex& rx, pos_type from = -1) const;
-    int last_index_of(std::function<int(char_type c, bool& match)> func, pos_type from = -1) const;
+    pos_type last_index_of(const str& str, pos_type from = -1, bool ignore_case = false) const;
+    pos_type last_index_of(char_type ch, pos_type from = -1, bool ignore_case = false) const;
+    pos_type last_index_of(const char_type* str, pos_type from = -1, bool ignore_case = false) const;
+    pos_type last_index_of(const std::regex& rx, pos_type from = -1) const;
+    pos_type last_index_of(std::regex& rx, pos_type from = -1) const;
+    pos_type last_index_of(std::function<int(char_type c, bool& match)> func, pos_type from = -1) const;
 
     //  匹配
     bool is_match(std::regex& rx) const;
