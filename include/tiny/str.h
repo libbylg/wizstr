@@ -12,9 +12,11 @@
 #include <vector>
 
 #include "tiny/asserts.h"
-#include "tiny/re.h"
+
 
 namespace tiny {
+
+class re;
 
 class str {
 public:

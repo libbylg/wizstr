@@ -300,6 +300,7 @@ str& str::remove(str::pos_type pos, str::size_type n) {
 
 str& str::remove(str::value_type ch) {
     ASSERT(false); //  TODO
+    //std::string
     return *this;
 }
 
@@ -467,18 +468,34 @@ str& str::fill(str::pos_type pos, str::value_type ch, str::size_type n) {
 }
 
 str::pos_type str::index_of(const str& other, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
+    return index_of(other.data(), from);
 }
 
 str::pos_type str::index_of(str::const_pointer s, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
+    ASSERT(s != nullptr);
+    ASSERT(from >= 0);
+    ASSERT(from < size());
+
+    const_pointer d = data();
+    const_pointer pos = std::strstr(d + from, s);
+    if (pos == nullptr) {
+        return str::npos;
+    }
+
+    return str::pos_type(pos - d);
 }
 
 str::pos_type str::index_of(str::value_type ch, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
+    ASSERT(from >= 0);
+    ASSERT(from < size());
+
+    const_pointer d = data();
+    const_pointer pos = std::strchr(d + from, ch);
+    if (pos == nullptr) {
+        return str::npos;
+    }
+
+    return str::pos_type(pos - d);
 }
 
 str::pos_type str::index_of(const re& rx, str::pos_type from) const {
@@ -502,11 +519,19 @@ str::pos_type str::last_index_of(const str& other, str::pos_type from) const {
 }
 
 str::pos_type str::last_index_of(str::value_type ch, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
+    ASSERT(from >= 0);
+    ASSERT(from < size());
+
+    const_pointer d = data();
+    const_pointer pos = std::strrchr(d + from, ch);
+    if (pos == nullptr) {
+        return str::npos;
+    }
+
+    return str::pos_type(pos - d);
 }
 
-str::pos_type str::last_index_of(str::const_pointer other, str::pos_type from) const {
+str::pos_type str::last_index_of(str::const_pointer s, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }

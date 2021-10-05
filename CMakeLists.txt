@@ -3,7 +3,7 @@ project(str)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(include)
+find_package(PCRE2 REQUIRED COMPONENTS "8BIT")
 
 add_executable(str
         include/tiny/str.h
@@ -15,3 +15,6 @@ add_executable(str
         src/escape.cpp
         src/unescape.cpp
         test/main.cpp)
+
+target_include_directories(str PRIVATE include ${PCRE2_INCLUDES})
+target_link_libraries(str PRIVATE ${PCRE2_LIBRARIES})
