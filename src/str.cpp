@@ -15,16 +15,16 @@ str::str() {
     layout.init(nullptr, 0);
 }
 
-str::str(const str::char_type* s, str::size_type n) {
+str::str(str::const_pointer s, str::size_type n) {
     layout.init(s, n);
 }
 
-str::str(str::char_type ch, str::size_type n) {
+str::str(str::value_type ch, str::size_type n) {
     layout.init(nullptr, n);
     std::fill(layout.begin(), layout.end(), ch);
 }
 
-str::str(const str::char_type* s) {
+str::str(str::const_pointer s) {
     ASSERT(s != nullptr);
     layout.init(s, std::strlen(s));
 }
@@ -97,28 +97,28 @@ str::const_reverse_iterator str::rend() const {
     return str::const_reverse_iterator(begin() - 1);
 }
 
-str::char_type str::at(str::pos_type pos) const {
+str::value_type str::at(str::pos_type pos) const {
     ASSERT(pos >= 0);
     ASSERT(pos < size());
     return begin()[pos];
 }
 
-str::char_type str::back() const {
+str::value_type str::back() const {
     ASSERT(size() > 0);
     return *(end() - 1);
 }
 
-str::char_type& str::back() {
+str::value_type& str::back() {
     ASSERT(size() > 0);
     return *(end() - 1);
 }
 
-str::char_type str::front() const {
+str::value_type str::front() const {
     ASSERT(size() > 0);
     return begin()[0];
 }
 
-str::char_type& str::front() {
+str::value_type& str::front() {
     ASSERT(size() > 0);
     return begin()[0];
 }
@@ -136,15 +136,15 @@ void str::clear() {
     layout.init(nullptr, 0);
 }
 
-const str::char_type* str::data() const {
+str::const_pointer str::data() const {
     return layout.begin();
 }
 
-str::char_type* str::data() {
+str::pointer str::data() {
     return layout.begin();
 }
 
-void str::attach(str::char_type* buf, str::size_type len, str::size_type cap) {
+void str::attach(str::pointer buf, str::size_type len, str::size_type cap) {
     ASSERT(buf != nullptr);
     ASSERT(len >= 0);
     ASSERT(cap >= 0);
@@ -159,13 +159,13 @@ str& str::append(const str& s) {
     return *this;
 }
 
-str& str::append(str::char_type ch) {
+str& str::append(str::value_type ch) {
     layout.resize(layout.len() + 1);
     layout.fill(size(), &ch, 1);
     return *this;
 }
 
-str& str::append(const str::char_type* s, str::size_type n) {
+str& str::append(str::const_pointer s, str::size_type n) {
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
     layout.resize(layout.len() + 1);
@@ -173,7 +173,7 @@ str& str::append(const str::char_type* s, str::size_type n) {
     return *this;
 }
 
-str& str::append(const str::char_type* s) {
+str& str::append(str::const_pointer s) {
     ASSERT(s != nullptr);
     append(s, std::strlen(s));
     return *this;
@@ -184,11 +184,11 @@ str& str::prepend(const str& s) {
     return prepend(s.begin(), s.size());
 }
 
-str& str::prepend(str::char_type ch) {
+str& str::prepend(str::value_type ch) {
     return prepend(&ch, 1);
 }
 
-str& str::prepend(const str::char_type* s, str::size_type n) {
+str& str::prepend(str::const_pointer s, str::size_type n) {
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
     layout.flexmove(0, layout.len(), n);
@@ -196,7 +196,7 @@ str& str::prepend(const str::char_type* s, str::size_type n) {
     return *this;
 }
 
-str& str::prepend(const str::char_type* s) {
+str& str::prepend(str::const_pointer s) {
     ASSERT(s != nullptr);
     return prepend(s, std::strlen(s));
 }
@@ -206,11 +206,11 @@ str& str::insert(str::pos_type pos, const str& str) {
     return insert(pos, str.layout.begin(), layout.len());
 }
 
-str& str::insert(str::pos_type pos, str::char_type ch) {
+str& str::insert(str::pos_type pos, str::value_type ch) {
     return insert(pos, &ch, 1);
 }
 
-str& str::insert(str::pos_type pos, const str::char_type* s, str::size_type n) {
+str& str::insert(str::pos_type pos, str::const_pointer s, str::size_type n) {
     ASSERT(pos >= 0);
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
@@ -225,7 +225,7 @@ str& str::insert(str::pos_type pos, const str::char_type* s, str::size_type n) {
     return *this;
 }
 
-str& str::insert(str::pos_type pos, const str::char_type* s) {
+str& str::insert(str::pos_type pos, str::const_pointer s) {
     return insert(pos, s, std::strlen(s));
 }
 
@@ -233,7 +233,7 @@ void str::push_back(const str& s) {
     append(s.data(), s.size());
 }
 
-void str::push_back(str::char_type ch) {
+void str::push_back(str::value_type ch) {
     append(ch);
 }
 
@@ -241,20 +241,20 @@ void str::push_front(const str& s) {
     prepend(s);
 }
 
-void str::push_front(str::char_type ch) {
+void str::push_front(str::value_type ch) {
     prepend(ch);
 }
 
-str::char_type str::pop_back() {
+str::value_type str::pop_back() {
     ASSERT(size() > 0);
-    str::char_type ch = *(end() - 1);
+    str::value_type ch = *(end() - 1);
     resize(size() - 1);
     return ch;
 }
 
-str::char_type str::pop_front() {
+str::value_type str::pop_front() {
     ASSERT(size() > 0);
-    str::char_type ch = *(begin());
+    str::value_type ch = *(begin());
     layout.clipmove(0, layout.len(), -1);
     layout.resize(layout.len() - 1);
     return ch;
@@ -265,7 +265,7 @@ str& str::flex_move(str::pos_type pos, str::size_type n, int offset) {
     return *this;
 }
 
-str& str::flex_move(str::pos_type pos, str::size_type n, int offset, str::char_type fill_ch) {
+str& str::flex_move(str::pos_type pos, str::size_type n, int offset, str::value_type fill_ch) {
     layout.flexmove(pos, n, offset, fill_ch);
     return *this;
 }
@@ -275,7 +275,7 @@ str& str::clip_move(str::pos_type pos, str::size_type n, int offset) {
     return *this;
 }
 
-str& str::clip_move(str::pos_type pos, str::size_type n, int offset, str::char_type fill_ch) {
+str& str::clip_move(str::pos_type pos, str::size_type n, int offset, str::value_type fill_ch) {
     layout.clipmove(pos, n, offset, fill_ch);
     return *this;
 }
@@ -298,27 +298,27 @@ str& str::remove(str::pos_type pos, str::size_type n) {
     return *this;
 }
 
-str& str::remove(str::char_type ch, bool ignore_case) {
+str& str::remove(str::value_type ch) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::remove(const str::char_type* str, bool ignore_case) {
+str& str::remove(str::const_pointer str) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::remove(const str& str, bool ignore_case) {
+str& str::remove(const str& str) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::remove(const std::regex& rx) {
+str& str::remove(const re& rx) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::remove(std::function<int(str::char_type c, bool& match)> func) {
+str& str::remove(std::function<int(str::value_type c, bool& match)> func) {
     ASSERT(false); //  TODO
     return *this;
 }
@@ -337,197 +337,196 @@ str::iterator str::erase(const_iterator first, const_iterator last) {
     return begin();
 }
 
-int str::compare(const str& other, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return -1;
+int str::compare(const str& s) const {
+    return strcmp(begin(), s.begin());
 }
 
-int str::compare(const str::char_type* s, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return -1;
+int str::compare(str::const_pointer s) const {
+    ASSERT(s != nullptr);
+    return strcmp(begin(), s);
 }
 
-int str::compare(str::char_type c, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return -1;
+int str::compare(str::const_pointer s, str::size_type max_n) const {
+    ASSERT(s != nullptr);
+    return strncmp(begin(), s, max_n);
 }
 
-bool str::contains(const str& s, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
+int str::compare(const str& other, str::size_type max_n) const {
+    return strncmp(begin(), other.begin(), max_n);
 }
 
-bool str::contains(const str::char_type* s, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
+int str::compare(str::value_type c) const {
+    return (size() == 1) && (begin()[0] == c);
 }
 
-bool str::contains(str::char_type ch, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
+bool str::contains(const str& s) const {
+    return strstr(begin(), s.begin()) != nullptr;
 }
 
-bool str::contains(const std::regex& rx) const {
-    ASSERT(false); //  TODO
-    return false;
+bool str::contains(str::const_pointer s) const {
+    ASSERT(s != nullptr);
+    return strstr(begin(), s) != nullptr;
 }
 
-bool str::contains(std::regex& re) const {
-    ASSERT(false); //  TODO
-    return false;
+bool str::contains(str::value_type ch) const {
+    return strchr(begin(), ch) != nullptr;
 }
 
-int str::count(const str& s, bool ignore_case) const {
+bool str::contains(const re& r) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::count(const str::char_type* s, bool ignore_case) const {
+bool str::contains(re& r) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::count(str::char_type ch, bool ignore_case) const {
+int str::count(const str& s) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-int str::count(const std::regex& rx) const {
+int str::count(str::const_pointer s) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::has_suffix(const str& s, bool ignore_case) const {
+int str::count(str::value_type ch) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::has_suffix(const str::char_type* str, bool ignore_case) const {
+int str::count(const re& rx) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::has_suffix(str::char_type c, bool ignore_case) const {
+bool str::has_suffix(const str& s) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::has_prefix(const str& s, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-bool str::has_prefix(const str::char_type* s, bool ignore_case) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-bool str::has_prefix(str::char_type c, bool ignore_case) const {
+bool str::has_suffix(str::const_pointer str) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::remove_prefix(const str& s, bool ignore_case) {
-    ASSERT(false); //  TODO
-    return false;
-}
-bool str::remove_prefix(const str::char_type* s, bool ignore_case) {
-    ASSERT(false); //  TODO
-    return false;
-}
-bool str::remove_prefix(str::char_type c, bool ignore_case) {
+bool str::has_suffix(str::value_type c) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::remove_suffix(const str& s, bool ignore_case) {
+bool str::has_prefix(const str& s) const {
     ASSERT(false); //  TODO
     return false;
 }
-bool str::remove_suffix(const str::char_type* s, bool ignore_case) {
+bool str::has_prefix(str::const_pointer s) const {
     ASSERT(false); //  TODO
     return false;
 }
-bool str::remove_suffix(str::char_type c, bool ignore_case) {
+bool str::has_prefix(str::value_type c) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-str& str::fill(str::char_type ch) {
+bool str::remove_prefix(const str& s) {
+    ASSERT(false); //  TODO
+    return false;
+}
+bool str::remove_prefix(str::const_pointer s) {
+    ASSERT(false); //  TODO
+    return false;
+}
+bool str::remove_prefix(str::value_type c) {
+    ASSERT(false); //  TODO
+    return false;
+}
+
+bool str::remove_suffix(const str& s) {
+    ASSERT(false); //  TODO
+    return false;
+}
+bool str::remove_suffix(str::const_pointer s) {
+    ASSERT(false); //  TODO
+    return false;
+}
+bool str::remove_suffix(str::value_type c) {
+    ASSERT(false); //  TODO
+    return false;
+}
+
+str& str::fill(str::value_type ch) {
     layout.fill(0, ch, layout.len());
     return *this;
 }
 
-str& str::fill(str::pos_type pos, str::char_type ch, str::size_type n) {
+str& str::fill(str::pos_type pos, str::value_type ch, str::size_type n) {
     layout.fill(pos, ch, layout.len());
     return *this;
 }
 
-str::pos_type str::index_of(const str& str, str::pos_type from, bool ignore_case) const {
+str::pos_type str::index_of(const str& other, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-str::pos_type str::index_of(const str::char_type* s, str::pos_type from, bool ignore_case) const {
+str::pos_type str::index_of(str::const_pointer s, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-str::pos_type str::index_of(str::char_type ch, str::pos_type from, bool ignore_case) const {
+str::pos_type str::index_of(str::value_type ch, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-str::pos_type str::index_of(const std::regex& rx, str::pos_type from) const {
+str::pos_type str::index_of(const re& rx, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-str::pos_type str::index_of(std::regex& rx, str::pos_type from) const {
+str::pos_type str::index_of(re& rx, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-str::pos_type str::index_of(std::function<int(str::char_type c, bool& match)> func, str::pos_type from) const {
+str::pos_type str::index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-
-str::pos_type str::last_index_of(const str& str, str::pos_type from, bool ignore_case) const {
+str::pos_type str::last_index_of(const str& other, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-
-str::pos_type str::last_index_of(str::char_type ch, str::pos_type from, bool ignore_case) const {
+str::pos_type str::last_index_of(str::value_type ch, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-
-str::pos_type str::last_index_of(const str::char_type* str, str::pos_type from, bool ignore_case) const {
+str::pos_type str::last_index_of(str::const_pointer other, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-
-str::pos_type str::last_index_of(const std::regex& rx, str::pos_type from) const {
+str::pos_type str::last_index_of(const re& rx, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-
-str::pos_type str::last_index_of(std::regex& rx, str::pos_type from) const {
+str::pos_type str::last_index_of(re& rx, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-
-str::pos_type str::last_index_of(std::function<int(str::char_type c, bool& match)> func, str::pos_type from) const {
+str::pos_type str::last_index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::is_match(std::regex& rx) const {
+bool str::is_match(re& rx) const {
     ASSERT(false); //  TODO
     return false;
 }
@@ -537,17 +536,17 @@ bool str::is_match(const str& pattern) const {
     return false;
 }
 
-bool str::is_match(const str::char_type*& pattern) const {
+bool str::is_match(str::const_pointer& pattern) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::is_match_wild(const str& pattern, bool ignore_case) const {
+bool str::is_match_wild(const str& pattern) const {
     ASSERT(false); //  TODO
     return false;
 }
 
-bool str::is_match_wild(const str::char_type*& pattern, bool ignore_case) const {
+bool str::is_match_wild(str::const_pointer& pattern) const {
     ASSERT(false); //  TODO
     return false;
 }
@@ -557,7 +556,7 @@ bool str::is_empty() const {
 }
 
 bool str::is_lower() const {
-    for (const char_type* p = layout.begin(); p != layout.end(); p++) {
+    for (const_pointer p = layout.begin(); p != layout.end(); p++) {
         if (std::isupper(*p)) {
             return false;
         }
@@ -567,7 +566,7 @@ bool str::is_lower() const {
 }
 
 bool str::is_upper() const {
-    for (const char_type* p = layout.begin(); p != layout.end(); p++) {
+    for (const_pointer p = layout.begin(); p != layout.end(); p++) {
         if (std::islower(*p)) {
             return false;
         }
@@ -621,73 +620,84 @@ bool str::is_numeric() const {
     return false;
 }
 
+bool str::is_bool() const {
+    ASSERT(false); //  TODO
+    return false;
+}
+
 str str::left(str::size_type n) const {
     ASSERT(false); //  TODO
     return *this;
 }
+
 str str::right(str::size_type n) const {
     ASSERT(false); //  TODO
     return *this;
 }
-str str::mid(str::pos_type position, str::size_type n) const {
+
+str str::substr(pos_type pos, int offset_n) const {
     ASSERT(false); //  TODO
     return *this;
 }
 
 //  定宽对齐调整
-str& str::ljust(str::size_type width, str::char_type fill, bool truncate) {
+str& str::ljust(str::size_type width, str::value_type fill, bool truncate) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::rjust(str::size_type width, str::char_type fill, bool truncate) {
+str& str::rjust(str::size_type width, str::value_type fill, bool truncate) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::center(str::size_type width, str::char_type fill, bool truncate) {
+str& str::center(str::size_type width, str::value_type fill, bool truncate) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::zfill(str::size_type width, str::char_type fill, bool truncate) {
+str& str::zfill(str::size_type width, str::value_type fill, bool truncate) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::replace(str::pos_type position, str::size_type n, const str& after) {
+str& str::replace(str::pos_type pos, str::size_type n, const str& after) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(str::pos_type position, str::size_type n, str::char_type after) {
+str& str::replace(str::pos_type pos, str::size_type n, str::value_type after) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(str::pos_type position, str::size_type n, const str::char_type* unicode, str::size_type size) {
+
+str& str::replace(str::pos_type pos, str::size_type n, str::const_pointer unicode, str::size_type size) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(str::char_type before, str::char_type after, bool ignore_case) {
+
+str& str::replace(str::value_type before, str::value_type after) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(const str::char_type* before, str::size_type blen, const str::char_type* after, str::size_type alen, bool ignore_case) {
+
+str& str::replace(str::const_pointer before, str::size_type blen, str::const_pointer after, str::size_type alen) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(const str& before, const str& after, bool ignore_case) {
+
+str& str::replace(const str& before, const str& after) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(str::char_type ch, const str& after, bool ignore_case) {
+str& str::replace(str::value_type ch, const str& after) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(const std::regex& rx, const str& after) {
+str& str::replace(const re& rx, const str& after) {
     ASSERT(false); //  TODO
     return *this;
 }
-str& str::replace(std::function<int(str::char_type key, str::char_type& val)> func) {
+str& str::replace(std::function<int(str::value_type key, str::value_type& val)> func) {
     ASSERT(false); //  TODO
     return *this;
 }
@@ -702,12 +712,12 @@ str str::join(const std::vector<str>& s) const {
     return str();
 }
 
-str str::join(const str& s, ...) const {
+str str::join(const str& other, ...) const {
     ASSERT(false); //  TODO
     return str();
 }
 
-str str::join(const str::char_type* s, ...) const {
+str str::join(str::const_pointer s, ...) const {
     ASSERT(false); //  TODO
     return str();
 }
@@ -720,7 +730,7 @@ void str::resize(str::size_type n) {
     layout.resize(n);
 }
 
-void str::resize(str::size_type n, str::char_type fill_ch) {
+void str::resize(str::size_type n, str::value_type fill_ch) {
     ASSERT(n >= 0);
 
     str::size_type old_len = size();
@@ -744,9 +754,9 @@ str& str::inversion() {
     return *this;
 }
 
-std::vector<str> str::split(const str& sep, bool ignore_case) const {
+std::vector<str> str::split(const str& sep) const {
     std::vector<str> result;
-    split(sep, ignore_case, [&result](const char_type* s, size_type n) -> int {
+    split(sep, [&result](const_pointer s, size_type n) -> int {
         result.emplace_back(s, n);
         return 0;
     });
@@ -754,9 +764,9 @@ std::vector<str> str::split(const str& sep, bool ignore_case) const {
     return result;
 }
 
-std::vector<str> str::split(const str::char_type* sep, bool ignore_case) const {
+std::vector<str> str::split(str::const_pointer sep) const {
     std::vector<str> result;
-    split(sep, ignore_case, [&result](const str::char_type* s, str::size_type n) -> int {
+    split(sep, [&result](str::const_pointer s, str::size_type n) -> int {
         result.emplace_back(s, n);
         return 0;
     });
@@ -764,9 +774,9 @@ std::vector<str> str::split(const str::char_type* sep, bool ignore_case) const {
     return result;
 }
 
-std::vector<str> str::split(str::char_type sep, bool ignore_case) const {
+std::vector<str> str::split(str::value_type sep) const {
     std::vector<str> result;
-    split(sep, ignore_case, [&result](const str::char_type* s, str::size_type n) -> int {
+    split(sep, [&result](str::const_pointer s, str::size_type n) -> int {
         result.emplace_back(s, n);
         return 0;
     });
@@ -774,9 +784,9 @@ std::vector<str> str::split(str::char_type sep, bool ignore_case) const {
     return result;
 }
 
-std::vector<str> str::split(const std::regex& r) const {
+std::vector<str> str::split(const re& r) const {
     std::vector<str> result;
-    split(r, [&result](const str::char_type* s, str::size_type n) -> int {
+    split(r, [&result](str::const_pointer s, str::size_type n) -> int {
         result.emplace_back(s, n);
         return 0;
     });
@@ -784,9 +794,9 @@ std::vector<str> str::split(const std::regex& r) const {
     return result;
 }
 
-std::vector<str> str::split(std::function<int(str::char_type c, bool& match)>& chars_func) const {
+std::vector<str> str::split(std::function<int(str::value_type c, bool& match)>& chars_func) const {
     std::vector<str> result;
-    split(chars_func, [&result](const str::char_type* s, str::size_type n) -> int {
+    split(chars_func, [&result](str::const_pointer s, str::size_type n) -> int {
         result.emplace_back(s, n);
         return 0;
     });
@@ -796,7 +806,7 @@ std::vector<str> str::split(std::function<int(str::char_type c, bool& match)>& c
 
 std::vector<str> str::split_lines(bool keep_ends) const {
     std::vector<str> result;
-    split_lines(keep_ends, [&result](const str::char_type* s, str::size_type n) -> int {
+    split_lines(keep_ends, [&result](str::const_pointer s, str::size_type n) -> int {
         result.emplace_back(s, n);
         return 0;
     });
@@ -806,7 +816,7 @@ std::vector<str> str::split_lines(bool keep_ends) const {
 
 std::vector<str> str::split_path() const {
     std::vector<str> result;
-    split_path([&result](const str::char_type* s, str::size_type n) -> int {
+    split_path([&result](str::const_pointer s, str::size_type n) -> int {
         result.emplace_back(s, n);
         return 0;
     });
@@ -814,31 +824,31 @@ std::vector<str> str::split_path() const {
     return result;
 }
 
-void str::split(const str& sep, bool case_sensitive, std::function<int(const str::char_type* s, str::size_type n)> output_func) const {
+void str::split(const str& sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     ASSERT(false); //  TODO
 }
 
-void str::split(const str::char_type* sep, bool case_sensitive, std::function<int(const str::char_type* s, str::size_type n)> output_func) const {
+void str::split(str::const_pointer sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     ASSERT(false); //  TODO
 }
 
-void str::split(str::char_type sep, bool case_sensitive, std::function<int(const str::char_type* s, str::size_type n)> output_func) const {
+void str::split(str::value_type sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     ASSERT(false); //  TODO
 }
 
-void str::split(const std::regex& rx, std::function<int(const str::char_type* s, str::size_type n)> output_func) const {
+void str::split(const re& rx, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     ASSERT(false); //  TODO
 }
 
-void str::split(std::function<int(str::char_type c, bool& match)>& chars_func, std::function<int(const str::char_type* s, str::size_type n)> output_func) const {
+void str::split(std::function<int(str::value_type c, bool& match)>& chars_func, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     ASSERT(false); //  TODO
 }
 
-void str::split_lines(bool keep_ends, std::function<int(const str::char_type* s, str::size_type n)> output_func) const {
+void str::split_lines(bool keep_ends, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     ASSERT(false); //  TODO
 }
 
-void str::split_path(std::function<int(const str::char_type* s, str::size_type n)> output_func) const {
+void str::split_path(std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     ASSERT(false); //  TODO
 }
 
@@ -853,7 +863,7 @@ str& str::to_upper() {
 }
 
 str& str::swap_case() {
-    std::transform(begin(), end(), begin(), [](str::char_type& ch) -> str::char_type {
+    std::transform(begin(), end(), begin(), [](str::value_type& ch) -> str::value_type {
         if (std::islower(ch)) {
             return std::toupper(ch);
         }
@@ -898,7 +908,7 @@ str str::expand(std::function<int(const str& key, str& val)> provider) const {
     return str("");
 }
 
-str str::expand_envs(const str::char_type* key, const str::char_type* val) const {
+str str::expand_envs(str::const_pointer key, str::const_pointer val) const {
     ASSERT(false); // TODO
     return str("");
 }
@@ -931,6 +941,11 @@ void str::swap(str& s) {
     layout_tmplt t = s.layout.tmplt;
     s.layout.tmplt = layout.tmplt;
     layout.tmplt = t;
+}
+
+str::size_type str::copy(str::pointer dest, str::size_type n, str::pos_type pos) const {
+    ASSERT(false); // TODO
+    return 0;
 }
 
 str str::basename() const {
@@ -1011,12 +1026,12 @@ uint64_t str::to_uint64(bool* ok, int base) const {
     return 0;
 }
 
-str& str::assign(double n, str::char_type format, int precision) {
+str& str::assign(double n, str::value_type format, int precision) {
     ASSERT(false); //  TODO
     return *this;
 }
 
-str& str::assign(float n, str::char_type format, int precision) {
+str& str::assign(float n, str::value_type format, int precision) {
     ASSERT(false); //  TODO
     return *this;
 }
@@ -1066,12 +1081,12 @@ int32_t str::hash_code() const {
     return 0;
 }
 
-str str::number(double n, str::char_type format, int precision) {
+str str::number(double n, str::value_type format, int precision) {
     ASSERT(false); //  TODO
     return str("");
 }
 
-str str::number(float n, str::char_type format, int precision) {
+str str::number(float n, str::value_type format, int precision) {
     ASSERT(false); //  TODO
     return str("");
 }
@@ -1116,11 +1131,11 @@ str str::number(uint64_t n, int base) {
     return str("");
 }
 
-bool str::operator!=(const str::char_type* s) const {
+bool str::operator!=(str::const_pointer s) const {
     return 0 != compare(s);
 }
 
-str& str::operator+=(str::char_type ch) {
+str& str::operator+=(str::value_type ch) {
     return append(ch);
 }
 
@@ -1128,54 +1143,54 @@ str& str::operator+=(const str& s) {
     return append(s);
 }
 
-str& str::operator+=(const str::char_type* s) {
+str& str::operator+=(str::const_pointer s) {
     ASSERT(s != nullptr);
     return append(s);
 }
 
-bool str::operator<(const str::char_type* s) const {
+bool str::operator<(str::const_pointer s) const {
     ASSERT(s != nullptr);
     return compare(s) < 0;
 }
 
-bool str::operator<=(const str::char_type* s) const {
+bool str::operator<=(str::const_pointer s) const {
     ASSERT(s != nullptr);
     return compare(s) <= 0;
 }
 
-str& str::operator=(str::char_type ch) {
+str& str::operator=(str::value_type ch) {
     layout.destroy();
     layout.init(&ch, 1);
     return *this;
 }
 
-str& str::operator=(const str::char_type* s) {
+str& str::operator=(str::const_pointer s) {
     ASSERT(s != nullptr);
     layout.destroy();
     layout.init(s, std::strlen(s));
     return *this;
 }
 
-bool str::operator==(const str::char_type* s) const {
+bool str::operator==(str::const_pointer s) const {
     ASSERT(s != nullptr);
     return compare(s) == 0;
 }
 
-bool str::operator>(const str::char_type* s) const {
+bool str::operator>(str::const_pointer s) const {
     ASSERT(s != nullptr);
     return compare(s) > 0;
 }
 
-bool str::operator>=(const str::char_type* s) const {
+bool str::operator>=(str::const_pointer s) const {
     ASSERT(s != nullptr);
     return compare(s) >= 0;
 }
 
-str::char_type& str::operator[](str::pos_type pos) {
+str::value_type& str::operator[](str::pos_type pos) {
     return layout.begin()[pos];
 }
 
-const str::char_type& str::operator[](str::pos_type pos) const {
+const str::value_type& str::operator[](str::pos_type pos) const {
     return layout.begin()[pos];
 }
 
@@ -1183,7 +1198,7 @@ extern bool operator!=(const str& s1, const str& s2) {
     return s2.compare(s1) != 0;
 }
 
-extern bool operator!=(const str::char_type* s1, const str& s2) {
+extern bool operator!=(str::const_pointer s1, const str& s2) {
     return s2.compare(s1) != 0;
 }
 
@@ -1193,25 +1208,25 @@ extern const str operator+(const str& s1, const str& s2) {
     return new_str;
 }
 
-extern const str operator+(const str& s1, const str::char_type* s2) {
+extern const str operator+(const str& s1, str::const_pointer s2) {
     ASSERT(false); //  TODO
     str new_str;
     return new_str;
 }
 
-extern const str operator+(const char* s1, const str& s2) {
+extern const str operator+(str::const_pointer s1, const str& s2) {
     ASSERT(false); //  TODO
     str new_str;
     return new_str;
 }
 
-extern const str operator+(str::char_type ch, const str& s) {
+extern const str operator+(str::value_type ch, const str& s) {
     ASSERT(false); //  TODO
     str new_str;
     return new_str;
 }
 
-extern const str operator+(const str& s, str::char_type ch) {
+extern const str operator+(const str& other, str::value_type ch) {
     ASSERT(false); //  TODO
     str new_str;
     return new_str;
@@ -1221,7 +1236,7 @@ extern bool operator<(const str& s1, const str& s2) {
     return s2.compare(s1) > 0;
 }
 
-extern bool operator<(const str::char_type* s1, const str& s2) {
+extern bool operator<(str::const_pointer s1, const str& s2) {
     return s2.compare(s1) > 0;
 }
 
@@ -1229,7 +1244,7 @@ extern bool operator<=(const str& s1, const str& s2) {
     return s2.compare(s1) >= 0;
 }
 
-extern bool operator<=(const str::char_type* s1, const str& s2) {
+extern bool operator<=(str::const_pointer s1, const str& s2) {
     return s2.compare(s1) >= 0;
 }
 
@@ -1237,7 +1252,7 @@ extern bool operator==(const str& s1, const str& s2) {
     return s2.compare(s1) == 0;
 }
 
-extern bool operator==(const str::char_type* s1, const str& s2) {
+extern bool operator==(str::const_pointer s1, const str& s2) {
     return s2.compare(s1) == 0;
 }
 
@@ -1245,7 +1260,7 @@ extern bool operator>(const str& s1, const str& s2) {
     return s2.compare(s1) < 0;
 }
 
-extern bool operator>(const str::char_type* s1, const str& s2) {
+extern bool operator>(str::const_pointer s1, const str& s2) {
     return s2.compare(s1) < 0;
 }
 
@@ -1253,7 +1268,7 @@ extern bool operator>=(const str& s1, const str& s2) {
     return s2.compare(s1) <= 0;
 }
 
-extern bool operator>=(const str::char_type* s1, const str& s2) {
+extern bool operator>=(str::const_pointer s1, const str& s2) {
     return s2.compare(s1) <= 0;
 }
 
