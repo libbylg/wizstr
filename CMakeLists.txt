@@ -16,5 +16,7 @@ add_executable(str
         src/unescape.cpp
         test/main.cpp)
 
-target_include_directories(str PRIVATE include ${PCRE2_INCLUDES})
+message("---- ${PCRE2_INCLUDE_DIR}")
+
+target_include_directories(str PRIVATE include ${PCRE2_INCLUDE_DIR})
 target_link_libraries(str PRIVATE ${PCRE2_LIBRARIES})

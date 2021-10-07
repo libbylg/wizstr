@@ -27,66 +27,65 @@ class re {
 
     typedef uint32_t size_type;
 
-    struct segment {
+    struct segment_type {
         const pointer start;
         pos_type pos;
         uint32_t len;
     };
 
+    struct error_type {
+        int error{ 0 };
+        int offset{ -1 };
+        char message[128]{ 0 };
+    };
+
+    class results {
+    public:
+        operator bool() const {
+            if (regex_result == nullptr) {
+                return false;
+            }
+        }
+
+    private:
+        void* regex_result{ nullptr };
+        friend class re;
+    };
+
 public:
-    explicit re();
-    explicit re(const char* pattern, uint32_t flags = 0);
-    explicit re(const str& pattern, uint32_t flags = 0);
+    explicit re(const char* pattern, uint32_t flags = 0, error_type* error = nullptr);
+    explicit re(const str& pattern, uint32_t flags = 0, error_type* error = nullptr);
 
-    bool ok() const;
+    operator bool();
 
-    str error() const;
-    str& error(str& s) const;
+    //  校验
+    //    bool match(const_pointer s, uint32_t options = 0);
+    //    bool match(const str& s, uint32_t options = 0);
+    results match(const_pointer s, uint32_t options = 0);
 
-    uint32_t flags() const;
+    //  字符串分割
+    void split(const_pointer s, std::function<int(const segment_type& segs)> func);
+    void split(const str& s, std::function<int(const segment_type& segs)> func);
 
-    size_type subexp_num() const;
+    //  查找
+    void find(const_pointer s, std::function<int(const segment_type& segs)> func);
+    void find(const str& s, std::function<int(const segment_type& segs)> func);
 
-    str string() const;
+    void find(const_pointer s, std::function<int(const segment_type& segs)> func);
+    void find(const str& s, std::function<int(const segment_type& segs)> func);
 
-    bool compile(const_pointer pattern, uint32_t flags = 0);
-    bool compile(const str& pattern, uint32_t flags = 0);
+    void find_submatch(const_pointer s, std::function<int(const segment_type* segs, size_type n)> func);
+    void find_submatch(const str& s, std::function<int(const segment_type* segs, size_type n)> func);
 
-    bool match(const_pointer s);
-    bool match(const str& s);
+    //  替换
+    void replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
+    void replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
 
-    void split(const_pointer s, std::function<int(const segment& segs)> func);
-    void split(const str& s, std::function<int(const segment& segs)> func);
+private:
+    void* compile(const_pointer pattern, uint32_t flags, error_type* error);
 
-    void find(const_pointer s, std::function<int(const segment& segs)> func);
-    void find(const str& s, std::function<int(const segment& segs)> func);
-
-    void find_submatch(const_pointer s, std::function<int(const segment* segs, size_type n)> func);
-    void find_submatch(const str& s, std::function<int(const segment* segs, size_type n)> func);
-
-    void replace(const_pointer s, const_pointer repl);
-    void replace(const str& s, const_pointer repl);
-    void replace(const_pointer s, const str& repl);
-    void replace(const str& s, const str& repl);
-    //re.escape(pattern)¶
-
-    //re.purge()¶
-
-    //func (re *Regexp) String() string
-    //func (re *Regexp) LiteralPrefix() (prefix string, complete bool)
-    //func (re *Regexp) Longest()
-    //func (re *Regexp) NumSubexp() int
-    //func (re *Regexp) SubexpNames() []string
-
-    //func (re *Regexp) Expand(dst []byte, template []byte, src []byte, match []int) []byte
-    //func (re *Regexp) ExpandString(dst []byte, template string, src string, match []int) []byte
-
-    //func (re *Regexp) ReplaceAllLiteral(src, repl []byte) []byte
-    //func (re *Regexp) ReplaceAllLiteralString(src, repl string) string
-    //func (re *Regexp) ReplaceAll(src, repl []byte) []byte
-    //func (re *Regexp) ReplaceAllString(src, repl string) string
-    //func (re *Regexp) ReplaceAllFunc(src []byte, repl func([]byte) []byte) []byte
-    //func (re *Regexp) ReplaceAllStringFunc(src string, repl func(string) string) string
+private:
+    void* regex_code{ nullptr };
 };
 
 } // namespace tiny

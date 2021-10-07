@@ -13,7 +13,6 @@
 
 #include "tiny/asserts.h"
 
-
 namespace tiny {
 
 class re;
