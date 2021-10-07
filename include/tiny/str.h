@@ -5,10 +5,12 @@
 #define STR_H
 
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <map>
 #include <regex>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "tiny/asserts.h"
@@ -36,6 +38,9 @@ public:
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     static const pos_type npos = -1;
+
+    static_assert(std::is_signed<pos_type>::value, "位置必须是有符号数");
+    static_assert(std::is_unsigned<size_type>::value, "长度必须是无符号数");
 
 public:
     //  构造析构
@@ -112,7 +117,6 @@ public:
     str& flex_move(pos_type pos, size_type n, int offset);
     str& flex_move(pos_type pos, size_type n, int offset, value_type fill_ch);
     str& clip_move(pos_type pos, size_type n, int offset);
-    str& clip_move(pos_type pos, size_type n, int offset, value_type fill_ch);
 
     str& remove(pos_type pos);
     str& remove(pos_type pos, size_type n);
@@ -650,7 +654,7 @@ private:
             ASSERT(pos >= 0);
             ASSERT(n >= 0);
             ASSERT(s != nullptr);
-            ASSERT(cap() >= len() + n);
+            ASSERT(pos + n <= cap());
             memcpy(begin() + pos, s, n * sizeof(value_type));
         }
 
@@ -658,7 +662,7 @@ private:
         void fill(pos_type pos, value_type c, size_type n) {
             ASSERT(pos >= 0);
             ASSERT(n >= 0);
-            ASSERT(cap() >= len() + n);
+            ASSERT(pos + n <= cap());
             std::fill(begin() + pos, begin() + pos + n, c);
         }
 
@@ -666,10 +670,92 @@ private:
         //  当 offset < 0 时，向左移，超出 0     位置时，自动扩容，但中间部分数据为随机值；
         //  当 offset > 0 时，向右移，超出 len() 位置时，自动扩容，但中间部分数据为随机值；
         //  如果不发生扩容，字符串长度不变
-        void flexmove(pos_type pos, size_type n, int offset) {
-        }
+        void flexmove(pos_type pos, size_type n, int offset, std::function<void(pointer begin, size_type n)> action) {
+            ASSERT(n >= 0);
+            ASSERT(pos >= 0);
+            ASSERT(pos < len());
+            ASSERT((pos + n) >= 0);
+            ASSERT((pos + n) <= len());
 
-        void flexmove(pos_type pos, size_type n, int offset, value_type fill_ch) {
+            if (offset == 0) {
+                return;
+            }
+
+            if (offset < 0) {
+                //  如果未超过 [0,len()) 的范围
+                if (pos >= -offset) {
+                    std::memmove(begin() + (pos + offset), begin() + pos, n * sizeof(value_type));
+                    return;
+                }
+
+                //  Here: 如果超出 [0,len()) 的范围
+
+                //  重新计算新长度并重新分配内存
+                size_type new_len = -offset - pos + len();
+                size_type new_cap = new_len;
+                pointer new_data = (pointer)malloc(new_cap * sizeof(value_type));
+                ASSERT(new_data != nullptr);
+
+                //  先将需要拷贝的数据拷贝过来
+                std::memcpy(new_data, begin() + pos, n);
+
+                //  计算交叉数据的长度
+                pos_type corss_len = n - (-offset - pos);
+
+                //  根据是否交叉决定如何拷贝数据
+                if (corss_len > 0) {
+                    //  如果有交叉
+                    std::memcpy(new_data + n, begin() + corss_len, len() - corss_len);
+                } else {
+                    //  如果无交叉
+                    std::memcpy(new_data + n - corss_len, begin(), len());
+                    action(new_data, -offset - pos - n);
+                }
+
+                //  先销毁老的数据
+                destroy();
+
+                //  再关联新数据
+                large.attach(new_cap, new_len, new_data);
+                return;
+            }
+
+            if (offset > 0) {
+                //  如果未超出 [0,len()) 的 范围
+                if ((pos + n + offset) < len()) {
+                    std::memmove(begin() + (pos + offset), begin() + pos, n * sizeof(value_type));
+                    return;
+                }
+
+                //  Here: 如果超出 [0,len()) 的范围
+
+                //  重新计算新长度并重新分配内存
+                size_type new_len = offset + pos + len();
+                size_type new_cap = new_len;
+                pointer new_data = (pointer)malloc(new_cap * sizeof(value_type));
+                ASSERT(new_data != nullptr);
+
+                //  计算交叉数据的长度
+                pos_type corss_len = len() - (pos + offset);
+
+                //  先移动数据
+                std::memcpy(new_data + (pos + offset), begin() + pos, n);
+
+                //  根据是否交叉决定如何拷贝剩余的数据
+                if (corss_len > 0) {
+                    std::memcpy(new_data, begin(), pos + offset);
+                } else {
+                    std::memcpy(new_data, begin(), len());
+                    action(new_data + len(), (pos + offset - len()));
+                }
+
+                //  先销毁老的数据
+                destroy();
+
+                //  再关联新数据
+                large.attach(new_cap, new_len, new_data);
+                return;
+            }
         }
 
         //  高阶操作：移动 [pos, pos+n) 范围内的部分数据：
@@ -677,9 +763,52 @@ private:
         //  当 offset > 0 时，向右移，超出 len() 位置时，超出的部分会被阶段
         //  不管如何移动，字符串总长度不变
         void clipmove(pos_type pos, size_type n, int offset) {
-        }
+            ASSERT(n >= 0);
+            ASSERT(pos >= 0);
+            ASSERT(pos < len());
+            ASSERT((pos + n) >= 0);
+            ASSERT((pos + n) <= len());
 
-        void clipmove(pos_type pos, size_type n, int offset, value_type fill_ch) {
+            if (offset == 0) {
+                return;
+            }
+
+            if (offset < 0) {
+                //  如果未超过 [0,len()) 的范围
+                if (pos >= -offset) {
+                    std::memmove(begin() + (pos + offset), begin() + pos, n * sizeof(value_type));
+                    return;
+                }
+
+                //  计算交叉数据的长度
+                pos_type corss_len = n - (-offset - pos);
+
+                //  如果移动越界太多，完全没有交叉部分，那么相当于没有做任何移动,否则执行移动
+                if (corss_len > 0) {
+                    std::memmove(begin(), begin() - offset, corss_len);
+                    return;
+                }
+                return;
+            }
+
+            if (offset > 0) {
+                //  如果未超出 [0,len()) 的 范围
+                if ((pos + n + offset) < len()) {
+                    std::memmove(begin() + (pos + offset), begin() + pos, n * sizeof(value_type));
+                    return;
+                }
+
+                //  计算交叉数据的长度
+                pos_type corss_len = len() - (pos + offset);
+
+                //  如果移动越界太多，完全没有交叉部分，那么相当于没有做任何移动,否则执行移动
+                if (corss_len > 0) {
+                    std::memmove(begin() + pos + offset, begin() + pos, corss_len);
+                    return;
+                }
+
+                return;
+            }
         }
     };
 

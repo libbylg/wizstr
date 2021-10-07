@@ -11,6 +11,36 @@
 
 namespace tiny {
 
+//  反向查找字符串
+const char* strrstr(const char* s1, const char* s2) {
+
+    const char* sc1;
+    const char* sc2;
+    const char* psc1;
+    const char* ps1;
+
+    if (*s2 == '\0') {
+        return s1;
+    }
+
+    ps1 = s1 + strlen(s1);
+
+    while (ps1 != s1) {
+        --ps1;
+        for (psc1 = ps1, sc2 = s2;;) {
+            if (*(psc1++) != *(sc2++)) {
+                break;
+            }
+
+            if (*sc2 == '\0') {
+                return ps1;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 str::str() {
     layout.init(nullptr, 0);
 }
@@ -191,7 +221,8 @@ str& str::prepend(str::value_type ch) {
 str& str::prepend(str::const_pointer s, str::size_type n) {
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
-    layout.flexmove(0, layout.len(), n);
+    layout.flexmove(0, layout.len(), n, [](pointer fill, size_type n) {
+    });
     layout.fill(0, s, n);
     return *this;
 }
@@ -215,7 +246,8 @@ str& str::insert(str::pos_type pos, str::const_pointer s, str::size_type n) {
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
     if (pos < layout.len()) {
-        layout.flexmove(pos, layout.len() - pos, n);
+        layout.flexmove(pos, layout.len() - pos, n, [](pointer fill, size_type n) {
+        });
         layout.fill(pos, s, n);
         return *this;
     }
@@ -261,12 +293,15 @@ str::value_type str::pop_front() {
 }
 
 str& str::flex_move(str::pos_type pos, str::size_type n, int offset) {
-    layout.flexmove(pos, n, offset);
+    layout.flexmove(pos, n, offset, [](pointer fill, size_type n) {
+    });
     return *this;
 }
 
 str& str::flex_move(str::pos_type pos, str::size_type n, int offset, str::value_type fill_ch) {
-    layout.flexmove(pos, n, offset, fill_ch);
+    layout.flexmove(pos, n, offset, [fill_ch](pointer fill_pos, size_type n) {
+        std::fill(fill_pos, fill_pos + n, fill_ch);
+    });
     return *this;
 }
 
@@ -275,21 +310,21 @@ str& str::clip_move(str::pos_type pos, str::size_type n, int offset) {
     return *this;
 }
 
-str& str::clip_move(str::pos_type pos, str::size_type n, int offset, str::value_type fill_ch) {
-    layout.clipmove(pos, n, offset, fill_ch);
-    return *this;
-}
-
 str& str::remove(str::pos_type pos) {
     ASSERT(pos >= 0);
     ASSERT(pos < layout.len());
-    layout.resize(pos);
+    layout.clipmove(pos + 1, layout.len() - (pos + 1), -1);
+    layout.resize(layout.len() - 1);
     return *this;
 }
 
 str& str::remove(str::pos_type pos, str::size_type n) {
+    ASSERT(n > 0);
+    ASSERT(pos >= 0);
+    ASSERT(pos < layout.len());
+    ASSERT((pos + n) < layout.len());
     if ((pos + n) < layout.len()) {
-        layout.flexmove((pos + n), layout.len() - (pos + n), n);
+        layout.clipmove((pos + n), layout.len() - (pos + n), n);
         layout.resize(layout.len() - n);
         return *this;
     }
@@ -300,7 +335,7 @@ str& str::remove(str::pos_type pos, str::size_type n) {
 
 str& str::remove(str::value_type ch) {
     ASSERT(false); //  TODO
-    //std::string
+    // std::string
     return *this;
 }
 

@@ -11,6 +11,7 @@ namespace tiny {
 class str;
 
 class re {
+public:
     enum : uint32_t {
         POSIX = 0x00000001,
     };
@@ -28,7 +29,7 @@ class re {
     typedef uint32_t size_type;
 
     struct segment_type {
-        const pointer start;
+        const_pointer start;
         pos_type pos;
         uint32_t len;
     };
@@ -39,18 +40,18 @@ class re {
         char message[128]{ 0 };
     };
 
-    class results {
-    public:
-        operator bool() const {
-            if (regex_result == nullptr) {
-                return false;
-            }
-        }
-
-    private:
-        void* regex_result{ nullptr };
-        friend class re;
-    };
+    //    class results {
+    //    public:
+    //        operator bool() const {
+    //            if (regex_result == nullptr) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //    private:
+    //        void* regex_result{ nullptr };
+    //        friend class re;
+    //    };
 
 public:
     explicit re(const char* pattern, uint32_t flags = 0, error_type* error = nullptr);
@@ -59,27 +60,21 @@ public:
     operator bool();
 
     //  校验
-    //    bool match(const_pointer s, uint32_t options = 0);
-    //    bool match(const str& s, uint32_t options = 0);
-    results match(const_pointer s, uint32_t options = 0);
+    bool match(const_pointer s, uint32_t options = 0);
+    bool match(const str& s, uint32_t options = 0);
+    //    results match(const_pointer s, uint32_t options = 0);
 
-    //  字符串分割
-    void split(const_pointer s, std::function<int(const segment_type& segs)> func);
-    void split(const str& s, std::function<int(const segment_type& segs)> func);
+    //  分割
+    int split(const_pointer s, uint32_t options, std::function<int(const segment_type& segs)> func);
+    int split(const str& s, uint32_t options, std::function<int(const segment_type& segs)> func);
 
     //  查找
-    void find(const_pointer s, std::function<int(const segment_type& segs)> func);
-    void find(const str& s, std::function<int(const segment_type& segs)> func);
-
-    void find(const_pointer s, std::function<int(const segment_type& segs)> func);
-    void find(const str& s, std::function<int(const segment_type& segs)> func);
-
-    void find_submatch(const_pointer s, std::function<int(const segment_type* segs, size_type n)> func);
-    void find_submatch(const str& s, std::function<int(const segment_type* segs, size_type n)> func);
+    int find(const_pointer s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func);
+    int find(const str& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func);
 
     //  替换
-    void replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
-    void replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
+    int replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
+    int replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
 
 private:
     void* compile(const_pointer pattern, uint32_t flags, error_type* error);
