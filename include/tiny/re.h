@@ -57,24 +57,24 @@ public:
     explicit re(const char* pattern, uint32_t flags = 0, error_type* error = nullptr);
     explicit re(const str& pattern, uint32_t flags = 0, error_type* error = nullptr);
 
-    operator bool();
+    operator bool() const;
 
     //  校验
-    bool match(const_pointer s, uint32_t options = 0);
-    bool match(const str& s, uint32_t options = 0);
+    bool match(const_pointer s, uint32_t options = 0) const;
+    bool match(const str& s, uint32_t options = 0) const;
     //    results match(const_pointer s, uint32_t options = 0);
 
     //  分割
-    int split(const_pointer s, uint32_t options, std::function<int(const segment_type& segs)> func);
-    int split(const str& s, uint32_t options, std::function<int(const segment_type& segs)> func);
+    int split(const_pointer s, uint32_t options, std::function<int(const segment_type& segs)> func) const;
+    int split(const str& s, uint32_t options, std::function<int(const segment_type& segs)> func) const;
 
     //  查找
     int find(const_pointer s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const;
     int find(const str& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const;
 
     //  替换
-    int replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
-    int replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
+    int replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const;
+    int replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const;
 
 private:
     void* compile(const_pointer pattern, uint32_t flags, error_type* error);

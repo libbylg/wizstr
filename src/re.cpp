@@ -19,7 +19,7 @@ re::re(const str& pattern, uint32_t flags, error_type* error) {
     regex_code = compile(pattern.data(), flags, error);
 }
 
-re::operator bool() {
+re::operator bool() const {
     return regex_code != nullptr;
 }
 
@@ -70,7 +70,7 @@ void* re::compile(const_pointer pattern, uint32_t flags, error_type* error) {
 //     return result;
 // }
 
-bool re::match(const_pointer s, uint32_t options) {
+bool re::match(const_pointer s, uint32_t options) const {
     ASSERT(regex_code != nullptr);
 
     //  创建一个匹配数据
@@ -104,7 +104,7 @@ bool re::match(const_pointer s, uint32_t options) {
     return ((match_pos == 0) && s[match_length] == '\0');
 }
 
-bool re::match(const str& s, uint32_t options) {
+bool re::match(const str& s, uint32_t options) const {
     return match(s.data(), options);
 }
 
@@ -180,15 +180,15 @@ int re::find(const str& s, uint32_t options, std::function<int(const segment_typ
     return find(s.data(), options, func);
 }
 
-int re::replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) {
+int re::replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const {
     return 0;
 }
 
-int re::replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) {
+int re::replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const {
     return 0;
 }
 
-int re::split(const_pointer s, uint32_t options, std::function<int(const segment_type& segs)> func) {
+int re::split(const_pointer s, uint32_t options, std::function<int(const segment_type& segs)> func) const {
     ASSERT(regex_code != nullptr);
 
     //  创建一个匹配数据
@@ -247,7 +247,7 @@ int re::split(const_pointer s, uint32_t options, std::function<int(const segment
     return match_count;
 }
 
-int re::split(const str& s, uint32_t options, std::function<int(const segment_type& segs)> func) {
+int re::split(const str& s, uint32_t options, std::function<int(const segment_type& segs)> func) const {
     return split(s.data(), options, func);
 }
 

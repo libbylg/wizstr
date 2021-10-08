@@ -142,7 +142,6 @@ public:
     bool contains(const_pointer s) const;
     bool contains(value_type ch) const;
     bool contains(const re& rx) const;
-    bool contains(re& re) const;
 
     //  子串统计
     int count(const str& s) const;
@@ -176,22 +175,20 @@ public:
     pos_type index_of(const_pointer s, pos_type from = 0) const;
     pos_type index_of(value_type ch, pos_type from = 0) const;
     pos_type index_of(const re& rx, pos_type from = 0) const;
-    pos_type index_of(re& rx, pos_type from = 0) const;
     pos_type index_of(std::function<int(value_type c, bool& match)> func, pos_type from = 0) const;
 
     pos_type last_index_of(const str& other, pos_type from = -1) const;
     pos_type last_index_of(value_type ch, pos_type from = -1) const;
     pos_type last_index_of(const_pointer s, pos_type from = -1) const;
     pos_type last_index_of(const re& rx, pos_type from = -1) const;
-    pos_type last_index_of(re& rx, pos_type from = -1) const;
     pos_type last_index_of(std::function<int(value_type c, bool& match)> func, pos_type from = -1) const;
 
     //  匹配
-    bool is_match(re& rx) const;
+    bool is_match(const re& rx) const;
     bool is_match(const str& pattern) const;
-    bool is_match(const_pointer& pattern) const;
+    bool is_match(const_pointer pattern) const;
     bool is_match_wild(const str& pattern) const;
-    bool is_match_wild(const_pointer& pattern) const;
+    bool is_match_wild(const_pointer pattern) const;
 
     //  字符串特征
     bool is_empty() const;
@@ -231,10 +228,11 @@ public:
     str& replace(std::function<int(value_type key, value_type& val)> func);
 
     //  基于本字符串生成新字符串
-    str repeated(size_type times) const;       //  返回本字符串重复 times 次后的副本
-    str join(const std::vector<str>& s) const; //  用本字符串连接所有的s
-    str join(const str& s, ...) const;         //  用本字符串连接所有的s
-    str join(const_pointer s, ...) const;      //  用本字符串连接所有的s
+    str repeated(size_type times) const;                     //  返回本字符串重复 times 次后的副本
+    str join(const std::vector<str>& s) const;               //  用本字符串连接所有的s
+    str join(const str& s, ...) const;                       //  用本字符串连接所有的s
+    str join(const_pointer s, ...) const;                    //  用本字符串连接所有的s
+    str join(std::function<const_pointer()> provider) const; //  用本字符串连接所有的s
 
     //  容量、内存管理
     void reserve(size_type size);                    //  容量预留
@@ -271,10 +269,16 @@ public:
     str& swap_case(); //  大小写互换
 
     //  空白处理
-    str& simplified(); //   空白化简，多个空白用一个空白代替
-    str& ltrim();      //  去掉左边的空白
-    str& rtrim();      //  去掉右边的空白
-    str& trim();       //  同时去掉左边和右边的空白
+    str& simplified();                                         //   空白化简，多个空白用一个空白代替
+    str& ltrim();                                              //  去掉左边的空白
+    str& rtrim();                                              //  去掉右边的空白
+    str& trim();                                               //  同时去掉左边和右边的空白
+    str& ltrim(std::function<bool(value_type ch)> func);       //  去掉左边的满足条件的字符
+    str& rtrim(std::function<bool(value_type ch)> func);       //  去掉右边的满足条件的字符
+    str& trim(std::function<bool(value_type ch)> func);        //  去掉右边的满足条件的字符
+    str& ltrim_until(std::function<bool(value_type ch)> func); //  去掉左边的字符直到截止条件满足
+    str& rtrim_until(std::function<bool(value_type ch)> func); //  去掉右边的字符直到截止条件满足
+    str& trim_until(std::function<bool(value_type ch)> func);  //  去掉右边的满足条件的字符
 
     //  展开
     str expand(const std::map<str, str>& kvs) const;

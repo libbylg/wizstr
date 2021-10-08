@@ -12,6 +12,16 @@
 
 namespace tiny {
 
+//  进制映射范围
+enum number_base {
+    base_min = 2,
+    base_max = 36,
+};
+
+//  数据格式化时的映射
+static str::const_pointer number_map_upper = "0123456789ABCDEFGHIJKLMNOPQRETUVWXYZ";
+static str::const_pointer number_map_lower = "0123456789abcdefghijklmnopqretuvwxyz";
+
 //  反向查找字符串
 const char* strrstr(const char* s1, const char* s2) {
 
@@ -100,6 +110,7 @@ str::~str() {
 str::iterator str::begin() {
     return layout.begin();
 }
+
 str::iterator str::end() {
     return layout.end();
 }
@@ -108,6 +119,7 @@ str::iterator str::end() {
 str::const_iterator str::begin() const {
     return layout.begin();
 }
+
 str::const_iterator str::end() const {
     return layout.end();
 }
@@ -342,7 +354,7 @@ str& str::remove(str::value_type ch) {
 }
 
 str& str::remove(str::const_pointer s) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::remove(str::const_pointer s)
     return *this;
 }
 
@@ -351,7 +363,7 @@ str& str::remove(const str& other) {
 }
 
 str& str::remove(const re& rx) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::remove(const re& rx)
     return *this;
 }
 
@@ -434,82 +446,116 @@ bool str::contains(const re& r) const {
     return found;
 }
 
-bool str::contains(re& r) const {
-    ASSERT(false); //  TODO
-    return false;
-}
+int str::count(const str& other) const {
+    int cnt = 0;
 
-int str::count(const str& s) const {
-    ASSERT(false); //  TODO
-    return false;
+    size_type slen = other.size();
+
+    const_pointer start = layout.begin();
+    while ((start = std::strstr(start, other.data())) != nullptr) {
+        cnt++;
+        start += slen;
+    }
+
+    return cnt;
 }
 
 int str::count(str::const_pointer s) const {
-    ASSERT(false); //  TODO
-    return false;
+    ASSERT(s != nullptr);
+
+    int cnt = 0;
+
+    size_type slen = std::strlen(s);
+
+    const_pointer start = layout.begin();
+    while ((start = std::strstr(start, s)) != nullptr) {
+        cnt++;
+        start += slen;
+    }
+
+    return cnt;
 }
 
 int str::count(str::value_type ch) const {
-    ASSERT(false); //  TODO
-    return false;
+    int cnt = 0;
+
+    const_pointer start = layout.begin();
+    while ((start = std::strchr(start, ch)) != nullptr) {
+        cnt++;
+        start++;
+    }
+
+    return cnt;
 }
 
 int str::count(const re& rx) const {
-    ASSERT(false); //  TODO
-    return false;
+    ASSERT(rx);
+
+    int cnt = 0;
+    rx.find(layout.begin(), 0, [&cnt](const re::segment_type* segs, re::size_type n) -> int {
+        cnt++;
+        return 0;
+    });
+    return cnt;
 }
 
 bool str::has_suffix(const str& s) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::has_suffix(const str& s) const
     return false;
 }
 
 bool str::has_suffix(str::const_pointer str) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::has_suffix(str::const_pointer str) const
     return false;
 }
 
 bool str::has_suffix(str::value_type c) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::has_suffix(str::value_type c) const
     return false;
 }
 
 bool str::has_prefix(const str& s) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::has_prefix(const str& s) const
     return false;
 }
+
 bool str::has_prefix(str::const_pointer s) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::has_prefix(str::const_pointer s) const
     return false;
 }
+
 bool str::has_prefix(str::value_type c) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::has_prefix(str::value_type c) const
     return false;
 }
 
 bool str::remove_prefix(const str& s) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::remove_prefix(const str& s)
     return false;
 }
+
 bool str::remove_prefix(str::const_pointer s) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::remove_prefix(str::const_pointer s)
     return false;
 }
+
 bool str::remove_prefix(str::value_type c) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::remove_prefix(str::value_type c)
     return false;
 }
 
 bool str::remove_suffix(const str& s) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::remove_suffix(const str& s)
     return false;
 }
+
 bool str::remove_suffix(str::const_pointer s) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::remove_suffix(str::const_pointer s)
     return false;
 }
+
 bool str::remove_suffix(str::value_type c) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::remove_suffix(str::value_type c)
     return false;
 }
 
@@ -555,22 +601,25 @@ str::pos_type str::index_of(str::value_type ch, str::pos_type from) const {
 }
 
 str::pos_type str::index_of(const re& rx, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
-}
+    ASSERT(from >= 0);
+    ASSERT(from < layout.len());
 
-str::pos_type str::index_of(re& rx, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
+    str::pos_type pos = -1;
+    rx.find(layout.begin() + from, 0, [&pos](const re::segment_type* segs, re::size_type n) -> int {
+        pos = segs[0].pos;
+        return -1;
+    });
+
+    return from + pos;
 }
 
 str::pos_type str::index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str::pos_type str::index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const
     return false;
 }
 
 str::pos_type str::last_index_of(const str& other, str::pos_type from) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str::pos_type str::last_index_of(const str& other, str::pos_type from) const
     return false;
 }
 
@@ -588,47 +637,40 @@ str::pos_type str::last_index_of(str::value_type ch, str::pos_type from) const {
 }
 
 str::pos_type str::last_index_of(str::const_pointer s, str::pos_type from) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str::pos_type str::last_index_of(str::const_pointer s, str::pos_type from) const
     return false;
 }
 
 str::pos_type str::last_index_of(const re& rx, str::pos_type from) const {
-    ASSERT(false); //  TODO
-    return false;
-}
-
-str::pos_type str::last_index_of(re& rx, str::pos_type from) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str::pos_type str::last_index_of(const re& rx, str::pos_type from) const
     return false;
 }
 
 str::pos_type str::last_index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str::pos_type str::last_index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const
     return false;
 }
 
-bool str::is_match(re& rx) const {
-    ASSERT(false); //  TODO
-    return false;
+bool str::is_match(const re& rx) const {
+    return rx.match(*this, 0);
 }
 
 bool str::is_match(const str& pattern) const {
-    ASSERT(false); //  TODO
-    return false;
+    return re(pattern).match(*this, 0);
 }
 
-bool str::is_match(str::const_pointer& pattern) const {
-    ASSERT(false); //  TODO
-    return false;
+bool str::is_match(str::const_pointer pattern) const {
+    ASSERT(pattern != nullptr);
+    return re(pattern).match(*this, 0);
 }
 
 bool str::is_match_wild(const str& pattern) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::is_match_wild(str::str& pattern) const
     return false;
 }
 
-bool str::is_match_wild(str::const_pointer& pattern) const {
-    ASSERT(false); //  TODO
+bool str::is_match_wild(str::const_pointer pattern) const {
+    ASSERT(false); //  TODO - bool str::is_match_wild(str::const_pointer pattern) const
     return false;
 }
 
@@ -657,154 +699,254 @@ bool str::is_upper() const {
 }
 
 bool str::is_title() const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::is_title() const
     return false;
 }
 
 bool str::is_digit() const {
-    ASSERT(false); //  TODO
-    return false;
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+        if (!std::isdigit(*ptr)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool str::is_ascii() const {
-    ASSERT(false); //  TODO
-    return false;
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+        if ((*ptr < 0) || (*ptr > 127)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool str::is_alpha() const {
-    ASSERT(false); //  TODO
-    return false;
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+        if (!std::isalpha(*ptr)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool str::is_alnum() const {
-    ASSERT(false); //  TODO
-    return false;
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+        if (!std::isalnum(*ptr)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool str::is_space() const {
-    ASSERT(false); //  TODO
-    return false;
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+        if (!std::isspace(*ptr)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool str::is_printable() const {
-    ASSERT(false); //  TODO
-    return false;
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+        if (!std::isprint(*ptr)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool str::is_identifier() const {
-    ASSERT(false); //  TODO
-    return false;
+
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    const_pointer ptr = layout.begin();
+    if (!((*ptr == '_') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= 'a' && *ptr <= 'z'))) {
+        return false;
+    }
+
+    for (ptr++; ptr != layout.end(); ptr++) {
+        if (!((*ptr == '_') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= 'a' && *ptr <= 'z') || (*ptr >= '0' && *ptr <= '9'))) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool str::is_numeric() const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::is_numeric() const
     return false;
 }
 
 bool str::is_bool() const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - bool str::is_bool() const
     return false;
 }
 
 str str::left(str::size_type n) const {
-    ASSERT(false); //  TODO
-    return *this;
+    return str(layout.begin(), n);
 }
 
 str str::right(str::size_type n) const {
-    ASSERT(false); //  TODO
-    return *this;
+    return str(layout.end() - n, n);
 }
 
-str str::substr(pos_type pos, int offset_n) const {
-    ASSERT(false); //  TODO
-    return *this;
+str str::substr(pos_type pos, int offset) const {
+    if (offset < 0) {
+        return str(layout.begin() + pos + offset, -offset);
+    }
+
+    if (offset > 0) {
+        return str(layout.begin() + pos, offset);
+    }
+
+    return str();
 }
 
 //  定宽对齐调整
 str& str::ljust(str::size_type width, str::value_type fill, bool truncate) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::ljust(str::size_type width, str::value_type fill, bool truncate)
     return *this;
 }
 
 str& str::rjust(str::size_type width, str::value_type fill, bool truncate) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::rjust(str::size_type width, str::value_type fill, bool truncate)
     return *this;
 }
 
 str& str::center(str::size_type width, str::value_type fill, bool truncate) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::center(str::size_type width, str::value_type fill, bool truncate)
     return *this;
 }
 
 str& str::zfill(str::size_type width, str::value_type fill, bool truncate) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::zfill(str::size_type width, str::value_type fill, bool truncate)
     return *this;
 }
 
 str& str::replace(str::pos_type pos, str::size_type n, const str& after) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(str::pos_type pos, str::size_type n, const str& after)
     return *this;
 }
+
 str& str::replace(str::pos_type pos, str::size_type n, str::value_type after) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(str::pos_type pos, str::size_type n, str::value_type after)
     return *this;
 }
 
 str& str::replace(str::pos_type pos, str::size_type n, str::const_pointer unicode, str::size_type size) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(str::pos_type pos, str::size_type n, str::const_pointer unicode, str::size_type size)
     return *this;
 }
 
 str& str::replace(str::value_type before, str::value_type after) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(str::value_type before, str::value_type after)
     return *this;
 }
 
 str& str::replace(str::const_pointer before, str::size_type blen, str::const_pointer after, str::size_type alen) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(str::const_pointer before, str::size_type blen, str::const_pointer after, str::size_type alen)
     return *this;
 }
 
 str& str::replace(const str& before, const str& after) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(const str& before, const str& after)
     return *this;
 }
+
 str& str::replace(str::value_type ch, const str& after) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(str::value_type ch, const str& after)
     return *this;
 }
+
 str& str::replace(const re& rx, const str& after) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(const re& rx, const str& after)
     return *this;
 }
+
 str& str::replace(std::function<int(str::value_type key, str::value_type& val)> func) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::replace(std::function<int(str::value_type key, str::value_type& val)> func)
     return *this;
 }
 
 str str::repeated(str::size_type times) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::repeated(str::size_type times) const
     return str();
 }
 
 str str::join(const std::vector<str>& s) const {
-    ASSERT(false); //  TODO
-    return str();
-}
-
-str str::join(const str& other, ...) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::join(const std::vector<str>& s) const
     return str();
 }
 
 str str::join(str::const_pointer s, ...) const {
-    ASSERT(false); //  TODO
-    return str();
+    va_list valist;
+    va_start(valist, s);
+
+    str result = join([&valist]() -> str::const_pointer {
+        return va_arg(valist, str::const_pointer);
+    });
+
+    va_end(valist);
+
+    return result;
+}
+
+str str::join(std::function<str::const_pointer()> provider) const {
+    str result;
+
+    //  第一次特殊处理
+    const_pointer ptr = provider();
+    if (ptr != nullptr) {
+        result.append(ptr);
+    }
+
+    //  之后都要追加 *this
+    while (ptr != nullptr) {
+        ptr = provider();
+        result.append(*this);
+        result.append(ptr);
+    }
+
+    return result;
 }
 
 void str::reserve(str::size_type cap) {
-    layout.resize(cap);
+    layout.reserve(cap);
 }
 
 void str::resize(str::size_type n) {
@@ -906,31 +1048,34 @@ std::vector<str> str::split_path() const {
 }
 
 void str::split(const str& sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - void str::split(const str& sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const
 }
 
 void str::split(str::const_pointer sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - void str::split(str::const_pointer sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const
 }
 
 void str::split(str::value_type sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - void str::split(str::value_type sep, std::function<int(str::const_pointer s, str::size_type n)> output_func) const
 }
 
 void str::split(const re& rx, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
-    ASSERT(false); //  TODO
+    rx.split(*this, 0, [&output_func](const re::segment_type& segs) -> int {
+        output_func(segs.start, segs.len);
+        return 0;
+    });
 }
 
 void str::split(std::function<int(str::value_type c, bool& match)>& chars_func, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - void str::split(std::function<int(str::value_type c, bool& match)>& chars_func, std::function<int(str::const_pointer s, str::size_type n)> output_func) const
 }
 
 void str::split_lines(bool keep_ends, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - void str::split_lines(bool keep_ends, std::function<int(str::const_pointer s, str::size_type n)> output_func) const
 }
 
 void str::split_path(std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - void str::split_path(std::function<int(str::const_pointer s, str::size_type n)> output_func) const
 }
 
 str& str::to_lower() {
@@ -960,57 +1105,106 @@ str& str::swap_case() {
 }
 
 str& str::simplified() {
-    ASSERT(false); // TODO
+    ASSERT(false); //  TODO - str& str::simplified()
     return *this;
 }
 
 str& str::ltrim() {
-    ASSERT(false); // TODO
-    return *this;
+    return ltrim_until([](str::value_type ch) -> bool {
+        return !std::isspace(ch);
+    });
 }
 
 str& str::rtrim() {
-    ASSERT(false); // TODO
-    return *this;
+    return rtrim_until([](str::value_type ch) -> bool {
+        return !std::isspace(ch);
+    });
 }
 
 str& str::trim() {
-    ASSERT(false); // TODO
+    return this->rtrim().ltrim();
+}
+
+str& str::ltrim(std::function<bool(str::value_type ch)> func) {
+    str::pointer p = nullptr;
+    for (p = layout.begin(); p != layout.end(); p++) {
+        if (!func(*p)) {
+            break;
+        }
+    }
+
+    size_type remain_len = layout.end() - p;
+    if (remain_len > 0) {
+        layout.clipmove(p - layout.begin(), remain_len, -(p - layout.begin()));
+    }
+
+    layout.resize(remain_len);
     return *this;
 }
 
+str& str::rtrim(std::function<bool(str::value_type ch)> func) {
+    str::pointer p = nullptr;
+    for (p = layout.end() - 1; p != (layout.begin() - 1); p--) {
+        if (!func(*p)) {
+            break;
+        }
+    }
+    layout.resize((p + 1) - layout.begin());
+    return *this;
+}
+
+str& str::trim(std::function<bool(str::value_type ch)> func) {
+    return rtrim(func).ltrim(func);
+}
+
+str& str::ltrim_until(std::function<bool(str::value_type ch)> func) {
+    return ltrim([&func](str::value_type ch) -> bool {
+        return !func(ch);
+    });
+}
+
+str& str::rtrim_until(std::function<bool(str::value_type ch)> func) {
+    return rtrim([func](str::value_type ch) -> bool {
+        return !func(ch);
+    });
+}
+
+str& str::trim_until(std::function<bool(str::value_type ch)> func) {
+    return rtrim_until(func).ltrim_until(func);
+}
+
 str str::expand(const std::map<str, str>& kvs) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::expand(const std::map<str, str>& kvs) const
     return str("");
 }
 
 str str::expand(std::function<int(const str& key, str& val)> provider) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::expand(std::function<int(const str& key, str& val)> provider) const
     return str("");
 }
 
 str str::expand_envs(str::const_pointer key, str::const_pointer val) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::expand_envs(str::const_pointer key, str::const_pointer val) const
     return str("");
 }
 
 str str::expand_envs() const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::expand_envs() const
     return str("");
 }
 
 str str::expand_tabs(str::size_type tab_size) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::expand_tabs(str::size_type tab_size) const
     return str("");
 }
 
 str str::expand_tmpl(const std::map<str, str>& kvs) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::expand_tmpl(const std::map<str, str>& kvs) const
     return str("");
 }
 
 str str::expand_tmpl(std::function<int(const str& key, str& val)> provider) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::expand_tmpl(std::function<int(const str& key, str& val)> provider) const
     return str("");
 }
 
@@ -1025,190 +1219,196 @@ void str::swap(str& s) {
 }
 
 str::size_type str::copy(str::pointer dest, str::size_type n, str::pos_type pos) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str::size_type str::copy(str::pointer dest, str::size_type n, str::pos_type pos) const
     return 0;
 }
 
 str str::basename() const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::basename() const
     return str("");
 }
 
 str& str::basename() {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str& str::basename()
     return *this;
 }
+
 str str::dirname() const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str str::dirname() const
     return str("");
 }
 
 str& str::dirname() {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - str& str::dirname()
     return *this;
 }
 
 bool str::to_bool(bool* ok) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - bool str::to_bool(bool* ok) const
 }
 
 str& str::assign(bool v) {
-    ASSERT(false); // TODO
+    if (v) {
+        layout.resize(4);
+        layout.fill(0, "true", 4);
+    } else {
+        layout.resize(5);
+        layout.fill(0, "false", 5);
+    }
     return *this;
 }
 
 double str::to_double(bool* ok) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - double str::to_double(bool* ok) const
     return 0.0;
 }
 
 float str::to_float(bool* ok) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - float str::to_float(bool* ok) const
     return 0.0;
 }
 
 int8_t str::to_int8(bool* ok, int base) const {
-    ASSERT(false); // TODO
+    ASSERT(false); // TODO - int8_t str::to_int8(bool* ok, int base) const
     return 0;
 }
 
 int16_t str::to_int16(bool* ok, int base) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - int16_t str::to_int16(bool* ok, int base) const
     return 0;
 }
 
 int32_t str::to_int32(bool* ok, int base) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - int32_t str::to_int32(bool* ok, int base) const
     return 0;
 }
 
 int64_t str::to_int64(bool* ok, int base) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - int64_t str::to_int64(bool* ok, int base) const
     return 0;
 }
 
 uint8_t str::to_uint8(bool* ok, int base) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - uint8_t str::to_uint8(bool* ok, int base) const
     return 0;
 }
 
 uint16_t str::to_uint16(bool* ok, int base) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - uint16_t str::to_uint16(bool* ok, int base) const
     return 0;
 }
 
 uint32_t str::to_uint32(bool* ok, int base) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - uint32_t str::to_uint32(bool* ok, int base) const
     return 0;
 }
 
 uint64_t str::to_uint64(bool* ok, int base) const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - uint64_t str::to_uint64(bool* ok, int base) const
     return 0;
 }
 
 str& str::assign(double n, str::value_type format, int precision) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(double n, str::value_type format, int precision)
     return *this;
 }
 
 str& str::assign(float n, str::value_type format, int precision) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(float n, str::value_type format, int precision)
     return *this;
 }
 
 str& str::assign(int8_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(int8_t n, int base)
     return *this;
 }
 
 str& str::assign(int16_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(int16_t n, int base)
     return *this;
 }
 
 str& str::assign(int32_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(int32_t n, int base)
     return *this;
 }
 
 str& str::assign(int64_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(int64_t n, int base)
     return *this;
 }
 
 str& str::assign(uint8_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(uint8_t n, int base)
     return *this;
 }
 
 str& str::assign(uint16_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(uint16_t n, int base)
     return *this;
 }
 
 str& str::assign(uint32_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(uint32_t n, int base)
     return *this;
 }
 
 str& str::assign(uint64_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str& str::assign(uint64_t n, int base)
     return *this;
 }
 
 int32_t str::hash_code() const {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - int32_t str::hash_code() const
     return 0;
 }
 
 str str::number(double n, str::value_type format, int precision) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(double n, str::value_type format, int precision)
     return str("");
 }
 
 str str::number(float n, str::value_type format, int precision) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(float n, str::value_type format, int precision)
     return str("");
 }
 
 str str::number(int8_t n, int base) {
-    ASSERT(false); //  TODO
     return str("");
 }
 
 str str::number(int16_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(int16_t n, int base)
     return str("");
 }
 
 str str::number(int32_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(int32_t n, int base)
     return str("");
 }
 
 str str::number(int64_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(int64_t n, int base)
     return str("");
 }
 
 str str::number(uint8_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(uint8_t n, int base)
     return str("");
 }
 
 str str::number(uint16_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(uint16_t n, int base)
     return str("");
 }
 
 str str::number(uint32_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(uint32_t n, int base)
     return str("");
 }
 
 str str::number(uint64_t n, int base) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - str str::number(uint64_t n, int base)
     return str("");
 }
 
@@ -1284,31 +1484,31 @@ extern bool operator!=(str::const_pointer s1, const str& s2) {
 }
 
 extern const str operator+(const str& s1, const str& s2) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - extern const str operator+(const str& s1, const str& s2)
     str new_str;
     return new_str;
 }
 
 extern const str operator+(const str& s1, str::const_pointer s2) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - extern const str operator+(const str& s1, str::const_pointer s2)
     str new_str;
     return new_str;
 }
 
 extern const str operator+(str::const_pointer s1, const str& s2) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - extern const str operator+(str::const_pointer s1, const str& s2)
     str new_str;
     return new_str;
 }
 
 extern const str operator+(str::value_type ch, const str& s) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - extern const str operator+(str::value_type ch, const str& s)
     str new_str;
     return new_str;
 }
 
 extern const str operator+(const str& other, str::value_type ch) {
-    ASSERT(false); //  TODO
+    ASSERT(false); //  TODO - extern const str operator+(const str& other, str::value_type ch)
     str new_str;
     return new_str;
 }

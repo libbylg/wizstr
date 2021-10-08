@@ -3,6 +3,7 @@
 //
 #include "tester.h"
 
+#include "tiny/re.h"
 #include "tiny/str.h"
 
 #ifndef SECTION
@@ -51,5 +52,42 @@ TEST(tiny_str, contains) {
         EXPECT_TRUE(a.contains("12"));
         EXPECT_TRUE(a.contains("33"));
         EXPECT_FALSE(a.contains("31"));
+    }
+}
+
+TEST(tiny_str, trims) {
+    SECTION("前后没有空白") {
+        tiny::str a("3bc1233");
+        EXPECT_TRUE(a.trim() == "3bc1233");
+    }
+
+    SECTION("前后都有空白") {
+        tiny::str b("  \tc1233\t  \t  ");
+        EXPECT_TRUE(b.trim() == "c1233");
+    }
+}
+
+TEST(tiny_str, index_of_re) {
+    SECTION("找匹配正则表达式的位置") {
+        tiny::str a("3bc12def33");
+        EXPECT_EQ(a.index_of(tiny::re("b.*[0-9]")), 1);
+    }
+}
+
+TEST(tiny_str, is_match) {
+    SECTION("检查是否匹配某个正则表达式") {
+        tiny::str a("3bc12def33");
+        EXPECT_FALSE(a.is_match("b.*[0-9]"));
+        EXPECT_TRUE(a.is_match("^[0-9]bc[0-9]+[0-9a-z]+$"));
+        EXPECT_TRUE(a.is_match(tiny::str("[0-9a-z]+")));
+    }
+}
+
+TEST(tiny_str, count) {
+    SECTION("检查是否匹配某个正则表达式") {
+        tiny::str a("3bc12def1233");
+        EXPECT_EQ(a.count("12"), 2);
+        EXPECT_EQ(a.count(char('3')), 3);
+        EXPECT_EQ(a.count("A"), 0);
     }
 }
