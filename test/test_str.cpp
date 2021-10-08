@@ -91,3 +91,17 @@ TEST(tiny_str, count) {
         EXPECT_EQ(a.count("A"), 0);
     }
 }
+
+TEST(tiny_str, join) {
+    SECTION("简单串联") {
+        tiny::str a("/");
+        EXPECT_EQ(a.join({"aa", "bb", "cc"}), "aa/bb/cc");
+    }
+}
+
+TEST(tiny_str, repeat) {
+    SECTION("简单字符串重复多次") {
+        tiny::str a("0123456789");
+        EXPECT_EQ(a.repeat(5), "01234567890123456789012345678901234567890123456789");
+    }
+}

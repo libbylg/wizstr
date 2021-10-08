@@ -197,22 +197,25 @@ void str::attach(str::pointer buf, str::size_type len, str::size_type cap) {
 }
 
 str& str::append(const str& s) {
+    str::pos_type pos = layout.len();
     layout.resize(layout.len() + s.size());
-    layout.fill(size(), s.data(), s.size());
+    layout.fill(pos, s.data(), s.size());
     return *this;
 }
 
 str& str::append(str::value_type ch) {
+    str::pos_type pos = layout.len();
     layout.resize(layout.len() + 1);
-    layout.fill(size(), &ch, 1);
+    layout.fill(pos, &ch, 1);
     return *this;
 }
 
 str& str::append(str::const_pointer s, str::size_type n) {
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
-    layout.resize(layout.len() + 1);
-    layout.fill(size(), s, n);
+    str::pos_type pos = layout.len();
+    layout.resize(layout.len() + n);
+    layout.fill(pos, s, n);
     return *this;
 }
 
@@ -565,7 +568,25 @@ str& str::fill(str::value_type ch) {
 }
 
 str& str::fill(str::pos_type pos, str::value_type ch, str::size_type n) {
+    ASSERT(n > 0);
+    ASSERT(pos >= 0);
+    ASSERT(pos < size());
+    ASSERT((pos + n) >= 0);
+    ASSERT((pos + n) <= size());
+
     layout.fill(pos, ch, layout.len());
+    return *this;
+}
+
+str& str::fill(str::pos_type pos, str::const_pointer s, str::size_type n) {
+    ASSERT(n > 0);
+    ASSERT(s != nullptr);
+    ASSERT(pos >= 0);
+    ASSERT(pos < size());
+    ASSERT((pos + n) >= 0);
+    ASSERT((pos + n) <= size());
+
+    layout.fill(pos, s, n);
     return *this;
 }
 
@@ -903,9 +924,19 @@ str& str::replace(std::function<int(str::value_type key, str::value_type& val)> 
     return *this;
 }
 
-str str::repeated(str::size_type times) const {
-    ASSERT(false); //  TODO - str str::repeated(str::size_type times) const
-    return str();
+str str::repeat(str::size_type times) const {
+    ASSERT(times >= 0);
+
+    str result;
+
+    result.resize(size() * times);
+
+    str::pos_type pos = 0;
+    for (str::size_type i = 0; i < times; i++) {
+        result.fill(pos + i * size(), data(), size());
+    }
+
+    return result;
 }
 
 str str::join(const std::vector<str>& s) const {
@@ -935,18 +966,46 @@ str str::join(std::function<str::const_pointer()> provider) const {
 
     //  第一次特殊处理
     const_pointer ptr = provider();
-    if (ptr != nullptr) {
-        result.append(ptr);
+    if (ptr == nullptr) {
+        return result;
     }
 
-    //  之后都要追加 *this
+    //  追加第一个数据
+    result.append(ptr);
+
+    //  获取下一个
+    ptr = provider();
+
+    //  第二次及之后都要追加 *this
     while (ptr != nullptr) {
-        ptr = provider();
         result.append(*this);
         result.append(ptr);
+        ptr = provider();
     }
 
     return result;
+}
+
+str str::join(std::initializer_list<str::const_pointer> ptr_list) const {
+    auto itr = ptr_list.begin();
+    return join([&ptr_list, &itr]() -> str::const_pointer {
+        if (itr == ptr_list.end()) {
+            return nullptr;
+        }
+
+        return *(itr++);
+    });
+}
+
+str str::join(std::initializer_list<str> ptr_list) const {
+    auto itr = ptr_list.begin();
+    return join([&ptr_list, &itr]() -> str::const_pointer {
+        if (itr == ptr_list.end()) {
+            return nullptr;
+        }
+
+        return (*(itr++)).data();
+    });
 }
 
 void str::reserve(str::size_type cap) {

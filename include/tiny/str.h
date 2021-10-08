@@ -169,6 +169,7 @@ public:
     //  填充
     str& fill(value_type ch);
     str& fill(pos_type pos, value_type ch, size_type n);
+    str& fill(pos_type pos, const_pointer s, size_type n);
 
     //  查找
     pos_type index_of(const str& other, pos_type from = 0) const;
@@ -228,11 +229,13 @@ public:
     str& replace(std::function<int(value_type key, value_type& val)> func);
 
     //  基于本字符串生成新字符串
-    str repeated(size_type times) const;                     //  返回本字符串重复 times 次后的副本
-    str join(const std::vector<str>& s) const;               //  用本字符串连接所有的s
-    str join(const str& s, ...) const;                       //  用本字符串连接所有的s
-    str join(const_pointer s, ...) const;                    //  用本字符串连接所有的s
-    str join(std::function<const_pointer()> provider) const; //  用本字符串连接所有的s
+    str repeat(size_type times) const;                           //  返回本字符串重复 times 次后的副本
+    str join(const std::vector<str>& s) const;                     //  用本字符串连接所有的s
+    str join(const str& s, ...) const;                             //  用本字符串连接所有的s
+    str join(const_pointer s, ...) const;                          //  用本字符串连接所有的s
+    str join(std::function<const_pointer()> provider) const;       //  用本字符串连接所有的s
+    str join(std::initializer_list<const_pointer> ptr_list) const; //  用本字符串连接所有的s
+    str join(std::initializer_list<str> ptr_list) const;           //  用本字符串连接所有的s
 
     //  容量、内存管理
     void reserve(size_type size);                    //  容量预留
@@ -650,7 +653,7 @@ private:
 
             //  直接改变长度
             len(n);
-            
+
             //  增加结尾
             begin()[n] = '\0';
         }
