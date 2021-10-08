@@ -125,6 +125,7 @@ public:
     str& remove(const str& other);
     str& remove(const re& rx);
     str& remove(std::function<int(value_type c, bool& match)> func);
+    str& remove(std::function<int(const_pointer start, const_pointer end, const_pointer& match, size_type& n)> func);
 
     str& erase(pos_type pos = 0, pos_type len = npos);
     iterator erase(const_iterator p);
@@ -229,7 +230,7 @@ public:
     str& replace(std::function<int(value_type key, value_type& val)> func);
 
     //  基于本字符串生成新字符串
-    str repeat(size_type times) const;                           //  返回本字符串重复 times 次后的副本
+    str repeat(size_type times) const;                             //  返回本字符串重复 times 次后的副本
     str join(const std::vector<str>& s) const;                     //  用本字符串连接所有的s
     str join(const str& s, ...) const;                             //  用本字符串连接所有的s
     str join(const_pointer s, ...) const;                          //  用本字符串连接所有的s

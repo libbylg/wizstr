@@ -44,6 +44,18 @@ TEST(tiny_str, remove) {
         a.remove('3');
         EXPECT_TRUE(a == "bc12");
     }
+
+    SECTION("删除指定的字符串") {
+        tiny::str a("33b33c1233");
+        a.remove("33");
+        EXPECT_TRUE(a == "bc12");
+    }
+
+    SECTION("删除正则表达式所匹配的字符串") {
+        tiny::str a("33b33333c31233");
+        a.remove(tiny::re("3+"));
+        EXPECT_TRUE(a == "bc12");
+    }
 }
 
 TEST(tiny_str, contains) {
@@ -105,3 +117,11 @@ TEST(tiny_str, repeat) {
         EXPECT_EQ(a.repeat(5), "01234567890123456789012345678901234567890123456789");
     }
 }
+
+TEST(tiny_str, yy) {
+    for (int i = 0; i < 128; i++) {
+        printf("0, // 0x%x '%c'\n", char(i), i);
+    }
+}
+
+
