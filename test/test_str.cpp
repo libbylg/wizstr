@@ -37,4 +37,19 @@ TEST(tiny_str, remove) {
         a.remove(1);
         EXPECT_TRUE(a == "b123");
     }
+
+    SECTION("删除指定的字符") {
+        tiny::str a("3bc1233");
+        a.remove('3');
+        EXPECT_TRUE(a == "bc12");
+    }
+}
+
+TEST(tiny_str, contains) {
+    SECTION("删除中间数据") {
+        tiny::str a("3bc1233");
+        EXPECT_TRUE(a.contains("12"));
+        EXPECT_TRUE(a.contains("33"));
+        EXPECT_FALSE(a.contains("31"));
+    }
 }

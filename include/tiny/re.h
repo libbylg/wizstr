@@ -69,8 +69,8 @@ public:
     int split(const str& s, uint32_t options, std::function<int(const segment_type& segs)> func);
 
     //  查找
-    int find(const_pointer s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func);
-    int find(const str& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func);
+    int find(const_pointer s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const;
+    int find(const str& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const;
 
     //  替换
     int replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func);
@@ -84,4 +84,4 @@ private:
 };
 
 } // namespace tiny
-#endif //RE_H
+#endif // RE_H

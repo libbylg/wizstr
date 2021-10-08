@@ -3,6 +3,7 @@
 //
 #include "tiny/str.h"
 #include "tiny/asserts.h"
+#include "tiny/re.h"
 
 #include <algorithm>
 #include <cctype>
@@ -334,19 +335,19 @@ str& str::remove(str::pos_type pos, str::size_type n) {
 }
 
 str& str::remove(str::value_type ch) {
+    return remove([ch](str::value_type c, bool& match) -> int {
+        match = (c == ch);
+        return 0;
+    });
+}
+
+str& str::remove(str::const_pointer s) {
     ASSERT(false); //  TODO
-    // std::string
     return *this;
 }
 
-str& str::remove(str::const_pointer str) {
-    ASSERT(false); //  TODO
-    return *this;
-}
-
-str& str::remove(const str& str) {
-    ASSERT(false); //  TODO
-    return *this;
+str& str::remove(const str& other) {
+    return remove(other.layout.begin());
 }
 
 str& str::remove(const re& rx) {
@@ -355,7 +356,20 @@ str& str::remove(const re& rx) {
 }
 
 str& str::remove(std::function<int(str::value_type c, bool& match)> func) {
-    ASSERT(false); //  TODO
+    pointer w = layout.begin();
+    pointer r = layout.begin();
+    while (*r) {
+        bool match = false;
+        int contnu = func(*r, match);
+        if (!match) {
+            *(w++) = *r;
+        }
+
+        r++;
+    }
+
+    layout.resize(w - layout.begin());
+
     return *this;
 }
 
@@ -364,13 +378,16 @@ str& str::erase(pos_type pos, pos_type n) {
 }
 
 str::iterator str::erase(const_iterator p) {
-    ASSERT(false); //  TODO
-    return begin();
+    return erase(p, (p + 1));
 }
 
 str::iterator str::erase(const_iterator first, const_iterator last) {
-    ASSERT(false); //  TODO
-    return begin();
+    ASSERT(first >= layout.begin());
+    ASSERT(first < layout.end());
+    ASSERT(last > layout.begin());
+    ASSERT(last <= layout.end());
+    layout.clipmove(last - layout.begin(), layout.end() - last, -(last - first));
+    return layout.begin() + (first - layout.begin());
 }
 
 int str::compare(const str& s) const {
@@ -409,8 +426,12 @@ bool str::contains(str::value_type ch) const {
 }
 
 bool str::contains(const re& r) const {
-    ASSERT(false); //  TODO
-    return false;
+    bool found = false;
+    r.find(*this, 0, [&found](const re::segment_type* segment, re::size_type n) -> int {
+        found = true;
+        return -1;
+    });
+    return found;
 }
 
 bool str::contains(re& r) const {

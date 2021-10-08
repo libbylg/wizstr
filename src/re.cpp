@@ -108,7 +108,7 @@ bool re::match(const str& s, uint32_t options) {
     return match(s.data(), options);
 }
 
-int re::find(const_pointer s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) {
+int re::find(const_pointer s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const {
     ASSERT(regex_code != nullptr);
 
     //  创建一个匹配数据
@@ -176,7 +176,7 @@ int re::find(const_pointer s, uint32_t options, std::function<int(const segment_
     return match_count;
 }
 
-int re::find(const str& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) {
+int re::find(const str& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const {
     return find(s.data(), options, func);
 }
 
