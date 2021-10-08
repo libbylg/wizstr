@@ -909,8 +909,12 @@ str str::repeated(str::size_type times) const {
 }
 
 str str::join(const std::vector<str>& s) const {
-    ASSERT(false); //  TODO - str str::join(const std::vector<str>& s) const
-    return str();
+    auto itr = s.begin();
+    return join([&s, &itr]() -> str::const_pointer {
+        str::const_pointer s = itr->data();
+        itr++;
+        return s;
+    });
 }
 
 str str::join(str::const_pointer s, ...) const {
