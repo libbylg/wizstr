@@ -647,8 +647,10 @@ private:
         void resize(size_type n) {
             //  先预留内存
             reserve(n);
+
             //  直接改变长度
             len(n);
+            
             //  增加结尾
             begin()[n] = '\0';
         }
