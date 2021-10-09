@@ -4,6 +4,7 @@
 #ifndef STR_H
 #define STR_H
 
+#include <cstdarg>
 #include <cstdint>
 #include <cstring>
 #include <functional>

@@ -4,6 +4,7 @@
 #ifndef RE_H
 #define RE_H
 
+#include <cstdint>
 #include <functional>
 
 namespace tiny {
