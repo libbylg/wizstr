@@ -27,7 +27,7 @@ TEST(tiny_re, tiny_re_find) {
         int cnt = 0;
         rx.find("xxx-aab-abbb", 0, [&cnt](const tiny::re::segment_type* segments, tiny::re::size_type n) -> int {
             for (int i = 0; i < n; i++) {
-                printf("%d: [%d] [%.*s]\n", cnt, i, segments[i].len, segments[i].start);
+                printf("%d: [%d] [%.*s]\n", cnt, i, segments[i].len, segments[i].ptr);
             }
 
             cnt++;
@@ -41,7 +41,7 @@ TEST(tiny_re, tiny_re_split) {
         tiny::re rx("(-+|[ \t]+)");
         int cnt = 0;
         rx.split("xxx-aab abb", 0, [&cnt](const tiny::re::segment_type& segment) -> int {
-            printf("%d: [%.*s]\n", cnt, segment.len, segment.start);
+            printf("%d: [%.*s]\n", cnt, segment.len, segment.ptr);
             cnt++;
             return 0;
         });

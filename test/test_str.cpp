@@ -77,6 +77,13 @@ TEST(tiny_str, trims) {
         tiny::str b("  \tc1233\t  \t  ");
         EXPECT_TRUE(b.trim() == "c1233");
     }
+
+    SECTION("指定字符") {
+        tiny::str b("33c1233");
+        EXPECT_TRUE(b.trim([](tiny::str::value_type ch) -> bool {
+            return ch == '3';
+        }) == "c12");
+    }
 }
 
 TEST(tiny_str, index_of_re) {
@@ -107,7 +114,7 @@ TEST(tiny_str, count) {
 TEST(tiny_str, join) {
     SECTION("简单串联") {
         tiny::str a("/");
-        EXPECT_EQ(a.join({"aa", "bb", "cc"}), "aa/bb/cc");
+        EXPECT_EQ(a.join({ "aa", "bb", "cc" }), "aa/bb/cc");
     }
 }
 
@@ -118,10 +125,31 @@ TEST(tiny_str, repeat) {
     }
 }
 
-TEST(tiny_str, yy) {
-    for (int i = 0; i < 128; i++) {
-        printf("0, // 0x%x '%c'\n", char(i), i);
+TEST(tiny_str, swap_case) {
+    SECTION("简单测试") {
+        tiny::str a("  AabbCC中华人民共和国");
+        EXPECT_EQ(a.swap_case(), "  aABBcc中华人民共和国");
     }
 }
 
+TEST(tiny_str, simplified) {
+    SECTION("简单测试") {
+        tiny::str a("\t  A abbCC中华人   民共  和 \t国   ");
+        EXPECT_EQ(a.simplified(), "A abbCC中华人 民共 和 国");
+    }
 
+    SECTION("没什么可以替代的") {
+        tiny::str a("AabbCC中华人民共和国");
+        EXPECT_EQ(a.simplified(), "AabbCC中华人民共和国");
+    }
+
+    SECTION("空串") {
+        tiny::str a("AabbCC中华人民共和国");
+        EXPECT_EQ(a.simplified(), "AabbCC中华人民共和国");
+    }
+
+    SECTION("全空白") {
+        tiny::str a("   \t  \n \r \v");
+        EXPECT_EQ(a.simplified(), "");
+    }
+}

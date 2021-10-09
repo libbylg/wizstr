@@ -36,7 +36,11 @@ struct chars {
     }
 
     static inline bool match(char ch, uint16_t mask) {
-        return !!(classify(ch) | mask);
+        return !!(classify(ch) & mask);
+    }
+
+    static inline bool not_match(char ch, uint16_t mask) {
+        return !(classify(ch) & mask);
     }
 
     static uint16_t mapping[256];

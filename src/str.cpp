@@ -398,7 +398,7 @@ str& str::remove(const re& rx) {
 
         //  从 start 位置开始只查找一个
         int cnt = rx.find(start, 0, [&match_ptr, &match_n](const re::segment_type* segs, re::size_type n) -> int {
-            match_ptr = segs[0].start;
+            match_ptr = segs[0].ptr;
             match_n = segs[0].len;
             return -1;
         });
@@ -768,6 +768,35 @@ str::pos_type str::last_index_of(const re& rx, str::pos_type from) const {
 str::pos_type str::last_index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const {
     ASSERT(false); //  TODO - str::pos_type str::last_index_of(std::function<int(str::value_type c, bool& match)> func, str::pos_type from) const
     return false;
+}
+
+str::pos_type str::section_of(str::pos_type from, str::const_pointer& s, str::size_type& n) const {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+
+    if (from == size()) {
+        return str::npos;
+    }
+
+    str::const_pointer ptr = begin() + from;
+
+    //  找到第一个非空白的字符，确定起点
+    while ((*ptr != '\0') && chars::match(*ptr, chars::SPACE)) {
+        ptr++;
+    }
+
+    //  找下一个空白或者结束位置，确定终点 // 不是最优，因为这里多了依次额外的检测
+    n = 0;
+    while ((ptr[n] != '\0') && !chars::match(ptr[n], chars::SPACE)) {
+        n++;
+    }
+
+    if (n <= 0) {
+        return str::npos;
+    }
+
+    s = ptr;
+    return str::pos_type(ptr - begin());
 }
 
 bool str::is_match(const re& rx) const {
@@ -1182,7 +1211,7 @@ void str::split(str::value_type sep, std::function<int(str::const_pointer s, str
 
 void str::split(const re& rx, std::function<int(str::const_pointer s, str::size_type n)> output_func) const {
     rx.split(*this, 0, [&output_func](const re::segment_type& segs) -> int {
-        output_func(segs.start, segs.len);
+        output_func(segs.ptr, segs.len);
         return 0;
     });
 }
@@ -1226,7 +1255,31 @@ str& str::swap_case() {
 }
 
 str& str::simplified() {
-    ASSERT(false); //  TODO - str& str::simplified()
+    str::pointer w = layout.begin();
+    str::pos_type pos = 0;
+
+    const_pointer ptr = nullptr;
+    size_type len = 0;
+    while (true) {
+        pos = section_of(pos, ptr, len);
+        if (pos == str::npos) {
+            break;
+        }
+
+        ASSERT(ptr != nullptr);
+        ASSERT(len > 0);
+
+        if (w != layout.begin()) {
+            *(w++) = ' ';
+        }
+        if (w < ptr) {
+            std::memmove(w, ptr, len);
+        }
+        w += len;
+        pos += len;
+    }
+
+    layout.resize(w - layout.begin());
     return *this;
 }
 

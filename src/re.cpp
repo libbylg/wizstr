@@ -153,7 +153,7 @@ int re::find(const_pointer s, uint32_t options, std::function<int(const segment_
             //  0:[start,len] 1:[start,len] ... rc:[start:len]
             segments[i].pos = PCRE2_SIZE(start - PCRE2_SPTR(s)) + ovector[2 * i];
             segments[i].len = ovector[(2 * i) + 1] - ovector[2 * i];
-            segments[i].start = const_pointer(s + segments[i].pos);
+            segments[i].ptr = const_cast<str::pointer>(s + segments[i].pos);
         }
 
         //  触发回调函数
@@ -223,7 +223,7 @@ int re::split(const_pointer s, uint32_t options, std::function<int(const segment
         //  0:[start,len] 1:[start,len] ... rc:[start:len]
         segment.pos = start - PCRE2_SPTR(s);
         segment.len = ovector[0];
-        segment.start = const_pointer(start);
+        segment.ptr = const_cast<str::pointer>((const_pointer)start);
 
         //  触发回调函数
         if (func(segment) != 0) {
@@ -237,7 +237,7 @@ int re::split(const_pointer s, uint32_t options, std::function<int(const segment
     if (*start != '\0') {
         segment.pos = pos_type(start - PCRE2_SPTR(s));
         segment.len = strlen(const_pointer(start));
-        segment.start = const_pointer(start);
+        segment.ptr = const_cast<str::pointer>((str::const_pointer)start);
     }
 
     //  释放 match_data

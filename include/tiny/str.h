@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "tiny/asserts.h"
+#include "tiny/segment.h"
 
 namespace tiny {
 
@@ -37,6 +38,8 @@ public:
 
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+    typedef segment_t segment_type;
 
     static const pos_type npos = -1;
 
@@ -185,6 +188,9 @@ public:
     pos_type last_index_of(const_pointer s, pos_type from = -1) const;
     pos_type last_index_of(const re& rx, pos_type from = -1) const;
     pos_type last_index_of(std::function<int(value_type c, bool& match)> func, pos_type from = -1) const;
+
+    //  分段查找
+    pos_type section_of(str::pos_type from, const_pointer& s, size_type& n) const;
 
     //  匹配
     bool is_match(const re& rx) const;

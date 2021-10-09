@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <functional>
 
+#include "tiny/segment.h"
+
 namespace tiny {
 
 class str;
@@ -29,17 +31,13 @@ public:
 
     typedef uint32_t size_type;
 
-    struct segment_type {
-        const_pointer start;
-        pos_type pos;
-        uint32_t len;
-    };
-
     struct error_type {
         int error{ 0 };
         int offset{ -1 };
         char message[128]{ 0 };
     };
+
+    typedef segment_t segment_type;
 
 public:
     explicit re(const char* pattern, uint32_t flags = 0, error_type* error = nullptr);
