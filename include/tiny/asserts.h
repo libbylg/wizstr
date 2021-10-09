@@ -1,6 +1,8 @@
 #ifndef STR_ASSERT_H
 #define STR_ASSERT_H
 
+#include <cassert>
+
 #if defined(NDEBUG)
 #define ASSERT(x)
 #else
@@ -9,4 +11,4 @@
 #endif
 #endif
 
-#endif //STR_ASSERT_H
+#endif // STR_ASSERT_H
