@@ -191,6 +191,7 @@ public:
     bool is_match(const_pointer pattern) const;
     bool is_match_wild(const str& pattern) const;
     bool is_match_wild(const_pointer pattern) const;
+    bool is_match(uint16_t charset) const;
 
     //  字符串特征
     bool is_empty() const;
@@ -202,7 +203,9 @@ public:
     bool is_alpha() const;
     bool is_alnum() const;
     bool is_space() const;
-    bool is_printable() const;
+    bool is_blank() const;
+    bool is_print() const;
+    bool is_graph() const;
     bool is_identifier() const;
     bool is_numeric() const;
     bool is_bool() const;

@@ -40,19 +40,6 @@ public:
         char message[128]{ 0 };
     };
 
-    //    class results {
-    //    public:
-    //        operator bool() const {
-    //            if (regex_result == nullptr) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //    private:
-    //        void* regex_result{ nullptr };
-    //        friend class re;
-    //    };
-
 public:
     explicit re(const char* pattern, uint32_t flags = 0, error_type* error = nullptr);
     explicit re(const str& pattern, uint32_t flags = 0, error_type* error = nullptr);
@@ -75,6 +62,15 @@ public:
     //  替换
     int replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const;
     int replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const;
+
+public:
+    static re email;
+    static re ipv4;
+    static re real;
+    static re integer;
+    static re kvpair;
+    static re blanks;
+    static re date;
 
 private:
     void* compile(const_pointer pattern, uint32_t flags, error_type* error);

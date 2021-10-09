@@ -3,6 +3,7 @@
 //
 #include "tiny/str.h"
 #include "tiny/asserts.h"
+#include "tiny/chars.h"
 #include "tiny/re.h"
 
 #include <algorithm>
@@ -11,155 +12,6 @@
 #include <cstring>
 
 namespace tiny {
-
-enum char_type : uint8_t {
-    // clang-format off
-    SYMBL = 0x01, //  可打印字符
-    BIN   = 0x02, //  二进制数字：[0-1]
-    OCT   = 0x04, //  八进制数字：[0-7]
-    DEC   = 0x08, //  十进制数字：[0-9]
-    HEX   = 0x10, //  16进制数字：[0-9A-Fa-f]
-    SPACE = 0x20, //  空白字符：空格、水平tab、垂直tab
-    LOWER = 0x40, //  小写字母：[a-z]
-    UPPER = 0x80, //  大写字母：[A-Z]
-    // clang-format on
-
-    DIGIT = DEC,                           //  数字：[0-9]
-    ALPHA = LOWER | UPPER,                 //  大小写字母：[A-Za-z]
-    ALNUM = ALPHA | DIGIT,                 //  字母：[0-9A-Za-z]
-    PRINT = ALPHA | DIGIT | SYMBL | SPACE, //  所有可打印字符：字母、数字、符号、空白
-};
-
-static uint8_t chars_mapping[256] = {
-    /*  <NUL>           0x00 */ 0,
-    /*  <SOH>           0x01 */ 0,
-    /*  <STX>           0x02 */ 0,
-    /*  <ETX>           0x03 */ 0,
-    /*  <EOT>           0x04 */ 0,
-    /*  <ENQ>           0x05 */ 0,
-    /*  <ACK>           0x06 */ 0,
-    /*  <BEL>    '\a'   0x07 */ 0,
-    /*  <BS>            0x08 */ 0,
-    /*  <HT>     '\t'   0x09 */ SPACE,
-    /*  <LF>     '\n'   0x0a */ SPACE,
-    /*  <VT>     '\v'   0x0b */ SPACE,
-    /*  <FF>     '\f'   0x0c */ SPACE,
-    /*  <CR>     '\r'   0x0d */ SPACE,
-    /*  <SO>            0x0e */ 0,
-    /*  <SI>            0x0f */ 0,
-    /*  <DLE>           0x10 */ 0,
-    /*  <DC1>           0x11 */ 0,
-    /*  <DC2>           0x12 */ 0,
-    /*  <DC3>           0x13 */ 0,
-    /*  <DC4>           0x14 */ 0,
-    /*  <NAK>           0x15 */ 0,
-    /*  <SYN>           0x16 */ 0,
-    /*  <ETB>           0x17 */ 0,
-    /*  <CAN>           0x18 */ 0,
-    /*  <EM>            0x19 */ 0,
-    /*  <SUB>           0x1a */ 0,
-    /*  <ESC>           0x1b */ 0,
-    /*  <FS>            0x1c */ 0,
-    /*  <GS>            0x1d */ 0,
-    /*  <RS>            0x1e */ 0,
-    /*  <US>            0x1f */ 0,
-    /*  <SP>     ' '    0x20 */ SPACE,
-    /*  -----    '!'    0x21 */ SYMBL,
-    /*  -----    '"'    0x22 */ SYMBL,
-    /*  -----    '#'    0x23 */ SYMBL,
-    /*  -----    '$'    0x24 */ SYMBL,
-    /*  -----    '%'    0x25 */ SYMBL,
-    /*  -----    '&'    0x26 */ SYMBL,
-    /*  -----    '''    0x27 */ SYMBL,
-    /*  -----    '('    0x28 */ SYMBL,
-    /*  -----    ')'    0x29 */ SYMBL,
-    /*  -----    '*'    0x2a */ SYMBL,
-    /*  -----    '+'    0x2b */ SYMBL,
-    /*  -----    ','    0x2c */ SYMBL,
-    /*  -----    '-'    0x2d */ SYMBL,
-    /*  -----    '.'    0x2e */ SYMBL,
-    /*  -----    '/'    0x2f */ SYMBL,
-    /*  -----    '0'    0x30 */ HEX | DEC | OCT | BIN,
-    /*  -----    '1'    0x31 */ HEX | DEC | OCT | BIN,
-    /*  -----    '2'    0x32 */ HEX | DEC | OCT,
-    /*  -----    '3'    0x33 */ HEX | DEC | OCT,
-    /*  -----    '4'    0x34 */ HEX | DEC | OCT,
-    /*  -----    '5'    0x35 */ HEX | DEC | OCT,
-    /*  -----    '6'    0x36 */ HEX | DEC | OCT,
-    /*  -----    '7'    0x37 */ HEX | DEC | OCT,
-    /*  -----    '8'    0x38 */ HEX | DEC | HEX,
-    /*  -----    '9'    0x39 */ HEX | DEC | HEX,
-    /*  -----    ':'    0x3a */ SYMBL,
-    /*  -----    ';'    0x3b */ SYMBL,
-    /*  -----    '<'    0x3c */ SYMBL,
-    /*  -----    '='    0x3d */ SYMBL,
-    /*  -----    '>'    0x3e */ SYMBL,
-    /*  -----    '?'    0x3f */ SYMBL,
-    /*  -----    '@'    0x40 */ SYMBL,
-    /*  -----    'A'    0x41 */ UPPER | HEX,
-    /*  -----    'B'    0x42 */ UPPER | HEX,
-    /*  -----    'C'    0x43 */ UPPER | HEX,
-    /*  -----    'D'    0x44 */ UPPER | HEX,
-    /*  -----    'E'    0x45 */ UPPER | HEX,
-    /*  -----    'F'    0x46 */ UPPER | HEX,
-    /*  -----    'G'    0x47 */ UPPER,
-    /*  -----    'H'    0x48 */ UPPER,
-    /*  -----    'I'    0x49 */ UPPER,
-    /*  -----    'J'    0x4a */ UPPER,
-    /*  -----    'K'    0x4b */ UPPER,
-    /*  -----    'L'    0x4c */ UPPER,
-    /*  -----    'M'    0x4d */ UPPER,
-    /*  -----    'N'    0x4e */ UPPER,
-    /*  -----    'O'    0x4f */ UPPER,
-    /*  -----    'P'    0x50 */ UPPER,
-    /*  -----    'Q'    0x51 */ UPPER,
-    /*  -----    'R'    0x52 */ UPPER,
-    /*  -----    'S'    0x53 */ UPPER,
-    /*  -----    'T'    0x54 */ UPPER,
-    /*  -----    'U'    0x55 */ UPPER,
-    /*  -----    'V'    0x56 */ UPPER,
-    /*  -----    'W'    0x57 */ UPPER,
-    /*  -----    'X'    0x58 */ UPPER,
-    /*  -----    'Y'    0x59 */ UPPER,
-    /*  -----    'Z'    0x5a */ UPPER,
-    /*  -----    '['    0x5b */ SYMBL,
-    /*  -----    '\'    0x5c */ SYMBL,
-    /*  -----    ']'    0x5d */ SYMBL,
-    /*  -----    '^'    0x5e */ SYMBL,
-    /*  -----    '_'    0x5f */ SYMBL,
-    /*  -----    '`'    0x60 */ SYMBL,
-    /*  -----    'a'    0x61 */ LOWER | HEX,
-    /*  -----    'b'    0x62 */ LOWER | HEX,
-    /*  -----    'c'    0x63 */ LOWER | HEX,
-    /*  -----    'd'    0x64 */ LOWER | HEX,
-    /*  -----    'e'    0x65 */ LOWER | HEX,
-    /*  -----    'f'    0x66 */ LOWER | HEX,
-    /*  -----    'g'    0x67 */ LOWER,
-    /*  -----    'h'    0x68 */ LOWER,
-    /*  -----    'i'    0x69 */ LOWER,
-    /*  -----    'j'    0x6a */ LOWER,
-    /*  -----    'k'    0x6b */ LOWER,
-    /*  -----    'l'    0x6c */ LOWER,
-    /*  -----    'm'    0x6d */ LOWER,
-    /*  -----    'n'    0x6e */ LOWER,
-    /*  -----    'o'    0x6f */ LOWER,
-    /*  -----    'p'    0x70 */ LOWER,
-    /*  -----    'q'    0x71 */ LOWER,
-    /*  -----    'r'    0x72 */ LOWER,
-    /*  -----    's'    0x73 */ LOWER,
-    /*  -----    't'    0x74 */ LOWER,
-    /*  -----    'u'    0x75 */ LOWER,
-    /*  -----    'v'    0x76 */ LOWER,
-    /*  -----    'w'    0x77 */ LOWER,
-    /*  -----    'x'    0x78 */ LOWER,
-    /*  -----    'y'    0x79 */ LOWER,
-    /*  -----    'z'    0x7a */ LOWER,
-    /*  -----    '{'    0x7b */ SYMBL,
-    /*  -----    '|'    0x7c */ SYMBL,
-    /*  -----    '}'    0x7d */ SYMBL,
-    /*  -----    '~'    0x7e */ SYMBL,
-    /*  <DEL>    ---    0x7f */ 0,
-};
 
 //  进制映射范围
 enum number_base {
@@ -941,28 +793,30 @@ bool str::is_match_wild(str::const_pointer pattern) const {
     return false;
 }
 
+bool str::is_match(uint16_t charset) const {
+    if (layout.len() == 0) {
+        return false;
+    }
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+        if (0 == (chars::mapping[*ptr] & charset)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool str::is_empty() const {
     return layout.len() == 0;
 }
 
 bool str::is_lower() const {
-    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
-        if (0 != (chars_mapping[*ptr] & UPPER)) {
-            return false;
-        }
-    }
-
-    return true;
+    return is_match(chars::UPPER);
 }
 
 bool str::is_upper() const {
-    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
-        if (0 != (chars_mapping[*ptr] & LOWER)) {
-            return false;
-        }
-    }
-
-    return true;
+    return is_match(chars::LOWER);
 }
 
 bool str::is_title() const {
@@ -971,17 +825,7 @@ bool str::is_title() const {
 }
 
 bool str::is_digit() const {
-    if (layout.len() == 0) {
-        return false;
-    }
-
-    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
-        if (0 == (chars_mapping[*ptr] & DIGIT)) {
-            return false;
-        }
-    }
-
-    return true;
+    return is_match(chars::DIGIT);
 }
 
 bool str::is_ascii() const {
@@ -999,59 +843,27 @@ bool str::is_ascii() const {
 }
 
 bool str::is_alpha() const {
-    if (layout.len() == 0) {
-        return false;
-    }
-
-    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
-        if (0 == (chars_mapping[*ptr] & ALPHA)) {
-            return false;
-        }
-    }
-
-    return true;
+    return is_match(chars::ALPHA);
 }
 
 bool str::is_alnum() const {
-    if (layout.len() == 0) {
-        return false;
-    }
-
-    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
-        if (0 == (chars_mapping[*ptr] & ALNUM)) {
-            return false;
-        }
-    }
-
-    return true;
+    return is_match(chars::ALNUM);
 }
 
 bool str::is_space() const {
-    if (layout.len() == 0) {
-        return false;
-    }
-
-    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
-        if (0 == (chars_mapping[*ptr] & SPACE)) {
-            return false;
-        }
-    }
-
-    return true;
+    return is_match(chars::SPACE);
 }
 
-bool str::is_printable() const {
-    if (layout.len() == 0) {
-        return false;
-    }
+bool str::is_blank() const {
+    return is_match(chars::BLANK);
+}
 
-    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
-        if (0 == (chars_mapping[*ptr] & PRINT)) {
-            return false;
-        }
-    }
+bool str::is_print() const {
+    return is_match(chars::PRINT);
+}
 
-    return true;
+bool str::is_graph() const {
+    return is_match(chars::GRAPH);
 }
 
 bool str::is_identifier() const {
@@ -1061,12 +873,12 @@ bool str::is_identifier() const {
     }
 
     const_pointer ptr = layout.begin();
-    if (!((*ptr == '_') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= 'a' && *ptr <= 'z'))) {
+    if (!((*ptr == '_') || chars::match(*ptr, chars::ALPHA))) {
         return false;
     }
 
     for (ptr++; ptr != layout.end(); ptr++) {
-        if (!((*ptr == '_') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= 'a' && *ptr <= 'z') || (*ptr >= '0' && *ptr <= '9'))) {
+        if (!((*ptr == '_') || chars::match(*ptr, chars::ALNUM))) {
             return false;
         }
     }
