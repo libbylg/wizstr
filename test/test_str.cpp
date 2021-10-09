@@ -10,7 +10,7 @@
 #define SECTION(xx)
 #endif
 
-TEST(tiny_str, 构造) {
+TEST(tiny_str, construct) {
     SECTION("基本构造") {
         tiny::str a("123123123123123123123123123123123");
         EXPECT_EQ(a.size(), 33);
