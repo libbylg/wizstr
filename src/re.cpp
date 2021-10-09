@@ -2,7 +2,7 @@
 // Created by luolijun on 2021/10/4.
 //
 #include "tiny/re.h"
-#include "tiny/str.h"
+#include "tiny/bytes.h"
 
 #define PCRE2_STATIC
 #define PCRE2_CODE_UNIT_WIDTH 8
@@ -15,7 +15,7 @@ re::re(const_pointer pattern, uint32_t flags, error_type* error) {
     regex_code = compile(pattern, flags, error);
 }
 
-re::re(const str& pattern, uint32_t flags, error_type* error) {
+re::re(const bytes& pattern, uint32_t flags, error_type* error) {
     regex_code = compile(pattern.data(), flags, error);
 }
 
@@ -104,7 +104,7 @@ bool re::match(const_pointer s, uint32_t options) const {
     return ((match_pos == 0) && s[match_length] == '\0');
 }
 
-bool re::match(const str& s, uint32_t options) const {
+bool re::match(const bytes& s, uint32_t options) const {
     return match(s.data(), options);
 }
 
@@ -153,7 +153,7 @@ int re::find(const_pointer s, uint32_t options, std::function<int(const segment_
             //  0:[start,len] 1:[start,len] ... rc:[start:len]
             segments[i].pos = PCRE2_SIZE(start - PCRE2_SPTR(s)) + ovector[2 * i];
             segments[i].len = ovector[(2 * i) + 1] - ovector[2 * i];
-            segments[i].ptr = const_cast<str::pointer>(s + segments[i].pos);
+            segments[i].ptr = const_cast<bytes::pointer>(s + segments[i].pos);
         }
 
         //  触发回调函数
@@ -176,7 +176,7 @@ int re::find(const_pointer s, uint32_t options, std::function<int(const segment_
     return match_count;
 }
 
-int re::find(const str& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const {
+int re::find(const bytes& s, uint32_t options, std::function<int(const segment_type* segs, size_type n)> func) const {
     return find(s.data(), options, func);
 }
 
@@ -184,7 +184,7 @@ int re::replace(const_pointer s, const_pointer repl, std::function<int(const_poi
     return 0;
 }
 
-int re::replace(const str& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const {
+int re::replace(const bytes& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const {
     return 0;
 }
 
@@ -223,7 +223,7 @@ int re::split(const_pointer s, uint32_t options, std::function<int(const segment
         //  0:[start,len] 1:[start,len] ... rc:[start:len]
         segment.pos = start - PCRE2_SPTR(s);
         segment.len = ovector[0];
-        segment.ptr = const_cast<str::pointer>((const_pointer)start);
+        segment.ptr = const_cast<bytes::pointer>((const_pointer)start);
 
         //  触发回调函数
         if (func(segment) != 0) {
@@ -237,7 +237,7 @@ int re::split(const_pointer s, uint32_t options, std::function<int(const segment
     if (*start != '\0') {
         segment.pos = pos_type(start - PCRE2_SPTR(s));
         segment.len = strlen(const_pointer(start));
-        segment.ptr = const_cast<str::pointer>((str::const_pointer)start);
+        segment.ptr = const_cast<bytes::pointer>((bytes::const_pointer)start);
     }
 
     //  释放 match_data
@@ -247,7 +247,7 @@ int re::split(const_pointer s, uint32_t options, std::function<int(const segment
     return match_count;
 }
 
-int re::split(const str& s, uint32_t options, std::function<int(const segment_type& segs)> func) const {
+int re::split(const bytes& s, uint32_t options, std::function<int(const segment_type& segs)> func) const {
     return split(s.data(), options, func);
 }
 

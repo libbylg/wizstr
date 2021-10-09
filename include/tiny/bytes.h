@@ -1,8 +1,8 @@
 //
 // Created by luolijun on 2021/9/30.
 //
-#ifndef STR_H
-#define STR_H
+#ifndef BYTES_H
+#define BYTES_H
 
 #include <cstdarg>
 #include <cstdint>
@@ -21,7 +21,7 @@ namespace tiny {
 
 class re;
 
-class str {
+class bytes {
 public:
     typedef int32_t pos_type;
     typedef uint32_t size_type;
@@ -39,8 +39,6 @@ public:
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
-    typedef segment_t segment_type;
-
     static const pos_type npos = -1;
 
     static_assert(std::is_signed<pos_type>::value, "位置必须是有符号数");
@@ -48,15 +46,15 @@ public:
 
 public:
     //  构造析构
-    ~str();
-    explicit str();
-    explicit str(const_pointer s);
-    str(const_pointer s, size_type n);
-    str(value_type ch, size_type size);
-    str(str&& s) noexcept;
-    str(const str& s);
-    str& operator=(str&& other) noexcept;
-    str& operator=(const str& other);
+    ~bytes();
+    explicit bytes();
+    explicit bytes(const_pointer s);
+    bytes(const_pointer s, size_type n);
+    bytes(value_type ch, size_type size);
+    bytes(bytes&& s) noexcept;
+    bytes(const bytes& s);
+    bytes& operator=(bytes&& other) noexcept;
+    bytes& operator=(const bytes& other);
 
     //  迭代器
     iterator begin();
@@ -94,109 +92,111 @@ public:
     void attach(pointer buf, size_type len, size_type cap);
 
     //  首尾追加
-    str& append(const str& other);
-    str& append(value_type ch);
-    str& append(const_pointer s, size_type len);
-    str& append(const_pointer s);
-    str& prepend(const str& other);
-    str& prepend(value_type ch);
-    str& prepend(const_pointer s, size_type len);
-    str& prepend(const_pointer s);
+    bytes& append(const bytes& other);
+    bytes& append(value_type ch);
+    bytes& append(const_pointer s, size_type len);
+    bytes& append(const_pointer s);
+    bytes& prepend(const bytes& other);
+    bytes& prepend(value_type ch);
+    bytes& prepend(const_pointer s, size_type len);
+    bytes& prepend(const_pointer s);
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
-    str& insert(pos_type pos, const str& other);
-    str& insert(pos_type pos, value_type ch);
-    str& insert(pos_type pos, const_pointer s, size_type n);
-    str& insert(pos_type pos, const_pointer s);
+    bytes& insert(pos_type pos, const bytes& other);
+    bytes& insert(pos_type pos, value_type ch);
+    bytes& insert(pos_type pos, const_pointer s, size_type n);
+    bytes& insert(pos_type pos, const_pointer s);
 
     //  首尾操作
-    void push_back(const str& other);
+    void push_back(const bytes& other);
     void push_back(value_type ch);
-    void push_front(const str& other);
+    void push_front(const bytes& other);
     void push_front(value_type ch);
     value_type pop_back();
     value_type pop_front();
 
     //  部分数据移动：柔性移动和裁剪移动
-    str& flex_move(pos_type pos, size_type n, int offset);
-    str& flex_move(pos_type pos, size_type n, int offset, value_type fill_ch);
-    str& clip_move(pos_type pos, size_type n, int offset);
+    bytes& flex_move(pos_type pos, size_type n, int offset);
+    bytes& flex_move(pos_type pos, size_type n, int offset, value_type fill_ch);
+    bytes& clip_move(pos_type pos, size_type n, int offset);
 
-    str& remove(pos_type pos);
-    str& remove(pos_type pos, size_type n);
-    str& remove(value_type ch);
-    str& remove(const_pointer s);
-    str& remove(const str& other);
-    str& remove(const re& rx);
-    str& remove(std::function<int(value_type c, bool& match)> func);
-    str& remove(std::function<int(const_pointer start, const_pointer end, const_pointer& match, size_type& n)> func);
+    bytes& remove(pos_type pos);
+    bytes& remove(pos_type pos, size_type n);
+    bytes& remove(value_type ch);
+    bytes& remove(const_pointer s);
+    bytes& remove(const bytes& other);
+    bytes& remove(const re& rx);
+    bytes& remove(std::function<int(value_type c, bool& match)> func);
+    bytes& remove(std::function<int(const_pointer start, const_pointer end, const_pointer& match, size_type& n)> func);
 
-    str& erase(pos_type pos = 0, pos_type len = npos);
+    bytes& erase(pos_type pos = 0, pos_type len = npos);
     iterator erase(const_iterator p);
     iterator erase(const_iterator first, const_iterator last);
 
     //  比较
-    int compare(const str& other) const;
+    int compare(const bytes& other) const;
     int compare(const_pointer s) const;
-    int compare(const str& other, size_type max_n) const;
+    int compare(const bytes& other, size_type max_n) const;
     int compare(const_pointer s, size_type max_n) const;
     int compare(value_type c) const;
 
     //  是否包含子串
-    bool contains(const str& s) const;
+    bool contains(const bytes& s) const;
     bool contains(const_pointer s) const;
     bool contains(value_type ch) const;
     bool contains(const re& rx) const;
 
     //  子串统计
-    int count(const str& s) const;
+    int count(const bytes& s) const;
     int count(const_pointer s) const;
     int count(value_type ch) const;
     int count(const re& rx) const;
 
     //  前后缀操作
-    bool has_suffix(const str& s) const;
+    bool has_suffix(const bytes& s) const;
     bool has_suffix(const_pointer s) const;
     bool has_suffix(value_type c) const;
+    bool has_suffix(const_pointer s, size_type n) const;
 
-    bool has_prefix(const str& s) const;
+    bool has_prefix(const bytes& s) const;
     bool has_prefix(const_pointer s) const;
     bool has_prefix(value_type c) const;
+    bool has_prefix(const_pointer s, size_type n) const;
 
-    bool remove_prefix(const str& s);
+    bool remove_prefix(const bytes& s);
     bool remove_prefix(const_pointer s);
     bool remove_prefix(value_type c);
 
-    bool remove_suffix(const str& s);
+    bool remove_suffix(const bytes& s);
     bool remove_suffix(const_pointer s);
     bool remove_suffix(value_type c);
 
     //  填充
-    str& fill(value_type ch);
-    str& fill(pos_type pos, value_type ch, size_type n);
-    str& fill(pos_type pos, const_pointer s, size_type n);
+    bytes& fill(value_type ch);
+    bytes& fill(pos_type pos, value_type ch, size_type n);
+    bytes& fill(pos_type pos, const_pointer s, size_type n);
 
     //  查找
-    pos_type index_of(const str& other, pos_type from = 0) const;
+    pos_type index_of(const bytes& other, pos_type from = 0) const;
     pos_type index_of(const_pointer s, pos_type from = 0) const;
     pos_type index_of(value_type ch, pos_type from = 0) const;
     pos_type index_of(const re& rx, pos_type from = 0) const;
     pos_type index_of(std::function<int(value_type c, bool& match)> func, pos_type from = 0) const;
 
-    pos_type last_index_of(const str& other, pos_type from = -1) const;
+    pos_type last_index_of(const bytes& other, pos_type from = -1) const;
     pos_type last_index_of(value_type ch, pos_type from = -1) const;
     pos_type last_index_of(const_pointer s, pos_type from = -1) const;
     pos_type last_index_of(const re& rx, pos_type from = -1) const;
     pos_type last_index_of(std::function<int(value_type c, bool& match)> func, pos_type from = -1) const;
 
     //  分段查找
-    pos_type section_of(str::pos_type from, const_pointer& s, size_type& n) const;
+    pos_type section_of(bytes::pos_type from, const_pointer& s, size_type& n) const;
 
     //  匹配
     bool is_match(const re& rx) const;
-    bool is_match(const str& pattern) const;
+    bool is_match(const bytes& pattern) const;
     bool is_match(const_pointer pattern) const;
-    bool is_match_wild(const str& pattern) const;
+    bool is_match_wild(const bytes& pattern) const;
     bool is_match_wild(const_pointer pattern) const;
     bool is_match(uint16_t charset) const;
 
@@ -218,35 +218,35 @@ public:
     bool is_bool() const;
 
     //  提取子串
-    str left(size_type n) const;
-    str right(size_type n) const;
-    str substr(pos_type pos, int offset_n = -1) const;
+    bytes left(size_type n) const;
+    bytes right(size_type n) const;
+    bytes substr(pos_type pos, int offset_n = -1) const;
 
     //  定宽对齐调整
-    str& ljust(size_type width, value_type fill = ' ', bool truncate = false);
-    str& rjust(size_type width, value_type fill = ' ', bool truncate = false);
-    str& center(size_type width, value_type fill = ' ', bool truncate = false);
-    str& zfill(size_type width, value_type fill = ' ', bool truncate = false);
+    bytes& ljust(size_type width, value_type fill = ' ', bool truncate = false);
+    bytes& rjust(size_type width, value_type fill = ' ', bool truncate = false);
+    bytes& center(size_type width, value_type fill = ' ', bool truncate = false);
+    bytes& zfill(size_type width, value_type fill = ' ', bool truncate = false);
 
     //  子串替换
-    str& replace(pos_type pos, size_type n, const str& after);
-    str& replace(pos_type pos, size_type n, value_type after);
-    str& replace(pos_type pos, size_type n, const_pointer unicode, size_type size);
-    str& replace(value_type before, value_type after);
-    str& replace(const_pointer before, size_type blen, const_pointer after, size_type alen);
-    str& replace(const str& before, const str& after);
-    str& replace(value_type ch, const str& after);
-    str& replace(const re& rx, const str& after);
-    str& replace(std::function<int(value_type key, value_type& val)> func);
+    bytes& replace(pos_type pos, size_type n, const bytes& after);
+    bytes& replace(pos_type pos, size_type n, value_type after);
+    bytes& replace(pos_type pos, size_type n, const_pointer unicode, size_type size);
+    bytes& replace(value_type before, value_type after);
+    bytes& replace(const_pointer before, size_type blen, const_pointer after, size_type alen);
+    bytes& replace(const bytes& before, const bytes& after);
+    bytes& replace(value_type ch, const bytes& after);
+    bytes& replace(const re& rx, const bytes& after);
+    bytes& replace(std::function<int(value_type key, value_type& val)> func);
 
     //  基于本字符串生成新字符串
-    str repeat(size_type times) const;                             //  返回本字符串重复 times 次后的副本
-    str join(const std::vector<str>& s) const;                     //  用本字符串连接所有的s
-    str join(const str& s, ...) const;                             //  用本字符串连接所有的s
-    str join(const_pointer s, ...) const;                          //  用本字符串连接所有的s
-    str join(std::function<const_pointer()> provider) const;       //  用本字符串连接所有的s
-    str join(std::initializer_list<const_pointer> ptr_list) const; //  用本字符串连接所有的s
-    str join(std::initializer_list<str> ptr_list) const;           //  用本字符串连接所有的s
+    bytes repeat(size_type times) const;                             //  返回本字符串重复 times 次后的副本
+    bytes join(const std::vector<bytes>& s) const;                     //  用本字符串连接所有的s
+    bytes join(const bytes& s, ...) const;                             //  用本字符串连接所有的s
+    bytes join(const_pointer s, ...) const;                          //  用本字符串连接所有的s
+    bytes join(std::function<const_pointer()> provider) const;       //  用本字符串连接所有的s
+    bytes join(std::initializer_list<const_pointer> ptr_list) const; //  用本字符串连接所有的s
+    bytes join(std::initializer_list<bytes> ptr_list) const;           //  用本字符串连接所有的s
 
     //  容量、内存管理
     void reserve(size_type size);                    //  容量预留
@@ -256,20 +256,20 @@ public:
     void squeeze();                                  //  内存紧缩
 
     //  Title 化：首字母大写
-    str& title();
+    bytes& title();
 
     //  反转：字符串逆序
-    str& inversion();
+    bytes& inversion();
 
     //  字符串分割
-    std::vector<str> split(const str& sep) const;
-    std::vector<str> split(const_pointer sep) const;
-    std::vector<str> split(value_type sep) const;
-    std::vector<str> split(const re& r) const;
-    std::vector<str> split(std::function<int(value_type c, bool& match)>& chars_func) const;
-    std::vector<str> split_lines(bool keep_ends = false) const;
-    std::vector<str> split_path() const;
-    void split(const str& sep, std::function<int(const_pointer s, size_type n)> output_func) const;
+    std::vector<bytes> split(const bytes& sep) const;
+    std::vector<bytes> split(const_pointer sep) const;
+    std::vector<bytes> split(value_type sep) const;
+    std::vector<bytes> split(const re& r) const;
+    std::vector<bytes> split(std::function<int(value_type c, bool& match)>& chars_func) const;
+    std::vector<bytes> split_lines(bool keep_ends = false) const;
+    std::vector<bytes> split_path() const;
+    void split(const bytes& sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(const_pointer sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(value_type sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(const re& r, std::function<int(const_pointer s, size_type n)> output_func) const;
@@ -278,44 +278,44 @@ public:
     void split_path(std::function<int(const_pointer s, size_type n)> output_func) const;
 
     //  大小写转换
-    str& to_lower();  //  转换成大写
-    str& to_upper();  //  转换成小写
-    str& swap_case(); //  大小写互换
+    bytes& to_lower();  //  转换成大写
+    bytes& to_upper();  //  转换成小写
+    bytes& swap_case(); //  大小写互换
 
     //  空白处理
-    str& simplified();                                         //   空白化简，多个空白用一个空白代替
-    str& ltrim();                                              //  去掉左边的空白
-    str& rtrim();                                              //  去掉右边的空白
-    str& trim();                                               //  同时去掉左边和右边的空白
-    str& ltrim(std::function<bool(value_type ch)> func);       //  去掉左边的满足条件的字符
-    str& rtrim(std::function<bool(value_type ch)> func);       //  去掉右边的满足条件的字符
-    str& trim(std::function<bool(value_type ch)> func);        //  去掉右边的满足条件的字符
-    str& ltrim_until(std::function<bool(value_type ch)> func); //  去掉左边的字符直到截止条件满足
-    str& rtrim_until(std::function<bool(value_type ch)> func); //  去掉右边的字符直到截止条件满足
-    str& trim_until(std::function<bool(value_type ch)> func);  //  去掉右边的满足条件的字符
+    bytes& simplified();                                         //   空白化简，多个空白用一个空白代替
+    bytes& ltrim();                                              //  去掉左边的空白
+    bytes& rtrim();                                              //  去掉右边的空白
+    bytes& trim();                                               //  同时去掉左边和右边的空白
+    bytes& ltrim(std::function<bool(value_type ch)> func);       //  去掉左边的满足条件的字符
+    bytes& rtrim(std::function<bool(value_type ch)> func);       //  去掉右边的满足条件的字符
+    bytes& trim(std::function<bool(value_type ch)> func);        //  去掉右边的满足条件的字符
+    bytes& ltrim_until(std::function<bool(value_type ch)> func); //  去掉左边的字符直到截止条件满足
+    bytes& rtrim_until(std::function<bool(value_type ch)> func); //  去掉右边的字符直到截止条件满足
+    bytes& trim_until(std::function<bool(value_type ch)> func);  //  去掉右边的满足条件的字符
 
     //  展开
-    str expand(const std::map<str, str>& kvs) const;
-    str expand(std::function<int(const str& key, str& val)> provider) const;
-    str expand_envs(const_pointer key, const_pointer val) const;
-    str expand_envs() const;
-    str expand_tabs(size_type tab_size = 8) const;
-    str expand_tmpl(const std::map<str, str>& kvs) const;
-    str expand_tmpl(std::function<int(const str& key, str& val)> provider) const;
+    bytes expand(const std::map<bytes, bytes>& kvs) const;
+    bytes expand(std::function<int(const bytes& key, bytes& val)> provider) const;
+    bytes expand_envs(const_pointer key, const_pointer val) const;
+    bytes expand_envs() const;
+    bytes expand_tabs(size_type tab_size = 8) const;
+    bytes expand_tmpl(const std::map<bytes, bytes>& kvs) const;
+    bytes expand_tmpl(std::function<int(const bytes& key, bytes& val)> provider) const;
 
     //  拷贝和交换
-    void swap(str& other);
+    void swap(bytes& other);
     size_type copy(pointer dest, size_type n, pos_type pos = 0) const;
 
     //  路径处理
-    str basename() const;
-    str& basename();
-    str dirname() const;
-    str& dirname();
+    bytes basename() const;
+    bytes& basename();
+    bytes dirname() const;
+    bytes& dirname();
 
     //  bool 映射
     bool to_bool(bool* ok = nullptr) const;
-    str& assign(bool v);
+    bytes& assign(bool v);
 
     //  字符串转换为数字
     double to_double(bool* ok = nullptr) const;
@@ -329,41 +329,41 @@ public:
     uint32_t to_uint32(bool* ok = nullptr, int base = 10) const;
     uint64_t to_uint64(bool* ok = nullptr, int base = 10) const;
 
-    str& assign(double n, value_type format = 'g', int precision = 6);
-    str& assign(float n, value_type format = 'g', int precision = 6);
-    str& assign(int8_t n, int base = 10);
-    str& assign(int16_t n, int base = 10);
-    str& assign(int32_t n, int base = 10);
-    str& assign(int64_t n, int base = 10);
-    str& assign(uint8_t n, int base = 10);
-    str& assign(uint16_t n, int base = 10);
-    str& assign(uint32_t n, int base = 10);
-    str& assign(uint64_t n, int base = 10);
+    bytes& assign(double n, value_type format = 'g', int precision = 6);
+    bytes& assign(float n, value_type format = 'g', int precision = 6);
+    bytes& assign(int8_t n, int base = 10);
+    bytes& assign(int16_t n, int base = 10);
+    bytes& assign(int32_t n, int base = 10);
+    bytes& assign(int64_t n, int base = 10);
+    bytes& assign(uint8_t n, int base = 10);
+    bytes& assign(uint16_t n, int base = 10);
+    bytes& assign(uint32_t n, int base = 10);
+    bytes& assign(uint64_t n, int base = 10);
 
     //  转换为 hash 值
     int32_t hash_code() const;
 
     //  数字转换为字符串
-    static str number(double n, value_type format = 'g', int precision = 6);
-    static str number(float n, value_type format = 'g', int precision = 6);
-    static str number(int8_t n, int base = 10);
-    static str number(int16_t n, int base = 10);
-    static str number(int32_t n, int base = 10);
-    static str number(int64_t n, int base = 10);
-    static str number(uint8_t n, int base = 10);
-    static str number(uint16_t n, int base = 10);
-    static str number(uint32_t n, int base = 10);
-    static str number(uint64_t n, int base = 10);
+    static bytes number(double n, value_type format = 'g', int precision = 6);
+    static bytes number(float n, value_type format = 'g', int precision = 6);
+    static bytes number(int8_t n, int base = 10);
+    static bytes number(int16_t n, int base = 10);
+    static bytes number(int32_t n, int base = 10);
+    static bytes number(int64_t n, int base = 10);
+    static bytes number(uint8_t n, int base = 10);
+    static bytes number(uint16_t n, int base = 10);
+    static bytes number(uint32_t n, int base = 10);
+    static bytes number(uint64_t n, int base = 10);
 
     //  运算符重载
     bool operator!=(const_pointer other) const;
-    str& operator+=(value_type ch);
-    str& operator+=(const str& other);
-    str& operator+=(const_pointer s);
+    bytes& operator+=(value_type ch);
+    bytes& operator+=(const bytes& other);
+    bytes& operator+=(const_pointer s);
     bool operator<(const_pointer other) const;
     bool operator<=(const_pointer other) const;
-    str& operator=(value_type ch);
-    str& operator=(const_pointer s);
+    bytes& operator=(value_type ch);
+    bytes& operator=(const_pointer s);
     bool operator==(const_pointer other) const;
     bool operator>(const_pointer other) const;
     bool operator>=(const_pointer other) const;
@@ -841,24 +841,24 @@ private:
     static_assert((sizeof(layout_tmplt) % sizeof(uintptr_t)) == 0, "确保布局是指针的整数倍");
 };
 
-extern bool operator!=(const str& s1, const str& s2);
-extern bool operator!=(const str::pointer s1, const str& s2);
-extern const str operator+(const str& s1, const str& s2);
-extern const str operator+(const str& s1, const str::pointer s2);
-extern const str operator+(const char* s1, const str& s2);
-extern const str operator+(str::value_type ch, const str& s);
-extern const str operator+(const str& s, str::value_type ch);
-extern bool operator<(const str& s1, const str& s2);
-extern bool operator<(const str::pointer s1, const str& s2);
-extern bool operator<=(const str& s1, const str& s2);
-extern bool operator<=(const str::pointer s1, const str& s2);
-extern bool operator==(const str& s1, const str& s2);
-extern bool operator==(const str::pointer s1, const str& s2);
-extern bool operator>(const str& s1, const str& s2);
-extern bool operator>(const str::pointer s1, const str& s2);
-extern bool operator>=(const str& s1, const str& s2);
-extern bool operator>=(const str::pointer s1, const str& s2);
+extern bool operator!=(const bytes& s1, const bytes& s2);
+extern bool operator!=(const bytes::pointer s1, const bytes& s2);
+extern const bytes operator+(const bytes& s1, const bytes& s2);
+extern const bytes operator+(const bytes& s1, const bytes::pointer s2);
+extern const bytes operator+(const char* s1, const bytes& s2);
+extern const bytes operator+(bytes::value_type ch, const bytes& s);
+extern const bytes operator+(const bytes& s, bytes::value_type ch);
+extern bool operator<(const bytes& s1, const bytes& s2);
+extern bool operator<(const bytes::pointer s1, const bytes& s2);
+extern bool operator<=(const bytes& s1, const bytes& s2);
+extern bool operator<=(const bytes::pointer s1, const bytes& s2);
+extern bool operator==(const bytes& s1, const bytes& s2);
+extern bool operator==(const bytes::pointer s1, const bytes& s2);
+extern bool operator>(const bytes& s1, const bytes& s2);
+extern bool operator>(const bytes::pointer s1, const bytes& s2);
+extern bool operator>=(const bytes& s1, const bytes& s2);
+extern bool operator>=(const bytes::pointer s1, const bytes& s2);
 
 } // namespace tiny
 
-#endif // STR_H
+#endif // BYTES_H

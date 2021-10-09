@@ -3,8 +3,8 @@
 //
 #include "tester.h"
 
+#include "tiny/bytes.h"
 #include "tiny/re.h"
-#include "tiny/str.h"
 
 #include <iostream>
 
