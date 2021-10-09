@@ -71,6 +71,7 @@ public:
     static re kvpair;
     static re blanks;
     static re date;
+    static re numeric;
 
 private:
     void* compile(const_pointer pattern, uint32_t flags, error_type* error);
