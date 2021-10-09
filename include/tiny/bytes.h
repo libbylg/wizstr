@@ -26,6 +26,7 @@ public:
     typedef int32_t pos_type;
     typedef uint32_t size_type;
     typedef char value_type;
+    static_assert(sizeof(pos_type) == sizeof(size_type), "确保二者宽度一致");
 
     typedef value_type& reference;
     typedef const value_type& const_reference;
@@ -241,12 +242,12 @@ public:
 
     //  基于本字符串生成新字符串
     bytes repeat(size_type times) const;                             //  返回本字符串重复 times 次后的副本
-    bytes join(const std::vector<bytes>& s) const;                     //  用本字符串连接所有的s
-    bytes join(const bytes& s, ...) const;                             //  用本字符串连接所有的s
+    bytes join(const std::vector<bytes>& s) const;                   //  用本字符串连接所有的s
+    bytes join(const bytes& s, ...) const;                           //  用本字符串连接所有的s
     bytes join(const_pointer s, ...) const;                          //  用本字符串连接所有的s
     bytes join(std::function<const_pointer()> provider) const;       //  用本字符串连接所有的s
     bytes join(std::initializer_list<const_pointer> ptr_list) const; //  用本字符串连接所有的s
-    bytes join(std::initializer_list<bytes> ptr_list) const;           //  用本字符串连接所有的s
+    bytes join(std::initializer_list<bytes> ptr_list) const;         //  用本字符串连接所有的s
 
     //  容量、内存管理
     void reserve(size_type size);                    //  容量预留

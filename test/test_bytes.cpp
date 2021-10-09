@@ -196,3 +196,69 @@ TEST(tiny_str, has_suffix) {
         EXPECT_TRUE(s.has_suffix(""));
     }
 }
+
+TEST(tiny_str, ljust) {
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.ljust(13, '*'), "HelloWorld***");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.ljust(10, '*'), "HelloWorld");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.ljust(9, '*'), "HelloWorld");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.ljust(9, '*', true), "HelloWorl");
+    }
+}
+
+TEST(tiny_str, rjust) {
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.rjust(13, '*'), "***HelloWorld");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.rjust(10, '*'), "HelloWorld");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.rjust(9, '*'), "HelloWorld");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.rjust(9, '*', true), "HelloWorl");
+    }
+}
+
+TEST(tiny_str, center) {
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.center(13, '*'), "*HelloWorld**");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.center(10, '*'), "HelloWorld");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.center(9, '*'), "HelloWorld");
+    }
+
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.center(9, '*', true), "HelloWorl");
+    }
+}

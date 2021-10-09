@@ -1045,23 +1045,86 @@ bytes bytes::substr(pos_type pos, int offset) const {
     return bytes();
 }
 
-//  定宽对齐调整
 bytes& bytes::ljust(bytes::size_type width, bytes::value_type fill, bool truncate) {
     ASSERT(width >= 0);
 
+    // 宽度大于 bytes 的总长度时，在尾部追加数据
     if (width > layout.len()) {
+        bytes::size_type old_len = layout.len();
+        layout.resize(width);
+        layout.fill(old_len, fill, width - old_len);
+        return *this;
+    }
+
+    //  宽度一样，啥也不需要做
+    if (width == layout.len()) {
+        return *this;
+    }
+
+    //  width 太小时，由 truncate 参数决定是否需要掐断
+    if (truncate) {
+        layout.resize(width);
     }
 
     return *this;
 }
 
 bytes& bytes::rjust(bytes::size_type width, bytes::value_type fill, bool truncate) {
-    ASSERT(false); //  TODO - bytes& bytes::rjust(bytes::size_type width, bytes::value_type fill, bool truncate)
+    ASSERT(width >= 0);
+
+    // 宽度大于 bytes 的总长度时，在尾部追加数据
+    if (width > layout.len()) {
+        bytes::size_type old_len = layout.len();
+        layout.flexmove(0, old_len, (width - old_len), [](pointer fill, size_type n) {
+        });
+        layout.fill(0, fill, (width - old_len));
+        return *this;
+    }
+
+    //  宽度一样，啥也不需要做
+    if (width == layout.len()) {
+        return *this;
+    }
+
+    //  width 太小时，由 truncate 参数决定是否需要掐断
+    if (truncate) {
+        layout.resize(width);
+    }
+
     return *this;
 }
 
-bytes& bytes::center(bytes::size_type width, bytes::value_type fill, bool truncate) {
-    ASSERT(false); //  TODO - bytes& bytes::center(bytes::size_type width, bytes::value_type fill, bool truncate)
+bytes& bytes::center(bytes::size_type width, bytes::value_type fill_ch, bool truncate) {
+    ASSERT(width >= 0);
+
+    // 宽度大于 bytes 的总长度时，在尾部追加数据
+    if (width > layout.len()) {
+        bytes::size_type old_len = layout.len();
+        bytes::size_type lfill_len = (width - old_len) / 2;
+        bytes::size_type rfill_len = (width - old_len) - lfill_len;
+
+        //  不够优秀：存在多余的一次拷贝
+        layout.resize(width);
+
+        //  字符串整体右移
+        layout.flexmove(0, old_len, lfill_len, [](pointer fill, size_type n) {
+        });
+
+        layout.fill(0, fill_ch, lfill_len);
+        layout.fill(lfill_len + old_len, fill_ch, rfill_len);
+        return *this;
+    }
+
+    //  宽度一样，啥也不需要做
+    if (width == layout.len()) {
+        return *this;
+    }
+
+    //  width 太小时，由 truncate 参数决定是否需要掐断
+    if (truncate) {
+        layout.resize(width);
+    }
+
     return *this;
 }
 
