@@ -24,6 +24,7 @@ class re;
 class bytes {
 public:
     typedef int32_t pos_type;
+    typedef int32_t offset_type;
     typedef int32_t size_type;
     typedef char value_type;
     static_assert(sizeof(pos_type) == sizeof(size_type), "确保二者宽度一致");
@@ -149,15 +150,17 @@ public:
     //  是否包含子串
     bool contains(const bytes& s) const;
     bool contains(const_pointer s) const;
+    bool contains(const_pointer s, size_type n) const;
     bool contains(value_type ch) const;
     bool contains(const re& rx) const;
 
     //  子串统计
-    int count(const_pointer s, size_type n) const;
-    int count(const bytes& s) const;
-    int count(const_pointer s) const;
-    int count(value_type ch) const;
-    int count(const re& rx) const;
+    size_type count(const_pointer s, size_type n) const;
+    size_type count(const bytes& s) const;
+    size_type count(const_pointer s) const;
+    size_type count(value_type ch) const;
+    size_type count(const re& rx) const;
+    size_type count(std::function<int(value_type ch, bool& match)> macher) const;
 
     //  前后缀操作
     bool has_prefix(const_pointer s, size_type n) const;
@@ -199,14 +202,15 @@ public:
     pos_type index_of(const_pointer s, pos_type from = 0) const;
     pos_type index_of(value_type ch, pos_type from = 0) const;
     pos_type index_of(const re& rx, pos_type from = 0) const;
-    pos_type index_of(std::function<int(value_type c, bool& match)> func, pos_type from = 0) const;
+    pos_type index_of(std::function<int(value_type c, bool& match)> matcher, pos_type from, pos_type to) const;
 
     pos_type last_index_of(const_pointer s, size_type n, pos_type from) const;
-    pos_type last_index_of(const bytes& other, pos_type from = -1) const;
-    pos_type last_index_of(value_type ch, pos_type from = -1) const;
-    pos_type last_index_of(const_pointer s, pos_type from = -1) const;
-    pos_type last_index_of(const re& rx, pos_type from = -1) const;
-    pos_type last_index_of(std::function<int(value_type c, bool& match)> func, pos_type from = -1) const;
+    pos_type last_index_of(const bytes& other, pos_type from = npos) const;
+    pos_type last_index_of(value_type ch, pos_type from = npos) const;
+    pos_type last_index_of(const_pointer s, pos_type from = npos) const;
+    pos_type last_index_of(const re& rx, pos_type from = npos) const;
+    pos_type last_index_of(std::function<int(value_type c, bool& match)> matcher, pos_type from, pos_type to) const;
+    pos_type last_index_of(std::function<int(const_pointer start, size_type n, pos_type& match_pos, pos_type& match_n)> matcher, pos_type from, pos_type to) const;
 
     //  STL 接口兼容
     pos_type find(const bytes& str, pos_type pos = 0) const noexcept;
@@ -222,20 +226,32 @@ public:
     pos_type find_first_of(const bytes& str, pos_type pos = 0) const;
     pos_type find_first_of(const_pointer s, pos_type pos, size_type count) const;
     pos_type find_first_of(const_pointer s, pos_type pos = 0) const;
-    pos_type find_first_of(value_type ch, pos_type pos = 0) const noexcept;
+    pos_type find_first_of(value_type ch, pos_type pos = 0) const;
 
     pos_type find_first_not_of(const bytes& str, pos_type pos = 0) const;
     pos_type find_first_not_of(const_pointer s, pos_type pos, size_type count) const;
     pos_type find_first_not_of(const_pointer s, pos_type pos = 0) const;
-    pos_type find_first_not_of(value_type ch, pos_type pos = 0) const noexcept;
+    pos_type find_first_not_of(value_type ch, pos_type pos = 0) const;
 
     pos_type find_last_of(const bytes& str, pos_type pos = npos) const;
     pos_type find_last_of(const_pointer s, pos_type pos, size_type count) const;
     pos_type find_last_of(const_pointer s, pos_type pos = npos) const;
     pos_type find_last_of(value_type ch, pos_type pos = npos) const;
 
-    //  分段查找
-    pos_type section_of(bytes::pos_type from, const_pointer& s, size_type& n) const;
+    size_type find_last_not_of(const bytes& str, size_type pos = npos) const;
+    size_type find_last_not_of(const_pointer s, size_type pos, size_type count) const;
+    size_type find_last_not_of(const_pointer s, size_type pos = npos) const;
+    size_type find_last_not_of(value_type ch, size_type pos = npos) const;
+
+    //  按空格分割的字段查找
+    pos_type index_of_field(pos_type from, const_pointer& s, size_type& n) const;
+    pos_type last_index_of_field(pos_type from, const_pointer& s, size_type& n) const;
+
+    //  按各种方式遍历
+    void walk(pos_type from, offset_type offset, std::function<int(const_pointer s, size_type n, const_pointer next)> func) const;
+    void walk_byte(pos_type from, offset_type offset, std::function<int(const_pointer ptr)> func) const;
+    void walk_byte(pos_type from, offset_type offset, std::function<int(pointer ptr)> func);
+    void walk_field(pos_type from, offset_type offset, std::function<int(const_pointer s, size_type n)> func) const;
 
     //  匹配
     bool is_match(const re& rx) const;
@@ -259,20 +275,19 @@ public:
     bool is_print() const;
     bool is_graph() const;
     bool is_identifier() const;
-    bool is_numeric() const;
     bool is_bool() const;
 
     //  提取子串
     bytes left(size_type n) const;
     bytes right(size_type n) const;
     bytes substr(pos_type pos = 0, int n = npos) const;
-    bytes cutstr(pos_type pos, int offset) const;
+    bytes cutstr(pos_type pos, offset_type offset) const;
 
     //  定宽对齐调整
     bytes& ljust(size_type width, value_type fill = ' ', bool truncate = false);
     bytes& rjust(size_type width, value_type fill = ' ', bool truncate = false);
     bytes& center(size_type width, value_type fill = ' ', bool truncate = false);
-    bytes& zfill(size_type width, value_type fill = ' ', bool truncate = false);
+    bytes& zfill(size_type width);
 
     //  子串替换
     bytes& replace(pos_type pos, size_type n, const bytes& after);
@@ -305,7 +320,7 @@ public:
     bytes& title();
 
     //  反转：字符串逆序
-    bytes& inversion();
+    bytes& inversion(pos_type start, offset_type offset);
 
     //  字符串分割
     std::vector<bytes> split(const bytes& sep) const;

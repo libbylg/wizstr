@@ -30,6 +30,30 @@ TEST(tiny_str, prepend) {
     }
 }
 
+TEST(tiny_str, zfill) {
+    SECTION("正常情况") {
+        tiny::bytes a("123");
+        EXPECT_TRUE(a.zfill(5) == "00123");
+    }
+    SECTION("前缀") {
+        EXPECT_TRUE(tiny::bytes("+123").zfill(5) == "+0123");
+        EXPECT_TRUE(tiny::bytes("-123").zfill(5) == "-0123");
+    }
+    SECTION("空串") {
+        tiny::bytes a("");
+        EXPECT_TRUE(a.zfill(5) == "00000");
+    }
+    SECTION("非数字") {
+        EXPECT_TRUE(tiny::bytes("LMK").zfill(5) == "00LMK");
+        EXPECT_TRUE(tiny::bytes("中华人民共和国").zfill(25) == "0000中华人民共和国");
+    }
+    SECTION("宽度太短") {
+        EXPECT_TRUE(tiny::bytes("LMK").zfill(3) == "LMK");
+        EXPECT_TRUE(tiny::bytes("LMK").zfill(2) == "LMK");
+        EXPECT_TRUE(tiny::bytes("LMK").zfill(0) == "LMK");
+    }
+}
+
 TEST(tiny_str, remove) {
     SECTION("删除中间数据") {
         tiny::bytes a("abc123");
@@ -117,6 +141,13 @@ TEST(tiny_str, count) {
         EXPECT_EQ(a.count("12"), 2);
         EXPECT_EQ(a.count(char('3')), 3);
         EXPECT_EQ(a.count("A"), 0);
+    }
+
+    SECTION("统计子串数量") {
+        tiny::bytes a("333433343333334");
+        EXPECT_EQ(a.count("33"), 5);
+        EXPECT_EQ(a.count(""), 16);
+        EXPECT_EQ(a.count("333"), 4);
     }
 }
 

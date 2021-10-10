@@ -516,6 +516,12 @@ bool bytes::contains(bytes::const_pointer s) const {
     return strstr(layout.begin(), s) != nullptr;
 }
 
+bool bytes::contains(bytes::const_pointer s, bytes::size_type n) const {
+    ASSERT(s != nullptr);
+    ASSERT(n >= 0);
+    return memmem(layout.begin(), layout.len(), s, n) != nullptr;
+}
+
 bool bytes::contains(bytes::value_type ch) const {
     return strchr(layout.begin(), ch) != nullptr;
 }
@@ -529,42 +535,34 @@ bool bytes::contains(const re& r) const {
     return found;
 }
 
-int bytes::count(bytes::const_pointer s, bytes::size_type n) const {
-    ASSERT(false); //  TODO int bytes::count(bytes::const_pointer s, bytes::size_type n) const
-    return -1;
-}
-
-int bytes::count(const bytes& other) const {
-    int cnt = 0;
-
-    size_type slen = other.size();
-
-    const_pointer start = layout.begin();
-    while ((start = std::strstr(start, other.data())) != nullptr) {
-        cnt++;
-        start += slen;
-    }
-
-    return cnt;
-}
-
-int bytes::count(bytes::const_pointer s) const {
+bytes::size_type bytes::count(bytes::const_pointer s, bytes::size_type n) const {
     ASSERT(s != nullptr);
+    ASSERT(n >= 0);
+
+    if ((n == 0) || (s[0] == '\0')) {
+        return layout.len() + 1;
+    }
 
     int cnt = 0;
-
-    size_type slen = std::strlen(s);
-
     const_pointer start = layout.begin();
-    while ((start = std::strstr(start, s)) != nullptr) {
+    while ((start = (const_pointer)memmem(start, (layout.end() - start), s, n)) != nullptr) {
         cnt++;
-        start += slen;
+        start += n;
     }
 
     return cnt;
 }
 
-int bytes::count(bytes::value_type ch) const {
+bytes::size_type bytes::count(const bytes& other) const {
+    return count(other.layout.begin(), other.layout.len());
+}
+
+bytes::size_type bytes::count(bytes::const_pointer s) const {
+    ASSERT(s != nullptr);
+    return count(s, std::strlen(s));
+}
+
+bytes::size_type bytes::count(bytes::value_type ch) const {
     int cnt = 0;
 
     const_pointer start = layout.begin();
@@ -576,7 +574,7 @@ int bytes::count(bytes::value_type ch) const {
     return cnt;
 }
 
-int bytes::count(const re& rx) const {
+bytes::size_type bytes::count(const re& rx) const {
     ASSERT(rx);
 
     int cnt = 0;
@@ -584,6 +582,27 @@ int bytes::count(const re& rx) const {
         cnt++;
         return 0;
     });
+    return cnt;
+}
+
+bytes::size_type bytes::count(std::function<int(bytes::value_type ch, bool& match)> matcher) const {
+    int cnt = 0;
+
+    for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
+
+        //  看下字符是否匹配
+        bool match = false;
+        int ret = matcher(*ptr, match);
+        if (match) {
+            cnt++;
+        }
+
+        //  检查一下是否需要继续，返回非 0 表示终止扫描
+        if (0 != ret) {
+            break;
+        }
+    }
+
     return cnt;
 }
 
@@ -787,8 +806,17 @@ bytes& bytes::fill(bytes::pos_type fill_from, bytes::pos_type fill_n, bytes::con
 }
 
 bytes::pos_type bytes::index_of(bytes::const_pointer s, bytes::size_type n, bytes::pos_type from) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::index_of(bytes::const_pointer s, bytes::size_type n, bytes::pos_type from) const
-    return bytes::npos;
+    ASSERT(s != nullptr);
+    ASSERT(from >= 0);
+    ASSERT(from < size());
+
+    const_pointer pos = layout.begin() + from;
+    pos = (const_pointer)memmem(pos, layout.end() - pos, s, n);
+    if (pos == nullptr) {
+        return bytes::npos;
+    }
+
+    return bytes::pos_type(pos - layout.begin());
 }
 
 bytes::pos_type bytes::index_of(const bytes& other, bytes::pos_type from) const {
@@ -835,16 +863,24 @@ bytes::pos_type bytes::index_of(const re& rx, bytes::pos_type from) const {
     return from + pos;
 }
 
-bytes::pos_type bytes::index_of(std::function<int(bytes::value_type c, bool& match)> func, bytes::pos_type from) const {
+bytes::pos_type bytes::index_of(std::function<int(bytes::value_type c, bool& match)> matcher, bytes::pos_type from, bytes::pos_type to) const {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+    ASSERT(to >= 0);
+    ASSERT(to <= size());
 
-    bytes::const_pointer ptr = layout.begin();
-    while (*ptr) {
+    ASSERT(from <= to);
+
+    for (bytes::const_pointer ptr = layout.begin() + from; ptr != layout.begin() + to; ptr++) {
         bool match = false;
-        int cntnu = func(*ptr, match);
+        int cntnu = matcher(*ptr, match);
+
+        //  如果匹配成功，返回位置
         if (match) {
             return ptr - layout.begin();
         }
 
+        //  判断是否需要继续
         if (cntnu != 0) {
             break;
         }
@@ -890,52 +926,49 @@ bytes::pos_type bytes::last_index_of(bytes::const_pointer s, bytes::pos_type fro
 
 bytes::pos_type bytes::last_index_of(const re& rx, bytes::pos_type from) const {
     ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(const re& rx, bytes::pos_type from) const
-    return false;
+    return bytes::npos;
 }
 
-bytes::pos_type bytes::last_index_of(std::function<int(bytes::value_type c, bool& match)> func, bytes::pos_type from) const {
+bytes::pos_type bytes::last_index_of(std::function<int(bytes::value_type c, bool& match)> matcher, bytes::pos_type from, bytes::pos_type to) const {
     ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(std::function<int(bytes::value_type c, bool& match)> func, bytes::pos_type from) const
-    return false;
+    return bytes::npos;
 }
 
-bytes::pos_type bytes::find(const bytes& str, bytes::pos_type pos = 0) const noexcept {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+bytes::pos_type bytes::last_index_of(std::function<int(bytes::const_pointer start, bytes::size_type n, bytes::pos_type& match_pos, bytes::pos_type& match_n)> matcher, bytes::pos_type from, bytes::pos_type to) const {
+    ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(std::function<int(bytes::const_pointer start, bytes::size_type n, bytes::pos_type& match_pos, bytes::pos_type& match_n)> matcher, bytes::pos_type from, bytes::pos_type to) const
+    return bytes::npos;
+}
+
+bytes::pos_type bytes::find(const bytes& other, bytes::pos_type pos) const noexcept {
+    return index_of(other, pos);
 }
 
 bytes::pos_type bytes::find(const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return index_of(s, count, pos);
 }
 
 bytes::pos_type bytes::find(const_pointer s, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return index_of(s, pos);
 }
 
 bytes::pos_type bytes::find(value_type ch, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return index_of(ch, pos);
 }
 
 bytes::pos_type bytes::rfind(const bytes& other, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return last_index_of(other, pos);
 }
 
 bytes::pos_type bytes::rfind(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return last_index_of(s, count, pos);
 }
 
 bytes::pos_type bytes::rfind(bytes::const_pointer s, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return last_index_of(s, pos);
 }
 
 bytes::pos_type bytes::rfind(bytes::value_type ch, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return last_index_of(ch, pos);
 }
 
 bytes::pos_type bytes::find_first_of(const bytes& str, bytes::pos_type pos) const {
@@ -973,7 +1006,7 @@ bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type
     return npos;
 }
 
-bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const noexcept {
+bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const {
     ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
 }
@@ -998,7 +1031,27 @@ bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) c
     return npos;
 }
 
-bytes::pos_type bytes::section_of(bytes::pos_type from, bytes::const_pointer& s, bytes::size_type& n) const {
+bytes::size_type bytes::find_last_not_of(const bytes& str, bytes::size_type pos) const {
+    ASSERT(false); //  TODO - bytes::size_type bytes::find_last_not_of(bytes::const bytes& str, bytes::size_type pos = npos) const
+    return bytes::npos;
+}
+
+bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_type pos, size_type count) const {
+    ASSERT(false); //  TODO - bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_type pos, size_type count) const
+    return bytes::npos;
+}
+
+bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_type pos) const {
+    ASSERT(false); //  TODO - bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_type pos = npos) const
+    return bytes::npos;
+}
+
+bytes::size_type bytes::find_last_not_of(bytes::value_type ch, bytes::size_type pos) const {
+    ASSERT(false); //  TODO - bytes::size_type bytes::find_last_not_of(bytes::value_type ch, bytes::size_type pos = npos) const
+    return bytes::npos;
+}
+
+bytes::pos_type bytes::index_of_field(bytes::pos_type from, bytes::const_pointer& s, bytes::size_type& n) const {
     ASSERT(from >= 0);
     ASSERT(from <= size());
 
@@ -1025,6 +1078,119 @@ bytes::pos_type bytes::section_of(bytes::pos_type from, bytes::const_pointer& s,
 
     s = ptr;
     return bytes::pos_type(ptr - layout.begin());
+}
+
+bytes::pos_type bytes::last_index_of_field(bytes::pos_type from, bytes::const_pointer& s, bytes::size_type& n) const {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+
+    s = nullptr;
+    n = 0;
+    walk_field(from, offset_type(layout.len() - from), [&s, &n](bytes::const_pointer field, bytes::size_type field_n) -> int {
+        ASSERT(field != nullptr);
+        ASSERT(field_n >= 0);
+        s = field;
+        n = field_n;
+        return -1;
+    });
+
+    if (s == nullptr) {
+        return bytes::npos;
+    }
+
+    return s - layout.begin();
+}
+
+void bytes::walk(bytes::pos_type from, bytes::offset_type offset, std::function<int(bytes::const_pointer s, size_type n, bytes::const_pointer next)> func) const {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+}
+
+void bytes::walk_field(bytes::pos_type from, bytes::offset_type offset, std::function<int(bytes::const_pointer s, bytes::size_type n)> func) const {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+    ASSERT((from + offset) >= 0);
+    ASSERT((from + offset) <= size());
+
+    bytes::pos_type to = (from + offset);
+
+    if (from > (from + offset)) {
+        ASSERT(false); //  TODO 缺少逆向查找的实现 ： walk_field
+        return;
+    }
+
+    if (from == size()) {
+        return;
+    }
+
+    bytes::const_pointer ptr = layout.begin() + from;
+
+    //  找到第一个非空白的字符，确定起点
+    while ((ptr != layout.begin() + to) && chars::match(*ptr, chars::SPACE)) {
+        ptr++;
+    }
+
+    //  找下一个空白或者结束位置，确定终点 // 不是最优，因为这里多了依次额外的检测
+    size_type n = 0;
+    while ((ptr[n] != '\0') && !chars::match(ptr[n], chars::SPACE)) {
+        n++;
+    }
+
+    if (n <= 0) {
+        return;
+    }
+
+    func(ptr, n);
+}
+
+void bytes::walk_byte(bytes::pos_type from, bytes::offset_type offset, std::function<int(bytes::const_pointer ptr)> func) const {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+    ASSERT((from + offset) >= 0);
+    ASSERT((from + offset) <= size());
+
+    bytes::pos_type to = from + offset;
+    if (from > to) {
+        for (const_pointer ptr = layout.begin() + from; ptr != layout.begin() + to; ptr--) {
+            if (func(ptr) != 0) {
+                break;
+            }
+        }
+        return;
+    }
+
+    for (const_pointer ptr = layout.begin() + from; ptr != layout.begin() + to; ptr++) {
+        if (func(ptr) != 0) {
+            break;
+        }
+    }
+
+    return;
+}
+
+void bytes::walk_byte(bytes::pos_type from, bytes::offset_type offset, std::function<int(bytes::pointer ptr)> func) {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+    ASSERT((from + offset) >= 0);
+    ASSERT((from + offset) <= size());
+
+    bytes::pos_type to = from + offset;
+    if (from > to) {
+        for (pointer ptr = layout.begin() + from; ptr != layout.begin() + to; ptr--) {
+            if (func(ptr) != 0) {
+                break;
+            }
+        }
+        return;
+    }
+
+    for (pointer ptr = layout.begin() + from; ptr != layout.begin() + to; ptr++) {
+        if (func(ptr) != 0) {
+            break;
+        }
+    }
+
+    return;
 }
 
 bool bytes::is_match(const re& rx) const {
@@ -1076,8 +1242,19 @@ bool bytes::is_upper() const {
 }
 
 bool bytes::is_title() const {
-    ASSERT(false); //  TODO - bool bytes::is_title() const
-    return false;
+
+    //  遇到第一个字符时，停止
+    bool result = false;
+    walk_byte(0, layout.len(), [&result](const_pointer ptr) -> int {
+        if (chars::match(*ptr, chars::ALPHA)) {
+            result = chars::match(*ptr, chars::UPPER);
+            return -1;
+        }
+
+        return 0;
+    });
+
+    return result;
 }
 
 bool bytes::is_digit() const {
@@ -1142,11 +1319,6 @@ bool bytes::is_identifier() const {
     return true;
 }
 
-bool bytes::is_numeric() const {
-    ASSERT(false); //  TODO - bool bytes::is_numeric() const
-    return false;
-}
-
 bool bytes::is_bool() const {
     ASSERT(false); //  TODO - bool bytes::is_bool() const
     return false;
@@ -1175,7 +1347,7 @@ bytes bytes::substr(bytes::pos_type pos, int n) const {
     return bytes(layout.begin() + pos, n);
 }
 
-bytes bytes::cutstr(pos_type pos, int offset_n) const {
+bytes bytes::cutstr(pos_type pos, offset_type offset_n) const {
     if (offset_n < 0) {
         return bytes(layout.begin() + pos + offset_n, -offset_n);
     }
@@ -1270,8 +1442,32 @@ bytes& bytes::center(bytes::size_type width, bytes::value_type fill_ch, bool tru
     return *this;
 }
 
-bytes& bytes::zfill(bytes::size_type width, bytes::value_type fill, bool truncate) {
-    ASSERT(false); //  TODO - bytes& bytes::zfill(bytes::size_type width, bytes::value_type fill, bool truncate)
+bytes& bytes::zfill(bytes::size_type width) {
+    ASSERT(width >= 0);
+    if (width > layout.len()) {
+        size_type fill_n = width - layout.len();
+        pos_type fill_pos = 0;
+
+        //  如果字符串长度大于0，那么需要判断是否有正负号
+        if (layout.len() > 0) {
+            //  如果有正负号，那么需要移动的数据的偏移就不是0了
+            if ((layout.begin()[0] == '+') || (layout.begin()[0] == '-')) {
+                fill_pos = 1;
+            }
+
+            //  移动数据，腾出空位
+            layout.flexmove(fill_pos, layout.len() - fill_pos, fill_n, [](pointer begin, size_type n) {
+            });
+        } else {
+            //  直接调整长度
+            layout.resize(fill_n);
+        }
+
+        //  填充数据
+        layout.fill(fill_pos, '0', fill_n);
+        return *this;
+    }
+
     return *this;
 }
 
@@ -1423,17 +1619,26 @@ void bytes::resize(bytes::size_type n, bytes::value_type fill_ch) {
 }
 
 void bytes::shrink_to_fit() {
+    return; //  TODO void bytes::squeeze()
 }
 
 void bytes::squeeze() {
+    return; //  TODO void bytes::squeeze()
 }
 
 bytes& bytes::title() {
+    walk_byte(0, layout.len(), [](bytes::pointer ptr) -> int {
+        if (chars::match(*ptr, chars::ALPHA)) {
+            *ptr = std::toupper(*ptr);
+            return -1;
+        }
+    });
+
     return *this;
 }
 
-bytes& bytes::inversion() {
-    return *this;
+bytes& bytes::inversion(pos_type start, offset_type offset) {
+    return *this; //  TODO bytes& bytes::inversion()
 }
 
 std::vector<bytes> bytes::split(const bytes& sep) const {
@@ -1570,7 +1775,7 @@ bytes& bytes::simplified() {
     const_pointer ptr = nullptr;
     size_type len = 0;
     while (true) {
-        pos = section_of(pos, ptr, len);
+        pos = index_of_field(pos, ptr, len);
         if (pos == bytes::npos) {
             break;
         }
