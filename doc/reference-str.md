@@ -216,7 +216,7 @@ void clear();
 |---    |---     |
 | bytes   | left(size_type n) const                       |
 | bytes   | right(size_type n) const                      |
-| bytes   | substr(pos_type pos, int offset_n = -1) const |
+| bytes   | cutstr(pos_type pos, int offset_n = -1) const |
 
 #### 限宽对齐
 

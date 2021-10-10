@@ -24,7 +24,7 @@ class re;
 class bytes {
 public:
     typedef int32_t pos_type;
-    typedef uint32_t size_type;
+    typedef int32_t size_type;
     typedef char value_type;
     static_assert(sizeof(pos_type) == sizeof(size_type), "确保二者宽度一致");
 
@@ -43,7 +43,7 @@ public:
     static const pos_type npos = -1;
 
     static_assert(std::is_signed<pos_type>::value, "位置必须是有符号数");
-    static_assert(std::is_unsigned<size_type>::value, "长度必须是无符号数");
+    static_assert(std::is_signed<size_type>::value, "长度必须是有符号数");
 
 public:
     //  构造析构
@@ -82,7 +82,9 @@ public:
 
     //  长度容量
     size_type size() const;
+    size_type length() const;
     size_type capacity() const;
+    size_type max_size() const;
 
     //  清空
     void clear();
@@ -90,7 +92,7 @@ public:
     //  对接 C 接口
     const_pointer data() const;
     pointer data();
-    void attach(pointer buf, size_type len, size_type cap);
+    bytes& attach(pointer buf, size_type len, size_type cap);
 
     //  首尾追加
     bytes& append(const bytes& other);
@@ -103,16 +105,18 @@ public:
     bytes& prepend(const_pointer s);
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
+    bytes& insert(pos_type pos, const_pointer s, size_type n);
     bytes& insert(pos_type pos, const bytes& other);
     bytes& insert(pos_type pos, value_type ch);
-    bytes& insert(pos_type pos, const_pointer s, size_type n);
     bytes& insert(pos_type pos, const_pointer s);
 
     //  首尾操作
-    void push_back(const bytes& other);
-    void push_back(value_type ch);
-    void push_front(const bytes& other);
-    void push_front(value_type ch);
+    bytes& push_back(const_pointer s, size_type n);
+    bytes& push_back(const bytes& other);
+    bytes& push_back(value_type ch);
+    bytes& push_front(const_pointer s, size_type n);
+    bytes& push_front(const bytes& other);
+    bytes& push_front(value_type ch);
     value_type pop_back();
     value_type pop_front();
 
@@ -121,6 +125,7 @@ public:
     bytes& flex_move(pos_type pos, size_type n, int offset, value_type fill_ch);
     bytes& clip_move(pos_type pos, size_type n, int offset);
 
+    //  删除数据
     bytes& remove(pos_type pos);
     bytes& remove(pos_type pos, size_type n);
     bytes& remove(value_type ch);
@@ -128,7 +133,7 @@ public:
     bytes& remove(const bytes& other);
     bytes& remove(const re& rx);
     bytes& remove(std::function<int(value_type c, bool& match)> func);
-    bytes& remove(std::function<int(const_pointer start, const_pointer end, const_pointer& match, size_type& n)> func);
+    bytes& remove(std::function<int(const_pointer search, size_type search_n, const_pointer& match, size_type& match_n)> func);
 
     bytes& erase(pos_type pos = 0, pos_type len = npos);
     iterator erase(const_iterator p);
@@ -148,47 +153,86 @@ public:
     bool contains(const re& rx) const;
 
     //  子串统计
+    int count(const_pointer s, size_type n) const;
     int count(const bytes& s) const;
     int count(const_pointer s) const;
     int count(value_type ch) const;
     int count(const re& rx) const;
 
     //  前后缀操作
-    bool has_suffix(const bytes& s) const;
-    bool has_suffix(const_pointer s) const;
-    bool has_suffix(value_type c) const;
-    bool has_suffix(const_pointer s, size_type n) const;
-
+    bool has_prefix(const_pointer s, size_type n) const;
     bool has_prefix(const bytes& s) const;
     bool has_prefix(const_pointer s) const;
     bool has_prefix(value_type c) const;
-    bool has_prefix(const_pointer s, size_type n) const;
+    bool starts_with(const bytes& other) const noexcept;
+    bool starts_with(value_type ch) const noexcept;
+    bool starts_with(const_pointer s) const;
 
-    bool remove_prefix(const bytes& s);
-    bool remove_prefix(const_pointer s);
-    bool remove_prefix(value_type c);
+    bool has_suffix(const_pointer s, size_type n) const;
+    bool has_suffix(const bytes& s) const;
+    bool has_suffix(const_pointer s) const;
+    bool has_suffix(value_type c) const;
+    bool ends_with(const bytes& sv) const noexcept;
+    bool ends_with(value_type c) const noexcept;
+    bool ends_with(const_pointer s) const;
 
-    bool remove_suffix(const bytes& s);
-    bool remove_suffix(const_pointer s);
-    bool remove_suffix(value_type c);
+    bytes& remove_prefix(const_pointer s, size_type n);
+    bytes& remove_prefix(const bytes& s);
+    bytes& remove_prefix(const_pointer s);
+    bytes& remove_prefix(value_type c);
+
+    bytes& remove_suffix(const_pointer s, size_type n);
+    bytes& remove_suffix(const bytes& s);
+    bytes& remove_suffix(const_pointer s);
+    bytes& remove_suffix(value_type c);
 
     //  填充
     bytes& fill(value_type ch);
     bytes& fill(pos_type pos, value_type ch, size_type n);
     bytes& fill(pos_type pos, const_pointer s, size_type n);
+    bytes& fill(pos_type fill_from, pos_type fill_n, const_pointer s, size_type n);
+    bytes& fill(pos_type fill_from, pos_type fill_n, const_pointer s);
 
     //  查找
+    pos_type index_of(const_pointer s, size_type n, pos_type from) const;
     pos_type index_of(const bytes& other, pos_type from = 0) const;
     pos_type index_of(const_pointer s, pos_type from = 0) const;
     pos_type index_of(value_type ch, pos_type from = 0) const;
     pos_type index_of(const re& rx, pos_type from = 0) const;
     pos_type index_of(std::function<int(value_type c, bool& match)> func, pos_type from = 0) const;
 
+    pos_type last_index_of(const_pointer s, size_type n, pos_type from) const;
     pos_type last_index_of(const bytes& other, pos_type from = -1) const;
     pos_type last_index_of(value_type ch, pos_type from = -1) const;
     pos_type last_index_of(const_pointer s, pos_type from = -1) const;
     pos_type last_index_of(const re& rx, pos_type from = -1) const;
     pos_type last_index_of(std::function<int(value_type c, bool& match)> func, pos_type from = -1) const;
+
+    //  STL 接口兼容
+    pos_type find(const bytes& str, pos_type pos = 0) const noexcept;
+    pos_type find(const_pointer s, pos_type pos, size_type count) const;
+    pos_type find(const_pointer s, pos_type pos = 0) const;
+    pos_type find(value_type ch, pos_type pos = 0) const;
+
+    pos_type rfind(const bytes& other, pos_type pos = npos) const;
+    pos_type rfind(const_pointer s, pos_type pos, size_type count) const;
+    pos_type rfind(const_pointer s, pos_type pos = npos) const;
+    pos_type rfind(value_type ch, pos_type pos = npos) const;
+
+    pos_type find_first_of(const bytes& str, pos_type pos = 0) const;
+    pos_type find_first_of(const_pointer s, pos_type pos, size_type count) const;
+    pos_type find_first_of(const_pointer s, pos_type pos = 0) const;
+    pos_type find_first_of(value_type ch, pos_type pos = 0) const noexcept;
+
+    pos_type find_first_not_of(const bytes& str, pos_type pos = 0) const;
+    pos_type find_first_not_of(const_pointer s, pos_type pos, size_type count) const;
+    pos_type find_first_not_of(const_pointer s, pos_type pos = 0) const;
+    pos_type find_first_not_of(value_type ch, pos_type pos = 0) const noexcept;
+
+    pos_type find_last_of(const bytes& str, pos_type pos = npos) const;
+    pos_type find_last_of(const_pointer s, pos_type pos, size_type count) const;
+    pos_type find_last_of(const_pointer s, pos_type pos = npos) const;
+    pos_type find_last_of(value_type ch, pos_type pos = npos) const;
 
     //  分段查找
     pos_type section_of(bytes::pos_type from, const_pointer& s, size_type& n) const;
@@ -221,7 +265,8 @@ public:
     //  提取子串
     bytes left(size_type n) const;
     bytes right(size_type n) const;
-    bytes substr(pos_type pos, int offset_n = -1) const;
+    bytes substr(pos_type pos = 0, int n = npos) const;
+    bytes cutstr(pos_type pos, int offset) const;
 
     //  定宽对齐调整
     bytes& ljust(size_type width, value_type fill = ' ', bool truncate = false);
@@ -308,11 +353,12 @@ public:
     void swap(bytes& other);
     size_type copy(pointer dest, size_type n, pos_type pos = 0) const;
 
-    //  路径处理
-    bytes basename() const;
-    bytes& basename();
+    //  路径相关处理简化
+    const char* basename() const;
+    const char* extname() const;
+    const char* dirname(size_type& n) const;
     bytes dirname() const;
-    bytes& dirname();
+    void pathelem(std::function<int(const_pointer root, const_pointer dir, const_pointer rawname, const_pointer extname)> output_func) const;
 
     //  bool 映射
     bool to_bool(bool* ok = nullptr) const;
@@ -394,8 +440,9 @@ private:
         };
         enum : size_type {
             small_cap_max = size_type((sizeof(layout_tmplt) - 1) - 1), //  small 布局时，容量是固定大小(不算 \0 不算最后的len)
-            large_cap_max = size_type((size_type(-1) << type_bits) + 1),
+            large_cap_max = size_type((1 << ((sizeof(value_type) * 8) - type_bits)) - 1),
         };
+
         enum {
             large_cap_mask = size_type(-1) << (sizeof(size_type) * 8 - type_bits),
             large_cap_shift = type_bits,
