@@ -98,6 +98,14 @@ bytes::const_iterator bytes::end() const {
     return layout.end();
 }
 
+bytes::const_iterator bytes::cbegin() const {
+    return layout.begin();
+}
+
+bytes::const_iterator bytes::cend() const {
+    return layout.end();
+}
+
 bytes::reverse_iterator bytes::rbegin() {
     return bytes::reverse_iterator(layout.end() - 1);
 }
@@ -111,6 +119,14 @@ bytes::const_reverse_iterator bytes::rbegin() const {
 }
 
 bytes::const_reverse_iterator bytes::rend() const {
+    return bytes::const_reverse_iterator(layout.begin() - 1);
+}
+
+bytes::const_reverse_iterator bytes::crbegin() const {
+    return bytes::const_reverse_iterator(layout.end() - 1);
+}
+
+bytes::const_reverse_iterator bytes::crend() const {
     return bytes::const_reverse_iterator(layout.begin() - 1);
 }
 
@@ -165,6 +181,10 @@ bytes::const_pointer bytes::data() const {
     return layout.begin();
 }
 
+bytes::const_pointer bytes::c_str() const {
+    return layout.begin();
+}
+
 bytes::pointer bytes::data() {
     return layout.begin();
 }
@@ -174,6 +194,9 @@ bytes& bytes::attach(bytes::pointer buf, bytes::size_type len, bytes::size_type 
     ASSERT(len >= 0);
     ASSERT(cap >= 0);
     ASSERT(cap >= len);
+
+    ASSERT(buf[len] == '\0');
+
     layout.destroy();
     layout.large.attach(cap, len, buf);
 
@@ -890,8 +913,19 @@ bytes::pos_type bytes::index_of(std::function<int(bytes::value_type c, bool& mat
 }
 
 bytes::pos_type bytes::last_index_of(bytes::const_pointer s, bytes::size_type n, bytes::pos_type from) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::last_index_of(bytes::const_pointer s, bytes::size_type n, bytes::pos_type from) const
-    return bytes::npos;
+    bytes::pos_type found_pos = npos;
+
+    bytes::pos_type start_pos = from;
+    while (start_pos != bytes::npos) {
+        start_pos = index_of(s, n, start_pos);
+        if (start_pos == npos) {
+            break;
+        }
+        found_pos = start_pos;
+        start_pos += n;
+    }
+
+    return found_pos;
 }
 
 bytes::pos_type bytes::last_index_of(const bytes& other, bytes::pos_type from) const {
@@ -925,12 +959,20 @@ bytes::pos_type bytes::last_index_of(bytes::const_pointer s, bytes::pos_type fro
 }
 
 bytes::pos_type bytes::last_index_of(const re& rx, bytes::pos_type from) const {
-    ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(const re& rx, bytes::pos_type from) const
-    return bytes::npos;
+    bytes::pos_type found_pos = npos;
+
+    rx.find(layout.begin() + from, layout.len() - from, //
+        [&found_pos](const re::segment_type* segs, size_type n) -> int {
+            found_pos = segs[0].pos;
+            return 0;
+        });
+
+    return found_pos;
 }
 
 bytes::pos_type bytes::last_index_of(std::function<int(bytes::value_type c, bool& match)> matcher, bytes::pos_type from, bytes::pos_type to) const {
-    ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(std::function<int(bytes::value_type c, bool& match)> func, bytes::pos_type from) const
+    //    for (const_pointer ptr = )
+    ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(std::function<int(bytes::const_pointer start, bytes::size_type n, bytes::pos_type& match_pos, bytes::pos_type& match_n)> matcher, bytes::pos_type from, bytes::pos_type to) const
     return bytes::npos;
 }
 
@@ -2098,6 +2140,7 @@ bytes bytes::number(float n, bytes::value_type format, int precision) {
 }
 
 bytes bytes::number(int8_t n, int base) {
+    ASSERT(false); //  TODO - bytes bytes::number(int16_t n, int base)
     return bytes("");
 }
 

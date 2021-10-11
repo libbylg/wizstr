@@ -37,7 +37,11 @@ public:
         char message[128]{ 0 };
     };
 
-    typedef segment_t segment_type;
+    struct segment_type {
+        char* ptr{ nullptr };
+        int32_t pos{ -1 };
+        uint32_t len{ 0 };
+    };
 
 public:
     explicit re(const char* pattern, uint32_t flags = 0, error_type* error = nullptr);

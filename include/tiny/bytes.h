@@ -58,21 +58,21 @@ public:
     bytes& operator=(bytes&& other) noexcept;
     bytes& operator=(const bytes& other);
 
-    //  迭代器
+    //  正向迭代器
     iterator begin();
     iterator end();
-
-    //  常量迭代器
     const_iterator begin() const;
     const_iterator end() const;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 
     //  反向迭代器
     reverse_iterator rbegin();
     reverse_iterator rend();
-
-    //  反向常量迭代器
     const_reverse_iterator rbegin() const;
     const_reverse_iterator rend() const;
+    const_reverse_iterator crbegin() const;
+    const_reverse_iterator crend() const;
 
     //  元素访问
     value_type at(pos_type pos) const;
@@ -91,6 +91,7 @@ public:
     void clear();
 
     //  对接 C 接口
+    const_pointer c_str() const;
     const_pointer data() const;
     pointer data();
     bytes& attach(pointer buf, size_type len, size_type cap);
@@ -712,6 +713,7 @@ private:
             //  还原数据
             size_type old_len = len();
             memcpy(new_data, begin(), sizeof(value_type) * old_len);
+            new_data[old_len] = '\0';
 
             //  如果需要，先释放旧缓冲区
             destroy();

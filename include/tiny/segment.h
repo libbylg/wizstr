@@ -7,11 +7,7 @@
 
 namespace tiny {
 
-struct segment_t {
-    char* ptr{ nullptr };
-    int32_t pos{ -1 };
-    uint32_t len{ 0 };
-};
+
 
 } // namespace tiny
 
