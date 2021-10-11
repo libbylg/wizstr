@@ -284,7 +284,7 @@ public:
     bytes cutstr(pos_type pos, offset_type offset) const;
 
     //  定宽对齐调整
-    bytes& ljust(size_type width, value_type fill = ' ', bool truncate = false);
+    bytes& ljust(size_type width, value_type fill_ch = ' ', bool truncate = false);
     bytes& rjust(size_type width, value_type fill = ' ', bool truncate = false);
     bytes& center(size_type width, value_type fill = ' ', bool truncate = false);
     bytes& zfill(size_type width);
@@ -733,7 +733,7 @@ private:
         }
 
         //  往缓冲区填入数据，但必须由外部保证填入的数据不会溢出
-        void fill(pos_type pos, const_pointer s, size_type n) {
+        void fill(const_pointer s, size_type n, pos_type pos) {
             ASSERT(pos >= 0);
             ASSERT(n >= 0);
             ASSERT(s != nullptr);
@@ -742,7 +742,28 @@ private:
         }
 
         //  往缓冲区填入数据，但必须由外部保证填入的数据不会溢出
-        void fill(pos_type pos, value_type c, size_type n) {
+        void fill(pos_type fill_pos, pos_type fill_n, const_pointer s, size_type n) {
+            ASSERT(fill_pos >= 0);
+            ASSERT((fill_pos + fill_n) <= cap());
+
+            ASSERT(s != nullptr);
+            ASSERT(n >= 0);
+
+            size_type filled_pos = fill_pos;
+            size_type filled_len = 0;
+            while (filled_len < fill_n) {
+                if ((filled_len + n) > fill_n) {
+                    memcpy(begin() + filled_pos, s, (fill_n - filled_len) * sizeof(value_type));
+                    filled_pos += (fill_n - filled_len);
+                } else {
+                    memcpy(begin() + filled_pos, s, n * sizeof(value_type));
+                    filled_pos += n;
+                }
+            }
+        }
+
+        //  往缓冲区填入数据，但必须由外部保证填入的数据不会溢出
+        void fill(value_type c, size_type n, pos_type pos) {
             ASSERT(pos >= 0);
             ASSERT(n >= 0);
             ASSERT(pos + n <= cap());
@@ -776,7 +797,7 @@ private:
                 //  重新计算新长度并重新分配内存
                 size_type new_len = -offset - pos + len();
                 size_type new_cap = new_len;
-                pointer new_data = (pointer)malloc(new_cap * sizeof(value_type));
+                pointer new_data = (pointer)malloc((new_cap + 1) * sizeof(value_type));
                 ASSERT(new_data != nullptr);
 
                 //  先将需要拷贝的数据拷贝过来
@@ -794,6 +815,9 @@ private:
                     std::memcpy(new_data + n - corss_len, begin(), len());
                     action(new_data, -offset - pos - n);
                 }
+
+                //  添加尾部结束标记
+                new_data[new_len] = '\0';
 
                 //  先销毁老的数据
                 destroy();
@@ -815,7 +839,7 @@ private:
                 //  重新计算新长度并重新分配内存
                 size_type new_len = offset + pos + len();
                 size_type new_cap = new_len;
-                pointer new_data = (pointer)malloc(new_cap * sizeof(value_type));
+                pointer new_data = (pointer)malloc((new_cap + 1) * sizeof(value_type));
                 ASSERT(new_data != nullptr);
 
                 //  计算交叉数据的长度
@@ -831,6 +855,9 @@ private:
                     std::memcpy(new_data, begin(), len());
                     action(new_data + len(), (pos + offset - len()));
                 }
+
+                //  添加尾部结束标记
+                new_data[new_len] = '\0';
 
                 //  先销毁老的数据
                 destroy();

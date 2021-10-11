@@ -44,8 +44,8 @@ TEST(tiny_str, zfill) {
         EXPECT_TRUE(a.zfill(5) == "00000");
     }
     SECTION("非数字") {
-        EXPECT_TRUE(tiny::bytes("LMK").zfill(5) == "00LMK");
-        EXPECT_TRUE(tiny::bytes("中华人民共和国").zfill(25) == "0000中华人民共和国");
+        EXPECT_EQ(tiny::bytes("LMK").zfill(5), "00LMK");
+        EXPECT_TRUE(tiny::bytes ("中华人民共和国").zfill(25) == tiny::bytes ("0000中华人民共和国"));
     }
     SECTION("宽度太短") {
         EXPECT_TRUE(tiny::bytes("LMK").zfill(3) == "LMK");

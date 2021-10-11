@@ -183,14 +183,14 @@ bytes& bytes::attach(bytes::pointer buf, bytes::size_type len, bytes::size_type 
 bytes& bytes::append(const bytes& s) {
     bytes::pos_type pos = layout.len();
     layout.resize(layout.len() + s.size());
-    layout.fill(pos, s.data(), s.size());
+    layout.fill(s.data(), s.size(), pos);
     return *this;
 }
 
 bytes& bytes::append(bytes::value_type ch) {
     bytes::pos_type pos = layout.len();
     layout.resize(layout.len() + 1);
-    layout.fill(pos, &ch, 1);
+    layout.fill(ch, 1, pos);
     return *this;
 }
 
@@ -199,7 +199,7 @@ bytes& bytes::append(bytes::const_pointer s, bytes::size_type n) {
     ASSERT(n >= 0);
     bytes::pos_type pos = layout.len();
     layout.resize(layout.len() + n);
-    layout.fill(pos, s, n);
+    layout.fill(s, n, pos);
     return *this;
 }
 
@@ -223,7 +223,7 @@ bytes& bytes::prepend(bytes::const_pointer s, bytes::size_type n) {
     ASSERT(n >= 0);
     layout.flexmove(0, layout.len(), n, [](pointer fill, size_type n) {
     });
-    layout.fill(0, s, n);
+    layout.fill(s, n, 0);
     return *this;
 }
 
@@ -248,12 +248,12 @@ bytes& bytes::insert(bytes::pos_type pos, bytes::const_pointer s, bytes::size_ty
     if (pos < layout.len()) {
         layout.flexmove(pos, layout.len() - pos, n, [](pointer fill, size_type n) {
         });
-        layout.fill(pos, s, n);
+        layout.fill(s, n, pos);
         return *this;
     }
 
     layout.resize(layout.len() + pos + n);
-    layout.fill(pos, s, n);
+    layout.fill(s, n, pos);
     return *this;
 }
 
@@ -767,8 +767,8 @@ bytes& bytes::remove_suffix(bytes::value_type c) {
     return remove_suffix(&c, 1);
 }
 
-bytes& bytes::fill(bytes::value_type ch) {
-    layout.fill(0, ch, layout.len());
+bytes& bytes::fill(bytes::value_type fill_ch) {
+    layout.fill(fill_ch, layout.len(), 0);
     return *this;
 }
 
@@ -779,7 +779,7 @@ bytes& bytes::fill(bytes::pos_type pos, bytes::value_type ch, bytes::size_type n
     ASSERT((pos + n) >= 0);
     ASSERT((pos + n) <= size());
 
-    layout.fill(pos, ch, layout.len());
+    layout.fill(ch, layout.len(), pos);
     return *this;
 }
 
@@ -791,7 +791,7 @@ bytes& bytes::fill(bytes::pos_type pos, bytes::const_pointer s, bytes::size_type
     ASSERT((pos + n) >= 0);
     ASSERT((pos + n) <= size());
 
-    layout.fill(pos, s, n);
+    layout.fill(s, n, pos);
     return *this;
 }
 
@@ -1359,14 +1359,14 @@ bytes bytes::cutstr(pos_type pos, offset_type offset_n) const {
     return bytes();
 }
 
-bytes& bytes::ljust(bytes::size_type width, bytes::value_type fill, bool truncate) {
+bytes& bytes::ljust(bytes::size_type width, bytes::value_type fill_ch, bool truncate) {
     ASSERT(width >= 0);
 
     // 宽度大于 bytes 的总长度时，在尾部追加数据
     if (width > layout.len()) {
         bytes::size_type old_len = layout.len();
         layout.resize(width);
-        layout.fill(old_len, fill, width - old_len);
+        layout.fill(fill_ch, width - old_len, old_len);
         return *this;
     }
 
@@ -1383,7 +1383,7 @@ bytes& bytes::ljust(bytes::size_type width, bytes::value_type fill, bool truncat
     return *this;
 }
 
-bytes& bytes::rjust(bytes::size_type width, bytes::value_type fill, bool truncate) {
+bytes& bytes::rjust(bytes::size_type width, bytes::value_type fill_ch, bool truncate) {
     ASSERT(width >= 0);
 
     // 宽度大于 bytes 的总长度时，在尾部追加数据
@@ -1391,7 +1391,7 @@ bytes& bytes::rjust(bytes::size_type width, bytes::value_type fill, bool truncat
         bytes::size_type old_len = layout.len();
         layout.flexmove(0, old_len, (width - old_len), [](pointer fill, size_type n) {
         });
-        layout.fill(0, fill, (width - old_len));
+        layout.fill(fill_ch, (width - old_len), 0);
         return *this;
     }
 
@@ -1424,8 +1424,8 @@ bytes& bytes::center(bytes::size_type width, bytes::value_type fill_ch, bool tru
         layout.flexmove(0, old_len, lfill_len, [](pointer fill, size_type n) {
         });
 
-        layout.fill(0, fill_ch, lfill_len);
-        layout.fill(lfill_len + old_len, fill_ch, rfill_len);
+        layout.fill(fill_ch, lfill_len, 0);
+        layout.fill(fill_ch, rfill_len, lfill_len + old_len);
         return *this;
     }
 
@@ -1444,30 +1444,33 @@ bytes& bytes::center(bytes::size_type width, bytes::value_type fill_ch, bool tru
 
 bytes& bytes::zfill(bytes::size_type width) {
     ASSERT(width >= 0);
-    if (width > layout.len()) {
-        size_type fill_n = width - layout.len();
-        pos_type fill_pos = 0;
 
-        //  如果字符串长度大于0，那么需要判断是否有正负号
-        if (layout.len() > 0) {
-            //  如果有正负号，那么需要移动的数据的偏移就不是0了
-            if ((layout.begin()[0] == '+') || (layout.begin()[0] == '-')) {
-                fill_pos = 1;
-            }
-
-            //  移动数据，腾出空位
-            layout.flexmove(fill_pos, layout.len() - fill_pos, fill_n, [](pointer begin, size_type n) {
-            });
-        } else {
-            //  直接调整长度
-            layout.resize(fill_n);
-        }
-
-        //  填充数据
-        layout.fill(fill_pos, '0', fill_n);
+    //  如果宽度太窄
+    if (width <= layout.len()) {
         return *this;
     }
 
+    //  如果宽度足够
+    size_type fill_n = width - layout.len();
+    pos_type fill_pos = 0;
+
+    //  如果字符串长度大于0，那么需要判断是否有正负号
+    if (layout.len() > 0) {
+        //  如果有正负号，那么需要移动的数据的偏移就不是0了
+        if ((layout.begin()[0] == '+') || (layout.begin()[0] == '-')) {
+            fill_pos = 1;
+        }
+
+        //  移动数据，腾出空位
+        layout.flexmove(fill_pos, layout.len() - fill_pos, fill_n, [](pointer begin, size_type n) {
+        });
+    } else {
+        //  直接调整长度
+        layout.resize(fill_n);
+    }
+
+    //  填充数据
+    layout.fill('0', fill_n, fill_pos);
     return *this;
 }
 
@@ -1614,7 +1617,7 @@ void bytes::resize(bytes::size_type n, bytes::value_type fill_ch) {
     bytes::size_type old_len = size();
     layout.resize(n);
     if (n > old_len) {
-        layout.fill(old_len, fill_ch, (n - old_len));
+        layout.fill(fill_ch, (n - old_len), old_len);
     }
 }
 
@@ -1632,6 +1635,8 @@ bytes& bytes::title() {
             *ptr = std::toupper(*ptr);
             return -1;
         }
+
+        return 0;
     });
 
     return *this;
@@ -1944,7 +1949,18 @@ bytes bytes::dirname() const {
 }
 
 const char* bytes::extname() const {
-    ASSERT(false); //  TODO const char* bytes::extname() const
+    if (layout.len() == 0) {
+        return layout.begin();
+    }
+
+    const_pointer ptr = basename();
+    ASSERT(ptr != nullptr);
+    auto pos = index_of('.', ptr - layout.begin());
+    if (pos == bytes::npos) {
+        return layout.end() - 1;
+    }
+
+    return layout.begin() + (pos + 1);
 }
 
 void bytes::pathelem(std::function<int(bytes::const_pointer root, bytes::const_pointer dir, bytes::const_pointer rawname, bytes::const_pointer extname)> func) const {
@@ -1958,10 +1974,10 @@ bool bytes::to_bool(bool* ok) const {
 bytes& bytes::assign(bool v) {
     if (v) {
         layout.resize(4);
-        layout.fill(0, "true", 4);
+        layout.fill("true", 4, 0);
     } else {
         layout.resize(5);
-        layout.fill(0, "false", 5);
+        layout.fill("false", 5, 0);
     }
     return *this;
 }
