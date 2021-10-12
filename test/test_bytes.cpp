@@ -345,3 +345,10 @@ TEST(tiny_str, is_bool) {
         EXPECT_TRUE(tiny::bytes("FALSE").is_bool());
     }
 }
+
+TEST(tiny_str, expand_tabs) {
+    SECTION("简单场景") {
+        tiny::bytes a("1\t123\t1234\t12345\t123456\t$");
+        EXPECT_EQ(a.expand_tabs(4), "1   123 1234    12345   123456  $");
+    }
+}

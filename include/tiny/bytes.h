@@ -99,10 +99,12 @@ public:
     //  首尾追加
     bytes& append(const bytes& other);
     bytes& append(value_type ch);
+    bytes& append(value_type ch, size_type n);
     bytes& append(const_pointer s, size_type len);
     bytes& append(const_pointer s);
     bytes& prepend(const bytes& other);
     bytes& prepend(value_type ch);
+    bytes& prepend(value_type ch, size_type n);
     bytes& prepend(const_pointer s, size_type len);
     bytes& prepend(const_pointer s);
 

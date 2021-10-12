@@ -226,6 +226,13 @@ bytes& bytes::append(bytes::const_pointer s, bytes::size_type n) {
     return *this;
 }
 
+bytes& bytes::append(bytes::value_type ch, bytes::size_type n) {
+    bytes::size_type old_len = layout.len();
+    layout.resize(layout.len() + n);
+    layout.fill(ch, n, old_len);
+    return *this;
+}
+
 bytes& bytes::append(bytes::const_pointer s) {
     ASSERT(s != nullptr);
     append(s, std::strlen(s));
@@ -239,6 +246,14 @@ bytes& bytes::prepend(const bytes& s) {
 
 bytes& bytes::prepend(bytes::value_type ch) {
     return prepend(&ch, 1);
+}
+
+bytes& bytes::prepend(bytes::value_type ch, bytes::size_type n) {
+    ASSERT(n >= 0);
+    layout.flexmove(0, layout.len(), n, [](pointer fill, size_type n) {
+    });
+    layout.fill(ch, n, 0);
+    return *this;
 }
 
 bytes& bytes::prepend(bytes::const_pointer s, bytes::size_type n) {
@@ -2044,8 +2059,27 @@ bytes bytes::expand_envs() const {
 }
 
 bytes bytes::expand_tabs(bytes::size_type tab_size) const {
-    ASSERT(false); // TODO - bytes bytes::expand_tabs(bytes::size_type tab_size) const
-    return bytes("");
+    ASSERT(tab_size >= 0);
+    bytes result;
+    result.reserve(size());
+
+    bytes::const_pointer block = layout.begin();
+    for (bytes::const_pointer ptr = block; ptr != layout.end(); ptr++) {
+        if (*ptr == '\t') {
+            result.reserve(result.size() + (ptr - block) + tab_size);
+            result.append(block, ptr - block);
+            result.append(' ', tab_size - (result.size() % tab_size));
+            block = ptr + 1;
+        }
+    }
+
+    //  补齐最后一块
+    bytes::size_type last_len = block - layout.begin();
+    if (last_len > 0) {
+        result.append(block, last_len);
+    }
+
+    return result;
 }
 
 bytes bytes::expand_tmpl(const std::map<bytes, bytes>& kvs) const {
@@ -2366,32 +2400,48 @@ extern bool operator!=(bytes::const_pointer s1, const bytes& s2) {
 }
 
 extern const bytes operator+(const bytes& s1, const bytes& s2) {
-    ASSERT(false); //  TODO - extern const bytes operator+(const bytes& s1, const bytes& s2)
     bytes new_str;
+    new_str.reserve(s1.size() + s2.size());
+    new_str.append(s1);
+    new_str.append(s2);
     return new_str;
 }
 
 extern const bytes operator+(const bytes& s1, bytes::const_pointer s2) {
-    ASSERT(false); //  TODO - extern const bytes operator+(const bytes& s1, bytes::const_pointer s2)
+    ASSERT(s2 != nullptr);
+    bytes::size_type s2_n = std::strlen(s2);
+
     bytes new_str;
+    new_str.reserve(s1.size() + s2_n);
+    new_str.append(s1);
+    new_str.append(s2, s2_n);
     return new_str;
 }
 
 extern const bytes operator+(bytes::const_pointer s1, const bytes& s2) {
-    ASSERT(false); //  TODO - extern const bytes operator+(bytes::const_pointer s1, const bytes& s2)
+    ASSERT(s1 != nullptr);
+    bytes::size_type s1_n = std::strlen(s1);
+
     bytes new_str;
+    new_str.reserve(s1_n + s2.size());
+    new_str.append(s1, s1_n);
+    new_str.append(s2);
     return new_str;
 }
 
 extern const bytes operator+(bytes::value_type ch, const bytes& s) {
-    ASSERT(false); //  TODO - extern const bytes operator+(bytes::value_type ch, const bytes& s)
     bytes new_str;
+    new_str.reserve(1 + s.size());
+    new_str.append(ch);
+    new_str.append(s);
     return new_str;
 }
 
 extern const bytes operator+(const bytes& other, bytes::value_type ch) {
-    ASSERT(false); //  TODO - extern const bytes operator+(const bytes& other, bytes::value_type ch)
     bytes new_str;
+    new_str.reserve(other.size() + 1);
+    new_str.append(other);
+    new_str.append(ch);
     return new_str;
 }
 
