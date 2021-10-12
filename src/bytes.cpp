@@ -802,7 +802,7 @@ bytes& bytes::fill(bytes::pos_type pos, bytes::value_type ch, bytes::size_type n
     ASSERT((pos + n) >= 0);
     ASSERT((pos + n) <= size());
 
-    layout.fill(ch, layout.len(), pos);
+    layout.fill(ch, n, pos);
     return *this;
 }
 
@@ -1014,23 +1014,22 @@ bytes::pos_type bytes::rfind(bytes::value_type ch, bytes::pos_type pos) const {
 }
 
 bytes::pos_type bytes::find_first_of(const bytes& str, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
+    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
 }
 
 bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
+    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
 }
 
 bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
+    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
 }
 
 bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return index_of(ch, pos);
 }
 
 bytes::pos_type bytes::find_first_not_of(const bytes& str, bytes::pos_type pos) const {
@@ -1039,7 +1038,7 @@ bytes::pos_type bytes::find_first_not_of(const bytes& str, bytes::pos_type pos) 
 }
 
 bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
+    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
 }
 
@@ -1049,7 +1048,7 @@ bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type
 }
 
 bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
+    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
 }
 
@@ -1664,7 +1663,7 @@ void bytes::resize(bytes::size_type n, bytes::value_type fill_ch) {
 }
 
 void bytes::shrink_to_fit() {
-    return; //  TODO void bytes::squeeze()
+    return; //  TODO void bytes::shrink_to_fit()
 }
 
 void bytes::squeeze() {

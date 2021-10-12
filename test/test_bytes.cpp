@@ -45,7 +45,7 @@ TEST(tiny_str, zfill) {
     }
     SECTION("非数字") {
         EXPECT_EQ(tiny::bytes("LMK").zfill(5), "00LMK");
-        EXPECT_TRUE(tiny::bytes ("中华人民共和国").zfill(25) == tiny::bytes ("0000中华人民共和国"));
+        EXPECT_TRUE(tiny::bytes("中华人民共和国").zfill(25) == tiny::bytes("0000中华人民共和国"));
     }
     SECTION("宽度太短") {
         EXPECT_TRUE(tiny::bytes("LMK").zfill(3) == "LMK");
@@ -291,5 +291,19 @@ TEST(tiny_str, center) {
     SECTION("简单测试") {
         tiny::bytes s("HelloWorld");
         EXPECT_EQ(s.center(9, '*', true), "HelloWorl");
+    }
+}
+
+TEST(tiny_str, fill) {
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.fill('*'), "**********");
+    }
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.fill(1, '*', 3), "H***oWorld");
+        EXPECT_EQ(s.fill(0, '-', 3), "---*oWorld");
+        EXPECT_EQ(s.fill(5, 'A', 5), "---*oAAAAA");
+        EXPECT_DEBUG_DEATH(s.fill(5, 'A', 6), "");
     }
 }
