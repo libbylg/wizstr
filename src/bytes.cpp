@@ -1369,13 +1369,13 @@ bool bytes::is_bool() const {
     const_pointer ptr = layout.begin();
     switch (layout.len()) {
         case 5:
-            if ((ptr[0] == 'f') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[3] == 'e')) {
+            if ((ptr[0] == 'f') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
                 return true;
             }
-            if ((ptr[0] == 'F') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[3] == 'e')) {
+            if ((ptr[0] == 'F') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
                 return true;
             }
-            if ((ptr[0] == 'F') && (ptr[1] == 'A') && (ptr[2] == 'L') && (ptr[3] == 'S') && (ptr[3] == 'E')) {
+            if ((ptr[0] == 'F') && (ptr[1] == 'A') && (ptr[2] == 'L') && (ptr[3] == 'S') && (ptr[4] == 'E')) {
                 return true;
             }
             return false;
@@ -1414,10 +1414,16 @@ bool bytes::is_bool() const {
             if ((ptr[0] == 'o') && (ptr[1] == 'n')) {
                 return true;
             }
+            if ((ptr[0] == 'O') && (ptr[1] == 'n')) {
+                return true;
+            }
             if ((ptr[0] == 'O') && (ptr[1] == 'N')) {
                 return true;
             }
             if ((ptr[0] == 'n') && (ptr[1] == 'o')) {
+                return true;
+            }
+            if ((ptr[0] == 'N') && (ptr[1] == 'o')) {
                 return true;
             }
             if ((ptr[0] == 'N') && (ptr[1] == 'O')) {
