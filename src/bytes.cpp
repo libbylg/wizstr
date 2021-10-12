@@ -1014,8 +1014,7 @@ bytes::pos_type bytes::rfind(bytes::value_type ch, bytes::pos_type pos) const {
 }
 
 bytes::pos_type bytes::find_first_of(const bytes& str, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return find_first_of(str.layout.begin(), pos, str.layout.len());
 }
 
 bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
@@ -1024,17 +1023,15 @@ bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos
 }
 
 bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return find_first_of(s, pos, std::strlen(s));
 }
 
 bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const {
     return index_of(ch, pos);
 }
 
-bytes::pos_type bytes::find_first_not_of(const bytes& str, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+bytes::pos_type bytes::find_first_not_of(const bytes& other, bytes::pos_type pos) const {
+    return find_first_not_of(other.layout.begin(), pos, other.layout.len());
 }
 
 bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
@@ -1043,8 +1040,7 @@ bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type
 }
 
 bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return find_first_not_of(s, pos, std::strlen(s));
 }
 
 bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const {
@@ -1053,8 +1049,7 @@ bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type p
 }
 
 bytes::pos_type bytes::find_last_of(const bytes& str, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return find_last_of(str.layout.begin(), pos, str.layout.len());
 }
 
 bytes::pos_type bytes::find_last_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
@@ -1063,18 +1058,15 @@ bytes::pos_type bytes::find_last_of(bytes::const_pointer s, bytes::pos_type pos,
 }
 
 bytes::pos_type bytes::find_last_of(bytes::const_pointer s, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return find_last_of(s, pos, std::strlen(s));
 }
 
 bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_last_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    return last_index_of(ch, pos);
 }
 
 bytes::size_type bytes::find_last_not_of(const bytes& str, bytes::size_type pos) const {
-    ASSERT(false); //  TODO - bytes::size_type bytes::find_last_not_of(bytes::const bytes& str, bytes::size_type pos = npos) const
-    return bytes::npos;
+    return bytes::find_last_not_of(str.layout.begin(), pos, str.layout.len());
 }
 
 bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_type pos, size_type count) const {
@@ -1083,8 +1075,7 @@ bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_typ
 }
 
 bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_type pos) const {
-    ASSERT(false); //  TODO - bytes::size_type bytes::find_last_not_of(bytes::const_pointer s, bytes::size_type pos = npos) const
-    return bytes::npos;
+    return bytes::find_last_not_of(s, pos, std::strlen(s));
 }
 
 bytes::size_type bytes::find_last_not_of(bytes::value_type ch, bytes::size_type pos) const {
@@ -1361,7 +1352,91 @@ bool bytes::is_identifier() const {
 }
 
 bool bytes::is_bool() const {
-    ASSERT(false); //  TODO - bool bytes::is_bool() const
+    if (layout.len() <= 0) {
+        return false;
+    }
+
+    //  "1"     "0"
+    //  "on"    "off"
+    //  "ON"    "OFF"
+    //  "Yes"   "No"
+    //  "yes"   "no"
+    //  "YES"   "NO"
+    //  "True"  "False"
+    //  "true"  "false"
+    //  "TRUE"  "FALSE"
+
+    const_pointer ptr = layout.begin();
+    switch (layout.len()) {
+        case 5:
+            if ((ptr[0] == 'f') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'F') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'F') && (ptr[1] == 'A') && (ptr[2] == 'L') && (ptr[3] == 'S') && (ptr[3] == 'E')) {
+                return true;
+            }
+            return false;
+        case 4:
+            if ((ptr[0] == 't') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'R') && (ptr[2] == 'U') && (ptr[3] == 'E')) {
+                return true;
+            }
+            return false;
+        case 3:
+            if ((ptr[0] == 'y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'E') && (ptr[2] == 'S')) {
+                return true;
+            }
+            if ((ptr[0] == 'o') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'F') && (ptr[2] == 'F')) {
+                return true;
+            }
+            return false;
+        case 2:
+            if ((ptr[0] == 'o') && (ptr[1] == 'n')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'N')) {
+                return true;
+            }
+            if ((ptr[0] == 'n') && (ptr[1] == 'o')) {
+                return true;
+            }
+            if ((ptr[0] == 'N') && (ptr[1] == 'O')) {
+                return true;
+            }
+            return false;
+        case 1:
+            switch (*ptr) {
+                case '0':
+                    return true;
+                case '1':
+                    return true;
+                default:
+                    return false;
+            }
+        default:
+            return false;
+    }
+
     return false;
 }
 
@@ -1686,10 +1761,9 @@ bytes& bytes::title() {
 bytes& bytes::invert(bytes::pos_type pos) {
     ASSERT(pos >= 0);
     ASSERT(pos < size());
-    
-    
+
     pointer ptrh = layout.begin() + pos;
-    pointer ptrt = layout.end()  - 1;
+    pointer ptrt = layout.end() - 1;
 
     while (ptrh < ptrt) {
         bytes::value_type ch = *ptrh;
@@ -1700,7 +1774,6 @@ bytes& bytes::invert(bytes::pos_type pos) {
     }
 
     return *this;
-
 }
 
 bytes& bytes::invert(bytes::pos_type pos, bytes::size_type n) {

@@ -322,3 +322,26 @@ TEST(tiny_str, invert) {
         EXPECT_EQ(s.invert(5), "HellodlroW");
     }
 }
+
+TEST(tiny_str, is_bool) {
+    SECTION("简单场景") {
+        EXPECT_TRUE(tiny::bytes("1").is_bool());
+        EXPECT_TRUE(tiny::bytes("0").is_bool());
+        EXPECT_TRUE(tiny::bytes("on").is_bool());
+        EXPECT_TRUE(tiny::bytes("off").is_bool());
+        EXPECT_TRUE(tiny::bytes("ON").is_bool());
+        EXPECT_TRUE(tiny::bytes("OFF").is_bool());
+        EXPECT_TRUE(tiny::bytes("Yes").is_bool());
+        EXPECT_TRUE(tiny::bytes("No").is_bool());
+        EXPECT_TRUE(tiny::bytes("yes").is_bool());
+        EXPECT_TRUE(tiny::bytes("no").is_bool());
+        EXPECT_TRUE(tiny::bytes("YES").is_bool());
+        EXPECT_TRUE(tiny::bytes("NO").is_bool());
+        EXPECT_TRUE(tiny::bytes("True").is_bool());
+        EXPECT_TRUE(tiny::bytes("False").is_bool());
+        EXPECT_TRUE(tiny::bytes("true").is_bool());
+        EXPECT_TRUE(tiny::bytes("false").is_bool());
+        EXPECT_TRUE(tiny::bytes("TRUE").is_bool());
+        EXPECT_TRUE(tiny::bytes("FALSE").is_bool());
+    }
+}
