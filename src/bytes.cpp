@@ -1683,7 +1683,7 @@ bytes& bytes::title() {
     return *this;
 }
 
-bytes& bytes::reverse(bytes::pos_type pos) {
+bytes& bytes::invert(bytes::pos_type pos) {
     ASSERT(pos >= 0);
     ASSERT(pos < size());
     
@@ -1691,7 +1691,7 @@ bytes& bytes::reverse(bytes::pos_type pos) {
     pointer ptrh = layout.begin() + pos;
     pointer ptrt = layout.end()  - 1;
 
-    while (ptrh != ptrt) {
+    while (ptrh < ptrt) {
         bytes::value_type ch = *ptrh;
         *ptrh = *ptrt;
         *ptrt = ch;
@@ -1703,9 +1703,9 @@ bytes& bytes::reverse(bytes::pos_type pos) {
 
 }
 
-bytes& bytes::reverse(bytes::pos_type pos, bytes::size_type n) {
+bytes& bytes::invert(bytes::pos_type pos, bytes::size_type n) {
     ASSERT(pos >= 0);
-    ASSERT(pos > size());
+    ASSERT(pos < size());
     ASSERT(n >= 0);
     ASSERT((pos + n) >= 0);
     ASSERT((pos + n) <= size());
@@ -1713,7 +1713,7 @@ bytes& bytes::reverse(bytes::pos_type pos, bytes::size_type n) {
     pointer ptrh = layout.begin() + pos;
     pointer ptrt = layout.begin() + pos + (n - 1);
 
-    while (ptrh != ptrt) {
+    while (ptrh < ptrt) {
         bytes::value_type ch = *ptrh;
         *ptrh = *ptrt;
         *ptrt = ch;

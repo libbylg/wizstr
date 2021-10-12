@@ -308,11 +308,17 @@ TEST(tiny_str, fill) {
     }
 }
 
-TEST(tiny_str, reverse) {
-    SECTION("简单测试") {
+TEST(tiny_str, invert) {
+    SECTION("全部颠倒") {
         tiny::bytes s("HelloWorld");
-        EXPECT_EQ(s.reverse(), "dlroWolleH");
-        EXPECT_EQ(s.reverse(2, 3), "HeollWorld");
-        EXPECT_EQ(s.reverse(5), "HeolldlroW");
+        EXPECT_EQ(s.invert(), "dlroWolleH");
+    }
+    SECTION("部分颠倒") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.invert(2, 3), "HeollWorld");
+    }
+    SECTION("指定位置之后的颠倒") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.invert(5), "HellodlroW");
     }
 }
