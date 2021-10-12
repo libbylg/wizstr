@@ -307,3 +307,12 @@ TEST(tiny_str, fill) {
         EXPECT_DEBUG_DEATH(s.fill(5, 'A', 6), "");
     }
 }
+
+TEST(tiny_str, reverse) {
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.reverse(), "dlroWolleH");
+        EXPECT_EQ(s.reverse(2, 3), "HeollWorld");
+        EXPECT_EQ(s.reverse(5), "HeolldlroW");
+    }
+}

@@ -321,7 +321,8 @@ public:
     bytes& title();
 
     //  反转：字符串逆序
-    bytes& inversion(pos_type start, offset_type offset);
+    bytes& reverse(pos_type pos = 0);
+    bytes& reverse(pos_type pos, size_type n);
 
     //  字符串分割
     std::vector<bytes> split(const bytes& sep) const;

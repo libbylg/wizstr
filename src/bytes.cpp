@@ -1683,8 +1683,45 @@ bytes& bytes::title() {
     return *this;
 }
 
-bytes& bytes::inversion(pos_type start, offset_type offset) {
-    return *this; //  TODO bytes& bytes::inversion()
+bytes& bytes::reverse(bytes::pos_type pos) {
+    ASSERT(pos >= 0);
+    ASSERT(pos < size());
+    
+    
+    pointer ptrh = layout.begin() + pos;
+    pointer ptrt = layout.end()  - 1;
+
+    while (ptrh != ptrt) {
+        bytes::value_type ch = *ptrh;
+        *ptrh = *ptrt;
+        *ptrt = ch;
+        ptrh++;
+        ptrt--;
+    }
+
+    return *this;
+
+}
+
+bytes& bytes::reverse(bytes::pos_type pos, bytes::size_type n) {
+    ASSERT(pos >= 0);
+    ASSERT(pos > size());
+    ASSERT(n >= 0);
+    ASSERT((pos + n) >= 0);
+    ASSERT((pos + n) <= size());
+
+    pointer ptrh = layout.begin() + pos;
+    pointer ptrt = layout.begin() + pos + (n - 1);
+
+    while (ptrh != ptrt) {
+        bytes::value_type ch = *ptrh;
+        *ptrh = *ptrt;
+        *ptrt = ch;
+        ptrh++;
+        ptrt--;
+    }
+
+    return *this;
 }
 
 std::vector<bytes> bytes::split(const bytes& sep) const {
