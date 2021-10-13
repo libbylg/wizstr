@@ -52,9 +52,11 @@ public:
     explicit bytes();
     explicit bytes(const_pointer s);
     bytes(const_pointer s, size_type n);
-    bytes(value_type ch, size_type size);
+    bytes(value_type ch, size_type size = 1);
     bytes(bytes&& s) noexcept;
-    bytes(const bytes& s);
+    bytes(const bytes& other);
+    bytes(const bytes& other, pos_type pos);
+    bytes(const bytes& other, pos_type pos, size_type n);
     bytes& operator=(bytes&& other) noexcept;
     bytes& operator=(const bytes& other);
 
@@ -375,8 +377,8 @@ public:
     //  路径相关处理简化
     const char* basename() const;
     const char* extname() const;
-    const char* dirname(size_type& n) const;
-    bytes dirname() const;
+    bytes& dirname();
+    bytes& dirname(bytes& result) const;
     void pathelem(std::function<int(const_pointer root, const_pointer dir, const_pointer rawname, const_pointer extname)> output_func) const;
 
     //  bool 映射
@@ -405,6 +407,14 @@ public:
     bytes& assign(uint16_t n, int base = 10);
     bytes& assign(uint32_t n, int base = 10);
     bytes& assign(uint64_t n, int base = 10);
+
+    bytes& assign(size_type count, value_type ch);
+    bytes& assign(const bytes& other);
+    bytes& assign(const bytes& other, size_type pos);
+    bytes& assign(const bytes& other, size_type pos, size_type count);
+    bytes& assign(bytes&& other);
+    bytes& assign(const_pointer s);
+    bytes& assign(const_pointer s, size_type count);
 
     //  转换为 hash 值
     int32_t hash_code() const;

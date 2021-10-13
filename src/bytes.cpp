@@ -53,6 +53,21 @@ bytes::bytes(const bytes& other) {
     layout.init(other.data(), other.size());
 }
 
+bytes::bytes(const bytes& other, bytes::pos_type pos) {
+    ASSERT(pos >= 0);
+    ASSERT(pos < other.size());
+    layout.init(other.layout.begin() + pos, other.layout.len());
+}
+
+bytes::bytes(const bytes& other, bytes::pos_type pos, bytes::size_type n) {
+    ASSERT(pos >= 0);
+    ASSERT(pos < other.size());
+    ASSERT(n >= 0);
+    ASSERT((pos + n) <= other.size());
+
+    layout.init(other.data() + pos, n);
+}
+
 bytes& bytes::operator=(bytes&& other) noexcept {
     if (&other == this) {
         return *this;
@@ -241,7 +256,7 @@ bytes& bytes::append(bytes::const_pointer s) {
 
 bytes& bytes::prepend(const bytes& s) {
     ASSERT(this != &s);
-    return prepend(s.begin(), s.size());
+    return prepend(s.layout.begin(), s.layout.len());
 }
 
 bytes& bytes::prepend(bytes::value_type ch) {
@@ -546,7 +561,7 @@ int bytes::compare(bytes::value_type c) const {
 }
 
 bool bytes::contains(const bytes& s) const {
-    return strstr(layout.begin(), s.begin()) != nullptr;
+    return strstr(layout.begin(), s.layout.begin()) != nullptr;
 }
 
 bool bytes::contains(bytes::const_pointer s) const {
@@ -2131,12 +2146,41 @@ const char* bytes::basename() const {
     return ptr + 1;
 }
 
-const char* bytes::dirname(bytes::size_type& n) const {
-    ASSERT(false); //  TODO const char* bytes::dirname(bytes::size_type& n) const
+bytes& bytes::dirname() {
+#if defined(WIN32)
+    bytes::pos_type pos = find_last_of("/\\", 0);
+#else
+    bytes::pos_type pos = find_last_of("/", 0);
+#endif
+
+    if (pos == npos) {
+        return assign(".");
+    }
+
+    if (pos == 0) {
+        return assign(".");
+    }
+
+    layout.resize(pos);
+    return *this;
 }
 
-bytes bytes::dirname() const {
-    ASSERT(false); //  TODO bytes bytes::dirname() const
+bytes& bytes::dirname(bytes& result) const {
+#if defined(WIN32)
+    bytes::pos_type pos = find_last_of("/\\", 0);
+#else
+    bytes::pos_type pos = find_last_of("/", 0);
+#endif
+
+    if (pos == npos) {
+        return result.assign(".");
+    }
+
+    if (pos == 0) {
+        return result.assign("/");
+    }
+
+    return result.assign(layout.begin(), pos);
 }
 
 const char* bytes::extname() const {
@@ -2184,7 +2228,22 @@ float bytes::to_float(bool* ok) const {
 }
 
 int8_t bytes::to_int8(bool* ok, int base) const {
-    ASSERT(false); // TODO - int8_t bytes::to_int8(bool* ok, int base) const
+    ASSERT(base >= base_min);
+    ASSERT(base <= base_max);
+    if (base == 2) {
+        uint8_t result = 0;
+        bytes::const_pointer ptr = layout.begin();
+        for (; ptr != std::min(layout.end(), layout.begin() + 8); ptr++) {
+            if (!chars::match(chars::BIN, *ptr)) {
+                break;
+            }
+        }
+
+        if ((*ptr != '0') && (*ptr != '1')) {
+        }
+
+        return int8_t(result);
+    }
     return 0;
 }
 
@@ -2270,6 +2329,57 @@ bytes& bytes::assign(uint32_t n, int base) {
 
 bytes& bytes::assign(uint64_t n, int base) {
     ASSERT(false); //  TODO - bytes& bytes::assign(uint64_t n, int base)
+    return *this;
+}
+
+bytes& bytes::assign(bytes::size_type count, bytes::value_type ch) {
+    ASSERT(false); // TODO - bytes& bytes::assign(bytes::size_type count, bytes::value_type ch)
+    return *this;
+}
+
+bytes& bytes::assign(const bytes& other) {
+    layout.destroy();
+    layout.init(other.data(), other.size());
+    return *this;
+}
+
+bytes& bytes::assign(const bytes& other, bytes::pos_type pos) {
+    ASSERT(pos >= 0);
+    ASSERT(pos < other.size());
+    layout.destroy();
+    layout.init(other.layout.begin() + pos, other.layout.len());
+    return *this;
+}
+
+bytes& bytes::assign(const bytes& other, bytes::pos_type pos, bytes::size_type n) {
+    ASSERT(pos >= 0);
+    ASSERT(pos < other.size());
+    ASSERT(n >= 0);
+    ASSERT((pos + n) <= other.size());
+    layout.destroy();
+    layout.init(other.layout.begin() + pos, n);
+    return *this;
+}
+
+bytes& bytes::assign(bytes&& other) {
+    layout.destroy();
+    memcpy(&layout, &other.layout, sizeof(other.layout));
+    other.layout.init(nullptr, 0);
+    return *this;
+}
+
+bytes& bytes::assign(bytes::const_pointer s) {
+    ASSERT(s != nullptr);
+    layout.destroy();
+    layout.init(s, std::strlen(s));
+    return *this;
+}
+
+bytes& bytes::assign(bytes::const_pointer s, bytes::size_type n) {
+    ASSERT(s != nullptr);
+    ASSERT(n >= 0);
+    layout.destroy();
+    layout.init(s, n);
     return *this;
 }
 
