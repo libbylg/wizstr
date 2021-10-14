@@ -145,7 +145,7 @@ public:
     bytes& remove(const_pointer s, size_type n);
     bytes& remove(const bytes& other);
     bytes& remove(const re& rx);
-    bytes& remove(std::function<int(value_type c, bool& match)> func);
+    bytes& remove(std::function<bool(value_type ch, bool& cntu)> func);
     bytes& remove(std::function<int(const_pointer search, size_type search_n, const_pointer& match, size_type& match_n)> func);
 
     bytes& erase(pos_type pos = 0, pos_type len = npos);
@@ -172,7 +172,7 @@ public:
     size_type count(const_pointer s) const;
     size_type count(value_type ch) const;
     size_type count(const re& rx) const;
-    size_type count(std::function<int(value_type ch, bool& match)> macher) const;
+    size_type count(std::function<bool(value_type ch, bool& cntu)> macher) const;
 
     //  前后缀操作
     bool has_prefix(const_pointer s, size_type n) const;
@@ -214,14 +214,14 @@ public:
     pos_type index_of(const_pointer s, pos_type from = 0) const;
     pos_type index_of(value_type ch, pos_type from = 0) const;
     pos_type index_of(const re& rx, pos_type from = 0) const;
-    pos_type index_of(std::function<int(value_type c, bool& match)> matcher, pos_type from, pos_type to) const;
+    pos_type index_of(std::function<bool(value_type ch, bool& cntu)> matcher, pos_type from, pos_type to) const;
 
     pos_type last_index_of(const_pointer s, size_type n, pos_type from) const;
     pos_type last_index_of(const bytes& other, pos_type from = npos) const;
     pos_type last_index_of(value_type ch, pos_type from = npos) const;
     pos_type last_index_of(const_pointer s, pos_type from = npos) const;
     pos_type last_index_of(const re& rx, pos_type from = npos) const;
-    pos_type last_index_of(std::function<int(value_type c, bool& match)> matcher, pos_type from, pos_type to) const;
+    pos_type last_index_of(std::function<bool(value_type ch, bool& cntu)> matcher, pos_type from, pos_type to) const;
     pos_type last_index_of(std::function<int(const_pointer start, size_type n, pos_type& match_pos, pos_type& match_n)> matcher, pos_type from, pos_type to) const;
 
     //  STL 接口兼容
@@ -340,14 +340,14 @@ public:
     std::vector<bytes> split(const_pointer sep) const;
     std::vector<bytes> split(value_type sep) const;
     std::vector<bytes> split(const re& r) const;
-    std::vector<bytes> split(std::function<int(value_type c, bool& match)>& chars_func) const;
+    std::vector<bytes> split(std::function<bool(value_type ch, bool& cntu)>& chars_func) const;
     std::vector<bytes> split_lines(bool keep_ends = false) const;
     std::vector<bytes> split_path() const;
     void split(const bytes& sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(const_pointer sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(value_type sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(const re& r, std::function<int(const_pointer s, size_type n)> output_func) const;
-    void split(std::function<int(value_type c, bool& match)>& chars_func, std::function<int(const_pointer s, size_type n)> output_func) const;
+    void split(std::function<bool(value_type ch, bool& cntu)>& chars_func, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_lines(bool keep_ends, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_path(std::function<int(const_pointer s, size_type n)> output_func) const;
 
@@ -785,11 +785,11 @@ private:
         }
 
         //  往缓冲区填入数据，但必须由外部保证填入的数据不会溢出
-        void fill(value_type c, size_type n, pos_type pos) {
+        void fill(value_type ch, size_type n, pos_type pos) {
             ASSERT(pos >= 0);
             ASSERT(n >= 0);
             ASSERT(pos + n <= cap());
-            std::fill(begin() + pos, begin() + pos + n, c);
+            std::fill(begin() + pos, begin() + pos + n, ch);
         }
 
         //  高阶操作：移动 [pos, pos+n) 范围内的部分数据：

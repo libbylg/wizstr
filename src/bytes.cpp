@@ -405,9 +405,8 @@ bytes& bytes::remove(bytes::pos_type pos, bytes::size_type n) {
 }
 
 bytes& bytes::remove(bytes::value_type ch) {
-    return remove([ch](bytes::value_type c, bool& match) -> int {
-        match = (c == ch);
-        return 0;
+    return remove([ch](bytes::value_type c, bool& cntu) -> bool {
+        return (c == ch);
     });
 }
 
@@ -476,14 +475,17 @@ bytes& bytes::remove(const re& rx) {
     });
 }
 
-bytes& bytes::remove(std::function<int(bytes::value_type c, bool& match)> func) {
+bytes& bytes::remove(std::function<bool(bytes::value_type ch, bool& cntu)> func) {
     pointer w = layout.begin();
     pointer r = layout.begin();
     while (*r) {
-        bool match = false;
-        int contnu = func(*r, match);
-        if (!match) {
+        bool contnu = true;
+        if (!func(*r, contnu)) {
             *(w++) = *r;
+        }
+
+        if (!contnu) {
+            break;
         }
 
         r++;
@@ -651,20 +653,19 @@ bytes::size_type bytes::count(const re& rx) const {
     return cnt;
 }
 
-bytes::size_type bytes::count(std::function<int(bytes::value_type ch, bool& match)> matcher) const {
+bytes::size_type bytes::count(std::function<bool(bytes::value_type ch, bool& cntu)> matcher) const {
     int cnt = 0;
 
     for (const_pointer ptr = layout.begin(); ptr != layout.end(); ptr++) {
 
         //  看下字符是否匹配
-        bool match = false;
-        int ret = matcher(*ptr, match);
-        if (match) {
+        bool cntu = true;
+        if (matcher(*ptr, cntu)) {
             cnt++;
         }
 
         //  检查一下是否需要继续，返回非 0 表示终止扫描
-        if (0 != ret) {
+        if (!cntu) {
             break;
         }
     }
@@ -929,7 +930,7 @@ bytes::pos_type bytes::index_of(const re& rx, bytes::pos_type from) const {
     return from + pos;
 }
 
-bytes::pos_type bytes::index_of(std::function<int(bytes::value_type c, bool& match)> matcher, bytes::pos_type from, bytes::pos_type to) const {
+bytes::pos_type bytes::index_of(std::function<bool(bytes::value_type ch, bool& cntu)> matcher, bytes::pos_type from, bytes::pos_type to) const {
     ASSERT(from >= 0);
     ASSERT(from <= size());
     ASSERT(to >= 0);
@@ -938,16 +939,14 @@ bytes::pos_type bytes::index_of(std::function<int(bytes::value_type c, bool& mat
     ASSERT(from <= to);
 
     for (bytes::const_pointer ptr = layout.begin() + from; ptr != layout.begin() + to; ptr++) {
-        bool match = false;
-        int cntnu = matcher(*ptr, match);
-
         //  如果匹配成功，返回位置
-        if (match) {
+        bool cntnu = true;
+        if (matcher(*ptr, cntnu)) {
             return ptr - layout.begin();
         }
 
         //  判断是否需要继续
-        if (cntnu != 0) {
+        if (!cntnu) {
             break;
         }
     }
@@ -1013,7 +1012,7 @@ bytes::pos_type bytes::last_index_of(const re& rx, bytes::pos_type from) const {
     return found_pos;
 }
 
-bytes::pos_type bytes::last_index_of(std::function<int(bytes::value_type c, bool& match)> matcher, bytes::pos_type from, bytes::pos_type to) const {
+bytes::pos_type bytes::last_index_of(std::function<bool(bytes::value_type ch, bool& cntu)> matcher, bytes::pos_type from, bytes::pos_type to) const {
     //    for (const_pointer ptr = )
     ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(std::function<int(bytes::const_pointer start, bytes::size_type n, bytes::pos_type& match_pos, bytes::pos_type& match_n)> matcher, bytes::pos_type from, bytes::pos_type to) const
     return bytes::npos;
@@ -1886,7 +1885,7 @@ std::vector<bytes> bytes::split(const re& r) const {
     return result;
 }
 
-std::vector<bytes> bytes::split(std::function<int(bytes::value_type c, bool& match)>& chars_func) const {
+std::vector<bytes> bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_func) const {
     std::vector<bytes> result;
     split(chars_func, [&result](bytes::const_pointer s, bytes::size_type n) -> int {
         result.emplace_back(s, n);
@@ -1935,8 +1934,8 @@ void bytes::split(const re& rx, std::function<int(bytes::const_pointer s, bytes:
     });
 }
 
-void bytes::split(std::function<int(bytes::value_type c, bool& match)>& chars_func, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    ASSERT(false); //  TODO - void bytes::split(std::function<int(bytes::value_type c, bool& match)>& chars_func, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
+void bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_func, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
+    ASSERT(false); //  TODO - void bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_func, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
 }
 
 void bytes::split_lines(bool keep_ends, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
