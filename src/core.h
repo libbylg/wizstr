@@ -7,16 +7,19 @@
 
 #include <cctype>
 
-// memmove
-// memcpy
-// strlen
+// std::memmove
+// std::memcpy
+// std::strlen
 // std::fill
-// strstr
+// std::strstr
 // strrstr
-// strchr
-// toupper
-// tolower
+// std::strchr
+// std::toupper
+// std::tolower
 // memmem
+// std::transform
+// std::min
+
 namespace tiny {
 namespace core {
     extern const char* strrstr(const char* s1, const char* s2);

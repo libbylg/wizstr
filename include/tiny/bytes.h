@@ -136,6 +136,7 @@ public:
     bytes& remove(pos_type pos, size_type n);
     bytes& remove(value_type ch);
     bytes& remove(const_pointer s);
+    bytes& remove(const_pointer s, size_type n);
     bytes& remove(const bytes& other);
     bytes& remove(const re& rx);
     bytes& remove(std::function<int(value_type c, bool& match)> func);

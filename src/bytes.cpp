@@ -36,7 +36,7 @@ bytes::bytes(bytes::const_pointer s, bytes::size_type n) {
 
 bytes::bytes(bytes::value_type ch, bytes::size_type n) {
     layout.init(nullptr, n);
-    std::fill(layout.begin(), layout.end(), ch);
+    layout.fill(ch, n, 0);
 }
 
 bytes::bytes(bytes::const_pointer s) {
@@ -410,6 +410,13 @@ bytes& bytes::remove(bytes::const_pointer s) {
 
     bytes::size_type slen = std::strlen(s);
 
+    return remove(s, slen);
+}
+
+bytes& bytes::remove(bytes::const_pointer s, bytes::size_type slen) {
+    ASSERT(s != nullptr);
+    ASSERT(slen >= 0);
+
     return remove([slen, s](bytes::const_pointer search, bytes::size_type search_n, bytes::const_pointer& match, bytes::size_type& match_n) -> int {
         if (search_n < slen) {
             match = nullptr;
@@ -417,7 +424,7 @@ bytes& bytes::remove(bytes::const_pointer s) {
             return -1;
         }
 
-        bytes::const_pointer ptr = std::strstr(search, s);
+        bytes::const_pointer ptr = (bytes::const_pointer)memmem(search, search_n, s, slen);
         if (ptr == nullptr) {
             match = nullptr;
             match_n = 0;
@@ -2234,16 +2241,20 @@ int8_t bytes::to_int8(bool* ok, int base) const {
         uint8_t result = 0;
         bytes::const_pointer ptr = layout.begin();
         for (; ptr != std::min(layout.end(), layout.begin() + 8); ptr++) {
-            if (!chars::match(chars::BIN, *ptr)) {
+            if (!chars::match(*ptr, chars::BIN)) {
                 break;
             }
+
+            result = (result << 1) | (*ptr - '0');
         }
 
-        if ((*ptr != '0') && (*ptr != '1')) {
+        if ((*ptr == '\0') || chars::match(*ptr, chars::PUNCT | chars::SPACE)) {
+            return int8_t(result);
         }
-
-        return int8_t(result);
+        return 0;
     }
+
+    ASSERT(false);
     return 0;
 }
 

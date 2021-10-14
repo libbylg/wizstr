@@ -352,3 +352,8 @@ TEST(tiny_str, expand_tabs) {
         EXPECT_EQ(a.expand_tabs(4), "1   123 1234    12345   123456  $");
     }
 }
+
+TEST(tiny_str, to_int8) {
+    tiny::bytes a("1111111");
+    EXPECT_EQ(a.to_int8(nullptr, 2), 127);
+}
