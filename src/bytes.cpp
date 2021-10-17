@@ -1999,8 +1999,24 @@ void bytes::split(bytes::const_pointer sep, std::function<int(bytes::const_point
     ASSERT(false); //  TODO - void bytes::split(bytes::const_pointer sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
 }
 
+typedef int i;
 void bytes::split(bytes::value_type sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    ASSERT(false); //  TODO - void bytes::split(bytes::value_type sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
+    bytes::pos_type pos_bgn = 0;
+    while (pos_bgn < layout.len()) {
+        bytes::pos_type pos_end = index_of(sep, pos_bgn);
+        if (pos_end == bytes::npos) {
+            break;
+        }
+
+        int ret = output_func(layout.begin() + pos_bgn, pos_end - pos_bgn);
+        if (ret != 0) {
+            return;
+        }
+
+        pos_bgn = pos_end + 1;
+    }
+
+    output_func(layout.begin() + pos_bgn, layout.len() - pos_bgn);
 }
 
 void bytes::split(const re& rx, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
