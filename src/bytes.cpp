@@ -28,10 +28,6 @@ enum number_base {
     base_max = 36,
 };
 
-//  数据格式化时的映射
-static bytes::const_pointer number_map_upper = "0123456789ABCDEFGHIJKLMNOPQRETUVWXYZ";
-static bytes::const_pointer number_map_lower = "0123456789abcdefghijklmnopqretuvwxyz";
-
 bytes::bytes() {
     layout.init(nullptr, 0);
 }
@@ -862,14 +858,37 @@ bytes& bytes::fill(bytes::pos_type pos, bytes::const_pointer s, bytes::size_type
     return *this;
 }
 
-bytes& bytes::fill(bytes::pos_type fill_from, bytes::pos_type fill_n, bytes::const_pointer s, bytes::size_type n) {
-    ASSERT(false); //  TOOD    bytes& fill(bytes::pos_type fill_from, bytes::pos_type fill_n, bytes::const_pointer s, bytes::size_type n)
+bytes& bytes::fill(bytes::pos_type fill_from, bytes::size_type fill_n, bytes::const_pointer s, bytes::size_type n) {
+    ASSERT(fill_from >= 0);
+    ASSERT(fill_from < size());
+    ASSERT(fill_n >= 0);
+    ASSERT(fill_n < size());
+
+    ASSERT(s != nullptr);
+    ASSERT(n > 0);
+
+    bytes::pos_type pos = fill_from;
+    int times = fill_n / n;
+    for (int i = 0; i < times; i++) {
+        layout.fill(s, n, pos);
+        pos += n;
+    }
+
+    layout.fill(s, ((fill_from + fill_n) - pos), pos);
+
     return *this;
 }
 
-bytes& bytes::fill(bytes::pos_type fill_from, bytes::pos_type fill_n, bytes::const_pointer s) {
-    ASSERT(false); //  TOOD bytes& fill(bytes::pos_type fill_from, bytes::pos_type fill_n, bytes::const_pointer s)
-    return *this;
+bytes& bytes::fill(bytes::pos_type fill_from, bytes::size_type fill_n, bytes::const_pointer s) {
+    ASSERT(fill_from >= 0);
+    ASSERT(fill_from < size());
+    ASSERT(fill_n >= 0);
+    ASSERT(fill_n < size());
+
+    ASSERT(s != nullptr);
+
+    return fill(fill_from, fill_n, s);
+    ;
 }
 
 bytes::pos_type bytes::index_of(bytes::const_pointer s, bytes::size_type n, bytes::pos_type from) const {
@@ -1009,17 +1028,28 @@ bytes::pos_type bytes::last_index_of(const re& rx, bytes::pos_type from) const {
             return 0;
         });
 
-    return found_pos;
+    return found_pos + from;
 }
 
 bytes::pos_type bytes::last_index_of(std::function<bool(bytes::value_type ch, bool& cntu)> matcher, bytes::pos_type from, bytes::pos_type to) const {
-    //    for (const_pointer ptr = )
-    ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(std::function<int(bytes::const_pointer start, bytes::size_type n, bytes::pos_type& match_pos, bytes::pos_type& match_n)> matcher, bytes::pos_type from, bytes::pos_type to) const
-    return bytes::npos;
-}
+    ASSERT(from >= 0);
+    ASSERT(from < layout.len());
+    ASSERT(to >= 0);
+    ASSERT(to <= layout.len());
 
-bytes::pos_type bytes::last_index_of(std::function<int(bytes::const_pointer start, bytes::size_type n, bytes::pos_type& match_pos, bytes::pos_type& match_n)> matcher, bytes::pos_type from, bytes::pos_type to) const {
-    ASSERT(false); //  TODO - bytes::pos_type bytes::last_index_of(std::function<int(bytes::const_pointer start, bytes::size_type n, bytes::pos_type& match_pos, bytes::pos_type& match_n)> matcher, bytes::pos_type from, bytes::pos_type to) const
+    ASSERT(from <= to);
+
+    bool cntu = true;
+    for (bytes::const_pointer ptr = layout.begin() + to - 1; ptr >= layout.begin() + from; ptr--) {
+        if (matcher(*ptr, cntu)) {
+            return bytes::pos_type(ptr - layout.begin());
+        }
+
+        if (!cntu) {
+            return bytes::npos;
+        }
+    }
+
     return bytes::npos;
 }
 
@@ -1935,7 +1965,21 @@ void bytes::split(const re& rx, std::function<int(bytes::const_pointer s, bytes:
 }
 
 void bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_func, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    ASSERT(false); //  TODO - void bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_func, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
+    bytes::const_pointer ptr = layout.begin();
+    bytes::pos_type pos = 0;
+
+    for (bytes::pos_type next_pos = npos;
+         (next_pos = index_of(chars_func, pos, layout.len() - pos)) != bytes::npos;
+         pos = next_pos + 1) {
+        if (0 != output_func(ptr, next_pos - pos)) {
+            return;
+        }
+    }
+
+    //  最后一段
+    if (*ptr != '\0') {
+        output_func(ptr, layout.len() - pos);
+    }
 }
 
 void bytes::split_lines(bool keep_ends, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
@@ -2215,7 +2259,7 @@ void bytes::pathelem(std::function<int(bytes::const_pointer root, bytes::const_p
 }
 
 bool bytes::to_bool(bool* ok) const {
-    ASSERT(false); // TODO - bool bytes::to_bool(bool* ok) const
+    ASSERT(false); // TODO - bool bytes::to_bool(bool* ok) cons
 }
 
 bytes& bytes::assign(bool v) {
@@ -2240,62 +2284,44 @@ float bytes::to_float(bool* ok) const {
 }
 
 int8_t bytes::to_int8(bool* ok, int base) const {
-    ASSERT(base >= base_min);
-    ASSERT(base <= base_max);
-    if (base == 2) {
-        uint8_t result = 0;
-        bytes::const_pointer ptr = layout.begin();
-        for (; ptr != std::min(layout.end(), layout.begin() + 8); ptr++) {
-            if (!chars::match(*ptr, chars::BIN)) {
-                break;
-            }
-
-            result = (result << 1) | (*ptr - '0');
-        }
-
-        if ((*ptr == '\0') || chars::match(*ptr, chars::PUNCT | chars::SPACE)) {
-            return int8_t(result);
-        }
-        return 0;
-    }
-
-    ASSERT(false);
-    return 0;
+    return core::atoi<int8_t, long>(layout.begin(), ok, base, 0);
 }
 
 int16_t bytes::to_int16(bool* ok, int base) const {
-    ASSERT(false); //  TODO - int16_t bytes::to_int16(bool* ok, int base) const
+    return core::atoi<int16_t, long>(layout.begin(), ok, base, 0);
     return 0;
 }
 
 int32_t bytes::to_int32(bool* ok, int base) const {
-    ASSERT(false); //  TODO - int32_t bytes::to_int32(bool* ok, int base) const
-    return 0;
+    return core::atoi<int32_t, long>(layout.begin(), ok, base, 0);
 }
 
 int64_t bytes::to_int64(bool* ok, int base) const {
-    ASSERT(false); //  TODO - int64_t bytes::to_int64(bool* ok, int base) const
-    return 0;
+#if defined(WIN32)
+    return core::atoi<int64_t, long>(layout.begin(), ok, base, 0);
+#else
+    return core::atoi<int64_t, long long>(layout.begin(), ok, base, 0);
+#endif
 }
 
 uint8_t bytes::to_uint8(bool* ok, int base) const {
-    ASSERT(false); //  TODO - uint8_t bytes::to_uint8(bool* ok, int base) const
-    return 0;
+    return core::atoi<uint8_t, unsigned long>(layout.begin(), ok, base, 0);
 }
 
 uint16_t bytes::to_uint16(bool* ok, int base) const {
-    ASSERT(false); //  TODO - uint16_t bytes::to_uint16(bool* ok, int base) const
-    return 0;
+    return core::atoi<uint16_t, unsigned long>(layout.begin(), ok, base, 0);
 }
 
 uint32_t bytes::to_uint32(bool* ok, int base) const {
-    ASSERT(false); //  TODO - uint32_t bytes::to_uint32(bool* ok, int base) const
-    return 0;
+    return core::atoi<uint32_t, unsigned long>(layout.begin(), ok, base, 0);
 }
 
 uint64_t bytes::to_uint64(bool* ok, int base) const {
-    ASSERT(false); //  TODO - uint64_t bytes::to_uint64(bool* ok, int base) const
-    return 0;
+#if defined(WIN32)
+    return core::atoi<uint64_t, unsigned long long>(layout.begin(), ok, base, 0);
+#else
+    return core::atoi<uint64_t, unsigned long>(layout.begin(), ok, base, 0);
+#endif
 }
 
 bytes& bytes::assign(double n, bytes::value_type format, int precision) {
@@ -2309,47 +2335,64 @@ bytes& bytes::assign(float n, bytes::value_type format, int precision) {
 }
 
 bytes& bytes::assign(int8_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(int8_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(int16_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(int16_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(int32_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(int32_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(int64_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(int64_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(uint8_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(uint8_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(uint16_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(uint16_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(uint32_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(uint32_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(uint64_t n, int base) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(uint64_t n, int base)
-    return *this;
+    char buf[sizeof(n) * 8 + 2];
+    int len = core::itoa(n, buf, base);
+    layout.resize(len);
+    return fill(0, buf, len);
 }
 
 bytes& bytes::assign(bytes::size_type count, bytes::value_type ch) {
-    ASSERT(false); // TODO - bytes& bytes::assign(bytes::size_type count, bytes::value_type ch)
+    layout.resize(count);
+    layout.fill(count, ch, 0);
     return *this;
 }
 
@@ -2399,9 +2442,34 @@ bytes& bytes::assign(bytes::const_pointer s, bytes::size_type n) {
     return *this;
 }
 
-int32_t bytes::hash_code() const {
-    ASSERT(false); //  TODO - int32_t bytes::hash_code() const
-    return 0;
+uint32_t bytes::hash(uint32_t mod) const {
+    ASSERT(mod != 0);
+
+    //  BKDR
+    uint32_t seed = 131;
+    uint32_t val = 0;
+
+    const char* str = layout.begin();
+    while (*str) {
+        val = val * seed + (uint8_t)(*str++);
+    }
+
+    return val % mod;
+}
+
+uint64_t bytes::hash(uint64_t mod) const {
+    ASSERT(mod != 0);
+
+    //  BKDR
+    uint64_t seed = 131;
+    uint64_t val = 0;
+
+    const char* str = layout.begin();
+    while (*str) {
+        val = val * seed + (uint8_t)(*str++);
+    }
+
+    return val % mod;
 }
 
 bytes bytes::number(double n, bytes::value_type format, int precision) {
@@ -2415,43 +2483,35 @@ bytes bytes::number(float n, bytes::value_type format, int precision) {
 }
 
 bytes bytes::number(int8_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(int16_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bytes bytes::number(int16_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(int16_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bytes bytes::number(int32_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(int32_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bytes bytes::number(int64_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(int64_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bytes bytes::number(uint8_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(uint8_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bytes bytes::number(uint16_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(uint16_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bytes bytes::number(uint32_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(uint32_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bytes bytes::number(uint64_t n, int base) {
-    ASSERT(false); //  TODO - bytes bytes::number(uint64_t n, int base)
-    return bytes("");
+    return bytes().assign(n, base);
 }
 
 bool bytes::operator!=(bytes::const_pointer s) const {

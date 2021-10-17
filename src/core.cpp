@@ -9,7 +9,6 @@
  */
 #include "core.h"
 
-#include <cstdlib>
 #include <cstring>
 
 namespace tiny {

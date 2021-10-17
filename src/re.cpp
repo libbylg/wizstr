@@ -168,7 +168,8 @@ int re::find(const_pointer s, uint32_t options, std::function<int(const segment_
         }
 
         //  移动到下一个匹配位置
-        start += ovector[2];
+        ASSERT(ovector[1] > 0);
+        start += ovector[1];
     }
 
     //

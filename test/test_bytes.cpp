@@ -16,7 +16,7 @@
 #define SECTION(xx)
 #endif
 
-TEST(tiny_str, construct) {
+TEST(tiny_bytes, construct) {
     SECTION("基本构造") {
         tiny::bytes a("123123123123123123123123123123123");
         EXPECT_EQ(a.size(), 33);
@@ -28,7 +28,7 @@ TEST(tiny_str, construct) {
     }
 }
 
-TEST(tiny_str, prepend) {
+TEST(tiny_bytes, prepend) {
     SECTION("向前追加") {
         tiny::bytes a("123");
         a.prepend("abc");
@@ -36,7 +36,7 @@ TEST(tiny_str, prepend) {
     }
 }
 
-TEST(tiny_str, zfill) {
+TEST(tiny_bytes, zfill) {
     SECTION("正常情况") {
         tiny::bytes a("123");
         EXPECT_TRUE(a.zfill(5) == "00123");
@@ -60,7 +60,7 @@ TEST(tiny_str, zfill) {
     }
 }
 
-TEST(tiny_str, remove) {
+TEST(tiny_bytes, remove) {
     SECTION("删除中间数据") {
         tiny::bytes a("abc123");
         a.remove(0);
@@ -88,7 +88,7 @@ TEST(tiny_str, remove) {
     }
 }
 
-TEST(tiny_str, contains) {
+TEST(tiny_bytes, contains) {
     SECTION("删除中间数据") {
         tiny::bytes a("3bc1233");
         EXPECT_TRUE(a.contains("12"));
@@ -97,7 +97,7 @@ TEST(tiny_str, contains) {
     }
 }
 
-TEST(tiny_str, trims) {
+TEST(tiny_bytes, trims) {
     SECTION("前后没有空白") {
         tiny::bytes a("3bc1233");
         EXPECT_TRUE(a.trim() == "3bc1233");
@@ -116,14 +116,14 @@ TEST(tiny_str, trims) {
     }
 }
 
-TEST(tiny_str, index_of_re) {
+TEST(tiny_bytes, index_of_re) {
     SECTION("找匹配正则表达式的位置") {
         tiny::bytes a("3bc12def33");
         EXPECT_EQ(a.index_of(tiny::re("b.*[0-9]")), 1);
     }
 }
 
-TEST(tiny_str, is_match) {
+TEST(tiny_bytes, is_match) {
     SECTION("检查是否匹配某个正则表达式") {
         tiny::bytes a("3bc12def33");
         EXPECT_FALSE(a.is_match("b.*[0-9]"));
@@ -132,7 +132,7 @@ TEST(tiny_str, is_match) {
     }
 }
 
-TEST(tiny_str, is_match_wild) {
+TEST(tiny_bytes, is_match_wild) {
     SECTION("检查是否匹配某个正则表达式") {
         tiny::bytes a("3bc12def33");
         EXPECT_TRUE(a.is_match_wild("3*"));
@@ -141,7 +141,7 @@ TEST(tiny_str, is_match_wild) {
     }
 }
 
-TEST(tiny_str, count) {
+TEST(tiny_bytes, count) {
     SECTION("检查是否匹配某个正则表达式") {
         tiny::bytes a("3bc12def1233");
         EXPECT_EQ(a.count("12"), 2);
@@ -157,28 +157,28 @@ TEST(tiny_str, count) {
     }
 }
 
-TEST(tiny_str, join) {
+TEST(tiny_bytes, join) {
     SECTION("简单串联") {
         tiny::bytes a("/");
         EXPECT_EQ(a.join({ "aa", "bb", "cc" }), "aa/bb/cc");
     }
 }
 
-TEST(tiny_str, repeat) {
+TEST(tiny_bytes, repeat) {
     SECTION("简单字符串重复多次") {
         tiny::bytes a("0123456789");
         EXPECT_EQ(a.repeat(5), "01234567890123456789012345678901234567890123456789");
     }
 }
 
-TEST(tiny_str, swap_case) {
+TEST(tiny_bytes, swap_case) {
     SECTION("简单测试") {
         tiny::bytes a("  AabbCC中华人民共和国");
         EXPECT_EQ(a.swap_case(), "  aABBcc中华人民共和国");
     }
 }
 
-TEST(tiny_str, simplified) {
+TEST(tiny_bytes, simplified) {
     SECTION("简单测试") {
         tiny::bytes a("\t  A abbCC中华人   民共  和 \t国   ");
         EXPECT_EQ(a.simplified(), "A abbCC中华人 民共 和 国");
@@ -200,7 +200,7 @@ TEST(tiny_str, simplified) {
     }
 }
 
-TEST(tiny_str, has_prefix) {
+TEST(tiny_bytes, has_prefix) {
     SECTION("简单测试") {
         tiny::bytes s("HelloWorld");
         EXPECT_TRUE(s.has_prefix("Hello"));
@@ -222,7 +222,7 @@ TEST(tiny_str, has_prefix) {
     }
 }
 
-TEST(tiny_str, has_suffix) {
+TEST(tiny_bytes, has_suffix) {
     SECTION("简单测试") {
         tiny::bytes s("HelloWorld");
         EXPECT_TRUE(s.has_suffix("World"));
@@ -234,7 +234,7 @@ TEST(tiny_str, has_suffix) {
     }
 }
 
-TEST(tiny_str, ljust) {
+TEST(tiny_bytes, ljust) {
     SECTION("简单测试") {
         tiny::bytes s("HelloWorld");
         EXPECT_EQ(s.ljust(13, '*'), "HelloWorld***");
@@ -256,7 +256,7 @@ TEST(tiny_str, ljust) {
     }
 }
 
-TEST(tiny_str, rjust) {
+TEST(tiny_bytes, rjust) {
     SECTION("简单测试") {
         tiny::bytes s("HelloWorld");
         EXPECT_EQ(s.rjust(13, '*'), "***HelloWorld");
@@ -278,7 +278,7 @@ TEST(tiny_str, rjust) {
     }
 }
 
-TEST(tiny_str, center) {
+TEST(tiny_bytes, center) {
     SECTION("简单测试") {
         tiny::bytes s("HelloWorld");
         EXPECT_EQ(s.center(13, '*'), "*HelloWorld**");
@@ -300,7 +300,7 @@ TEST(tiny_str, center) {
     }
 }
 
-TEST(tiny_str, fill) {
+TEST(tiny_bytes, fill) {
     SECTION("简单测试") {
         tiny::bytes s("HelloWorld");
         EXPECT_EQ(s.fill('*'), "**********");
@@ -314,7 +314,7 @@ TEST(tiny_str, fill) {
     }
 }
 
-TEST(tiny_str, invert) {
+TEST(tiny_bytes, invert) {
     SECTION("全部颠倒") {
         tiny::bytes s("HelloWorld");
         EXPECT_EQ(s.invert(), "dlroWolleH");
@@ -329,7 +329,7 @@ TEST(tiny_str, invert) {
     }
 }
 
-TEST(tiny_str, is_bool) {
+TEST(tiny_bytes, is_bool) {
     SECTION("简单场景") {
         EXPECT_TRUE(tiny::bytes("1").is_bool());
         EXPECT_TRUE(tiny::bytes("0").is_bool());
@@ -352,14 +352,46 @@ TEST(tiny_str, is_bool) {
     }
 }
 
-TEST(tiny_str, expand_tabs) {
+TEST(tiny_bytes, expand_tabs) {
     SECTION("简单场景") {
         tiny::bytes a("1\t123\t1234\t12345\t123456\t$");
         EXPECT_EQ(a.expand_tabs(4), "1   123 1234    12345   123456  $");
     }
 }
 
-TEST(tiny_str, to_int8) {
+TEST(tiny_bytes, to_int8) {
     tiny::bytes a("1111111");
     EXPECT_EQ(a.to_int8(nullptr, 2), 127);
+}
+
+TEST(tiny_bytes, number) {
+    EXPECT_EQ(tiny::bytes::number(int8_t(-1), 2), "11111111");
+    EXPECT_EQ(tiny::bytes::number(int16_t(-1), 2), "1111111111111111");
+    EXPECT_EQ(tiny::bytes::number(int32_t(-1), 2), "11111111111111111111111111111111");
+    EXPECT_EQ(tiny::bytes::number(int64_t(-1), 2), "1111111111111111111111111111111111111111111111111111111111111111");
+
+    EXPECT_EQ(tiny::bytes::number(uint8_t(-1), 2), "11111111");
+    EXPECT_EQ(tiny::bytes::number(uint16_t(-1), 2), "1111111111111111");
+    EXPECT_EQ(tiny::bytes::number(uint32_t(-1), 2), "11111111111111111111111111111111");
+    EXPECT_EQ(tiny::bytes::number(uint64_t(-1), 2), "1111111111111111111111111111111111111111111111111111111111111111");
+
+    EXPECT_EQ(tiny::bytes::number(int8_t(-1), 10), "-1");
+    EXPECT_EQ(tiny::bytes::number(int16_t(-1), 10), "-1");
+    EXPECT_EQ(tiny::bytes::number(int32_t(-1), 10), "-1");
+    EXPECT_EQ(tiny::bytes::number(int64_t(-1), 10), "-1");
+
+    EXPECT_EQ(tiny::bytes::number(uint8_t(-1), 10), "255");
+    EXPECT_EQ(tiny::bytes::number(uint16_t(-1), 10), "65535");
+    EXPECT_EQ(tiny::bytes::number(uint32_t(-1), 10), "4294967295");
+    EXPECT_EQ(tiny::bytes::number(uint64_t(-1), 10), "18446744073709551615");
+
+    EXPECT_EQ(tiny::bytes::number(uint8_t(-1), 16), "ff");
+    EXPECT_EQ(tiny::bytes::number(uint16_t(-1), 16), "ffff");
+    EXPECT_EQ(tiny::bytes::number(uint32_t(-1), 16), "ffffffff");
+    EXPECT_EQ(tiny::bytes::number(uint64_t(-1), 16), "ffffffffffffffff");
+}
+
+TEST(tiny_bytes, last_index_of) {
+    tiny::bytes a("HelloWorld-HelloWorld");
+    EXPECT_EQ(a.last_index_of(tiny::re("or"), 2), 17);
 }

@@ -205,8 +205,8 @@ public:
     bytes& fill(value_type ch);
     bytes& fill(pos_type pos, value_type ch, size_type n);
     bytes& fill(pos_type pos, const_pointer s, size_type n);
-    bytes& fill(pos_type fill_from, pos_type fill_n, const_pointer s, size_type n);
-    bytes& fill(pos_type fill_from, pos_type fill_n, const_pointer s);
+    bytes& fill(pos_type fill_from, size_type fill_n, const_pointer s, size_type n);
+    bytes& fill(pos_type fill_from, size_type fill_n, const_pointer s);
 
     //  查找
     pos_type index_of(const_pointer s, size_type n, pos_type from) const;
@@ -222,7 +222,7 @@ public:
     pos_type last_index_of(const_pointer s, pos_type from = npos) const;
     pos_type last_index_of(const re& rx, pos_type from = npos) const;
     pos_type last_index_of(std::function<bool(value_type ch, bool& cntu)> matcher, pos_type from, pos_type to) const;
-    pos_type last_index_of(std::function<int(const_pointer start, size_type n, pos_type& match_pos, pos_type& match_n)> matcher, pos_type from, pos_type to) const;
+    //    pos_type last_index_of(std::function<int(const_pointer start, size_type n, pos_type& match_pos, size_type& match_n)> matcher, pos_type from, pos_type to) const;
 
     //  STL 接口兼容
     pos_type find(const bytes& str, pos_type pos = 0) const noexcept;
@@ -424,7 +424,8 @@ public:
     bytes& assign(const_pointer s, size_type count);
 
     //  转换为 hash 值
-    int32_t hash_code() const;
+    uint32_t hash(uint32_t mod) const;
+    uint64_t hash(uint64_t mod) const;
 
     //  数字转换为字符串
     static bytes number(double n, value_type format = 'g', int precision = 6);
@@ -727,7 +728,7 @@ private:
 
             //  容量不够时需要重新分配存储空间
             size_type new_cap = n;
-            pointer new_data = (pointer)malloc(sizeof(value_type) * new_cap);
+            pointer new_data = (pointer)malloc(sizeof(value_type) * (new_cap + 1));
             ASSERT(new_data != nullptr);
 
             //  还原数据

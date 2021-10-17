@@ -49,6 +49,10 @@ public:
         uint32_t len{ 0 };
     };
 
+    class match_results {
+        // TODO match_results
+    };
+
 public:
     explicit re(const char* pattern, uint32_t flags = 0, error_type* error = nullptr);
     explicit re(const bytes& pattern, uint32_t flags = 0, error_type* error = nullptr);
@@ -73,14 +77,14 @@ public:
     int replace(const bytes& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const;
 
 public:
-    static re email;
-    static re ipv4;
-    static re real;
-    static re integer;
-    static re kvpair;
-    static re blanks;
-    static re date;
-    static re numeric;
+    //    static re email;
+    //    static re ipv4;
+    //    static re real;
+    //    static re integer;
+    //    static re kvpair;
+    //    static re blanks;
+    //    static re date;
+    //    static re numeric;
 
 private:
     void* compile(const_pointer pattern, uint32_t flags, error_type* error);
