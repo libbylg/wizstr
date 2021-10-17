@@ -364,31 +364,31 @@ TEST(tiny_bytes, to_int8) {
     EXPECT_EQ(a.to_int8(nullptr, 2), 127);
 }
 
-TEST(tiny_bytes, number) {
-    EXPECT_EQ(tiny::bytes::number(int8_t(-1), 2), "11111111");
-    EXPECT_EQ(tiny::bytes::number(int16_t(-1), 2), "1111111111111111");
-    EXPECT_EQ(tiny::bytes::number(int32_t(-1), 2), "11111111111111111111111111111111");
-    EXPECT_EQ(tiny::bytes::number(int64_t(-1), 2), "1111111111111111111111111111111111111111111111111111111111111111");
+TEST(tiny_bytes, from) {
+    EXPECT_EQ(tiny::bytes::from(int8_t(-1), 2), "11111111");
+    EXPECT_EQ(tiny::bytes::from(int16_t(-1), 2), "1111111111111111");
+    EXPECT_EQ(tiny::bytes::from(int32_t(-1), 2), "11111111111111111111111111111111");
+    EXPECT_EQ(tiny::bytes::from(int64_t(-1), 2), "1111111111111111111111111111111111111111111111111111111111111111");
 
-    EXPECT_EQ(tiny::bytes::number(uint8_t(-1), 2), "11111111");
-    EXPECT_EQ(tiny::bytes::number(uint16_t(-1), 2), "1111111111111111");
-    EXPECT_EQ(tiny::bytes::number(uint32_t(-1), 2), "11111111111111111111111111111111");
-    EXPECT_EQ(tiny::bytes::number(uint64_t(-1), 2), "1111111111111111111111111111111111111111111111111111111111111111");
+    EXPECT_EQ(tiny::bytes::from(uint8_t(-1), 2), "11111111");
+    EXPECT_EQ(tiny::bytes::from(uint16_t(-1), 2), "1111111111111111");
+    EXPECT_EQ(tiny::bytes::from(uint32_t(-1), 2), "11111111111111111111111111111111");
+    EXPECT_EQ(tiny::bytes::from(uint64_t(-1), 2), "1111111111111111111111111111111111111111111111111111111111111111");
 
-    EXPECT_EQ(tiny::bytes::number(int8_t(-1), 10), "-1");
-    EXPECT_EQ(tiny::bytes::number(int16_t(-1), 10), "-1");
-    EXPECT_EQ(tiny::bytes::number(int32_t(-1), 10), "-1");
-    EXPECT_EQ(tiny::bytes::number(int64_t(-1), 10), "-1");
+    EXPECT_EQ(tiny::bytes::from(int8_t(-1), 10), "-1");
+    EXPECT_EQ(tiny::bytes::from(int16_t(-1), 10), "-1");
+    EXPECT_EQ(tiny::bytes::from(int32_t(-1), 10), "-1");
+    EXPECT_EQ(tiny::bytes::from(int64_t(-1), 10), "-1");
 
-    EXPECT_EQ(tiny::bytes::number(uint8_t(-1), 10), "255");
-    EXPECT_EQ(tiny::bytes::number(uint16_t(-1), 10), "65535");
-    EXPECT_EQ(tiny::bytes::number(uint32_t(-1), 10), "4294967295");
-    EXPECT_EQ(tiny::bytes::number(uint64_t(-1), 10), "18446744073709551615");
+    EXPECT_EQ(tiny::bytes::from(uint8_t(-1), 10), "255");
+    EXPECT_EQ(tiny::bytes::from(uint16_t(-1), 10), "65535");
+    EXPECT_EQ(tiny::bytes::from(uint32_t(-1), 10), "4294967295");
+    EXPECT_EQ(tiny::bytes::from(uint64_t(-1), 10), "18446744073709551615");
 
-    EXPECT_EQ(tiny::bytes::number(uint8_t(-1), 16), "ff");
-    EXPECT_EQ(tiny::bytes::number(uint16_t(-1), 16), "ffff");
-    EXPECT_EQ(tiny::bytes::number(uint32_t(-1), 16), "ffffffff");
-    EXPECT_EQ(tiny::bytes::number(uint64_t(-1), 16), "ffffffffffffffff");
+    EXPECT_EQ(tiny::bytes::from(uint8_t(-1), 16), "ff");
+    EXPECT_EQ(tiny::bytes::from(uint16_t(-1), 16), "ffff");
+    EXPECT_EQ(tiny::bytes::from(uint32_t(-1), 16), "ffffffff");
+    EXPECT_EQ(tiny::bytes::from(uint64_t(-1), 16), "ffffffffffffffff");
 }
 
 TEST(tiny_bytes, last_index_of) {

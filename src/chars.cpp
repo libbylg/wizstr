@@ -142,4 +142,17 @@ uint16_t chars::mapping[256] = {
     /*  <DEL>    ---    0x7f */ CNTRL,
 };
 
+const char* chars::ascii_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const char* chars::ascii_lowercase = "abcdefghijklmnopqrstuvwxyz";
+const char* chars::ascii_uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char* chars::digits = "0123456789";
+const char* chars::hexdigits = "0123456789ABCDEFabcdef";
+const char* chars::hexdigits_lowercase = "0123456789abcdef";
+const char* chars::hexdigits_uppercase = "0123456789ABCDEF";
+const char* chars::octdigits = "01234567";
+const char* chars::punctuation = R"(!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~)";
+const char* chars::printable = R"( !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~)";
+const char* chars::whitespace = "\t\n\v\f\r ";
+const char* chars::blanks = "\t ";
+
 } // namespace tiny

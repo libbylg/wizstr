@@ -1247,6 +1247,43 @@ void bytes::walk_field(bytes::pos_type from, bytes::offset_type offset, std::fun
     func(ptr, n);
 }
 
+void bytes::walk_field(bytes::pos_type from, bytes::offset_type offset, std::function<int(bytes::pointer s, bytes::size_type n)> func) {
+    ASSERT(from >= 0);
+    ASSERT(from <= size());
+    ASSERT((from + offset) >= 0);
+    ASSERT((from + offset) <= size());
+
+    bytes::pos_type to = (from + offset);
+
+    if (from > (from + offset)) {
+        ASSERT(false); //  TODO 缺少逆向查找的实现 ： walk_field
+        return;
+    }
+
+    if (from == size()) {
+        return;
+    }
+
+    bytes::pointer ptr = layout.begin() + from;
+
+    //  找到第一个非空白的字符，确定起点
+    while ((ptr != layout.begin() + to) && chars::match(*ptr, chars::SPACE)) {
+        ptr++;
+    }
+
+    //  找下一个空白或者结束位置，确定终点 // 不是最优，因为这里多了依次额外的检测
+    size_type n = 0;
+    while ((ptr[n] != '\0') && !chars::match(ptr[n], chars::SPACE)) {
+        n++;
+    }
+
+    if (n <= 0) {
+        return;
+    }
+
+    func(ptr, n);
+}
+
 void bytes::walk_byte(bytes::pos_type from, bytes::offset_type offset, std::function<int(bytes::const_pointer ptr)> func) const {
     ASSERT(from >= 0);
     ASSERT(from <= size());
@@ -1836,6 +1873,15 @@ bytes& bytes::title() {
     return *this;
 }
 
+bytes& bytes::title_fields() {
+    walk_field(0, layout.len(), [](bytes::pointer s, bytes::size_type n) -> int {
+        *s = chars::to_upper(*s);
+        return 0;
+    });
+
+    return *this;
+}
+
 bytes& bytes::invert(bytes::pos_type pos) {
     ASSERT(pos >= 0);
     ASSERT(pos < size());
@@ -2259,7 +2305,98 @@ void bytes::pathelem(std::function<int(bytes::const_pointer root, bytes::const_p
 }
 
 bool bytes::to_bool(bool* ok) const {
-    ASSERT(false); // TODO - bool bytes::to_bool(bool* ok) cons
+    bool success;
+    if (ok == nullptr) {
+        ok = &success;
+    }
+
+    *ok = true;
+
+    const_pointer ptr = layout.begin();
+    switch (layout.len()) {
+        case 5:
+            if ((ptr[0] == 'f') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'F') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'F') && (ptr[1] == 'A') && (ptr[2] == 'L') && (ptr[3] == 'S') && (ptr[4] == 'E')) {
+                return true;
+            }
+
+            *ok = false;
+            return false;
+        case 4:
+            if ((ptr[0] == 't') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'R') && (ptr[2] == 'U') && (ptr[3] == 'E')) {
+                return true;
+            }
+            *ok = false;
+            return false;
+        case 3:
+            if ((ptr[0] == 'y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'E') && (ptr[2] == 'S')) {
+                return true;
+            }
+            if ((ptr[0] == 'o') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'F') && (ptr[2] == 'F')) {
+                return true;
+            }
+
+            *ok = false;
+            return false;
+        case 2:
+            if ((ptr[0] == 'o') && (ptr[1] == 'n')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'n')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'N')) {
+                return true;
+            }
+            if ((ptr[0] == 'n') && (ptr[1] == 'o')) {
+                return true;
+            }
+            if ((ptr[0] == 'N') && (ptr[1] == 'o')) {
+                return true;
+            }
+            if ((ptr[0] == 'N') && (ptr[1] == 'O')) {
+                return true;
+            }
+
+            *ok = false;
+            return false;
+        case 1:
+            switch (*ptr) {
+                case '0':
+                    return true;
+                case '1':
+                    return true;
+                default:
+                    *ok = false;
+                    return false;
+            }
+        default:
+            *ok = false;
+            return false;
+    }
 }
 
 bytes& bytes::assign(bool v) {
@@ -2274,13 +2411,55 @@ bytes& bytes::assign(bool v) {
 }
 
 double bytes::to_double(bool* ok) const {
-    ASSERT(false); // TODO - double bytes::to_double(bool* ok) const
-    return 0.0;
+    bool success;
+    if (ok != nullptr) {
+        ok = &success;
+    }
+
+    *ok = true;
+
+    char* endptr = nullptr;
+    errno = 0;
+    double val = strtod(layout.begin(), &endptr);
+    if (val == 0.0) {
+        if (endptr == layout.begin()) {
+            *ok = false;
+            return 0.0;
+        }
+    }
+
+    if (ERANGE == errno) {
+        *ok = false;
+        return 0.0;
+    }
+
+    return val;
 }
 
 float bytes::to_float(bool* ok) const {
-    ASSERT(false); // TODO - float bytes::to_float(bool* ok) const
-    return 0.0;
+    bool success;
+    if (ok != nullptr) {
+        ok = &success;
+    }
+
+    *ok = true;
+
+    char* endptr = nullptr;
+    errno = 0;
+    double val = strtof(layout.begin(), &endptr);
+    if (val == 0.0) {
+        if (endptr == layout.begin()) {
+            *ok = false;
+            return 0.0;
+        }
+    }
+
+    if (ERANGE == errno) {
+        *ok = false;
+        return 0.0;
+    }
+
+    return val;
 }
 
 int8_t bytes::to_int8(bool* ok, int base) const {
@@ -2325,12 +2504,48 @@ uint64_t bytes::to_uint64(bool* ok, int base) const {
 }
 
 bytes& bytes::assign(double n, bytes::value_type format, int precision) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(double n, bytes::value_type format, int precision)
+    bytes::value_type fmt[20];
+    bytes::pos_type pos = 0;
+    switch (format) {
+        case 'f':
+        case 'F':
+        case 'g':
+        case 'G':
+        case 'e':
+        case 'E':
+            snprintf(fmt, sizeof(fmt), "%%.%dl%c", precision, format);
+            break;
+        default:
+            return *this;
+    }
+
+    bytes::value_type buf[100];
+    int len = snprintf(buf, sizeof(buf), fmt, precision, format);
+    layout.resize(len);
+    layout.fill(buf, len, 0);
     return *this;
 }
 
 bytes& bytes::assign(float n, bytes::value_type format, int precision) {
-    ASSERT(false); //  TODO - bytes& bytes::assign(float n, bytes::value_type format, int precision)
+    bytes::value_type fmt[20];
+    bytes::pos_type pos = 0;
+    switch (format) {
+        case 'f':
+        case 'F':
+        case 'g':
+        case 'G':
+        case 'e':
+        case 'E':
+            snprintf(fmt, sizeof(fmt), "%%.%d%c", precision, format);
+            break;
+        default:
+            return *this;
+    }
+
+    bytes::value_type buf[100];
+    int len = snprintf(buf, sizeof(buf), fmt, precision, format);
+    layout.resize(len);
+    layout.fill(buf, len, 0);
     return *this;
 }
 
@@ -2472,45 +2687,43 @@ uint64_t bytes::hash(uint64_t mod) const {
     return val % mod;
 }
 
-bytes bytes::number(double n, bytes::value_type format, int precision) {
-    ASSERT(false); //  TODO - bytes bytes::number(double n, bytes::value_type format, int precision)
-    return bytes("");
+bytes bytes::from(double n, bytes::value_type format, int precision) {
+    return bytes().assign(n, format, precision);
 }
 
-bytes bytes::number(float n, bytes::value_type format, int precision) {
-    ASSERT(false); //  TODO - bytes bytes::number(float n, bytes::value_type format, int precision)
-    return bytes("");
+bytes bytes::from(float n, bytes::value_type format, int precision) {
+    return bytes().assign(n, format, precision);
 }
 
-bytes bytes::number(int8_t n, int base) {
+bytes bytes::from(int8_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes bytes::number(int16_t n, int base) {
+bytes bytes::from(int16_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes bytes::number(int32_t n, int base) {
+bytes bytes::from(int32_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes bytes::number(int64_t n, int base) {
+bytes bytes::from(int64_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes bytes::number(uint8_t n, int base) {
+bytes bytes::from(uint8_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes bytes::number(uint16_t n, int base) {
+bytes bytes::from(uint16_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes bytes::number(uint32_t n, int base) {
+bytes bytes::from(uint32_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes bytes::number(uint64_t n, int base) {
+bytes bytes::from(uint64_t n, int base) {
     return bytes().assign(n, base);
 }
 

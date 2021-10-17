@@ -48,7 +48,75 @@ struct chars {
         return !(classify(ch) & mask);
     }
 
+    static inline bool is_lower(char ch) {
+        return match(ch, LOWER);
+    }
+
+    static inline bool is_upper(char ch) {
+        return match(ch, UPPER);
+    }
+
+    static inline bool is_digit(char ch) {
+        return match(ch, DIGIT);
+    }
+
+    static inline bool is_alpha(char ch) {
+        return match(ch, ALPHA);
+    }
+
+    static inline bool is_alnum(char ch) {
+        return match(ch, ALNUM);
+    }
+
+    static inline bool is_space(char ch) {
+        return match(ch, SPACE);
+    }
+
+    static inline bool is_blank(char ch) {
+        return match(ch, BLANK);
+    }
+
+    static inline bool is_print(char ch) {
+        return match(ch, PRINT);
+    }
+
+    static inline bool is_graph(char ch) {
+        return match(ch, GRAPH);
+    }
+
+    static inline bool is_punct(char ch) {
+        return match(ch, PUNCT);
+    }
+
+    static inline char to_upper(char ch) {
+        if (is_lower(ch)) {
+            return ch - ('a' - 'A');
+        }
+
+        return ch;
+    }
+
+    static inline char to_lower(char ch) {
+        if (is_lower(ch)) {
+            return ch + ('a' - 'A');
+        }
+
+        return ch;
+    }
+
     static uint16_t mapping[256];
+    static const char* ascii_letters;
+    static const char* ascii_lowercase;
+    static const char* ascii_uppercase;
+    static const char* digits;
+    static const char* hexdigits;
+    static const char* hexdigits_lowercase;
+    static const char* hexdigits_uppercase;
+    static const char* octdigits;
+    static const char* punctuation;
+    static const char* printable;
+    static const char* whitespace;
+    static const char* blanks;
 };
 
 } // namespace tiny

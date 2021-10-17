@@ -10,6 +10,7 @@
 #ifndef BYTES_H
 #define BYTES_H
 
+#include <array>
 #include <cstdarg>
 #include <cstdint>
 #include <cstring>
@@ -264,6 +265,7 @@ public:
     void walk_byte(pos_type from, offset_type offset, std::function<int(const_pointer ptr)> func) const;
     void walk_byte(pos_type from, offset_type offset, std::function<int(pointer ptr)> func);
     void walk_field(pos_type from, offset_type offset, std::function<int(const_pointer s, size_type n)> func) const;
+    void walk_field(pos_type from, offset_type offset, std::function<int(pointer s, size_type n)> func);
 
     //  匹配
     bool is_match(const re& rx) const;
@@ -330,9 +332,11 @@ public:
 
     //  Title 化：首字母大写
     bytes& title();
+    bytes& title_fields();
 
     //  反转：字符串逆序
-    bytes& invert(pos_type pos = 0);
+    bytes&
+    invert(pos_type pos = 0);
     bytes& invert(pos_type pos, size_type n);
 
     //  字符串分割
@@ -428,16 +432,16 @@ public:
     uint64_t hash(uint64_t mod) const;
 
     //  数字转换为字符串
-    static bytes number(double n, value_type format = 'g', int precision = 6);
-    static bytes number(float n, value_type format = 'g', int precision = 6);
-    static bytes number(int8_t n, int base = 10);
-    static bytes number(int16_t n, int base = 10);
-    static bytes number(int32_t n, int base = 10);
-    static bytes number(int64_t n, int base = 10);
-    static bytes number(uint8_t n, int base = 10);
-    static bytes number(uint16_t n, int base = 10);
-    static bytes number(uint32_t n, int base = 10);
-    static bytes number(uint64_t n, int base = 10);
+    static bytes from(double n, value_type format = 'g', int precision = 6);
+    static bytes from(float n, value_type format = 'g', int precision = 6);
+    static bytes from(int8_t n, int base = 10);
+    static bytes from(int16_t n, int base = 10);
+    static bytes from(int32_t n, int base = 10);
+    static bytes from(int64_t n, int base = 10);
+    static bytes from(uint8_t n, int base = 10);
+    static bytes from(uint16_t n, int base = 10);
+    static bytes from(uint32_t n, int base = 10);
+    static bytes from(uint64_t n, int base = 10);
 
     //  运算符重载
     bool operator!=(const_pointer other) const;

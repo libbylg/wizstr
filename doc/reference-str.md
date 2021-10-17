@@ -370,16 +370,16 @@ void clear();
 
 | 返回值 | 函数签名|
 |---    |---     |
-| static bytes | number(double n, value_type format = 'g', int precision = 6)     |
-| static bytes | number(float n, value_type format = 'g', int precision = 6)      |
-| static bytes | number(int8_t n, int base = 10)                                  |
-| static bytes | number(int16_t n, int base = 10)                                 |
-| static bytes | number(int32_t n, int base = 10)                                 |
-| static bytes | number(int64_t n, int base = 10)                                 |
-| static bytes | number(uint8_t n, int base = 10)                                 |
-| static bytes | number(uint16_t n, int base = 10)                                |
-| static bytes | number(uint32_t n, int base = 10)                                |
-| static bytes | number(uint64_t n, int base = 10)                                |
+| static bytes | from(double n, value_type format = 'g', int precision = 6)     |
+| static bytes | from(float n, value_type format = 'g', int precision = 6)      |
+| static bytes | from(int8_t n, int base = 10)                                  |
+| static bytes | from(int16_t n, int base = 10)                                 |
+| static bytes | from(int32_t n, int base = 10)                                 |
+| static bytes | from(int64_t n, int base = 10)                                 |
+| static bytes | from(uint8_t n, int base = 10)                                 |
+| static bytes | from(uint16_t n, int base = 10)                                |
+| static bytes | from(uint32_t n, int base = 10)                                |
+| static bytes | from(uint64_t n, int base = 10)                                |
 
 ####  运算符重载
 
