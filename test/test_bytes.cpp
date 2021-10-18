@@ -395,3 +395,17 @@ TEST(tiny_bytes, last_index_of) {
     tiny::bytes a("HelloWorld-HelloWorld");
     EXPECT_EQ(a.last_index_of(tiny::re("or"), 2), 17);
 }
+
+TEST(tiny_bytes, split_by_char) {
+    tiny::bytes a("HelloWorld-HelloWorld");
+    std::vector<tiny::bytes> v;
+    a.split('-', [&v](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+        v.emplace_back(s, n);
+        return 0;
+    });
+    EXPECT_EQ(v.size(), 2);
+    EXPECT_EQ(v[0], "HelloWorld");
+    EXPECT_EQ(v[1], "HelloWorld");
+    std::vector<tiny::bytes> p{ "HelloWorld", "HelloWorld" };
+    EXPECT_EQ(v, p);
+}
