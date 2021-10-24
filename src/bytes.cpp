@@ -1090,7 +1090,7 @@ bytes::pos_type bytes::find_first_of(const bytes& str, bytes::pos_type pos) cons
 }
 
 bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_of(bytes::value_type ch, bytes::pos_type pos) const
+    ASSERT(false); //  TODO  bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
     return npos;
 }
 

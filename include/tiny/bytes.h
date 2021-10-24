@@ -28,6 +28,8 @@ namespace tiny {
 
 class re;
 
+//  TODO 计算两个字符串的相同前缀和相同后缀
+
 class bytes {
 public:
     typedef int32_t pos_type;
