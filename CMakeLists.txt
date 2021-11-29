@@ -18,7 +18,7 @@ include(src/src.cmake)
 
 
 #   Define the building target
-add_executable(str ${SOURCES})
-target_include_directories(str PRIVATE include ${INCLUDEPATH})
-target_link_libraries(str PRIVATE PCRE2::8BIT GTest::gtest GTest::gtest_main)
-
+add_executable(str_test ${SOURCES})
+target_include_directories(str_test PRIVATE include ${INCLUDEPATH})
+target_link_libraries(str_test PRIVATE PCRE2::8BIT GTest::gtest GTest::gtest_main)
+target_compile_options(str_test PRIVATE -Wall -Wextra)

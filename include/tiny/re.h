@@ -13,8 +13,6 @@
 #include <cstdint>
 #include <functional>
 
-#include "tiny/segment.h"
-
 namespace tiny {
 
 class bytes;

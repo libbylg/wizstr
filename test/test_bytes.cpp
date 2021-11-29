@@ -406,6 +406,13 @@ TEST(tiny_bytes, split_by_char) {
     EXPECT_EQ(v.size(), 2);
     EXPECT_EQ(v[0], "HelloWorld");
     EXPECT_EQ(v[1], "HelloWorld");
-    std::vector<tiny::bytes> p{ "HelloWorld", "HelloWorld" };
+    std::vector<tiny::bytes> p{ tiny::bytes{ "HelloWorld" }, tiny::bytes{ "HelloWorld" } };
     EXPECT_EQ(v, p);
+}
+
+//bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
+TEST(tiny_bytes, find_first_of_test) {
+    tiny::bytes a("hello world");
+    ASSERT(a.find_first_of("wr", 0, 100) == 6);
+    ASSERT(a.find_first_of("mkf", 0, 100) == tiny::bytes::npos);
 }

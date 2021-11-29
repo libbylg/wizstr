@@ -16,7 +16,6 @@ namespace core {
     //  反向查找字符串
     extern const char* strrstr(const char* s1, const char* s2) {
 
-        const char* sc1;
         const char* sc2;
         const char* psc1;
         const char* ps1;
@@ -48,7 +47,7 @@ namespace core {
     }
 
     extern int wildcmp(const char* wild, const char* s) {
-        const char* cp = nullptr;
+        const char* cp = s;
         const char* mp = nullptr;
         while ((*s) && (*wild != '*')) {
             if ((*wild != *s) && (*wild != '?')) {

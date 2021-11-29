@@ -1090,8 +1090,22 @@ bytes::pos_type bytes::find_first_of(const bytes& str, bytes::pos_type pos) cons
 }
 
 bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    ASSERT(false); //  TODO  bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    return npos;
+    ASSERT(s != nullptr);
+    ASSERT(pos >= 0);
+    ASSERT(pos < layout.len());
+    ASSERT(count > 0);
+
+    if ((pos + count) > layout.len()) {
+        count = layout.len() - pos;
+    }
+
+    size_t n = std::strlen(s);
+    const char* start = std::find_first_of(layout.begin() + pos, layout.begin() + pos + count, s, s + n);
+    if (start == (layout.begin() + pos + count)) {
+        return npos;
+    }
+
+    return start - layout.begin();
 }
 
 bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos) const {
@@ -1107,8 +1121,22 @@ bytes::pos_type bytes::find_first_not_of(const bytes& other, bytes::pos_type pos
 }
 
 bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
-    ASSERT(false); //  TODO bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const
-    return npos;
+    ASSERT(s != nullptr);
+    ASSERT(pos >= 0);
+    ASSERT(pos < layout.len());
+    ASSERT(count > 0);
+
+    if ((pos + count) > layout.len()) {
+        count = layout.len() - pos;
+    }
+
+    size_t n = std::strlen(s);
+    const char* start = std::find_first_of(layout.begin() + pos, layout.begin() + pos + count, s, s + n);
+    if (start == nullptr) {
+        return npos;
+    }
+
+    return start - layout.begin();
 }
 
 bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type pos) const {
@@ -1853,11 +1881,13 @@ void bytes::resize(bytes::size_type n, bytes::value_type fill_ch) {
 }
 
 void bytes::shrink_to_fit() {
-    return; //  TODO void bytes::shrink_to_fit()
+    ASSERT(false); //  TODO void bytes::shrink_to_fit()
+    return;
 }
 
 void bytes::squeeze() {
-    return; //  TODO void bytes::squeeze()
+    ASSERT(false); //  TODO void bytes::squeeze()
+    return;
 }
 
 bytes& bytes::title() {
@@ -2217,16 +2247,6 @@ bytes bytes::expand_tabs(bytes::size_type tab_size) const {
     }
 
     return result;
-}
-
-bytes bytes::expand_tmpl(const std::map<bytes, bytes>& kvs) const {
-    ASSERT(false); // TODO - bytes bytes::expand_tmpl(const std::map<bytes, bytes>& kvs) const
-    return bytes("");
-}
-
-bytes bytes::expand_tmpl(std::function<int(const bytes& key, bytes& val)> provider) const {
-    ASSERT(false); // TODO - bytes bytes::expand_tmpl(std::function<int(const bytes& key, bytes& val)> provider) const
-    return bytes("");
 }
 
 void bytes::swap(bytes& s) {

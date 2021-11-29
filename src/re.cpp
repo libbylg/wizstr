@@ -146,7 +146,7 @@ int re::find(const_pointer s, uint32_t options, std::function<int(const segment_
         if (rc < 0) {
             break;
         }
-        ASSERT(rc <= segments_count);
+        ASSERT(uint32_t(rc) <= segments_count);
 
         //  匹配成功，增加匹配次数
         match_count++;
@@ -188,10 +188,12 @@ int re::find(const bytes& s, uint32_t options, std::function<int(const segment_t
 }
 
 int re::replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const {
+    ASSERT(false); // TODO int re::replace(const_pointer s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const
     return 0;
 }
 
 int re::replace(const bytes& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const {
+    ASSERT(false); //  TODO int re::replace(const bytes& s, const_pointer repl, std::function<int(const_pointer s, size_type n)> func) const
     return 0;
 }
 

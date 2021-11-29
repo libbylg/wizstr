@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "tiny/asserts.h"
-#include "tiny/segment.h"
 
 namespace tiny {
 
@@ -380,8 +379,6 @@ public:
     bytes expand_envs(const_pointer key, const_pointer val) const;
     bytes expand_envs() const;
     bytes expand_tabs(size_type tab_size = 8) const;
-    bytes expand_tmpl(const std::map<bytes, bytes>& kvs) const;
-    bytes expand_tmpl(std::function<int(const bytes& key, bytes& val)> provider) const;
 
     //  拷贝和交换
     void swap(bytes& other);
