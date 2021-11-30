@@ -36,6 +36,13 @@ bytes::bytes(bytes::const_pointer s, bytes::size_type n) {
     layout.init(s, n);
 }
 
+bytes::bytes(bytes::const_pointer s, bytes::const_pointer e) {
+    ASSERT(s != nullptr);
+    ASSERT(e != nullptr);
+    ASSERT(s <= e);
+    layout.init(s, e - s);
+}
+
 bytes::bytes(bytes::value_type ch, bytes::size_type n) {
     layout.init(nullptr, n);
     layout.fill(ch, n, 0);

@@ -12,6 +12,8 @@
 #include "tiny/bytes.h"
 #include "tiny/re.h"
 
+#include <cstdint>
+
 #ifndef SECTION
 #define SECTION(xx)
 #endif
@@ -22,9 +24,109 @@ TEST(tiny_bytes, construct) {
         EXPECT_EQ(a.size(), 33);
     }
 
+    SECTION("基本构造") {
+        tiny::bytes a("1234567890", 4);
+        EXPECT_EQ(a.size(), 4);
+        EXPECT_TRUE(strcmp(a.data(), "1234") == 0);
+    }
+
+    SECTION("基本构造") {
+        tiny::bytes a("");
+        EXPECT_EQ(a.size(), 0);
+    }
+
+    SECTION("移动构造") {
+        tiny::bytes a("abc");
+        tiny::bytes b(std::move(a));
+        EXPECT_EQ(a.size(), 0);
+        EXPECT_TRUE(strcmp(a.data(), "") == 0);
+        EXPECT_EQ(b.size(), 3);
+        EXPECT_TRUE(strcmp(b.data(), "abc") == 0);
+    }
+
+    SECTION("移动构造") {
+        tiny::bytes a("abc");
+        tiny::bytes b(std::move(a));
+        EXPECT_EQ(a.size(), 0);
+        EXPECT_TRUE(strcmp(a.data(), "") == 0);
+        EXPECT_EQ(b.size(), 3);
+        EXPECT_TRUE(strcmp(b.data(), "abc") == 0);
+    }
+
+    SECTION("拷贝构造") {
+        char* s = "abcefghijklmn";
+        char* e = s + 5;
+        tiny::bytes b(s, e);
+        EXPECT_EQ(b, tiny::bytes("abcef"));
+    }
+
+    SECTION("拷贝构造") {
+        char* s = "abcefghijklmn";
+        char* e = s;
+        tiny::bytes b(s, e);
+        EXPECT_EQ(b, tiny::bytes(""));
+    }
+
+    SECTION("拷贝构造") {
+        tiny::bytes a("abcefghijklmn");
+        tiny::bytes b(a, 3, 4);
+        EXPECT_EQ(b, tiny::bytes("efgh"));
+        EXPECT_EQ(b.size(), b.length());
+        EXPECT_EQ(b.size(), 4);
+    }
+
+    SECTION("拷贝构造") {
+        tiny::bytes a("abcefghijklmn");
+        tiny::bytes b(a, 3);
+        EXPECT_EQ(b, tiny::bytes("efghijklmn"));
+    }
+
     SECTION("构造并填充") {
-        tiny::bytes b('A', 100);
-        EXPECT_EQ(b.size(), 100);
+        tiny::bytes b('A', 10);
+        EXPECT_EQ(b.size(), 10);
+        EXPECT_TRUE(strcmp(b.data(), "AAAAAAAAAA") == 0);
+    }
+}
+
+TEST(tiny_bytes, size_length_cap) {
+    SECTION("初始容量") {
+        tiny::bytes b;
+        EXPECT_EQ(b.size(), 0);
+        EXPECT_EQ(b.length(), 0);
+        EXPECT_EQ(b.capacity(), 14);
+    }
+    SECTION("初始容量") {
+        tiny::bytes b;
+        EXPECT_EQ(b.size(), 0);
+        EXPECT_EQ(b.length(), 0);
+        EXPECT_EQ(b.capacity(), 14);
+        EXPECT_TRUE(strcmp(b.data(), "") == 0);
+        EXPECT_EQ(b, tiny::bytes(""));
+        b.append("123456789012345");
+        EXPECT_EQ(b.size(), 15);
+        EXPECT_EQ(b.length(), 15);
+        EXPECT_EQ(b.capacity(), 15);
+        EXPECT_TRUE(strcmp(b.data(), "123456789012345") == 0);
+        EXPECT_EQ(b, tiny::bytes("123456789012345"));
+        b.append("K");
+        EXPECT_EQ(b.size(), 16);
+        EXPECT_EQ(b.length(), 16);
+        EXPECT_GE(b.capacity(), 16);
+        EXPECT_EQ(b, tiny::bytes("123456789012345K"));
+    }
+
+    SECTION("初始容量") {
+        tiny::bytes b;
+        EXPECT_EQ(b.max_size(), INT32_MAX);
+    }
+}
+
+TEST(tiny_bytes, clear) {
+    SECTION("初始容量") {
+        tiny::bytes b;
+        EXPECT_EQ(b.size(), 0);
+        EXPECT_EQ(b.length(), 0);
+        EXPECT_EQ(b.capacity(), 14);
     }
 }
 
@@ -410,7 +512,6 @@ TEST(tiny_bytes, split_by_char) {
     EXPECT_EQ(v, p);
 }
 
-//bytes::pos_type bytes::find_first_of(bytes::const_pointer s, bytes::pos_type pos, bytes::size_type count) const {
 TEST(tiny_bytes, find_first_of_test) {
     tiny::bytes a("hello world");
     ASSERT(a.find_first_of("wr", 0, 100) == 6);

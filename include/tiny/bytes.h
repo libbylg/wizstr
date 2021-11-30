@@ -60,6 +60,7 @@ public:
     explicit bytes();
     explicit bytes(const_pointer s);
     bytes(const_pointer s, size_type n);
+    bytes(const_pointer s, const_pointer e);
     bytes(value_type ch, size_type size = 1);
     bytes(bytes&& s) noexcept;
     bytes(const bytes& other);
@@ -480,7 +481,7 @@ private:
         };
         enum : size_type {
             small_cap_max = size_type((sizeof(layout_tmplt) - 1) - 1), //  small 布局时，容量是固定大小(不算 \0 不算最后的len)
-            large_cap_max = size_type((1 << ((sizeof(value_type) * 8) - type_bits)) - 1),
+            large_cap_max = INT32_MAX,
         };
 
         enum {
