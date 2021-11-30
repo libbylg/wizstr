@@ -2552,7 +2552,6 @@ uint64_t bytes::to_uint64(bool* ok, int base) const {
 
 bytes& bytes::assign(double n, bytes::value_type format, int precision) {
     bytes::value_type fmt[20];
-    bytes::pos_type pos = 0;
     switch (format) {
         case 'f':
         case 'F':
@@ -2575,7 +2574,6 @@ bytes& bytes::assign(double n, bytes::value_type format, int precision) {
 
 bytes& bytes::assign(float n, bytes::value_type format, int precision) {
     bytes::value_type fmt[20];
-    bytes::pos_type pos = 0;
     switch (format) {
         case 'f':
         case 'F':
