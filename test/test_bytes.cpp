@@ -13,12 +13,14 @@
 #include "tiny/re.h"
 
 #include <cstdint>
+#include <string>
 
 #ifndef SECTION
 #define SECTION(xx)
 #endif
 
 TEST(tiny_bytes, construct) {
+    std::string a;
     SECTION("基本构造") {
         tiny::bytes a("123123123123123123123123123123123");
         EXPECT_EQ(a.size(), 33);
@@ -54,15 +56,15 @@ TEST(tiny_bytes, construct) {
     }
 
     SECTION("拷贝构造") {
-        char* s = "abcefghijklmn";
-        char* e = s + 5;
+        const char* s = "abcefghijklmn";
+        const char* e = s + 5;
         tiny::bytes b(s, e);
         EXPECT_EQ(b, tiny::bytes("abcef"));
     }
 
     SECTION("拷贝构造") {
-        char* s = "abcefghijklmn";
-        char* e = s;
+        const char* s = "abcefghijklmn";
+        const char* e = s;
         tiny::bytes b(s, e);
         EXPECT_EQ(b, tiny::bytes(""));
     }
@@ -122,12 +124,16 @@ TEST(tiny_bytes, size_length_cap) {
 }
 
 TEST(tiny_bytes, clear) {
-    SECTION("初始容量") {
-        tiny::bytes b;
-        EXPECT_EQ(b.size(), 0);
-        EXPECT_EQ(b.length(), 0);
-        EXPECT_EQ(b.capacity(), 14);
-    }
+    tiny::bytes b;
+    EXPECT_EQ(b.size(), 0);
+    EXPECT_EQ(b.length(), 0);
+    EXPECT_EQ(b.capacity(), 14);
+    b.clear();
+    EXPECT_EQ(b.size(), 0);
+    b.assign(10, 'A');
+    EXPECT_EQ(b.size(), 10);
+    b.clear();
+    EXPECT_EQ(b.size(), 0);
 }
 
 TEST(tiny_bytes, prepend) {
@@ -516,4 +522,104 @@ TEST(tiny_bytes, find_first_of_test) {
     tiny::bytes a("hello world");
     ASSERT(a.find_first_of("wr", 0, 100) == 6);
     ASSERT(a.find_first_of("mkf", 0, 100) == tiny::bytes::npos);
+}
+
+TEST(tiny_bytes, c_str) {
+    SECTION("短字符串") {
+        tiny::bytes a("hello world");
+        ASSERT_TRUE(strcmp(a.c_str(), "hello world") == 0);
+        ASSERT_TRUE(a.data() == a.c_str());
+    }
+
+    SECTION("长字符串") {
+        const char* cb = "hello worldhello worldhello worldhello worldhello worldhello worldhello world";
+        tiny::bytes b(cb);
+        ASSERT_TRUE(strcmp(b.c_str(), cb) == 0);
+        ASSERT_TRUE(b.data() == b.c_str());
+    }
+
+    SECTION("空字符串1") {
+        tiny::bytes b;
+        ASSERT_TRUE(strcmp(b.c_str(), "") == 0);
+        ASSERT_TRUE(b.data() == b.c_str());
+    }
+
+    SECTION("空字符串2") {
+        tiny::bytes b;
+        b.append("");
+        ASSERT_TRUE(strcmp(b.c_str(), "") == 0);
+        ASSERT_TRUE(b.data() == b.c_str());
+    }
+}
+
+TEST(tiny_bytes, attach) {
+    char buff[100] = "abc";
+    tiny::bytes b("12345678901234567890");
+    const char* olddata = b.data();
+    ASSERT_EQ(b, "12345678901234567890");
+
+    b.attach(buff, 3, 100);
+    ASSERT_NE(b.data(), olddata);
+    ASSERT_EQ(b, "abc");
+    ASSERT_EQ(b.size(), 3);
+    ASSERT_EQ(b.capacity(), 100);
+
+    b.detach();
+    ASSERT_EQ(b.size(), 0);
+}
+
+TEST(tiny_bytes, expand) {
+    SECTION("简单扩展") {
+        tiny::bytes b("${HOME}/${NOTEXIST}");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, tiny::bytes(getenv("HOME")) + "/");
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("$HOME/${NOTEXIST}");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, tiny::bytes(getenv("HOME")) + "/");
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("abcd$HOME/${NOTEXIST}");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, "abcd" + tiny::bytes(getenv("HOME")) + "/");
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("abcd${HOME}");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, "abcd" + tiny::bytes(getenv("HOME")));
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("$HOME");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, tiny::bytes(getenv("HOME")));
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("$$$");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, "$$$");
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, "");
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("$");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, "$");
+    }
+
+    SECTION("简单扩展") {
+        tiny::bytes b("abc$");
+        tiny::bytes result = b.expand_envs();
+        ASSERT_EQ(result, "abc$");
+    }
 }

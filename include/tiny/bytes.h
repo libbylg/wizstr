@@ -15,19 +15,19 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
-#include <map>
 #include <regex>
-#include <string>
 #include <type_traits>
+#if defined(BYTES_USING_STL_CONTAINER)
+#include <map>
+#include <string>
 #include <vector>
+#endif // BYTES_USING_STL_CONTAINER
 
 #include "tiny/asserts.h"
 
 namespace tiny {
 
 class re;
-
-//  TODO 计算两个字符串的相同前缀和相同后缀
 
 class bytes {
 public:
@@ -59,6 +59,9 @@ public:
     ~bytes();
     explicit bytes();
     explicit bytes(const_pointer s);
+#if defined(BYTES_USING_STL_CONTAINER)
+    explicit bytes(const std::string& s);
+#endif // BYTES_USING_STL_CONTAINER
     bytes(const_pointer s, size_type n);
     bytes(const_pointer s, const_pointer e);
     bytes(value_type ch, size_type size = 1);
@@ -68,6 +71,9 @@ public:
     bytes(const bytes& other, pos_type pos, size_type n);
     bytes& operator=(bytes&& other) noexcept;
     bytes& operator=(const bytes& other);
+#if defined(BYTES_USING_STL_CONTAINER)
+    bytes& operator=(const std::string& other);
+#endif // BYTES_USING_STL_CONTAINER
 
     //  正向迭代器
     iterator begin();
@@ -106,6 +112,7 @@ public:
     const_pointer data() const;
     pointer data();
     bytes& attach(pointer buf, size_type len, size_type cap);
+    bytes& detach();
 
     //  首尾追加
     bytes& append(const bytes& other);
@@ -317,8 +324,10 @@ public:
     bytes& replace(std::function<int(value_type key, value_type& val)> func);
 
     //  基于本字符串生成新字符串
-    bytes repeat(size_type times) const;                             //  返回本字符串重复 times 次后的副本
+    bytes repeat(size_type times) const; //  返回本字符串重复 times 次后的副本
+#if defined(BYTES_USING_STL_CONTAINER)
     bytes join(const std::vector<bytes>& s) const;                   //  用本字符串连接所有的s
+#endif                                                               // BYTES_USING_STL_CONTAINER
     bytes join(const bytes& s, ...) const;                           //  用本字符串连接所有的s
     bytes join(const_pointer s, ...) const;                          //  用本字符串连接所有的s
     bytes join(std::function<const_pointer()> provider) const;       //  用本字符串连接所有的s
@@ -337,11 +346,11 @@ public:
     bytes& title_fields();
 
     //  反转：字符串逆序
-    bytes&
-    invert(pos_type pos = 0);
+    bytes& invert(pos_type pos = 0);
     bytes& invert(pos_type pos, size_type n);
 
     //  字符串分割
+#if defined(BYTES_USING_STL_CONTAINER)
     std::vector<bytes> split(const bytes& sep) const;
     std::vector<bytes> split(const_pointer sep) const;
     std::vector<bytes> split(value_type sep) const;
@@ -349,6 +358,7 @@ public:
     std::vector<bytes> split(std::function<bool(value_type ch, bool& cntu)>& chars_func) const;
     std::vector<bytes> split_lines(bool keep_ends = false) const;
     std::vector<bytes> split_path() const;
+#endif // BYTES_USING_STL_CONTAINER
     void split(const bytes& sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(const_pointer sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(value_type sep, std::function<int(const_pointer s, size_type n)> output_func) const;
@@ -375,7 +385,9 @@ public:
     bytes& trim_until(std::function<bool(value_type ch)> func);  //  去掉右边的满足条件的字符
 
     //  展开
+#if defined(BYTES_USING_STL_CONTAINER)
     bytes expand(const std::map<bytes, bytes>& kvs) const;
+#endif // BYTES_USING_STL_CONTAINER
     bytes expand(std::function<int(const bytes& key, bytes& val)> provider) const;
     bytes expand_envs(const_pointer key, const_pointer val) const;
     bytes expand_envs() const;
@@ -443,8 +455,12 @@ public:
     static bytes from(uint32_t n, int base = 10);
     static bytes from(uint64_t n, int base = 10);
 
+    static pos_type prefix_of(const bytes& a, const bytes& b);
+    static pos_type suffix_of(const bytes& a, const bytes& b);
+
     //  运算符重载
-    bool operator!=(const_pointer other) const;
+    bool
+    operator!=(const_pointer other) const;
     bytes& operator+=(value_type ch);
     bytes& operator+=(const bytes& other);
     bytes& operator+=(const_pointer s);
@@ -959,22 +975,22 @@ private:
 };
 
 extern bool operator!=(const bytes& s1, const bytes& s2);
-extern bool operator!=(const bytes::pointer s1, const bytes& s2);
+extern bool operator!=(bytes::const_pointer s1, const bytes& s2);
 extern const bytes operator+(const bytes& s1, const bytes& s2);
-extern const bytes operator+(const bytes& s1, const bytes::pointer s2);
+extern const bytes operator+(const bytes& s1, bytes::const_pointer s2);
 extern const bytes operator+(const char* s1, const bytes& s2);
 extern const bytes operator+(bytes::value_type ch, const bytes& s);
 extern const bytes operator+(const bytes& s, bytes::value_type ch);
 extern bool operator<(const bytes& s1, const bytes& s2);
-extern bool operator<(const bytes::pointer s1, const bytes& s2);
+extern bool operator<(bytes::const_pointer s1, const bytes& s2);
 extern bool operator<=(const bytes& s1, const bytes& s2);
-extern bool operator<=(const bytes::pointer s1, const bytes& s2);
+extern bool operator<=(bytes::const_pointer s1, const bytes& s2);
 extern bool operator==(const bytes& s1, const bytes& s2);
-extern bool operator==(const bytes::pointer s1, const bytes& s2);
+extern bool operator==(bytes::const_pointer s1, const bytes& s2);
 extern bool operator>(const bytes& s1, const bytes& s2);
-extern bool operator>(const bytes::pointer s1, const bytes& s2);
+extern bool operator>(bytes::const_pointer s1, const bytes& s2);
 extern bool operator>=(const bytes& s1, const bytes& s2);
-extern bool operator>=(const bytes::pointer s1, const bytes& s2);
+extern bool operator>=(bytes::const_pointer s1, const bytes& s2);
 
 } // namespace tiny
 

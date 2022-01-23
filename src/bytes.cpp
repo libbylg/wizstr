@@ -32,6 +32,12 @@ bytes::bytes() {
     layout.init(nullptr, 0);
 }
 
+#if defined(BYTES_USING_STL_CONTAINER)
+bytes::bytes(const std::string& s) {
+    layout.init(s.c_str(), s.size());
+}
+#endif // BYTES_USING_STL_CONTAINER
+
 bytes::bytes(bytes::const_pointer s, bytes::size_type n) {
     layout.init(s, n);
 }
@@ -99,6 +105,12 @@ bytes& bytes::operator=(const bytes& other) {
 
     return *this;
 }
+
+#if defined(BYTES_USING_STL_CONTAINER)
+bytes& bytes::operator=(const std::string& other) {
+    return assign(other.c_str(), other.size());
+}
+#endif // BYTES_USING_STL_CONTAINER
 
 bytes::~bytes() {
     layout.destroy();
@@ -227,6 +239,12 @@ bytes& bytes::attach(bytes::pointer buf, bytes::size_type len, bytes::size_type 
     return *this;
 }
 
+bytes& bytes::detach() {
+    //  所有数据全丢失，直接初始化成0，所有数据全部丢弃
+    layout.small.init(nullptr, 0);
+    return *this;
+}
+
 bytes& bytes::append(const bytes& s) {
     bytes::pos_type pos = layout.len();
     layout.resize(layout.len() + s.size());
@@ -244,6 +262,10 @@ bytes& bytes::append(bytes::value_type ch) {
 bytes& bytes::append(bytes::const_pointer s, bytes::size_type n) {
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
+    if (n == 0) {
+        return *this;
+    }
+
     bytes::pos_type pos = layout.len();
     layout.resize(layout.len() + n);
     layout.fill(s, n, pos);
@@ -1800,6 +1822,7 @@ bytes bytes::repeat(bytes::size_type times) const {
     return result;
 }
 
+#if defined(BYTES_USING_STL_CONTAINER)
 bytes bytes::join(const std::vector<bytes>& s) const {
     auto itr = s.begin();
     return join([&s, &itr]() -> bytes::const_pointer {
@@ -1808,6 +1831,7 @@ bytes bytes::join(const std::vector<bytes>& s) const {
         return s;
     });
 }
+#endif // BYTES_USING_STL_CONTAINER
 
 bytes bytes::join(bytes::const_pointer s, ...) const {
     va_list valist;
@@ -1958,6 +1982,7 @@ bytes& bytes::invert(bytes::pos_type pos, bytes::size_type n) {
     return *this;
 }
 
+#if defined(BYTES_USING_STL_CONTAINER)
 std::vector<bytes> bytes::split(const bytes& sep) const {
     std::vector<bytes> result;
     split(sep, [&result](const_pointer s, size_type n) -> int {
@@ -1967,7 +1992,9 @@ std::vector<bytes> bytes::split(const bytes& sep) const {
 
     return result;
 }
+#endif // BYTES_USING_STL_CONTAINER
 
+#if defined(BYTES_USING_STL_CONTAINER)
 std::vector<bytes> bytes::split(bytes::const_pointer sep) const {
     std::vector<bytes> result;
     split(sep, [&result](bytes::const_pointer s, bytes::size_type n) -> int {
@@ -1977,7 +2004,9 @@ std::vector<bytes> bytes::split(bytes::const_pointer sep) const {
 
     return result;
 }
+#endif // BYTES_USING_STL_CONTAINER
 
+#if defined(BYTES_USING_STL_CONTAINER)
 std::vector<bytes> bytes::split(bytes::value_type sep) const {
     std::vector<bytes> result;
     split(sep, [&result](bytes::const_pointer s, bytes::size_type n) -> int {
@@ -1987,7 +2016,9 @@ std::vector<bytes> bytes::split(bytes::value_type sep) const {
 
     return result;
 }
+#endif // BYTES_USING_STL_CONTAINER
 
+#if defined(BYTES_USING_STL_CONTAINER)
 std::vector<bytes> bytes::split(const re& r) const {
     std::vector<bytes> result;
     split(r, [&result](bytes::const_pointer s, bytes::size_type n) -> int {
@@ -1997,7 +2028,9 @@ std::vector<bytes> bytes::split(const re& r) const {
 
     return result;
 }
+#endif // BYTES_USING_STL_CONTAINER
 
+#if defined(BYTES_USING_STL_CONTAINER)
 std::vector<bytes> bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_func) const {
     std::vector<bytes> result;
     split(chars_func, [&result](bytes::const_pointer s, bytes::size_type n) -> int {
@@ -2007,7 +2040,9 @@ std::vector<bytes> bytes::split(std::function<bool(bytes::value_type ch, bool& c
 
     return result;
 }
+#endif // BYTES_USING_STL_CONTAINER
 
+#if defined(BYTES_USING_STL_CONTAINER)
 std::vector<bytes> bytes::split_lines(bool keep_ends) const {
     std::vector<bytes> result;
     split_lines(keep_ends, [&result](bytes::const_pointer s, bytes::size_type n) -> int {
@@ -2017,7 +2052,9 @@ std::vector<bytes> bytes::split_lines(bool keep_ends) const {
 
     return result;
 }
+#endif // BYTES_USING_STL_CONTAINER
 
+#if defined(BYTES_USING_STL_CONTAINER)
 std::vector<bytes> bytes::split_path() const {
     std::vector<bytes> result;
     split_path([&result](bytes::const_pointer s, bytes::size_type n) -> int {
@@ -2027,6 +2064,7 @@ std::vector<bytes> bytes::split_path() const {
 
     return result;
 }
+#endif // BYTES_USING_STL_CONTAINER
 
 void bytes::split(const bytes& sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
     ASSERT(false); //  TODO - void bytes::split(const bytes& sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
@@ -2212,24 +2250,130 @@ bytes& bytes::trim_until(std::function<bool(bytes::value_type ch)> func) {
     return rtrim_until(func).ltrim_until(func);
 }
 
+#if defined(BYTES_USING_STL_CONTAINER)
 bytes bytes::expand(const std::map<bytes, bytes>& kvs) const {
-    ASSERT(false); // TODO - bytes bytes::expand(const std::map<bytes, bytes>& kvs) const
-    return bytes("");
+    return expand([&kvs](const bytes& key, bytes& val) -> int {
+        auto itr = kvs.find(key);
+        if (itr == kvs.end()) {
+            return -1;
+        }
+
+        val = itr->second;
+        return 0;
+    });
 }
+#endif // BYTES_USING_STL_CONTAINER
 
 bytes bytes::expand(std::function<int(const bytes& key, bytes& val)> provider) const {
-    ASSERT(false); // TODO - bytes bytes::expand(std::function<int(const bytes& key, bytes& val)> provider) const
-    return bytes("");
+    bytes result;
+    result.reserve(layout.len());
+
+    const char* data = layout.begin();
+
+    bytes::const_pointer find_start = data;
+    bytes::const_pointer token_start = data;
+    bytes::const_pointer token_end = data;
+
+    bytes key;
+    bytes value;
+    while (find_start < layout.end()) {
+        //  将 key - value 重置
+        key.clear();
+        value.clear();
+
+        //  找到 token 的起始位置
+        bytes::const_pointer cur = find_start;
+        while ((*cur != '\0') && (*cur != '$')) {
+            cur++;
+        }
+
+        //  已经没有 token 了
+        if (*cur == '\0') {
+            break;
+        }
+
+        //  记录符号起始位置
+        token_start = cur;
+
+        //  找到 key 的结束位置
+        if (token_start[1] == '{') {
+            bytes::const_pointer key_start = token_start + 2;
+            cur = key_start;
+            while ((*cur != '\0') && (*cur != '}')) {
+                cur++;
+            }
+
+            if (*cur == '\0') {
+                break;
+            }
+
+            key.assign(key_start, bytes::pos_type(cur - key_start));
+            token_end = cur + 1;
+        } else {
+            bytes::const_pointer key_start = token_start + 1;
+            cur = key_start;
+            while ((*cur != '\0') && chars::is_alnum(*cur)) {
+                cur++;
+            }
+            key.append(key_start, bytes::pos_type(cur - key_start));
+            token_end = cur;
+        }
+
+        // token 之前的所有信息要先写入
+        if (find_start < token_start) {
+            result.append(find_start, token_start - find_start);
+        }
+
+        if (key.is_empty()) {
+            //  如果 key 为空，说明遇到孤立的$，直接回写 $
+            result.append(token_start, token_end - token_start);
+        } else {
+            //  将 key 映射为 value ，然后写入 result
+            int ret = provider(key, value);
+            if (ret != 0) {
+                break;
+            }
+
+            result.append(value);
+        }
+
+        find_start = token_end;
+    }
+
+    // 剩余未被处理的字符串
+    if (find_start < layout.end()) {
+        result.append(find_start, layout.end() - find_start);
+    }
+
+    return result;
 }
 
 bytes bytes::expand_envs(bytes::const_pointer key, bytes::const_pointer val) const {
-    ASSERT(false); // TODO - bytes bytes::expand_envs(bytes::const_pointer key, bytes::const_pointer val) const
-    return bytes("");
+    ASSERT(key != nullptr);
+    ASSERT(val != nullptr);
+
+    //  TODO 效率太低
+    return expand([key, val](const bytes& bkey, bytes& bvalue) -> int {
+        if (bkey != key) {
+            return -1;
+        }
+
+        bvalue = val;
+        return 0;
+    });
 }
 
 bytes bytes::expand_envs() const {
-    ASSERT(false); // TODO - bytes bytes::expand_envs() const
-    return bytes("");
+    return expand([](const bytes& key, bytes& val) -> int {
+        bytes::const_pointer env_val = getenv(key.data());
+        if (env_val == nullptr) {
+            val.clear();
+            return 0;
+        }
+
+        val.assign(env_val);
+        return 0;
+    });
 }
 
 bytes bytes::expand_tabs(bytes::size_type tab_size) const {
@@ -2652,7 +2796,7 @@ bytes& bytes::assign(uint64_t n, int base) {
 
 bytes& bytes::assign(bytes::size_type count, bytes::value_type ch) {
     layout.resize(count);
-    layout.fill(count, ch, 0);
+    layout.fill(ch, count, 0);
     return *this;
 }
 
@@ -2770,6 +2914,16 @@ bytes bytes::from(uint32_t n, int base) {
 
 bytes bytes::from(uint64_t n, int base) {
     return bytes().assign(n, base);
+}
+
+bytes::pos_type bytes::prefix_of(const bytes& a, const bytes& b) {
+    //  TODO bytes::pos_type bytes::prefix_of(const bytes& a, const bytes& b)
+    return bytes::npos;
+}
+
+bytes::pos_type bytes::suffix_of(const bytes& a, const bytes& b) {
+    //  TODO bytes::pos_type bytes::suffix_of(const bytes& a, const bytes& b)
+    return bytes::npos;
 }
 
 bool bytes::operator!=(bytes::const_pointer s) const {

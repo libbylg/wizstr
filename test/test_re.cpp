@@ -32,7 +32,7 @@ TEST(tiny_re, tiny_re_find) {
         tiny::re rx("a+(b*)");
         int cnt = 0;
         rx.find("xxx-aab-abbb", 0, [&cnt](const tiny::re::segment_type* segments, tiny::re::size_type n) -> int {
-            for (int i = 0; i < n; i++) {
+            for (uint32_t i = 0; i < n; i++) {
                 printf("%d: [%d] [%.*s]\n", cnt, i, segments[i].len, segments[i].ptr);
             }
 
