@@ -597,6 +597,30 @@ TEST(tiny_bytes, expand) {
 }
 
 TEST(tiny_bytes, prefix_of) {
+    SECTION("首个参数不同") {
+        ASSERT_EQ(0, tiny::bytes::prefix_of(tiny::bytes{ "abc" }, tiny::bytes{ "def" }));
+    }
+    SECTION("一个字符相同") {
+        ASSERT_EQ(1, tiny::bytes::prefix_of(tiny::bytes{ "abca" }, tiny::bytes{ "aef" }));
+    }
+    SECTION("所有字符相同") {
+        ASSERT_EQ(3, tiny::bytes::prefix_of(tiny::bytes{ "abc" }, tiny::bytes{ "abc" }));
+    }
+    SECTION("前缀相同，但是长度不同1") {
+        ASSERT_EQ(3, tiny::bytes::prefix_of(tiny::bytes{ "abc" }, tiny::bytes{ "abcdef" }));
+    }
+    SECTION("前缀相同，但是长度不同2") {
+        ASSERT_EQ(3, tiny::bytes::prefix_of(tiny::bytes{ "abcdef" }, tiny::bytes{ "abc" }));
+    }
+    SECTION("前缀相同，但是长度不同2") {
+        ASSERT_EQ(3, tiny::bytes::prefix_of(tiny::bytes{ "abcdef" }, tiny::bytes{ "abcmpqwewew" }));
+    }
+    SECTION("空字符串") {
+        ASSERT_EQ(0, tiny::bytes::prefix_of(tiny::bytes{ "" }, tiny::bytes{ "" }));
+    }
+    SECTION("空字符串2") {
+        ASSERT_EQ(0, tiny::bytes::prefix_of(tiny::bytes{ "" }, tiny::bytes{ "abc" }));
+    }
 }
 
 TEST(tiny_bytes, suffix_of) {
@@ -607,7 +631,7 @@ TEST(tiny_bytes, suffix_of) {
         ASSERT_EQ(1, tiny::bytes::suffix_of(tiny::bytes{ "bca" }, tiny::bytes{ "efa" }));
     }
     SECTION("所有字符相同") {
-        ASSERT_EQ(3, tiny::bytes::prefix_of(tiny::bytes{ "abc" }, tiny::bytes{ "abc" }));
+        ASSERT_EQ(3, tiny::bytes::suffix_of(tiny::bytes{ "abc" }, tiny::bytes{ "abc" }));
     }
     SECTION("前缀相同，但是长度不同1") {
         ASSERT_EQ(3, tiny::bytes::suffix_of(tiny::bytes{ "abc" }, tiny::bytes{ "defabc" }));
