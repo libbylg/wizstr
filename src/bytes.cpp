@@ -2834,7 +2834,6 @@ bytes::size_type bytes::prefix_of(const bytes& a, const bytes& b) {
 }
 
 bytes::size_type bytes::suffix_of(const bytes& a, const bytes& b) {
-    //  TODO bytes::pos_type bytes::suffix_of(const bytes& a, const bytes& b)
     const char* aend = a.end() - 1;
     const char* bend = b.end() - 1;
 
