@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
-#include <regex>
+//#include <regex>
 #include <type_traits>
 #if defined(BYTES_USING_STL_CONTAINER)
 #include <map>
@@ -26,8 +26,6 @@
 #include "tiny/asserts.h"
 
 namespace tiny {
-
-class re;
 
 class bytes {
 public:
@@ -154,7 +152,6 @@ public:
     bytes& remove(const_pointer s);
     bytes& remove(const_pointer s, size_type n);
     bytes& remove(const bytes& other);
-    bytes& remove(const re& rx);
     bytes& remove(std::function<bool(value_type ch, bool& cntu)> func);
     bytes& remove(std::function<int(const_pointer search, size_type search_n, const_pointer& match, size_type& match_n)> func);
 
@@ -174,14 +171,12 @@ public:
     bool contains(const_pointer s) const;
     bool contains(const_pointer s, size_type n) const;
     bool contains(value_type ch) const;
-    bool contains(const re& rx) const;
 
     //  子串统计
     size_type count(const_pointer s, size_type n) const;
     size_type count(const bytes& s) const;
     size_type count(const_pointer s) const;
     size_type count(value_type ch) const;
-    size_type count(const re& rx) const;
     size_type count(std::function<bool(value_type ch, bool& cntu)> macher) const;
 
     //  前后缀操作
@@ -223,14 +218,12 @@ public:
     pos_type index_of(const bytes& other, pos_type from = 0) const;
     pos_type index_of(const_pointer s, pos_type from = 0) const;
     pos_type index_of(value_type ch, pos_type from = 0) const;
-    pos_type index_of(const re& rx, pos_type from = 0) const;
     pos_type index_of(std::function<bool(value_type ch, bool& cntu)> matcher, pos_type from, pos_type to) const;
 
     pos_type last_index_of(const_pointer s, size_type n, pos_type from) const;
     pos_type last_index_of(const bytes& other, pos_type from = npos) const;
     pos_type last_index_of(value_type ch, pos_type from = npos) const;
     pos_type last_index_of(const_pointer s, pos_type from = npos) const;
-    pos_type last_index_of(const re& rx, pos_type from = npos) const;
     pos_type last_index_of(std::function<bool(value_type ch, bool& cntu)> matcher, pos_type from, pos_type to) const;
     //    pos_type last_index_of(std::function<int(const_pointer start, size_type n, pos_type& match_pos, size_type& match_n)> matcher, pos_type from, pos_type to) const;
 
@@ -277,9 +270,6 @@ public:
     void walk_field(pos_type from, offset_type offset, std::function<int(pointer s, size_type n)> func);
 
     //  匹配
-    bool is_match(const re& rx) const;
-    bool is_match(const bytes& pattern) const;
-    bool is_match(const_pointer pattern) const;
     bool is_match_wild(const bytes& pattern) const;
     bool is_match_wild(const_pointer pattern) const;
     bool is_match(uint16_t charset) const;
@@ -320,7 +310,6 @@ public:
     bytes& replace(const_pointer before, size_type blen, const_pointer after, size_type alen);
     bytes& replace(const bytes& before, const bytes& after);
     bytes& replace(value_type ch, const bytes& after);
-    bytes& replace(const re& rx, const bytes& after);
     bytes& replace(std::function<int(value_type key, value_type& val)> func);
 
     //  基于本字符串生成新字符串
@@ -362,7 +351,6 @@ public:
     void split(const bytes& sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(const_pointer sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(value_type sep, std::function<int(const_pointer s, size_type n)> output_func) const;
-    void split(const re& r, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(std::function<bool(value_type ch, bool& cntu)>& chars_func, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_lines(bool keep_ends, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_path(std::function<int(const_pointer s, size_type n)> output_func) const;

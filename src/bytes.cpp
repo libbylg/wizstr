@@ -13,7 +13,6 @@
 
 #include "tiny/asserts.h"
 #include "tiny/chars.h"
-#include "tiny/re.h"
 
 #include <algorithm>
 #include <cctype>
@@ -471,34 +470,6 @@ bytes& bytes::remove(const bytes& other) {
     return remove(other.layout.begin());
 }
 
-bytes& bytes::remove(const re& rx) {
-    ASSERT(rx);
-
-    return remove([&rx](bytes::const_pointer search, bytes::size_type search_n, bytes::const_pointer& match_ptr, bytes::size_type& match_n) -> int {
-        if (search_n == 0) {
-            match_ptr = nullptr;
-            match_n = 0;
-            return -1;
-        }
-
-        //  从 start 位置开始只查找一个
-        int cnt = rx.find(search, 0, [&match_ptr, &match_n](const re::segment_type* segs, re::size_type n) -> int {
-            match_ptr = segs[0].ptr;
-            match_n = segs[0].len;
-            return -1;
-        });
-
-        //  如果搜索不到
-        if (cnt <= 0) {
-            match_ptr = nullptr;
-            match_n = 0;
-            return 0;
-        }
-
-        //  如果已经搜索到了，直接返回
-        return 0;
-    });
-}
 
 bytes& bytes::remove(std::function<bool(bytes::value_type ch, bool& cntu)> func) {
     pointer w = layout.begin();
@@ -619,15 +590,6 @@ bool bytes::contains(bytes::value_type ch) const {
     return strchr(layout.begin(), ch) != nullptr;
 }
 
-bool bytes::contains(const re& r) const {
-    bool found = false;
-    r.find(*this, 0, [&found](const re::segment_type* segment, re::size_type n) -> int {
-        found = true;
-        return -1;
-    });
-    return found;
-}
-
 bytes::size_type bytes::count(bytes::const_pointer s, bytes::size_type n) const {
     ASSERT(s != nullptr);
     ASSERT(n >= 0);
@@ -664,17 +626,6 @@ bytes::size_type bytes::count(bytes::value_type ch) const {
         start++;
     }
 
-    return cnt;
-}
-
-bytes::size_type bytes::count(const re& rx) const {
-    ASSERT(rx);
-
-    int cnt = 0;
-    rx.find(layout.begin(), 0, [&cnt](const re::segment_type* segs, re::size_type n) -> int {
-        cnt++;
-        return 0;
-    });
     return cnt;
 }
 
@@ -965,19 +916,6 @@ bytes::pos_type bytes::index_of(bytes::value_type ch, bytes::pos_type from) cons
     return bytes::pos_type(pos - d);
 }
 
-bytes::pos_type bytes::index_of(const re& rx, bytes::pos_type from) const {
-    ASSERT(from >= 0);
-    ASSERT(from < layout.len());
-
-    bytes::pos_type pos = -1;
-    rx.find(layout.begin() + from, 0, [&pos](const re::segment_type* segs, re::size_type n) -> int {
-        pos = segs[0].pos;
-        return bytes::npos;
-    });
-
-    return from + pos;
-}
-
 bytes::pos_type bytes::index_of(std::function<bool(bytes::value_type ch, bool& cntu)> matcher, bytes::pos_type from, bytes::pos_type to) const {
     ASSERT(from >= 0);
     ASSERT(from <= size());
@@ -1046,18 +984,6 @@ bytes::pos_type bytes::last_index_of(bytes::const_pointer s, bytes::pos_type fro
     }
 
     return bytes::pos_type(pos - d);
-}
-
-bytes::pos_type bytes::last_index_of(const re& rx, bytes::pos_type from) const {
-    bytes::pos_type found_pos = npos;
-
-    rx.find(layout.begin() + from, layout.len() - from, //
-        [&found_pos](const re::segment_type* segs, size_type n) -> int {
-            found_pos = segs[0].pos;
-            return 0;
-        });
-
-    return found_pos + from;
 }
 
 bytes::pos_type bytes::last_index_of(std::function<bool(bytes::value_type ch, bool& cntu)> matcher, bytes::pos_type from, bytes::pos_type to) const {
@@ -1389,19 +1315,6 @@ void bytes::walk_byte(bytes::pos_type from, bytes::offset_type offset, std::func
     }
 
     return;
-}
-
-bool bytes::is_match(const re& rx) const {
-    return rx.match(*this, 0);
-}
-
-bool bytes::is_match(const bytes& pattern) const {
-    return re(pattern).match(*this, 0);
-}
-
-bool bytes::is_match(bytes::const_pointer pattern) const {
-    ASSERT(pattern != nullptr);
-    return re(pattern).match(*this, 0);
 }
 
 bool bytes::is_match_wild(const bytes& pattern) const {
@@ -1797,11 +1710,6 @@ bytes& bytes::replace(bytes::value_type ch, const bytes& after) {
     return *this;
 }
 
-bytes& bytes::replace(const re& rx, const bytes& after) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(const re& rx, const bytes& after)
-    return *this;
-}
-
 bytes& bytes::replace(std::function<int(bytes::value_type key, bytes::value_type& val)> func) {
     ASSERT(false); //  TODO - bytes& bytes::replace(std::function<int(bytes::value_type key, bytes::value_type& val)> func)
     return *this;
@@ -2096,13 +2004,6 @@ void bytes::split(bytes::value_type sep, std::function<int(bytes::const_pointer 
     }
 
     output_func(layout.begin() + pos_bgn, layout.len() - pos_bgn);
-}
-
-void bytes::split(const re& rx, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    rx.split(*this, 0, [&output_func](const re::segment_type& segs) -> int {
-        output_func(segs.ptr, segs.len);
-        return 0;
-    });
 }
 
 void bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_func, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {

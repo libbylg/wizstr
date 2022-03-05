@@ -10,7 +10,6 @@
 #include "tester.h"
 
 #include "tiny/bytes.h"
-#include "tiny/re.h"
 
 #include <cstdint>
 #include <string>
@@ -188,12 +187,6 @@ TEST(tiny_bytes, remove) {
         a.remove("33");
         EXPECT_TRUE(a == "bc12");
     }
-
-    SECTION("删除正则表达式所匹配的字符串") {
-        tiny::bytes a("33b33333c31233");
-        a.remove(tiny::re("3+"));
-        EXPECT_TRUE(a == "bc12");
-    }
 }
 
 TEST(tiny_bytes, contains) {
@@ -221,22 +214,6 @@ TEST(tiny_bytes, trims) {
         EXPECT_TRUE(b.trim([](tiny::bytes::value_type ch) -> bool {
             return ch == '3';
         }) == "c12");
-    }
-}
-
-TEST(tiny_bytes, index_of_re) {
-    SECTION("找匹配正则表达式的位置") {
-        tiny::bytes a("3bc12def33");
-        EXPECT_EQ(a.index_of(tiny::re("b.*[0-9]")), 1);
-    }
-}
-
-TEST(tiny_bytes, is_match) {
-    SECTION("检查是否匹配某个正则表达式") {
-        tiny::bytes a("3bc12def33");
-        EXPECT_FALSE(a.is_match("b.*[0-9]"));
-        EXPECT_TRUE(a.is_match("^[0-9]bc[0-9]+[0-9a-z]+$"));
-        EXPECT_TRUE(a.is_match(tiny::bytes("[0-9a-z]+")));
     }
 }
 
@@ -497,11 +474,6 @@ TEST(tiny_bytes, from) {
     EXPECT_EQ(tiny::bytes::from(uint16_t(-1), 16), "ffff");
     EXPECT_EQ(tiny::bytes::from(uint32_t(-1), 16), "ffffffff");
     EXPECT_EQ(tiny::bytes::from(uint64_t(-1), 16), "ffffffffffffffff");
-}
-
-TEST(tiny_bytes, last_index_of) {
-    tiny::bytes a("HelloWorld-HelloWorld");
-    EXPECT_EQ(a.last_index_of(tiny::re("or"), 2), 17);
 }
 
 TEST(tiny_bytes, split_by_char) {
