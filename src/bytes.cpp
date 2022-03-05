@@ -48,6 +48,10 @@ bytes::bytes(bytes::const_pointer s, bytes::const_pointer e) {
     layout.init(s, e - s);
 }
 
+bytes::bytes(value_type ch)
+    : bytes(ch, 1) {
+}
+
 bytes::bytes(bytes::value_type ch, bytes::size_type n) {
     layout.init(nullptr, n);
     layout.fill(ch, n, 0);
@@ -469,7 +473,6 @@ bytes& bytes::remove(bytes::const_pointer s, bytes::size_type slen) {
 bytes& bytes::remove(const bytes& other) {
     return remove(other.layout.begin());
 }
-
 
 bytes& bytes::remove(std::function<bool(bytes::value_type ch, bool& cntu)> func) {
     pointer w = layout.begin();
@@ -2817,14 +2820,36 @@ bytes bytes::from(uint64_t n, int base) {
     return bytes().assign(n, base);
 }
 
-bytes::pos_type bytes::prefix_of(const bytes& a, const bytes& b) {
-    //  TODO bytes::pos_type bytes::prefix_of(const bytes& a, const bytes& b)
-    return bytes::npos;
+bytes::size_type bytes::prefix_of(const bytes& a, const bytes& b) {
+    const char* pa = a.data();
+    const char* pb = b.data();
+
+    while (*pa && *pb) {
+        if (*(pa++) != *(pb++)) {
+            return (pa - a.data()) - 1;
+        }
+    }
+
+    return pa - a.data();
 }
 
-bytes::pos_type bytes::suffix_of(const bytes& a, const bytes& b) {
+bytes::size_type bytes::suffix_of(const bytes& a, const bytes& b) {
     //  TODO bytes::pos_type bytes::suffix_of(const bytes& a, const bytes& b)
-    return bytes::npos;
+    const char* aend = a.end() - 1;
+    const char* bend = b.end() - 1;
+
+    const char* abegin = a.begin() - 1;
+    const char* bbegin = b.begin() - 1;
+
+    while ((aend > abegin) && (bend > bbegin)) {
+        if (*aend != *bend) {
+            return (a.end() - 1) - aend;
+        }
+        aend--;
+        bend--;
+    }
+
+    return (a.end() - 1) - aend;
 }
 
 bool bytes::operator!=(bytes::const_pointer s) const {

@@ -62,7 +62,8 @@ public:
 #endif // BYTES_USING_STL_CONTAINER
     bytes(const_pointer s, size_type n);
     bytes(const_pointer s, const_pointer e);
-    bytes(value_type ch, size_type size = 1);
+    bytes(value_type ch);
+    bytes(value_type ch, size_type size);
     bytes(bytes&& s) noexcept;
     bytes(const bytes& other);
     bytes(const bytes& other, pos_type pos);
@@ -443,8 +444,8 @@ public:
     static bytes from(uint32_t n, int base = 10);
     static bytes from(uint64_t n, int base = 10);
 
-    static pos_type prefix_of(const bytes& a, const bytes& b);
-    static pos_type suffix_of(const bytes& a, const bytes& b);
+    static size_type prefix_of(const bytes& a, const bytes& b);
+    static size_type suffix_of(const bytes& a, const bytes& b);
 
     //  运算符重载
     bool
