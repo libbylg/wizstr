@@ -649,3 +649,128 @@ TEST(tiny_bytes, suffix_of) {
         ASSERT_EQ(0, tiny::bytes::suffix_of(tiny::bytes{ "" }, tiny::bytes{ "abc" }));
     }
 }
+
+TEST(tiny_bytes, split_by_string) {
+    SECTION("简单场景") {
+        tiny::bytes s{ "abcdbceebc" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "a" },
+            tiny::bytes{ "d" },
+            tiny::bytes{ "ee" },
+            tiny::bytes{ "" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+
+    SECTION("刚好匹配一个") {
+        tiny::bytes s{ "bc" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "" },
+            tiny::bytes{ "" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+
+    SECTION("前面字段") {
+        tiny::bytes s{ "AAAbc" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "AAA" },
+            tiny::bytes{ "" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+
+    SECTION("后面字段") {
+        tiny::bytes s{ "bcAAA" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "" },
+            tiny::bytes{ "AAA" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+
+    SECTION("空串") {
+        tiny::bytes s{ "" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+
+    SECTION("连续匹配") {
+        tiny::bytes s{ "AAbcbcBB" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "AA" },
+            tiny::bytes{ "" },
+            tiny::bytes{ "BB" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+
+    SECTION("连续匹配2") {
+        tiny::bytes s{ "bcbc" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "" },
+            tiny::bytes{ "" },
+            tiny::bytes{ "" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+
+    SECTION("无法匹配") {
+        tiny::bytes s{ "defgui" };
+        std::vector<tiny::bytes> fileds = {
+            tiny::bytes{ "defgui" },
+        };
+        std::vector<tiny::bytes> result;
+        s.split(tiny::bytes("bc"), [&result](tiny::bytes::const_pointer s, tiny::bytes::size_type n) -> int {
+            result.emplace_back(s, n);
+            return 0;
+        });
+
+        ASSERT_EQ(fileds, result);
+    }
+}
+

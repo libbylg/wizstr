@@ -349,8 +349,8 @@ public:
     std::vector<bytes> split_lines(bool keep_ends = false) const;
     std::vector<bytes> split_path() const;
 #endif // BYTES_USING_STL_CONTAINER
-    void split(const bytes& sep, std::function<int(const_pointer s, size_type n)> output_func) const;
-    void split(const_pointer sep, std::function<int(const_pointer s, size_type n)> output_func) const;
+    void split(const bytes& sep, const std::function<int(const_pointer s, size_type n)>& output_func) const;
+    void split(const_pointer sep, const std::function<int(const_pointer s, size_type n)>& output_func) const;
     void split(value_type sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(std::function<bool(value_type ch, bool& cntu)>& chars_func, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_lines(bool keep_ends, std::function<int(const_pointer s, size_type n)> output_func) const;

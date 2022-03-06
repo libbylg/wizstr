@@ -1977,12 +1977,27 @@ std::vector<bytes> bytes::split_path() const {
 }
 #endif // BYTES_USING_STL_CONTAINER
 
-void bytes::split(const bytes& sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    ASSERT(false); //  TODO - void bytes::split(const bytes& sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
+void bytes::split(const bytes& sep, const std::function<int(bytes::const_pointer s, bytes::size_type n)>& output_func) const {
+    ASSERT(!sep.is_empty());
+
+    pos_type start = 0;
+    while (start < size()) {
+        pos_type pos = find(sep, start);
+        if (pos == npos) {
+            output_func(data() + start, size() - start);
+            return;
+        }
+
+        output_func(data() + start, (pos - start));
+        start = pos + sep.size();
+    }
+
+    output_func(data() + start, size() - start);
 }
 
-void bytes::split(bytes::const_pointer sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    ASSERT(false); //  TODO - void bytes::split(bytes::const_pointer sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
+void bytes::split(bytes::const_pointer sep, const std::function<int(bytes::const_pointer s, bytes::size_type n)>& output_func) const {
+    ASSERT(sep != nullptr);
+    split(bytes(sep), output_func);
 }
 
 void bytes::split(bytes::value_type sep, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
