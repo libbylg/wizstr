@@ -353,7 +353,7 @@ public:
     void split(const_pointer sep, const std::function<int(const_pointer s, size_type n)>& output_func) const;
     void split(value_type sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(std::function<bool(value_type ch, bool& cntu)>& chars_func, std::function<int(const_pointer s, size_type n)> output_func) const;
-    void split_lines(bool keep_ends, std::function<int(const_pointer s, size_type n)> output_func) const;
+    void split_lines(std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_path(std::function<int(const_pointer s, size_type n)> output_func) const;
 
     //  大小写转换

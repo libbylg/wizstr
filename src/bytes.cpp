@@ -2042,12 +2042,19 @@ void bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_f
     }
 }
 
-void bytes::split_lines(bool keep_ends, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    ASSERT(false); //  TODO - void bytes::split_lines(bool keep_ends, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
+void bytes::split_lines(std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
+    return split('\n', output_func);
 }
 
 void bytes::split_path(std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    ASSERT(false); //  TODO - void bytes::split_path(std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const
+#if defined(_WIN32)
+    split([](bytes::value_type ch, bool& cntu) -> bool {
+        cntu = !((ch == '/') || (ch == '\\'));
+    },
+        output_func);
+#else
+    return split('/', output_func);
+#endif
 }
 
 bytes& bytes::to_lower() {
