@@ -220,6 +220,7 @@ public:
     pos_type index_of(const_pointer s, pos_type from = 0) const;
     pos_type index_of(value_type ch, pos_type from = 0) const;
     pos_type index_of(std::function<bool(value_type ch, bool& cntu)> matcher, pos_type from, pos_type to) const;
+    pos_type index_of_lineend(bytes::pos_type pos_bgn) const;
 
     pos_type last_index_of(const_pointer s, size_type n, pos_type from) const;
     pos_type last_index_of(const bytes& other, pos_type from = npos) const;
@@ -353,6 +354,7 @@ public:
     void split(const_pointer sep, const std::function<int(const_pointer s, size_type n)>& output_func) const;
     void split(value_type sep, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split(std::function<bool(value_type ch, bool& cntu)>& chars_func, std::function<int(const_pointer s, size_type n)> output_func) const;
+    void split_lines(bool keepends, std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_lines(std::function<int(const_pointer s, size_type n)> output_func) const;
     void split_path(std::function<int(const_pointer s, size_type n)> output_func) const;
 

@@ -774,12 +774,12 @@ TEST(tiny_bytes, split_by_string) {
     }
 }
 
-TEST(tiny_bytes, split_lines) {
+TEST(tiny_bytes, split_lines_notkeepends) {
     SECTION("简单场景") {
         tiny::bytes s{ "\na\r\nb\ncccc\n" };
         std::vector<tiny::bytes> fields = {
             tiny::bytes{ "" },
-            tiny::bytes{ "a\r" },
+            tiny::bytes{ "a" },
             tiny::bytes{ "b" },
             tiny::bytes{ "cccc" },
             tiny::bytes{ "" },
@@ -816,6 +816,102 @@ TEST(tiny_bytes, split_lines) {
 
         std::vector<tiny::bytes> result;
         s.split_lines([&result](tiny::bytes::const_pointer p, tiny::bytes::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+
+    SECTION("综合测试") {
+        tiny::bytes s{ "a\n\ryyy\r\r\nb\n\nc\n\r" };
+        std::vector<tiny::bytes> fields = {
+            tiny::bytes{ "a" },
+            tiny::bytes{ "" },
+            tiny::bytes{ "yyy" },
+            tiny::bytes{ "" },
+            tiny::bytes{ "b" },
+            tiny::bytes{ "" },
+            tiny::bytes{ "c" },
+            tiny::bytes{ "" },
+            tiny::bytes{ "" },
+        };
+
+        std::vector<tiny::bytes> result;
+        s.split_lines([&result](tiny::bytes::const_pointer p, tiny::bytes::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+}
+
+TEST(tiny_bytes, split_lines_keepends) {
+    SECTION("简单场景") {
+        tiny::bytes s{ "\na\r\nb\ncccc\n" };
+        std::vector<tiny::bytes> fields = {
+            tiny::bytes{ "\n" },
+            tiny::bytes{ "a\r\n" },
+            tiny::bytes{ "b\n" },
+            tiny::bytes{ "cccc\n" },
+            tiny::bytes{ "" },
+        };
+
+        std::vector<tiny::bytes> result;
+        s.split_lines(true, [&result](tiny::bytes::const_pointer p, tiny::bytes::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+    SECTION("空串") {
+        tiny::bytes s{ "" };
+        std::vector<tiny::bytes> fields = {
+            tiny::bytes{ "" },
+        };
+
+        std::vector<tiny::bytes> result;
+        s.split_lines(true, [&result](tiny::bytes::const_pointer p, tiny::bytes::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+    SECTION("纯换行") {
+        tiny::bytes s{ "\n" };
+        std::vector<tiny::bytes> fields = {
+            tiny::bytes{ "\n" },
+            tiny::bytes{ "" },
+        };
+
+        std::vector<tiny::bytes> result;
+        s.split_lines(true, [&result](tiny::bytes::const_pointer p, tiny::bytes::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+
+    SECTION("综合测试") {
+        tiny::bytes s{ "a\n\ryyy\r\r\nb\n\nc\n\r" };
+        std::vector<tiny::bytes> fields = {
+            tiny::bytes{ "a\n" },
+            tiny::bytes{ "\r" },
+            tiny::bytes{ "yyy\r" },
+            tiny::bytes{ "\r\n" },
+            tiny::bytes{ "b\n" },
+            tiny::bytes{ "\n" },
+            tiny::bytes{ "c\n" },
+            tiny::bytes{ "\r" },
+            tiny::bytes{ "" },
+        };
+
+        std::vector<tiny::bytes> result;
+        s.split_lines(true, [&result](tiny::bytes::const_pointer p, tiny::bytes::size_type n) -> int {
             result.emplace_back(p, n);
             return 0;
         });

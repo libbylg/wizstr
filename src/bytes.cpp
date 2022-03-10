@@ -943,6 +943,29 @@ bytes::pos_type bytes::index_of(std::function<bool(bytes::value_type ch, bool& c
     return bytes::npos;
 }
 
+bytes::pos_type bytes::index_of_lineend(bytes::pos_type pos_bgn) const {
+    //  从pos_bgn 找 sep
+    bytes::pos_type pos_end = pos_bgn;
+    while (layout.begin()[pos_end] != '\0') {
+        // 如果是 \n
+        if (layout.begin()[pos_end] == '\n') {
+            return pos_end;
+        }
+
+        // 遇到 \r
+        if (layout.begin()[pos_end] == '\r') {
+            if (layout.begin()[pos_end + 1] == '\n') {
+                return ++pos_end;
+            }
+            return pos_end;
+        }
+
+        pos_end++;
+    }
+
+    return bytes::npos;
+}
+
 bytes::pos_type bytes::last_index_of(bytes::const_pointer s, bytes::size_type n, bytes::pos_type from) const {
     bytes::pos_type found_pos = npos;
 
@@ -2043,7 +2066,59 @@ void bytes::split(std::function<bool(bytes::value_type ch, bool& cntu)>& chars_f
 }
 
 void bytes::split_lines(std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
-    return split('\n', output_func);
+    split_lines(false, output_func);
+}
+
+void bytes::split_lines(bool keepends, std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
+    bytes::pos_type pos_bgn = 0;
+    bytes::size_type end_len = 0;
+    while (pos_bgn < layout.len()) {
+        //  从pos_bgn 找 sep
+        bytes::pos_type pos_end = pos_bgn;
+        while (layout.begin()[pos_end] != '\0') {
+            // 如果是 \n
+            if (layout.begin()[pos_end] == '\n') {
+                end_len = 1;
+                break;
+            }
+
+            // 遇到 \r
+            if (layout.begin()[pos_end] == '\r') {
+                if (layout.begin()[pos_end + 1] == '\n') {
+                    end_len = 2;
+                }
+                break;
+            }
+
+            pos_end++;
+        }
+
+        //  如果找到的是\0,终止循环
+        if (layout.begin()[pos_end] == '\0') {
+            break;
+        }
+
+        ASSERT((layout.begin()[pos_end] == '\r') || (layout.begin()[pos_end] == '\n'));
+
+        //  如果找到了，就输出给上层：注意字符串长度可能为 0
+        bytes::size_type slen = (pos_end - pos_bgn);
+        ASSERT(slen >= 0);
+        if (keepends) {
+            slen += end_len;
+        }
+
+        int ret = output_func(layout.begin() + pos_bgn, slen);
+        if (ret != 0) {
+            return;
+        }
+
+        //  pos_bgn 进入下一个位置
+        pos_bgn = (pos_end + end_len);
+    }
+
+    bytes::size_type slen = layout.len() - pos_bgn;
+    ASSERT(slen >= 0);
+    output_func(layout.begin() + pos_bgn, slen);
 }
 
 void bytes::split_path(std::function<int(bytes::const_pointer s, bytes::size_type n)> output_func) const {
