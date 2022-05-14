@@ -80,5 +80,101 @@ namespace core {
         return *wild;
     }
 
+    //    // __str_find_first_of
+    //    template <class _CharT, class _SizeT, class _Traits, _SizeT __npos>
+    //    inline _SizeT
+    //    __str_find_first_of(const _CharT* __p, _SizeT __sz,
+    //        const _CharT* __s, _SizeT __pos, _SizeT __n) _NOEXCEPT {
+    //        if (__pos >= __sz || __n == 0)
+    //            return __npos;
+    //        const _CharT* __r = __find_first_of_ce(__p + __pos, __p + __sz, __s, __s + __n, _Traits::eq);
+    //        if (__r == __p + __sz)
+    //            return __npos;
+    //        return static_cast<_SizeT>(__r - __p);
+    //    }
+    //
+    //    // __str_find_last_of
+    //    template <class _CharT, class _SizeT, class _Traits, _SizeT __npos>
+    //    inline _SizeT _LIBCPP_CONSTEXPR_AFTER_CXX11 _LIBCPP_INLINE_VISIBILITY
+    //    __str_find_last_of(const _CharT* __p, _SizeT __sz,
+    //        const _CharT* __s, _SizeT __pos, _SizeT __n) _NOEXCEPT {
+    //        if (__n != 0) {
+    //            if (__pos < __sz)
+    //                ++__pos;
+    //            else
+    //                __pos = __sz;
+    //            for (const _CharT* __ps = __p + __pos; __ps != __p;) {
+    //                const _CharT* __r = _Traits::find(__s, __n, *--__ps);
+    //                if (__r)
+    //                    return static_cast<_SizeT>(__ps - __p);
+    //            }
+    //        }
+    //        return __npos;
+    //    }
+    //
+    //    // __str_find_first_not_of
+    //    template <class _CharT, class _SizeT, class _Traits, _SizeT __npos>
+    //    inline _SizeT _LIBCPP_CONSTEXPR_AFTER_CXX11 _LIBCPP_INLINE_VISIBILITY
+    //    __str_find_first_not_of(const _CharT* __p, _SizeT __sz,
+    //        const _CharT* __s, _SizeT __pos, _SizeT __n) _NOEXCEPT {
+    //        if (__pos < __sz) {
+    //            const _CharT* __pe = __p + __sz;
+    //            for (const _CharT* __ps = __p + __pos; __ps != __pe; ++__ps)
+    //                if (_Traits::find(__s, __n, *__ps) == 0)
+    //                    return static_cast<_SizeT>(__ps - __p);
+    //        }
+    //        return __npos;
+    //    }
+    //
+    //    template <class _CharT, class _SizeT, class _Traits, _SizeT __npos>
+    //    inline _SizeT _LIBCPP_CONSTEXPR_AFTER_CXX11 _LIBCPP_INLINE_VISIBILITY
+    //    __str_find_first_not_of(const _CharT* __p, _SizeT __sz,
+    //        _CharT __c, _SizeT __pos) _NOEXCEPT {
+    //        if (__pos < __sz) {
+    //            const _CharT* __pe = __p + __sz;
+    //            for (const _CharT* __ps = __p + __pos; __ps != __pe; ++__ps)
+    //                if (!_Traits::eq(*__ps, __c))
+    //                    return static_cast<_SizeT>(__ps - __p);
+    //        }
+    //        return __npos;
+    //    }
+    //
+    //    // __str_find_last_not_of
+    //    template <class _CharT, class _SizeT, class _Traits, _SizeT __npos>
+    //    inline _SizeT _LIBCPP_CONSTEXPR_AFTER_CXX11 _LIBCPP_INLINE_VISIBILITY
+    //    __str_find_last_not_of(const _CharT* __p, _SizeT __sz,
+    //        const _CharT* __s, _SizeT __pos, _SizeT __n) _NOEXCEPT {
+    //        if (__pos < __sz)
+    //            ++__pos;
+    //        else
+    //            __pos = __sz;
+    //        for (const _CharT* __ps = __p + __pos; __ps != __p;)
+    //            if (_Traits::find(__s, __n, *--__ps) == 0)
+    //                return static_cast<_SizeT>(__ps - __p);
+    //        return __npos;
+    //    }
+    //
+    //    template <class _CharT, class _SizeT, class _Traits, _SizeT __npos>
+    //    inline _SizeT _LIBCPP_CONSTEXPR_AFTER_CXX11 _LIBCPP_INLINE_VISIBILITY
+    //    __str_find_last_not_of(const _CharT* __p, _SizeT __sz,
+    //        _CharT __c, _SizeT __pos) _NOEXCEPT {
+    //        if (__pos < __sz)
+    //            ++__pos;
+    //        else
+    //            __pos = __sz;
+    //        for (const _CharT* __ps = __p + __pos; __ps != __p;)
+    //            if (!_Traits::eq(*--__ps, __c))
+    //                return static_cast<_SizeT>(__ps - __p);
+    //        return __npos;
+    //    }
+    //
+    //    template <class _Ptr>
+    //    inline _LIBCPP_INLINE_VISIBILITY
+    //        size_t
+    //        __do_string_hash(_Ptr __p, _Ptr __e) {
+    //        typedef typename iterator_traits<_Ptr>::value_type value_type;
+    //        return __murmur2_or_cityhash<size_t>()(__p, (__e - __p) * sizeof(value_type));
+    //    }
+
 } // namespace core
 } // namespace tiny

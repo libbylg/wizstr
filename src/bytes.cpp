@@ -1123,7 +1123,7 @@ bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type
 bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type pos) const {
     return find_first_not_of(s, pos, std::strlen(s));
 }
-
+std::string s;
 bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const {
     ASSERT(false); //  TODO bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
