@@ -1751,12 +1751,12 @@ bytes& bytes::replace(bytes::value_type before, bytes::value_type after, size_ty
 
 bytes bytes::replace(const bytes& before, const bytes& after, bytes::size_type maxcount) const {
     // TODO bytes bytes::replace(const bytes& before, const bytes& after, bytes::size_type maxcount) const
-    return *this
+    return *this;
 }
 
 bytes& bytes::replace(const bytes& before, const bytes& after, size_type maxcount){
     // TODO bytes bytes::replace(const bytes& before, const bytes& after, bytes::size_type maxcount) const
-    return *this
+    return *this;
 }
 
 bytes bytes::repeat(bytes::size_type times) const {
