@@ -1123,7 +1123,7 @@ bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type
 bytes::pos_type bytes::find_first_not_of(bytes::const_pointer s, bytes::pos_type pos) const {
     return find_first_not_of(s, pos, std::strlen(s));
 }
-std::string s;
+
 bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const {
     ASSERT(false); //  TODO bytes::pos_type bytes::find_first_not_of(bytes::value_type ch, bytes::pos_type pos) const
     return npos;
@@ -1701,44 +1701,62 @@ bytes& bytes::zfill(bytes::size_type width) {
     return *this;
 }
 
-bytes& bytes::replace(bytes::pos_type pos, bytes::size_type n, const bytes& after) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(bytes::pos_type pos, bytes::size_type n, const bytes& after)
+bytes bytes::replace(bytes::value_type before, bytes::value_type after, bytes::size_type maxcount) const {
+    // maxcount 为 0，实际无法做任何有效替换
+    if (maxcount == 0) {
+        return *this;
+    }
+
+    // 实际上整个字符串都可以被替换
+    if ((maxcount < 0) || (maxcount >= layout.len())) {
+        bytes result;
+        result.reserve(size());
+        for (bytes::const_pointer p = layout.begin(); p != layout.end(); p++) {
+            result.append((before == *p) ? after : *p);
+        }
+        return *this;
+    }
+
+    // 下面是只有个别字符会被替换的场景(maxcount > 0)
+    bytes result;
+    result.reserve(size());
+    bytes::size_type replacenum = 0;
+    for (bytes::const_pointer p = layout.begin(); p != layout.end(); p++) {
+        // 没匹配上
+        if (before != *p) {
+            result.append(*p);
+            continue;
+        }
+
+        // 匹配上了
+        result.append(*p);
+        replacenum++;
+        if (replacenum >= maxcount) {
+            // 达到最大次数了，不需要干啥了
+            result.append(p + 1);
+            return result;
+        }
+    }
+    return result;
+}
+
+bytes& bytes::replace(bytes::value_type before, bytes::value_type after, size_type maxcount) {
+    for (bytes::pointer p = layout.begin(); p != layout.end(); p++) {
+        if (before == *p) {
+            *p = after;
+        }
+    }
     return *this;
 }
 
-bytes& bytes::replace(bytes::pos_type pos, bytes::size_type n, bytes::value_type after) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(bytes::pos_type pos, bytes::size_type n, bytes::value_type after)
-    return *this;
+bytes bytes::replace(const bytes& before, const bytes& after, bytes::size_type maxcount) const {
+    // TODO bytes bytes::replace(const bytes& before, const bytes& after, bytes::size_type maxcount) const
+    return *this
 }
 
-bytes& bytes::replace(bytes::pos_type pos, bytes::size_type n, bytes::const_pointer unicode, bytes::size_type size) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(bytes::pos_type pos, bytes::size_type n, bytes::const_pointer unicode, bytes::size_type size)
-    return *this;
-}
-
-bytes& bytes::replace(bytes::value_type before, bytes::value_type after) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(bytes::value_type before, bytes::value_type after)
-    return *this;
-}
-
-bytes& bytes::replace(bytes::const_pointer before, bytes::size_type blen, bytes::const_pointer after, bytes::size_type alen) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(bytes::const_pointer before, bytes::size_type blen, bytes::const_pointer after, bytes::size_type alen)
-    return *this;
-}
-
-bytes& bytes::replace(const bytes& before, const bytes& after) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(const bytes& before, const bytes& after)
-    return *this;
-}
-
-bytes& bytes::replace(bytes::value_type ch, const bytes& after) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(bytes::value_type ch, const bytes& after)
-    return *this;
-}
-
-bytes& bytes::replace(std::function<int(bytes::value_type key, bytes::value_type& val)> func) {
-    ASSERT(false); //  TODO - bytes& bytes::replace(std::function<int(bytes::value_type key, bytes::value_type& val)> func)
-    return *this;
+bytes& bytes::replace(const bytes& before, const bytes& after, size_type maxcount){
+    // TODO bytes bytes::replace(const bytes& before, const bytes& after, bytes::size_type maxcount) const
+    return *this
 }
 
 bytes bytes::repeat(bytes::size_type times) const {

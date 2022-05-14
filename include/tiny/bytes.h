@@ -305,14 +305,10 @@ public:
     bytes& zfill(size_type width);
 
     //  子串替换
-    bytes& replace(pos_type pos, size_type n, const bytes& after);
-    bytes& replace(pos_type pos, size_type n, value_type after);
-    bytes& replace(pos_type pos, size_type n, const_pointer unicode, size_type size);
-    bytes& replace(value_type before, value_type after);
-    bytes& replace(const_pointer before, size_type blen, const_pointer after, size_type alen);
-    bytes& replace(const bytes& before, const bytes& after);
-    bytes& replace(value_type ch, const bytes& after);
-    bytes& replace(std::function<int(value_type key, value_type& val)> func);
+    bytes replace(value_type before, value_type after, size_type maxcount = -1) const;
+    bytes replace(const bytes& before, const bytes& after, size_type maxcount = -1) const;
+    bytes& replace(value_type before, value_type after, size_type maxcount = -1);
+    bytes& replace(const bytes& before, const bytes& after, size_type maxcount = -1);
 
     //  基于本字符串生成新字符串
     bytes repeat(size_type times) const; //  返回本字符串重复 times 次后的副本
