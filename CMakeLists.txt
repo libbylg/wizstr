@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 #   Import external packages
-find_package(PCRE2 REQUIRED COMPONENTS "8BIT")
+#find_package(PCRE2 REQUIRED COMPONENTS "8BIT")
 find_package(GTest REQUIRED COMPONENTS)
 
 
