@@ -109,7 +109,7 @@ static inline auto prepend(std::string& s, const std::string& other) -> std::str
 }
 
 static inline auto prepend(std::string& s, value_type ch) -> std::string& {
-    prepend(s, std::string_view{ &ch, 1 });
+    return prepend(s, std::string_view{ &ch, 1 });
 }
 
 static inline auto prepend(std::string& s, value_type ch, size_type n) -> std::string& {
@@ -531,7 +531,100 @@ static inline auto is_identifier(const std::string& s) -> bool {
     return true;
 }
 
-static inline auto is_bool(const std::string& s) -> bool;
+static inline auto is_bool(const std::string& s) -> bool {
+    if (s.size() <= 0) {
+        return false;
+    }
+
+    //  "1"     "0"
+    //  "on"    "off"
+    //  "ON"    "OFF"
+    //  "Yes"   "No"
+    //  "yes"   "no"
+    //  "YES"   "NO"
+    //  "True"  "False"
+    //  "true"  "false"
+    //  "TRUE"  "FALSE"
+
+    const_pointer ptr = s.c_str();
+    switch (s.size()) {
+        case 5:
+            if ((ptr[0] == 'f') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'F') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'F') && (ptr[1] == 'A') && (ptr[2] == 'L') && (ptr[3] == 'S') && (ptr[4] == 'E')) {
+                return true;
+            }
+            return false;
+        case 4:
+            if ((ptr[0] == 't') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'R') && (ptr[2] == 'U') && (ptr[3] == 'E')) {
+                return true;
+            }
+            return false;
+        case 3:
+            if ((ptr[0] == 'y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'E') && (ptr[2] == 'S')) {
+                return true;
+            }
+            if ((ptr[0] == 'o') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'F') && (ptr[2] == 'F')) {
+                return true;
+            }
+            return false;
+        case 2:
+            if ((ptr[0] == 'o') && (ptr[1] == 'n')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'n')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'N')) {
+                return true;
+            }
+            if ((ptr[0] == 'n') && (ptr[1] == 'o')) {
+                return true;
+            }
+            if ((ptr[0] == 'N') && (ptr[1] == 'o')) {
+                return true;
+            }
+            if ((ptr[0] == 'N') && (ptr[1] == 'O')) {
+                return true;
+            }
+            return false;
+        case 1:
+            switch (*ptr) {
+                case '0':
+                    return true;
+                case '1':
+                    return true;
+                default:
+                    return false;
+            }
+        default:
+            return false;
+    }
+
+    return false;
+}
 
 //  提取子串
 static inline auto left(const std::string& s, size_type n) -> std::string {
@@ -603,12 +696,66 @@ static inline auto space(size_type width) -> std::string {
 }
 
 //  基于本字符串生成新字符串
-using join_proc = std::function<const_pointer()>;
-static inline auto join(const std::string& s, join_proc proc) -> std::string;
-static inline auto join(const std::string& s, const std::vector<std::string>& items) -> std::string;
-static inline auto join(const std::string& s, std::initializer_list<std::string> items) -> std::string;
-static inline auto join(const std::string& s, std::initializer_list<const_pointer> items) -> std::string;
-static inline auto join(const std::string& s, std::initializer_list<std::string_view> items) -> std::string;
+
+using join_proc = std::function<std::optional<std::string_view>()>;
+static inline auto join(const std::string& s, join_proc proc) -> std::string {
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        if (!result.empty()) {
+            result.append(s);
+        }
+        result.append(item.value());
+    }
+    return result;
+}
+
+static inline auto join(const std::string& s, const std::vector<std::string>& items) -> std::string {
+    auto itr = items.cbegin();
+    return join(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.cend()) {
+            return {};
+        }
+        const std::string& item = *itr;
+        itr++;
+        return std::string_view(item.c_str(), item.size());
+    });
+}
+
+static inline auto join(const std::string& s, std::initializer_list<std::string> items) -> std::string {
+    auto itr = items.begin();
+    return join(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return {};
+        }
+        const std::string& item = *itr;
+        itr++;
+        return std::string_view(item.c_str(), item.size());
+    });
+}
+
+static inline auto join(const std::string& s, std::initializer_list<const_pointer> items) -> std::string {
+    auto itr = items.begin();
+    return join(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return {};
+        }
+        const const_pointer& item = *itr;
+        itr++;
+        return std::string_view(item);
+    });
+}
+
+static inline auto join(const std::string& s, std::initializer_list<std::string_view> items) -> std::string {
+    auto itr = items.begin();
+    return join(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return {};
+        }
+        const std::string_view& item = *itr;
+        itr++;
+        return item;
+    });
+}
 
 // 使用逗号和冒号拼接 map
 using join_map_proc = std::function<int(const_pointer key, size_type key_n, const_pointer val, size_type val_n)>;
@@ -645,7 +792,7 @@ static inline auto invert(const std::string& s, size_type pos, size_type max_n =
 using split_list_proc = std::function<int(std::string_view item)>;
 static inline auto split_list(const std::string& s, const std::string_view& sep, split_list_proc proc) -> void {
     size_type pos_start = 0;
-    while (pos_start) {
+    while (pos_start < s.size()) {
         size_type pos_end = s.find(sep, pos_start);
         if (pos_end == std::string::npos) {
             break;
@@ -655,6 +802,7 @@ static inline auto split_list(const std::string& s, const std::string_view& sep,
             pos_start = pos_end + sep.size();
             break;
         }
+        pos_start = pos_end + sep.size();
     }
 
     proc(std::string_view{ s.c_str() + pos_start, s.size() - pos_start });
@@ -751,8 +899,26 @@ static inline auto copy(pointer dest, size_type max_n, const std::string& s) -> 
 static inline auto dirname(const std::string& s) -> std::string;
 
 //  处理路径中文件名的部分
-static inline auto basename_ptr(const std::string& s) -> const_pointer;
-static inline auto basename(const std::string& s) -> std::string;
+static inline auto basename_ptr(const std::string& s) -> const_pointer {
+#if defined(WIN32)
+    size_type pos = s.find_last_of('/');
+    size_type pos1 = s.find_last_of('\\');
+    pos = std::min(pos, pos1);
+#else
+    size_type pos = s.find_last_of('/');
+#endif
+
+    if (pos == std::string::npos) {
+        return s.c_str();
+    }
+
+    return s.c_str() + pos + 1;
+}
+
+static inline auto basename(const std::string& s) -> std::string {
+    return basename_ptr(s);
+}
+
 static inline auto remove_basename(const std::string& s) -> std::string;
 static inline auto remove_basename(std::string& s) -> std::string&;
 static inline auto replace_basename(std::string& s, const std::string& name) -> std::string&;
@@ -807,12 +973,12 @@ static inline auto to(const std::string& s, T def) -> T {
 }
 
 template <>
-static inline auto to<bool>(const std::string& s) -> std::optional<bool> {
+inline auto to<bool>(const std::string& s [[maybe_unused]]) -> std::optional<bool> {
     return {};
 }
 
 template <>
-static inline auto to<float>(const std::string& s) -> std::optional<float> {
+inline auto to<float>(const std::string& s) -> std::optional<float> {
     errno = 0;
     char* endptr = nullptr;
     auto result = std::strtof(s.c_str(), &endptr);
@@ -831,7 +997,7 @@ static inline auto to<float>(const std::string& s) -> std::optional<float> {
 }
 
 template <>
-static inline auto to<double>(const std::string& s) -> std::optional<double> {
+inline auto to<double>(const std::string& s) -> std::optional<double> {
     errno = 0;
     char* endptr = nullptr;
     auto result = std::strtod(s.c_str(), &endptr);
@@ -849,7 +1015,7 @@ static inline auto to<double>(const std::string& s) -> std::optional<double> {
     return result;
 }
 
-static inline inline constexpr auto correct_base(int base) -> int {
+static inline constexpr auto correct_base(int base) -> int {
     if (base != 0) {
         if (base < 2) {
             return 2;
@@ -863,7 +1029,7 @@ static inline inline constexpr auto correct_base(int base) -> int {
 }
 
 template <>
-static inline auto to<int8_t>(const std::string& s, std::tuple<int> base) -> std::optional<int8_t> {
+inline auto to<int8_t>(const std::string& s, std::tuple<int> base) -> std::optional<int8_t> {
     int nbase = correct_base(std::get<0>(base));
     errno = 0;
     char* endptr = nullptr;
@@ -887,7 +1053,7 @@ static inline auto to<int8_t>(const std::string& s, std::tuple<int> base) -> std
 }
 
 template <>
-static inline auto to<int16_t>(const std::string& s, std::tuple<int> base) -> std::optional<int16_t> {
+inline auto to<int16_t>(const std::string& s, std::tuple<int> base) -> std::optional<int16_t> {
     int nbase = correct_base(std::get<0>(base));
 
     errno = 0;
@@ -912,7 +1078,7 @@ static inline auto to<int16_t>(const std::string& s, std::tuple<int> base) -> st
 }
 
 template <>
-static inline auto to<int32_t>(const std::string& s, std::tuple<int> base) -> std::optional<int32_t> {
+inline auto to<int32_t>(const std::string& s, std::tuple<int> base) -> std::optional<int32_t> {
     int nbase = correct_base(std::get<0>(base));
 
     errno = 0;
@@ -937,7 +1103,7 @@ static inline auto to<int32_t>(const std::string& s, std::tuple<int> base) -> st
 }
 
 template <>
-static inline auto to<int64_t>(const std::string& s, std::tuple<int> base) -> std::optional<int64_t> {
+inline auto to<int64_t>(const std::string& s, std::tuple<int> base) -> std::optional<int64_t> {
     int nbase = correct_base(std::get<0>(base));
 
     errno = 0;
@@ -966,7 +1132,7 @@ static inline auto to<int64_t>(const std::string& s, std::tuple<int> base) -> st
 }
 
 template <>
-static inline auto to<uint8_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint8_t> {
+inline auto to<uint8_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint8_t> {
     int nbase = correct_base(std::get<0>(base));
 
     errno = 0;
@@ -991,7 +1157,7 @@ static inline auto to<uint8_t>(const std::string& s, std::tuple<int> base) -> st
 }
 
 template <>
-static inline auto to<uint16_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint16_t> {
+inline auto to<uint16_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint16_t> {
     int nbase = correct_base(std::get<0>(base));
 
     errno = 0;
@@ -1016,7 +1182,7 @@ static inline auto to<uint16_t>(const std::string& s, std::tuple<int> base) -> s
 }
 
 template <>
-static inline auto to<uint32_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint32_t> {
+inline auto to<uint32_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint32_t> {
     int nbase = correct_base(std::get<0>(base));
 
     errno = 0;
@@ -1041,7 +1207,7 @@ static inline auto to<uint32_t>(const std::string& s, std::tuple<int> base) -> s
 }
 
 template <>
-static inline auto to<uint64_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint64_t> {
+inline auto to<uint64_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint64_t> {
     int nbase = correct_base(std::get<0>(base));
 
     errno = 0;
@@ -1068,13 +1234,14 @@ static inline auto to<uint64_t>(const std::string& s, std::tuple<int> base) -> s
 static inline auto from(double n, value_type format = 'g', int precision = 6) -> std::string;
 static inline auto from(float n, value_type format = 'g', int precision = 6) -> std::string;
 static inline auto from(int8_t n, int base = 10) -> std::string;
-static inline auto from(int16_t n, int base = 10) -> std::string;
-static inline auto from(int32_t n, int base = 10) -> std::string;
-static inline auto from(int64_t n, int base = 10) -> std::string;
-static inline auto from(uint8_t n, int base = 10) -> std::string;
-static inline auto from(uint16_t n, int base = 10) -> std::string;
-static inline auto from(uint32_t n, int base = 10) -> std::string;
-static inline auto from(uint64_t n, int base = 10) -> std::string;
+inline auto from(int16_t n, int base = 10) -> std::string;
+inline auto from(int32_t n, int base = 10) -> std::string;
+inline auto from(int64_t n, int base = 10) -> std::string;
+inline auto from(uint8_t n, int base = 10) -> std::string;
+inline auto from(uint16_t n, int base = 10) -> std::string;
+inline auto from(uint32_t n, int base = 10) -> std::string;
+inline auto from(uint64_t n, int base = 10) -> std::string;
+
 };     // namespace str
 
 #endif // TINY_STR_H
