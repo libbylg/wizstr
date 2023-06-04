@@ -242,10 +242,6 @@ static inline auto count(const std::string& s, const std::string& other) -> size
 static inline auto count(const std::string& s, value_type ch) -> size_type;
 static inline auto count(const std::string& s, std::function<bool(value_type ch, bool& cntu)> macher) -> size_type;
 
-// 字符映射
-using translate_proc = std::function<value_type(value_type)>;
-static inline auto translate(std::string& s, translate_proc proc) -> std::string&;
-
 //  前缀操作
 static inline auto prefix(const std::string& s, const std::string& other) -> size_type {
     if ((s.empty()) || (other.empty())) {
@@ -856,9 +852,133 @@ static inline auto to_upper(std::string& s) -> std::string&;
 static inline auto to_upper(const std::string& s) -> std::string;
 static inline auto swap_case(std::string& s, std::string& other) -> void;
 
+// 字符映射
+using translate_proc = std::function<value_type(value_type)>;
+static inline auto translate(std::string& s, translate_proc proc) -> std::string& {
+    pointer ptr = s.data();
+    while (*ptr) {
+        *ptr = proc(*ptr);
+        ptr++;
+    }
+    return s;
+}
+
 // 字符串化简，将字符串中的多个空白压缩成一个空格
-static inline auto simplified(const std::string& s) -> std::string;
-static inline auto simplified(std::string& s) -> std::string&;
+using simplified_proc = std::function<bool(value_type ch)>;
+static inline auto simplified(std::string& s, simplified_proc proc) -> std::string& {
+    if (s.size() == 0) {
+        return s;
+    }
+
+    bool found = false;
+    pointer w = s.data();
+    pointer r = s.data();
+    while (*r != '\0') {
+        value_type ch = *r;
+        if (found) {
+            if (proc(ch)) {
+                r++;
+                continue;
+            }
+
+            found = false;
+            *(w++) = *(r++);
+            continue;
+        }
+
+        if (proc(ch)) {
+            found = true;
+            *(w++) = ' ';
+            r++;
+            continue;
+        }
+
+        *(w++) = *(r++);
+    }
+
+    s.resize(w - s.data());
+    return s;
+}
+
+static inline auto simplified(const std::string& s) -> std::string {
+    if (s.size() == 0) {
+        return s;
+    }
+
+    std::string result;
+    bool found = true;
+    const_pointer r = s.c_str();
+    while (*r != '\0') {
+        value_type ch = *r;
+        if (found) {
+            if (std::isspace(ch)) {
+                r++;
+                continue;
+            }
+
+            found = false;
+            result.append(r, 1);
+            r++;
+            continue;
+        }
+
+        if (std::isspace(ch)) {
+            found = true;
+        }
+
+        result.append(r, 1);
+        r++;
+    }
+
+    if (!result.empty()) {
+        if (std::isspace(result.back())) {
+            result.resize(result.size() - 1);
+        }
+    }
+
+    return result;
+}
+
+static inline auto simplified(std::string& s) -> std::string& {
+    if (s.size() == 0) {
+        return s;
+    }
+
+    bool found = true;
+    pointer w = s.data();
+    const_pointer r = s.c_str();
+    while (*r != '\0') {
+        if (found) {
+            if (std::isspace(*r)) {
+                r++;
+                continue;
+            }
+
+            found = false;
+            *(w++) = *(r++);
+            continue;
+        }
+
+        if (std::isspace(*r)) {
+            found = true;
+            *(w++) = ' ';
+            r++;
+            continue;
+        }
+
+        *(w++) = *(r++);
+    }
+
+    s.resize(w - s.c_str());
+
+    if (!s.empty()) {
+        if (std::isspace(s.back())) {
+            s.resize(s.size() - 1);
+        }
+    }
+
+    return s;
+}
 
 // 空白祛除
 using trim_proc = std::function<bool(value_type ch)>;
@@ -874,6 +994,25 @@ static inline auto trim(std::string& s) -> std::string&;
 static inline auto trim_all(const std::string& s, trim_proc proc) -> std::string;
 static inline auto trim_all(const std::string& s) -> std::string;
 static inline auto trim_all(std::string& s) -> std::string&;
+
+// 切除
+static inline auto chop(std::string& s, size_type n) -> std::string& {
+    if (n > s.size()) {
+        s.resize(0);
+        return s;
+    }
+
+    s.resize(s.size() - n);
+    return s;
+}
+
+static inline auto chop(const std::string& s, size_type n) -> std::string {
+    if (n > s.size()) {
+        return "";
+    }
+
+    return s.substr(0, s.size() - n);
+}
 
 // 变量展开
 using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
