@@ -281,9 +281,9 @@ static inline auto has_prefix(const std::string& s, value_type ch) -> bool {
     return s[0] == ch;
 }
 
-static inline auto has_prefix(const std::string& s, const std::string& prefix) -> bool {
-    return str::prefix(s, prefix) == prefix.size();
-}
+// static inline auto has_prefix(const std::string& s, const std::string& prefix) -> bool {
+//    return str::prefix(s, prefix) == prefix.size();
+//}
 
 static inline auto has_prefix(const std::string& s, const std::string_view& prefix) -> bool {
     return str::prefix(s, prefix) == prefix.size();
@@ -293,17 +293,29 @@ static inline auto starts_with(const std::string& s, value_type ch) -> bool {
     return has_prefix(s, ch);
 }
 
-static inline auto starts_with(const std::string& s, const std::string& prefix) -> bool {
-    return has_prefix(s, prefix);
-}
+// static inline auto starts_with(const std::string& s, const std::string& prefix) -> bool {
+//     return has_prefix(s, prefix);
+// }
 
 static inline auto starts_with(const std::string& s, const std::string_view& prefix) -> bool {
     return has_prefix(s, prefix);
 }
 
-static inline auto remove_prefix(std::string& s, value_type prefix) -> std::string&;
-static inline auto remove_prefix(std::string& s, const std::string& prefix) -> std::string&;
-static inline auto remove_prefix(std::string& s, const std::string_view& prefix) -> std::string&;
+// static inline auto remove_prefix(std::string& s, const std::string& prefix) -> std::string&;
+
+static inline auto remove_prefix(std::string& s, std::string_view prefix) -> std::string& {
+    if (!has_prefix(s, prefix)) {
+        return s;
+    }
+
+    std::memmove(s.data(), s.c_str() + prefix.size(), s.size() - prefix.size());
+    s.resize(s.size() - prefix.size());
+    return s;
+}
+
+static inline auto remove_prefix(std::string& s, value_type prefix) -> std::string& {
+    return remove_prefix(s, { &prefix, 1 });
+}
 
 //  后缀操作
 static inline auto suffix(const std::string& s, const std::string& other) -> size_type {
@@ -354,9 +366,9 @@ static inline auto has_suffix(const std::string& s, value_type suffix) -> bool {
     return s[0] == suffix;
 }
 
-static inline auto has_suffix(const std::string& s, const std::string& suffix) -> bool {
-    return str::suffix(s, suffix) == suffix.size();
-}
+// static inline auto has_suffix(const std::string& s, const std::string& suffix) -> bool {
+//     return str::suffix(s, suffix) == suffix.size();
+// }
 
 static inline auto has_suffix(const std::string& s, const std::string_view& suffix) -> bool {
     return str::suffix(s, suffix) == suffix.size();
@@ -366,22 +378,90 @@ static inline auto ends_with(const std::string& s, value_type suffix) -> bool {
     return has_suffix(s, suffix);
 }
 
-static inline auto ends_with(const std::string& s, const std::string& suffix) -> bool {
-    return has_suffix(s, suffix);
-}
+// static inline auto ends_with(const std::string& s, const std::string& suffix) -> bool {
+//     return has_suffix(s, suffix);
+// }
 
 static inline auto ends_with(const std::string& s, const std::string_view& suffix) -> bool {
     return has_suffix(s, suffix);
 }
 
-static inline auto remove_suffix(std::string& s, value_type suffix) -> std::string&;
-static inline auto remove_suffix(std::string& s, const std::string& suffix) -> std::string&;
-static inline auto remove_suffix(std::string& s, const std::string_view& suffix) -> std::string&;
+static inline auto remove_suffix(std::string& s, const std::string_view& suffix) -> std::string& {
+    if (!has_prefix(s, suffix)) {
+        return s;
+    }
+
+    s.resize(s.size() - suffix.size());
+    return s;
+}
+
+static inline auto remove_suffix(std::string& s, value_type suffix) -> std::string& {
+    return remove_suffix(s, { &suffix, 1 });
+}
+
+// static inline auto remove_suffix(std::string& s, const std::string& suffix) -> std::string& {
+//}
 
 //  填充
-static inline auto fill(std::string& s, size_type pos, size_type max_n, value_type ch) -> std::string&;
-static inline auto fill(std::string& s, size_type pos, size_type max_n, const std::string& other) -> std::string&;
-static inline auto fill(std::string& s, size_type pos, size_type max_n, const std::string_view& other) -> std::string&;
+static inline auto fill(std::string& s, const std::string_view& other, size_type pos = 0, size_type max_n = npos) -> std::string& {
+    if (s.empty() || other.empty()) {
+        return s;
+    }
+
+    if (pos >= s.size()) {
+        return s;
+    }
+
+    if (max_n == std::string::npos) {
+        max_n = s.size() - pos;
+    }
+
+    pointer ptr = (s.data() + pos);
+    for (size_type i = 0; i < (max_n / other.size()); i++) {
+        std::memcpy(ptr, other.data(), other.size());
+        ptr += other.size();
+    }
+
+    if ((max_n % other.size()) >= 0) {
+        std::memcpy(ptr, other.data(), (max_n % other.size()));
+    }
+
+    return s;
+}
+
+static inline auto fill(std::string& s, value_type ch, size_type pos = 0, size_type max_n = npos) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (pos >= s.size()) {
+        return s;
+    }
+
+    if (max_n == std::string::npos) {
+        max_n = s.size() - pos;
+    }
+
+    std::fill(s.data() + pos, s.data() + pos + max_n, ch);
+    return s;
+}
+
+// static inline auto fill(std::string& s, size_type pos, size_type max_n, const std::string& other) -> std::string& {
+// }
+
+// static inline auto fill(std::string& s, value_type ch) -> std::string& {
+//     std::fill(s.begin(), s.end(), ch);
+//     return s;
+// }
+//
+// static inline auto fill(std::string& s, size_type pos, value_type ch) -> std::string& {
+//     if (pos >= s.size()) {
+//         return s;
+//     }
+//
+//     std::fill(s.begin() + pos, s.end(), ch);
+//     return s;
+// }
 
 //  查找
 static inline auto index_of(const std::string& s, size_type pos, value_type ch) -> size_type;
@@ -433,7 +513,13 @@ static inline auto is_upper(const std::string& s) -> bool {
     return true;
 }
 
-static inline auto is_title(const std::string& s) -> bool;
+static inline auto is_title(const std::string& s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    return std::isupper(s[0]);
+}
 
 static inline auto is_digit(const std::string& s) -> bool {
     for (const_pointer ptr = s.c_str(); ptr < s.c_str() + s.size(); ptr++) {
@@ -453,7 +539,14 @@ static inline auto is_xdigit(const std::string& s) -> bool {
     return true;
 }
 
-static inline auto is_ascii(const std::string& s) -> bool;
+static inline auto is_ascii(const std::string& s) -> bool {
+    for (const_pointer ptr = s.c_str(); ptr < s.c_str() + s.size(); ptr++) {
+        if ((*ptr & 0x80) != 0) {
+            return false;
+        }
+    }
+    return true;
+}
 
 static inline auto is_alpha(const std::string& s) -> bool {
     for (const_pointer ptr = s.c_str(); ptr < s.c_str() + s.size(); ptr++) {
@@ -662,14 +755,130 @@ static inline auto substr(const std::string& s, size_type pos, ssize_type offset
 }
 
 //  定宽对齐调整
-static inline auto ljust(std::string& s, size_type width, value_type ch = ' ', bool truncate = false) -> std::string&;
-static inline auto ljust(const std::string& s, size_type width, value_type ch = ' ', bool truncate = false) -> std::string;
-static inline auto rjust(std::string& s, size_type width, value_type ch = ' ', bool truncate = false) -> std::string&;
-static inline auto rjust(const std::string& s, size_type width, value_type ch = ' ', bool truncate = false) -> std::string;
-static inline auto center(std::string& s, size_type width, value_type ch = ' ', bool truncate = false) -> std::string&;
-static inline auto center(const std::string& s, size_type width, value_type ch = ' ', bool truncate = false) -> std::string;
-static inline auto zfill(std::string& s, size_type width) -> std::string&;
-static inline auto zfill(const std::string& s, size_type width) -> std::string;
+static inline auto ljust(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
+    if (s.size() >= width) {
+        return s;
+    }
+
+    size_type old_len = s.size();
+    s.resize(width);
+    std::memmove(s.data() + width - old_len, s.data(), old_len);
+    std::fill(s.data(), s.data() + width - old_len, ch);
+    return s;
+}
+
+static inline auto ljust(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
+    if (s.size() >= width) {
+        return s;
+    }
+
+    std::string result;
+    result.resize(width);
+    std::fill(result.data(), result.data() + (width - s.size()), ch);
+    std::memcpy(result.data() + (width - s.size()), s.c_str(), s.size());
+    return result;
+}
+
+static inline auto rjust(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
+    if (s.size() >= width) {
+        return s;
+    }
+
+    s.resize(width, ch);
+    return s;
+}
+
+static inline auto rjust(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
+    if (s.size() >= width) {
+        return s;
+    }
+
+    std::string result;
+    result.reserve(width);
+    result.append(s);
+    result.append(width - s.size(), ch);
+    return result;
+}
+
+static inline auto center(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
+    if (s.size() < width) {
+        return s;
+    }
+
+    size_type left_len = (width - s.size()) / 2;
+    size_type right_len = (width - left_len) - s.size();
+
+    s.resize(width);
+    std::memmove(s.data() + left_len, s.c_str(), s.size());
+    std::fill(s.data(), s.data() + left_len, ch);
+    std::fill(s.data() + width - right_len, s.data() + width, ch);
+    return s;
+}
+
+static inline auto center(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
+    if (s.size() < width) {
+        return s;
+    }
+
+    size_type left_len = (width - s.size()) / 2;
+    size_type right_len = (width - left_len) - s.size();
+
+    std::string result;
+    result.reserve(width);
+    result.append(left_len, ch);
+    result.append(s);
+    result.append(right_len, ch);
+    return result;
+}
+
+static inline auto zfill(std::string& s, size_type width) -> std::string& {
+    if (s.empty()) {
+        s.resize(0);
+        return s;
+    }
+
+    if (s.size() >= width) {
+        return s;
+    }
+
+    if ((s[0] != '+') && (s[0] != '-')) {
+        return ljust(s, width, '0');
+    }
+
+    size_type old_len = s.size();
+    s.resize(width);
+    if (old_len - 1 > 0) {
+        std::memmove(s.data() + s.size() - (old_len - 1), s.c_str() + 1, old_len - 1);
+    }
+
+    std::fill(s.data() + 1, s.data() + s.size() - (old_len - 1), '0');
+    return s;
+}
+
+static inline auto zfill(const std::string& s, size_type width) -> std::string {
+    if (s.empty()) {
+        return std::string(width, '0');
+    }
+
+    if (s.size() >= width) {
+        return s;
+    }
+
+    if ((s[0] != '+') && (s[0] != '-')) {
+        return ljust(s, width, '0');
+    }
+
+    std::string result;
+    result.resize(width);
+    pointer ptr = result.data();
+    *ptr = s[0];
+    ptr++;
+    std::fill(ptr, ptr + (width - s.size()), '0');
+    ptr += (width - s.size());
+    std::memcpy(ptr, s.c_str(), s.size());
+
+    return result;
+}
 
 // 字符串生成
 static inline auto repeat(const std::string& s, size_type times) -> std::string {
@@ -759,23 +968,95 @@ static inline auto join_map(join_map_proc proc) -> std::string;
 static inline auto join_map(std::map<std::string, std::string> items) -> std::string;
 
 // 路径拼接
-using join_path_proc = std::function<const_pointer()>;
-static inline auto join_path(join_path_proc proc) -> std::string;
-static inline auto join_path(const std::vector<std::string>& items) -> std::string;
-static inline auto join_path(std::initializer_list<std::string> items) -> std::string;
-static inline auto join_path(std::initializer_list<const_pointer> items) -> std::string;
-static inline auto join_path(std::initializer_list<std::string_view> items) -> std::string;
+using join_path_proc = std::function<std::optional<std::string_view>()>;
+static inline auto join_path(join_path_proc proc) -> std::string {
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        if (!result.empty()) {
+            result.append("/");
+        }
+        result.append(item.value());
+    }
+    return result;
+}
+
+static inline auto join_path(const std::vector<std::string>& items) -> std::string {
+    if (items.empty()) {
+        return "";
+    }
+
+    auto itr = items.cbegin();
+    return join_path([&itr, &items]() -> std::optional<std::string_view> {
+        if (itr == items.cend()) {
+            return {};
+        }
+
+        return std::string_view{ itr->c_str(), itr->size() };
+    });
+}
+
+static inline auto join_path(std::initializer_list<std::string> items) -> std::string {
+    auto itr = items.begin();
+    return join_path([&itr, &items]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return {};
+        }
+
+        return std::string_view{ itr->c_str(), itr->size() };
+    });
+}
+
+static inline auto join_path(std::initializer_list<const_pointer> items) -> std::string {
+    auto itr = items.begin();
+    return join_path([&itr, &items]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return {};
+        }
+
+        return std::string_view{ *itr };
+    });
+}
+
+static inline auto join_path(std::initializer_list<std::string_view> items) -> std::string {
+    auto itr = items.begin();
+    return join_path([&itr, &items]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return {};
+        }
+
+        return *itr;
+    });
+}
 
 // 拼接成搜索路径
 using join_search_path_proc = join_path_proc;
-static inline auto join_search_path(join_search_path_proc proc) -> std::string;
-static inline auto join_search_path(const std::vector<std::string>& items) -> std::string;
-static inline auto join_search_path(std::initializer_list<std::string> items) -> std::string;
-static inline auto join_search_path(std::initializer_list<const_pointer> items) -> std::string;
-static inline auto join_search_path(std::initializer_list<std::string_view> items) -> std::string;
+static inline auto join_search_path(join_search_path_proc proc) -> std::string {
+    return join(":", proc);
+}
+
+static inline auto join_search_path(const std::vector<std::string>& items) -> std::string {
+    return join(":", items);
+}
+
+static inline auto join_search_path(std::initializer_list<std::string> items) -> std::string {
+    return join(":", items);
+}
+
+static inline auto join_search_path(std::initializer_list<const_pointer> items) -> std::string {
+    return join(":", items);
+}
+
+static inline auto join_search_path(std::initializer_list<std::string_view> items) -> std::string {
+    return join(":", items);
+}
 
 //  Title 化：首字母大写
-static inline auto title(std::string& s) -> std::string&;
+static inline auto title(std::string& s) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+}
+
 static inline auto title(const std::string& s) -> const std::string&;
 static inline auto title_fields(std::string& s) -> std::string&;
 static inline auto title_fields(const std::string& s) -> const std::string&;
@@ -1006,7 +1287,7 @@ static inline auto chop(std::string& s, size_type n) -> std::string& {
     return s;
 }
 
-static inline auto chop(const std::string& s, size_type n) -> std::string {
+static inline auto choped(const std::string& s, size_type n) -> std::string {
     if (n > s.size()) {
         return "";
     }
@@ -1035,18 +1316,46 @@ static inline auto normpath(const std::string& s) -> std::string;
 static inline auto copy(pointer dest, size_type max_n, const std::string& s) -> size_type;
 
 // 将 s 视作为文件路径，获取其目录名
-static inline auto dirname(const std::string& s) -> std::string;
+static inline auto dirname(const std::string& s) -> std::string {
+    if (s.empty()) {
+        return ".";
+    }
+
+    // 如果尾部为斜杠，应该跳过所有的斜杠
+    size_type pos = s.size();
+    while (pos > 0) {
+        if (s[pos - 1] != '/') {
+            break;
+        }
+        pos--;
+    }
+
+    // 继续找最近的一个斜杠
+    while (pos > 0) {
+        if (s[pos - 1] == '/') {
+            break;
+        }
+        pos--;
+    }
+
+    // 路径可能并不标准，可能会连续输入多个斜杠，此时将所有的斜杠吸收掉
+    while (pos > 0) {
+        if (s[pos - 1] != '/') {
+            break;
+        }
+        pos--;
+    }
+
+    if (pos == 0) {
+        return (s[pos] == '/') ? "/" : ".";
+    }
+
+    return s.substr(0, pos);
+}
 
 //  处理路径中文件名的部分
 static inline auto basename_ptr(const std::string& s) -> const_pointer {
-#if defined(WIN32)
     size_type pos = s.find_last_of('/');
-    size_type pos1 = s.find_last_of('\\');
-    pos = std::min(pos, pos1);
-#else
-    size_type pos = s.find_last_of('/');
-#endif
-
     if (pos == std::string::npos) {
         return s.c_str();
     }
@@ -1054,29 +1363,142 @@ static inline auto basename_ptr(const std::string& s) -> const_pointer {
     return s.c_str() + pos + 1;
 }
 
+static inline auto basename_ptr(std::string& s) -> pointer {
+    size_type pos = s.find_last_of('/');
+    if (pos == std::string::npos) {
+        return s.data();
+    }
+
+    return s.data() + pos + 1;
+}
+
 static inline auto basename(const std::string& s) -> std::string {
     return basename_ptr(s);
 }
 
-static inline auto remove_basename(const std::string& s) -> std::string;
-static inline auto remove_basename(std::string& s) -> std::string&;
-static inline auto replace_basename(std::string& s, const std::string& name) -> std::string&;
-static inline auto replace_basename(std::string& s, const std::string_view& name) -> std::string&;
-static inline auto replace_basename(const std::string& s, const std::string& name) -> std::string;
-static inline auto replace_basename(const std::string& s, const std::string_view& name) -> std::string;
+static inline auto remove_basename(const std::string& s) -> std::string {
+    const_pointer ptr = basename_ptr(s);
+    return s.substr(0, ptr - s.c_str());
+}
+
+static inline auto remove_basename(std::string& s) -> std::string& {
+    const_pointer ptr = basename_ptr(s);
+    s.resize(ptr - s.c_str());
+    return s;
+}
+
+static inline auto replace_basename(std::string& s, const std::string& name) -> std::string& {
+    pointer ptr = basename_ptr(s);
+    s.resize((ptr - s.c_str()) + name.size());
+    std::memcpy(ptr, name.c_str(), name.size());
+    return s;
+}
+
+static inline auto replace_basename(std::string& s, const std::string_view& name) -> std::string& {
+    pointer ptr = basename_ptr(s);
+    s.resize((ptr - s.c_str()) + name.size());
+    std::memcpy(ptr, name.data(), name.size());
+    return s;
+}
+
+static inline auto replace_basename(const std::string& s, const std::string& name) -> std::string {
+    const_pointer ptr = basename_ptr(s);
+    std::string result;
+    result.reserve((ptr - s.c_str()) + name.size());
+    result.append(s.c_str(), ptr - s.c_str());
+    result.append(name);
+    return result;
+}
+
+static inline auto replace_basename(const std::string& s, const std::string_view& name) -> std::string {
+    const_pointer ptr = basename_ptr(s);
+    std::string result;
+    result.reserve((ptr - s.c_str()) + name.size());
+    result.append(s.c_str(), ptr - s.c_str());
+    result.append(name);
+    return result;
+}
 
 // 扩展名相关操作
-static inline auto extname_ptr(const std::string& s) -> const_pointer;
-static inline auto extname(const std::string& s) -> std::string;
-static inline auto remove_extname(const std::string& s) -> std::string;
-static inline auto remove_extname(std::string& s) -> std::string&;
-static inline auto replace_extname(std::string& s, const std::string& name) -> std::string&;
-static inline auto replace_extname(std::string& s, const std::string_view& name) -> std::string&;
-static inline auto replace_extname(const std::string& s, const std::string& name) -> std::string;
-static inline auto replace_extname(const std::string& s, const std::string_view& name) -> std::string;
+static inline auto extname_ptr(const std::string& s) -> const_pointer {
+    const_pointer ptr = basename_ptr(s);
+    if (ptr[0] == '.') {
+        return s.c_str() + s.size();
+    }
+
+    ptr = std::strchr(ptr, '.');
+    if (ptr == nullptr) {
+        return s.c_str() + s.size();
+    }
+
+    return ptr;
+}
+
+static inline auto extname_ptr(std::string& s) -> pointer {
+    pointer ptr = basename_ptr(s);
+    if (ptr[0] == '.') {
+        return s.data() + s.size();
+    }
+
+    ptr = std::strchr(ptr, '.');
+    if (ptr == nullptr) {
+        return s.data() + s.size();
+    }
+
+    return ptr;
+}
+
+static inline auto extname(const std::string& s) -> std::string {
+    return extname_ptr(s);
+}
+
+static inline auto remove_extname(const std::string& s) -> std::string {
+    const_pointer ptr = extname_ptr(s);
+    return s.substr(0, ptr - s.c_str());
+}
+
+static inline auto remove_extname(std::string& s) -> std::string& {
+    const_pointer ptr = extname_ptr(s);
+    s.resize(ptr - s.c_str());
+    return s;
+}
+
+static inline auto replace_extname(std::string& s, const std::string& name) -> std::string& {
+    pointer ptr = extname_ptr(s);
+    s.resize((ptr - s.c_str()) + name.size());
+    std::memcpy(ptr, name.c_str(), name.size());
+    return s;
+}
+
+static inline auto replace_extname(std::string& s, const std::string_view& name) -> std::string& {
+    pointer ptr = extname_ptr(s);
+    s.resize((ptr - s.c_str()) + name.size());
+    std::memcpy(ptr, name.data(), name.size());
+    return s;
+}
+
+static inline auto replace_extname(const std::string& s, const std::string& name) -> std::string {
+    const_pointer ptr = basename_ptr(s);
+    std::string result;
+    result.reserve((ptr - s.c_str()) + name.size());
+    result.append(s.c_str(), ptr - s.c_str());
+    result.append(name);
+    return result;
+}
+
+static inline auto replace_extname(const std::string& s, const std::string_view& name) -> std::string {
+    const_pointer ptr = basename_ptr(s);
+    std::string result;
+    result.reserve((ptr - s.c_str()) + name.size());
+    result.append(s.c_str(), ptr - s.c_str());
+    result.append(name);
+    return result;
+}
 
 // 最后一截扩展名相关操作
-static inline auto last_extname_ptr(const std::string& s) -> const_pointer;
+static inline auto last_extname_ptr(const std::string& s) -> const_pointer {
+}
+
 static inline auto last_extname(const std::string& s) -> std::string;
 static inline auto remove_last_extname(const std::string& s) -> std::string;
 static inline auto remove_last_extname(std::string& s) -> std::string&;

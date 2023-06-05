@@ -209,28 +209,63 @@ TEST_CASE("simplified-copy", "") {
     }
 }
 
-// TEST(tiny_bytes, has_prefix) {
-//     SECTION("简单测试") {
-//         tiny::bytes s("HelloWorld");
-//         EXPECT_TRUE(s.has_prefix("Hello"));
-//         EXPECT_TRUE(s.has_prefix(tiny::bytes("Hello")));
-//         EXPECT_TRUE(s.has_prefix('H'));
-//         EXPECT_TRUE(s.has_prefix("HelloXYZ", 5));
-//         EXPECT_TRUE(s.has_prefix("", 0));
-//         EXPECT_TRUE(s.has_prefix(""));
-//     }
-//
-//     SECTION("空字符串找前缀") {
-//         tiny::bytes s("");
-//         EXPECT_FALSE(s.has_prefix("Hello"));
-//         EXPECT_FALSE(s.has_prefix(tiny::bytes("Hello")));
-//         EXPECT_FALSE(s.has_prefix('H'));
-//         EXPECT_FALSE(s.has_prefix("HelloXYZ", 5));
-//         EXPECT_TRUE(s.has_prefix("", 0));
-//         EXPECT_TRUE(s.has_prefix(""));
-//     }
-// }
-//
+TEST_CASE("dirname") {
+    SECTION("全路径") {
+        REQUIRE(str::dirname("/aaa/bbb/ccc") == "/aaa/bbb");
+    }
+    SECTION("相对路径") {
+        REQUIRE(str::dirname("aaa/bbb/ccc") == "aaa/bbb");
+        REQUIRE(str::dirname("../bbb/ccc") == "../bbb");
+        REQUIRE(str::dirname("../ccc") == "..");
+        REQUIRE(str::dirname("./ccc") == ".");
+    }
+    SECTION(".和..") {
+        REQUIRE(str::dirname(".") == ".");
+        REQUIRE(str::dirname("..") == ".");
+    }
+    SECTION("无路径分隔符") {
+        REQUIRE(str::dirname("abc") == ".");
+    }
+    SECTION("./和../") {
+        REQUIRE(str::dirname("./") == ".");
+        REQUIRE(str::dirname("../") == ".");
+        REQUIRE(str::dirname("./aa") == ".");
+        REQUIRE(str::dirname("../aa") == "..");
+    }
+    SECTION("绝对路径 /") {
+        REQUIRE(str::dirname("/") == "/");
+    }
+    SECTION("空串") {
+        REQUIRE(str::dirname("") == ".");
+    }
+    SECTION("多余的路径元素") {
+        REQUIRE(str::dirname("///ccc") == "/");
+        REQUIRE(str::dirname(".///ccc") == ".");
+    }
+}
+
+TEST_CASE("has_prefix") {
+    SECTION("简单测试") {
+        std::string s("HelloWorld");
+        REQUIRE(str::has_prefix(s, "Hello"));
+        REQUIRE(str::has_prefix(s, std::string("Hello")));
+        REQUIRE(str::has_prefix(s, 'H'));
+        REQUIRE(str::has_prefix(s, { "HelloXYZ", 5 }));
+        REQUIRE(str::has_prefix(s, { "", 0 }));
+        REQUIRE(str::has_prefix(s, ""));
+    }
+
+    SECTION("空字符串找前缀") {
+        tiny::bytes s("");
+        EXPECT_FALSE(s.has_prefix("Hello"));
+        EXPECT_FALSE(s.has_prefix(tiny::bytes("Hello")));
+        EXPECT_FALSE(s.has_prefix('H'));
+        EXPECT_FALSE(s.has_prefix("HelloXYZ", 5));
+        EXPECT_TRUE(s.has_prefix("", 0));
+        EXPECT_TRUE(s.has_prefix(""));
+    }
+}
+
 // TEST(tiny_bytes, has_suffix) {
 //     SECTION("简单测试") {
 //         tiny::bytes s("HelloWorld");
@@ -308,21 +343,21 @@ TEST_CASE("simplified-copy", "") {
 //         EXPECT_EQ(s.center(9, '*', true), "HelloWorl");
 //     }
 // }
-//
-// TEST(tiny_bytes, fill) {
-//     SECTION("简单测试") {
-//         tiny::bytes s("HelloWorld");
-//         EXPECT_EQ(s.fill('*'), "**********");
-//     }
-//     SECTION("简单测试") {
-//         tiny::bytes s("HelloWorld");
-//         EXPECT_EQ(s.fill(1, '*', 3), "H***oWorld");
-//         EXPECT_EQ(s.fill(0, '-', 3), "---*oWorld");
-//         EXPECT_EQ(s.fill(5, 'A', 5), "---*oAAAAA");
-//         EXPECT_DEBUG_DEATH(s.fill(5, 'A', 6), "");
-//     }
-// }
-//
+
+TEST_CASE("fill") {
+    SECTION("简单测试") {
+        std::string s("HelloWorld");
+        REQUIRE(str::fill(s, '*') == "**********");
+    }
+    SECTION("简单测试") {
+        tiny::bytes s("HelloWorld");
+        EXPECT_EQ(s.fill(1, '*', 3), "H***oWorld");
+        EXPECT_EQ(s.fill(0, '-', 3), "---*oWorld");
+        EXPECT_EQ(s.fill(5, 'A', 5), "---*oAAAAA");
+        EXPECT_DEBUG_DEATH(s.fill(5, 'A', 6), "");
+    }
+}
+
 // TEST(tiny_bytes, invert) {
 //     SECTION("全部颠倒") {
 //         tiny::bytes s("HelloWorld");
