@@ -281,10 +281,6 @@ static inline auto has_prefix(const std::string& s, value_type ch) -> bool {
     return s[0] == ch;
 }
 
-// static inline auto has_prefix(const std::string& s, const std::string& prefix) -> bool {
-//    return str::prefix(s, prefix) == prefix.size();
-//}
-
 static inline auto has_prefix(const std::string& s, const std::string_view& prefix) -> bool {
     return str::prefix(s, prefix) == prefix.size();
 }
@@ -293,15 +289,9 @@ static inline auto starts_with(const std::string& s, value_type ch) -> bool {
     return has_prefix(s, ch);
 }
 
-// static inline auto starts_with(const std::string& s, const std::string& prefix) -> bool {
-//     return has_prefix(s, prefix);
-// }
-
 static inline auto starts_with(const std::string& s, const std::string_view& prefix) -> bool {
     return has_prefix(s, prefix);
 }
-
-// static inline auto remove_prefix(std::string& s, const std::string& prefix) -> std::string&;
 
 static inline auto remove_prefix(std::string& s, std::string_view prefix) -> std::string& {
     if (!has_prefix(s, prefix)) {
@@ -366,10 +356,6 @@ static inline auto has_suffix(const std::string& s, value_type suffix) -> bool {
     return s.back() == suffix;
 }
 
-// static inline auto has_suffix(const std::string& s, const std::string& suffix) -> bool {
-//     return str::suffix(s, suffix) == suffix.size();
-// }
-
 static inline auto has_suffix(const std::string& s, const std::string_view& suffix) -> bool {
     return str::suffix(s, suffix) == suffix.size();
 }
@@ -377,10 +363,6 @@ static inline auto has_suffix(const std::string& s, const std::string_view& suff
 static inline auto ends_with(const std::string& s, value_type suffix) -> bool {
     return has_suffix(s, suffix);
 }
-
-// static inline auto ends_with(const std::string& s, const std::string& suffix) -> bool {
-//     return has_suffix(s, suffix);
-// }
 
 static inline auto ends_with(const std::string& s, const std::string_view& suffix) -> bool {
     return has_suffix(s, suffix);
@@ -398,9 +380,6 @@ static inline auto remove_suffix(std::string& s, const std::string_view& suffix)
 static inline auto remove_suffix(std::string& s, value_type suffix) -> std::string& {
     return remove_suffix(s, { &suffix, 1 });
 }
-
-// static inline auto remove_suffix(std::string& s, const std::string& suffix) -> std::string& {
-//}
 
 //  填充
 static inline auto fill(std::string& s, const std::string_view& other, size_type pos = 0, size_type max_n = npos) -> std::string& {
@@ -445,20 +424,6 @@ static inline auto fill(std::string& s, value_type ch, size_type pos = 0, size_t
     std::fill(s.data() + pos, s.data() + pos + max_n, ch);
     return s;
 }
-
-// static inline auto fill(std::string& s, value_type ch) -> std::string& {
-//     std::fill(s.begin(), s.end(), ch);
-//     return s;
-// }
-//
-// static inline auto fill(std::string& s, size_type pos, value_type ch) -> std::string& {
-//     if (pos >= s.size()) {
-//         return s;
-//     }
-//
-//     std::fill(s.begin() + pos, s.end(), ch);
-//     return s;
-// }
 
 //  查找
 static inline auto index_of(const std::string& s, size_type pos, value_type ch) -> size_type;
@@ -752,7 +717,7 @@ static inline auto substr(const std::string& s, size_type pos, ssize_type offset
 }
 
 //  定宽对齐调整
-static inline auto ljust(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
+static inline auto rjust(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
     if (s.size() >= width) {
         return s;
     }
@@ -764,7 +729,7 @@ static inline auto ljust(std::string& s, size_type width, value_type ch = ' ') -
     return s;
 }
 
-static inline auto ljust(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
+static inline auto rjust(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
     if (s.size() >= width) {
         return s;
     }
@@ -776,7 +741,7 @@ static inline auto ljust(const std::string& s, size_type width, value_type ch = 
     return result;
 }
 
-static inline auto rjust(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
+static inline auto ljust(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
     if (s.size() >= width) {
         return s;
     }
@@ -785,7 +750,7 @@ static inline auto rjust(std::string& s, size_type width, value_type ch = ' ') -
     return s;
 }
 
-static inline auto rjust(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
+static inline auto ljust(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
     if (s.size() >= width) {
         return s;
     }
@@ -1055,6 +1020,9 @@ static inline auto concat(const std::vector<std::string>& items) -> std::string;
 static inline auto concat(const std::vector<std::string_view>& items) -> std::string;
 
 //  Title 化：首字母大写
+static inline auto capitalize(std::string& s) -> std::string&;
+static inline auto capitalize(const std::string& s) -> std::string;
+
 static inline auto title(std::string& s) -> std::string& {
     if (s.empty()) {
         return s;
@@ -1185,6 +1153,8 @@ static inline auto translate(std::string& s, translate_proc proc) -> std::string
     }
     return s;
 }
+
+static inline auto translate(std::string& s, std::string_view from, std::string_view to) -> std::string&;
 
 // 字符串化简，将字符串中的多个空白压缩成一个空格
 using simplified_proc = std::function<bool(value_type ch)>;
@@ -1319,7 +1289,7 @@ static inline auto trim_all(const std::string& s) -> std::string;
 static inline auto trim_all(std::string& s) -> std::string&;
 
 // 切除
-static inline auto chop(std::string& s, size_type n) -> std::string& {
+static inline auto drop_right(std::string& s, size_type n) -> std::string& {
     if (n > s.size()) {
         s.resize(0);
         return s;
@@ -1329,13 +1299,16 @@ static inline auto chop(std::string& s, size_type n) -> std::string& {
     return s;
 }
 
-static inline auto choped(const std::string& s, size_type n) -> std::string {
+static inline auto drop_right(const std::string& s, size_type n) -> std::string {
     if (n > s.size()) {
         return "";
     }
 
     return s.substr(0, s.size() - n);
 }
+
+static inline auto drop_left(std::string& s, size_type n) -> std::string&;
+static inline auto drop_left(const std::string& s, size_type n) -> std::string;
 
 // 变量展开
 using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
