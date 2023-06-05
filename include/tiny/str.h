@@ -363,7 +363,7 @@ static inline auto has_suffix(const std::string& s, value_type suffix) -> bool {
         return false;
     }
 
-    return s[0] == suffix;
+    return s.back() == suffix;
 }
 
 // static inline auto has_suffix(const std::string& s, const std::string& suffix) -> bool {
@@ -445,9 +445,6 @@ static inline auto fill(std::string& s, value_type ch, size_type pos = 0, size_t
     std::fill(s.data() + pos, s.data() + pos + max_n, ch);
     return s;
 }
-
-// static inline auto fill(std::string& s, size_type pos, size_type max_n, const std::string& other) -> std::string& {
-// }
 
 // static inline auto fill(std::string& s, value_type ch) -> std::string& {
 //     std::fill(s.begin(), s.end(), ch);
@@ -603,7 +600,7 @@ static inline auto is_graph(const std::string& s) -> bool {
 }
 
 static inline auto is_identifier(const std::string& s) -> bool {
-    if (s.size() == 0) {
+    if (s.empty()) {
         return false;
     }
 
@@ -801,7 +798,7 @@ static inline auto rjust(const std::string& s, size_type width, value_type ch = 
 }
 
 static inline auto center(std::string& s, size_type width, value_type ch = ' ') -> std::string& {
-    if (s.size() < width) {
+    if (s.size() >= width) {
         return s;
     }
 
@@ -816,7 +813,7 @@ static inline auto center(std::string& s, size_type width, value_type ch = ' ') 
 }
 
 static inline auto center(const std::string& s, size_type width, value_type ch = ' ') -> std::string {
-    if (s.size() < width) {
+    if (s.size() >= width) {
         return s;
     }
 
@@ -1050,20 +1047,60 @@ static inline auto join_search_path(std::initializer_list<std::string_view> item
     return join(":", items);
 }
 
+// 字符串拼接
+using concat_proc = std::function<std::optional<std::string_view>()>;
+static inline auto concat(concat_proc proc) -> std::string;
+static inline auto concat(std::initializer_list<std::string_view> items) -> std::string;
+static inline auto concat(const std::vector<std::string>& items) -> std::string;
+static inline auto concat(const std::vector<std::string_view>& items) -> std::string;
+
 //  Title 化：首字母大写
 static inline auto title(std::string& s) -> std::string& {
     if (s.empty()) {
         return s;
     }
+
+    s[0] = static_cast<value_type>(std::toupper(s[0]));
+    return s;
 }
 
-static inline auto title(const std::string& s) -> const std::string&;
+static inline auto title(const std::string& s) -> std::string {
+    std::string result = s;
+    return title(result);
+}
+
 static inline auto title_fields(std::string& s) -> std::string&;
 static inline auto title_fields(const std::string& s) -> const std::string&;
 
 //  反转：字符串逆序
-static inline auto invert(std::string& s, size_type pos, size_type max_n = npos) -> std::string&;
-static inline auto invert(const std::string& s, size_type pos, size_type max_n = npos) -> std::string;
+static inline auto invert(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (pos >= s.size()) {
+        return s;
+    }
+
+    max_n = std::min(max_n, (s.size() - pos));
+    pointer left = s.data() + pos;
+    pointer right = s.data() + pos + max_n - 1;
+
+    while (left < right) {
+        value_type ch = *left;
+        *left = *right;
+        *right = ch;
+        left++;
+        right--;
+    }
+
+    return s;
+}
+
+static inline auto invert(const std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string {
+    std::string result = s;
+    return invert(result, pos, max_n);
+}
 
 // 拆分字符串
 using split_list_proc = std::function<int(std::string_view item)>;
@@ -1126,12 +1163,17 @@ static inline auto split_path(const std::string& s, split_path_proc proc) -> voi
 // 将 s 视作路径，拆分出该路径的驱动字符串（仅win下有效）
 static inline auto split_drive(const std::string& s) -> std::string;
 
+// 拆分 csv 数据
+static inline auto split_csv(const std::string& s) -> std::vector<std::string>;
+
 //  大小写转换
 static inline auto to_lower(std::string& s) -> std::string&;
 static inline auto to_lower(const std::string& s) -> std::string;
 static inline auto to_upper(std::string& s) -> std::string&;
 static inline auto to_upper(const std::string& s) -> std::string;
 static inline auto swap_case(std::string& s, std::string& other) -> void;
+static inline auto case_fold(std::string& s) -> std::string&;
+static inline auto case_fold(const std::string& s) -> std::string;
 
 // 字符映射
 using translate_proc = std::function<value_type(value_type)>;
@@ -1314,6 +1356,9 @@ static inline auto normpath(const std::string& s) -> std::string;
 
 //  拷贝和交换
 static inline auto copy(pointer dest, size_type max_n, const std::string& s) -> size_type;
+
+// 路径处理
+static inline auto is_abs(const std::string& s) -> bool;
 
 // 将 s 视作为文件路径，获取其目录名
 static inline auto dirname(const std::string& s) -> std::string {
@@ -1510,6 +1555,7 @@ static inline auto replace_last_extname(const std::string& s, const std::string_
 //  转换为 hash 值
 static inline auto hash(const std::string& s, uint32_t mod) -> uint32_t;
 static inline auto hash(const std::string& s, uint64_t mod) -> uint64_t;
+static inline auto md5(const std::string& s) -> std::string;
 
 template <typename T>
 static inline auto to(const std::string& s, std::tuple<int> base) -> std::optional<T> {
@@ -1802,6 +1848,21 @@ inline auto from(uint8_t n, int base = 10) -> std::string;
 inline auto from(uint16_t n, int base = 10) -> std::string;
 inline auto from(uint32_t n, int base = 10) -> std::string;
 inline auto from(uint64_t n, int base = 10) -> std::string;
+
+// 转义
+static inline auto encode_clang(std::string& s) -> std::string&;
+static inline auto decode_clang(std::string& s) -> std::string&;
+static inline auto encode_xml(std::string& s) -> std::string&;
+static inline auto decode_xml(std::string& s) -> std::string&;
+static inline auto encode_hex(std::string& s) -> std::string&;
+static inline auto decode_hex(std::string& s) -> std::string&;
+static inline auto encode_base64(std::string& s) -> std::string&;
+static inline auto decode_base64(std::string& s) -> std::string&;
+static inline auto encode_url(std::string& s) -> std::string&;
+static inline auto decode_url(std::string& s) -> std::string&;
+
+static inline auto join_properties(std::string& s) -> std::string&;
+static inline auto split_properties(std::string& s) -> std::string&;
 
 };     // namespace str
 
