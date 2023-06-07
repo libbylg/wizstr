@@ -1515,9 +1515,60 @@ static inline auto replace_extname(const std::string& s, const std::string_view&
 
 // 最后一截扩展名相关操作
 static inline auto last_extname_ptr(const std::string& s) -> const_pointer {
+    const_pointer base = basename_ptr(s);
+    while (base < (s.c_str() + s.size())) {
+        if (*base != '.') {
+            break;
+        }
+
+        base++;
+    }
+
+    if (base >= (s.c_str() + s.size())) {
+        return (s.c_str() + s.size());
+    }
+
+    const_pointer ext = s.c_str() + s.size() - 1;
+    while (ext >= base) {
+        if (*ext == '.') {
+            break;
+        }
+        ext--;
+    }
+
+    if (ext <= base) {
+        return s.c_str() + s.size();
+    }
+
+    return ext;
 }
 
-static inline auto last_extname(const std::string& s) -> std::string;
+static inline auto last_extname_ptr(std::string& s) -> pointer {
+    if (s.empty()) {
+        return s.data();
+    }
+
+    const_pointer base = basename_ptr(s);
+
+    pointer ext = s.data() + s.size() - 1;
+    while (ext >= base) {
+        if (*ext == '.') {
+            break;
+        }
+        ext--;
+    }
+
+    if (ext <= base) {
+        return s.data() + s.size();
+    }
+
+    return ext;
+}
+
+static inline auto last_extname(const std::string& s) -> std::string {
+    return last_extname_ptr(s);
+}
+
 static inline auto remove_last_extname(const std::string& s) -> std::string;
 static inline auto remove_last_extname(std::string& s) -> std::string&;
 static inline auto replace_last_extname(std::string& s, const std::string& name) -> std::string&;
