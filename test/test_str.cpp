@@ -89,6 +89,12 @@ TEST_CASE("last_extname_ptr", "") {
     SECTION("basename位置,多点前缀1") {
         REQUIRE(str::last_extname("...abc") == std::string(""));
     }
+    SECTION("空串") {
+        REQUIRE(str::last_extname("") == std::string(""));
+    }
+    SECTION("全空白字符") {
+        REQUIRE(str::last_extname(" \t ") == std::string(""));
+    }
 }
 
 // TEST(tiny_bytes, prepend) {
