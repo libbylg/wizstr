@@ -243,22 +243,7 @@ static inline auto count(const std::string& s, value_type ch) -> size_type;
 static inline auto count(const std::string& s, std::function<bool(value_type ch, bool& cntu)> macher) -> size_type;
 
 //  前缀操作
-static inline auto prefix(const std::string& s, const std::string& other) -> size_type {
-    if ((s.empty()) || (other.empty())) {
-        return 0;
-    }
-
-    size_type len = std::min(s.size(), other.size());
-    for (size_type pos = 0; pos < len; pos++) {
-        if (s[pos] != other[pos]) {
-            return pos;
-        }
-    }
-
-    return len;
-}
-
-static inline auto prefix(const std::string& s, std::string_view other) -> size_type {
+static inline auto prefix(std::string_view s, std::string_view other) -> size_type {
     if ((s.empty()) || (other.empty())) {
         return 0;
     }
