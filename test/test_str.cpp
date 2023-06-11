@@ -1,18 +1,15 @@
-//
-// Created by libbylg on 2023/6/3.
-//
 #include "tiny/str.h"
 
-// #define CATCH_CONFIG_MAIN
-#include "catch2/catch_all.hpp"
+// #include "catch2/catch_all.hpp"
 
-// #include "gtest/gtest.h"
+#include "gtest/gtest.h"
 
-// #define TEST_CASE TEST
-// #define SECTION(desc)
-// #define REQUIRE(expr) EXPECT_TRUE(expr)
+#define TEST_CASE TEST
+#define SECTION(desc)
+#define REQUIRE(expr) EXPECT_TRUE(expr)
 
-TEST_CASE("prefix", "prefix") {
+// TEST_CASE("prefix", "prefix") {
+TEST_CASE(prefix, prefix) {
     SECTION("一般情况") {
         REQUIRE(str::prefix("aaa", "aab") == 2);
     }
@@ -35,128 +32,129 @@ TEST_CASE("prefix", "prefix") {
 }
 
 // TEST_CASE("split_list", "as vector") {
-//     SECTION("一般情况") {
-//         auto items = str::split_list("a,b,c", ',');
-//         REQUIRE(items.size() == 3u);
-//         REQUIRE(items[0] == "a");
-//         REQUIRE(items[1] == "b");
-//         REQUIRE(items[2] == "c");
-//     }
-//     SECTION("全空情况") {
-//         auto items = str::split_list(",,", ',');
-//         REQUIRE(items.size() == 3u);
-//         REQUIRE(items[0] == "");
-//         REQUIRE(items[1] == "");
-//         REQUIRE(items[2] == "");
-//     }
-//     SECTION("没有替换分个符") {
-//         auto items = str::split_list("abc", ',');
-//         REQUIRE(items.size() == 1u);
-//         REQUIRE(items[0] == "abc");
-//     }
-//     SECTION("分隔符号在开头") {
-//         auto items = str::split_list(",abc", ',');
-//         REQUIRE(items.size() == 2u);
-//         REQUIRE(items[0] == "");
-//         REQUIRE(items[1] == "abc");
-//     }
-//     SECTION("分隔符号在结尾") {
-//         auto items = str::split_list("abc,", ',');
-//         REQUIRE(items.size() == 2u);
-//         REQUIRE(items[0] == "abc");
-//         REQUIRE(items[1] == "");
-//     }
-// }
-//
-// TEST_CASE("last_extname_ptr", "last_extname_ptr") {
-//     SECTION("简单裸名字") {
-//         REQUIRE(str::last_extname("abc") == std::string(""));
-//     }
-//     SECTION("简单裸名字带扩展名") {
-//         REQUIRE(str::last_extname("abc.ext") == std::string(".ext"));
-//     }
-//     SECTION("裸名字带路径") {
-//         REQUIRE(str::last_extname("abc/def") == std::string(""));
-//     }
-//     SECTION("只有路径无basename") {
-//         REQUIRE(str::last_extname("abc/") == std::string(""));
-//     }
-//     SECTION("裸名字带路径路径中有点") {
-//         REQUIRE(str::last_extname("/abc.def/basename.ext") == std::string(".ext"));
-//     }
-//     SECTION("裸名字带路径路径中有点+") {
-//         REQUIRE(str::last_extname("/abc.def/") == std::string(""));
-//     }
-//     SECTION("basename为隐藏文件，隐藏文件点开头不是只有扩展名") {
-//         REQUIRE(str::last_extname("abc/.hidefile") == std::string(""));
-//     }
-//     SECTION("basename为隐藏文件，隐藏文件点开头，但是还有额外扩展名") {
-//         REQUIRE(str::last_extname("abc/.hidefile.ext") == std::string(".ext"));
-//     }
-//     SECTION("basename带多个点") {
-//         REQUIRE(str::last_extname("abc/normal-file.xxx.ext") == std::string(".ext"));
-//     }
-//     SECTION("basename位置只有点1") {
-//         REQUIRE(str::last_extname("abc/.") == std::string(""));
-//     }
-//     SECTION("basename位置只有点2") {
-//         REQUIRE(str::last_extname("abc/..") == std::string(""));
-//     }
-//     SECTION("basename位置只有点3") {
-//         REQUIRE(str::last_extname("...") == std::string(""));
-//     }
-//     SECTION("basename位置,点在最后1") {
-//         REQUIRE(str::last_extname(".abc.") == std::string("."));
-//     }
-//     SECTION("basename位置,点在最后2") {
-//         REQUIRE(str::last_extname(".abc..") == std::string("."));
-//     }
-//     SECTION("basename位置,多点前缀1") {
-//         REQUIRE(str::last_extname("..abc") == std::string(""));
-//     }
-//     SECTION("basename位置,多点前缀1") {
-//         REQUIRE(str::last_extname("...abc") == std::string(""));
-//     }
-//     SECTION("空串") {
-//         REQUIRE(str::last_extname("") == std::string(""));
-//     }
-//     SECTION("全空白字符") {
-//         REQUIRE(str::last_extname(" \t ") == std::string(""));
-//     }
-// }
+TEST_CASE(split_list, as_vector) {
+    SECTION("一般情况") {
+        auto items = str::split_list("a,b,c", ',');
+        REQUIRE(items.size() == 3u);
+        REQUIRE(items[0] == "a");
+        REQUIRE(items[1] == "b");
+        REQUIRE(items[2] == "c");
+    }
+    SECTION("全空情况") {
+        auto items = str::split_list(",,", ',');
+        REQUIRE(items.size() == 3u);
+        REQUIRE(items[0] == "");
+        REQUIRE(items[1] == "");
+        REQUIRE(items[2] == "");
+    }
+    SECTION("没有替换分个符") {
+        auto items = str::split_list("abc", ',');
+        REQUIRE(items.size() == 1u);
+        REQUIRE(items[0] == "abc");
+    }
+    SECTION("分隔符号在开头") {
+        auto items = str::split_list(",abc", ',');
+        REQUIRE(items.size() == 2u);
+        REQUIRE(items[0] == "");
+        REQUIRE(items[1] == "abc");
+    }
+    SECTION("分隔符号在结尾") {
+        auto items = str::split_list("abc,", ',');
+        REQUIRE(items.size() == 2u);
+        REQUIRE(items[0] == "abc");
+        REQUIRE(items[1] == "");
+    }
+}
 
-// TEST(tiny_bytes, prepend) {
-//     SECTION("向前追加") {
-//         std::string a("123");
-//         a.prepend("abc");
-//         EXPECT_TRUE(a == "abc123");
-//     }
-// }
-//
-// TEST(tiny_bytes, zfill) {
-//     SECTION("正常情况") {
-//         std::string a("123");
-//         EXPECT_TRUE(a.zfill(5) == "00123");
-//     }
-//     SECTION("前缀") {
-//         EXPECT_TRUE(std::string("+123").zfill(5) == "+0123");
-//         EXPECT_TRUE(std::string("-123").zfill(5) == "-0123");
-//     }
-//     SECTION("空串") {
-//         std::string a("");
-//         EXPECT_TRUE(a.zfill(5) == "00000");
-//     }
-//     SECTION("非数字") {
-//         EXPECT_EQ(std::string("LMK").zfill(5), "00LMK");
-//         EXPECT_TRUE(std::string("中华人民共和国").zfill(25) == std::string("0000中华人民共和国"));
-//     }
-//     SECTION("宽度太短") {
-//         EXPECT_TRUE(std::string("LMK").zfill(3) == "LMK");
-//         EXPECT_TRUE(std::string("LMK").zfill(2) == "LMK");
-//         EXPECT_TRUE(std::string("LMK").zfill(0) == "LMK");
-//     }
-// }
-//
+TEST_CASE(last_extname_ptr, last_extname_ptr) {
+    SECTION("简单裸名字") {
+        REQUIRE(str::last_extname("abc") == std::string(""));
+    }
+    SECTION("简单裸名字带扩展名") {
+        REQUIRE(str::last_extname("abc.ext") == std::string(".ext"));
+    }
+    SECTION("裸名字带路径") {
+        REQUIRE(str::last_extname("abc/def") == std::string(""));
+    }
+    SECTION("只有路径无basename") {
+        REQUIRE(str::last_extname("abc/") == std::string(""));
+    }
+    SECTION("裸名字带路径路径中有点") {
+        REQUIRE(str::last_extname("/abc.def/basename.ext") == std::string(".ext"));
+    }
+    SECTION("裸名字带路径路径中有点+") {
+        REQUIRE(str::last_extname("/abc.def/") == std::string(""));
+    }
+    SECTION("basename为隐藏文件，隐藏文件点开头不是只有扩展名") {
+        REQUIRE(str::last_extname("abc/.hidefile") == std::string(""));
+    }
+    SECTION("basename为隐藏文件，隐藏文件点开头，但是还有额外扩展名") {
+        REQUIRE(str::last_extname("abc/.hidefile.ext") == std::string(".ext"));
+    }
+    SECTION("basename带多个点") {
+        REQUIRE(str::last_extname("abc/normal-file.xxx.ext") == std::string(".ext"));
+    }
+    SECTION("basename位置只有点1") {
+        REQUIRE(str::last_extname("abc/.") == std::string(""));
+    }
+    SECTION("basename位置只有点2") {
+        REQUIRE(str::last_extname("abc/..") == std::string(""));
+    }
+    SECTION("basename位置只有点3") {
+        REQUIRE(str::last_extname("...") == std::string(""));
+    }
+    SECTION("basename位置,点在最后1") {
+        REQUIRE(str::last_extname(".abc.") == std::string("."));
+    }
+    SECTION("basename位置,点在最后2") {
+        REQUIRE(str::last_extname(".abc..") == std::string("."));
+    }
+    SECTION("basename位置,多点前缀1") {
+        REQUIRE(str::last_extname("..abc") == std::string(""));
+    }
+    SECTION("basename位置,多点前缀1") {
+        REQUIRE(str::last_extname("...abc") == std::string(""));
+    }
+    SECTION("空串") {
+        REQUIRE(str::last_extname("") == std::string(""));
+    }
+    SECTION("全空白字符") {
+        REQUIRE(str::last_extname(" \t ") == std::string(""));
+    }
+}
+
+TEST_CASE(tiny_bytes, prepend) {
+    SECTION("向前追加") {
+        std::string a("123");
+        str::prepend(a, "abc");
+        EXPECT_TRUE(a == "abc123");
+    }
+}
+
+TEST_CASE(tiny_bytes, zfill) {
+    SECTION("正常情况") {
+        std::string a("123");
+        EXPECT_TRUE(str::zfill(a, 5) == "00123");
+    }
+    SECTION("前缀") {
+        EXPECT_TRUE(str::zfill(std::string("+123"), 5) == "+0123");
+        EXPECT_TRUE(str::zfill(std::string("-123"), 5) == "-0123");
+    }
+    SECTION("空串") {
+        std::string a("");
+        EXPECT_TRUE(str::zfill(a, 5) == "00000");
+    }
+    SECTION("非数字") {
+        EXPECT_EQ(str::zfill(std::string("LMK"), 5), "00LMK");
+        EXPECT_TRUE(str::zfill(std::string("中华人民共和国"), 25) == std::string("0000中华人民共和国"));
+    }
+    SECTION("宽度太短") {
+        EXPECT_TRUE(str::zfill(std::string("LMK"), 3) == "LMK");
+        EXPECT_TRUE(str::zfill(std::string("LMK"), 2) == "LMK");
+        EXPECT_TRUE(str::zfill(std::string("LMK"), 0) == "LMK");
+    }
+}
+
 // TEST(tiny_bytes, remove) {
 //     SECTION("删除中间数据") {
 //         std::string a("abc123");

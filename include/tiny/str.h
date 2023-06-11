@@ -5,6 +5,7 @@
 #ifndef TINY_STR_H
 #define TINY_STR_H
 
+#include <cinttypes>
 #include <functional>
 #include <limits>
 #include <map>
@@ -106,6 +107,10 @@ static inline auto prepend(std::string& s, std::string_view other) -> std::strin
 
 static inline auto prepend(std::string& s, const std::string& other) -> std::string& {
     return prepend(s, std::string_view{ other.data(), other.size() });
+}
+
+static inline auto prepend(std::string& s, const char* other) -> std::string& {
+    return prepend(s, std::string_view{ other });
 }
 
 static inline auto prepend(std::string& s, value_type ch) -> std::string& {
