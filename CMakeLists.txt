@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
-project(str)
+project(str LANGUAGES CXX)
 
 
 #   Setup the global settings
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_LIST_DIR}/depends)
+#list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_LIST_DIR}/depends)
 
 #find_package(Catch2 3 REQUIRED)
 find_package(GTest REQUIRED)
