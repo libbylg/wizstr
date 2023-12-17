@@ -16,7 +16,7 @@ auto str::append(std::string& s, value_type ch, size_type n) -> std::string& {
     return s;
 }
 
-auto str::append(std::string& s, const string_view_provider& provide) -> std::string& {
+auto str::append(std::string& s, const view_provider_provider& provide) -> std::string& {
     const auto item = provide();
     while (item) {
         s.append(item.value());
@@ -59,7 +59,7 @@ auto str::prepend(std::string& s, value_type ch, size_type n) -> std::string& {
     return s;
 }
 
-auto str::prepend(std::string& s, const string_view_provider& provide) -> std::string& {
+auto str::prepend(std::string& s, const view_provider_provider& provide) -> std::string& {
     const auto item = provide();
     while (item) {
         prepend(s, item.value());
@@ -92,7 +92,7 @@ auto str::insert(std::string& s, size_type pos, value_type ch) -> std::string& {
 // auto str::insert(std::string& s, size_type pos, value_type ch, size_type n) -> std::string& {
 // }
 
-auto str::insert(std::string& s, const string_view_provider& provide) -> std::string& {
+auto str::insert(std::string& s, const view_provider_provider& provide) -> std::string& {
 }
 
 //  首尾操作
@@ -501,7 +501,7 @@ auto str::is_bool(std::string_view s) -> bool {
         case 1:
             switch (*ptr) {
                 case '0':
-                    return true;
+                    return false;
                 case '1':
                     return true;
                 default:
@@ -703,7 +703,7 @@ auto str::space(size_type width) -> std::string {
 
 //  基于本字符串生成新字符串
 
-auto str::join(std::string_view s, const string_view_provider& proc) -> std::string {
+auto str::join(std::string_view s, const view_provider_provider& proc) -> std::string {
     std::string result;
     for (auto item = proc(); item; item = proc()) {
         if (!result.empty()) {
@@ -715,8 +715,7 @@ auto str::join(std::string_view s, const string_view_provider& proc) -> std::str
 }
 
 // 路径拼接
-using join_path_proc = std::function<std::optional<std::string_view>()>;
-auto str::join_path(const join_path_proc& proc) -> std::string {
+auto str::join_path(const view_provider_provider& proc) -> std::string {
     std::string result;
     for (auto item = proc(); item; item = proc()) {
         if (!result.empty()) {
@@ -725,21 +724,6 @@ auto str::join_path(const join_path_proc& proc) -> std::string {
         result.append(item.value());
     }
     return result;
-}
-
-auto str::join_path(const std::vector<std::string>& items) -> std::string {
-    if (items.empty()) {
-        return "";
-    }
-
-    auto itr = items.cbegin();
-    return join_path([&itr, &items]() -> std::optional<std::string_view> {
-        if (itr == items.cend()) {
-            return {};
-        }
-
-        return std::string_view{itr->c_str(), itr->size()};
-    });
 }
 
 auto str::join_path(std::initializer_list<std::string_view> items) -> std::string {
@@ -753,11 +737,11 @@ auto str::join_path(std::initializer_list<std::string_view> items) -> std::strin
     });
 }
 
-auto str::join_search_path(const string_view_provider& proc) -> std::string {
+auto str::join_search_path(const view_provider_provider& proc) -> std::string {
     return join(":", proc);
 }
 
-auto str::concat(const string_view_provider& proc) -> std::string {
+auto str::concat(const view_provider_provider& proc) -> std::string {
     std::string result;
     auto item = proc();
     while (item) {
@@ -766,11 +750,7 @@ auto str::concat(const string_view_provider& proc) -> std::string {
     return result;
 }
 
-//  Title 化：首字母大写
-auto str::capitalize(std::string& s) -> std::string&;
-auto str::capitalize(std::string_view s) -> std::string;
-
-auto str::title(std::string& s) -> std::string& {
+auto str::title_inplace(std::string& s) -> std::string& {
     if (s.empty()) {
         return s;
     }
@@ -780,15 +760,13 @@ auto str::title(std::string& s) -> std::string& {
 }
 
 auto str::title(std::string_view s) -> std::string {
-    std::string result = s;
-    return title(result);
+    std::string result{s};
+    title_inplace(result);
+    return result;
 }
 
-auto str::title_fields(std::string& s) -> std::string&;
-auto str::title_fields(std::string_view s) -> std::string_view;
-
 //  反转：字符串逆序
-auto str::invert(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string& {
+auto str::invert_inplace(std::string& s, size_type pos, size_type max_n) -> std::string& {
     if (s.empty()) {
         return s;
     }
@@ -812,14 +790,14 @@ auto str::invert(std::string& s, size_type pos = 0, size_type max_n = npos) -> s
     return s;
 }
 
-auto str::invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string {
-    std::string result = s;
-    return invert(result, pos, max_n);
+auto str::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
+    std::string result{s};
+    invert_inplace(result, pos, max_n);
+    return result;
 }
 
 // 拆分字符串
-using split_list_proc = std::function<int(std::string_view item)>;
-auto str::split_list(std::string_view s, std::string_view sep, split_list_proc proc) -> void {
+auto str::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
     size_type pos_start = 0;
     while (pos_start < s.size()) {
         size_type pos_end = s.find(sep, pos_start);
@@ -827,22 +805,14 @@ auto str::split_list(std::string_view s, std::string_view sep, split_list_proc p
             break;
         }
 
-        if (proc(std::string_view{s.c_str() + pos_start, pos_end - pos_start}) != 0) {
+        if (proc(std::string_view{s.data() + pos_start, pos_end - pos_start}) != 0) {
             pos_start = pos_end + sep.size();
             break;
         }
         pos_start = pos_end + sep.size();
     }
 
-    proc(std::string_view{s.c_str() + pos_start, s.size() - pos_start});
-}
-
-auto str::split_list(std::string_view s, std::string_view sep, split_list_proc proc) -> void {
-    return split_list(s, std::string_view{sep.c_str(), sep.size()}, proc);
-}
-
-auto str::split_list(std::string_view s, value_type sep, split_list_proc proc) -> void {
-    return split_list(s, std::string_view{&sep, 1}, proc);
+    proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
 }
 
 auto str::split_list(std::string_view s, std::string_view sep) -> std::vector<std::string> {
@@ -857,42 +827,7 @@ auto str::split_list(std::string_view s, std::string_view sep) -> std::vector<st
 auto str::split_list(std::string_view s, value_type sep) -> std::vector<std::string> {
     return split_list(s, std::string_view{&sep, 1});
 }
-
-auto str::split_list(std::string_view s, std::string_view sep) -> std::vector<std::string> {
-    return split_list(s, std::string_view{sep});
-}
-
-// 将字符串 s，按照逗号和冒号拆分成一个 map 对象
-using split_map_proc = std::function<int(std::string_view key, std::string_view value)>;
-auto str::split_map(std::string_view s, split_map_proc proc) -> void;
-auto str::split_map(std::string_view s) -> std::map<std::string, std::string>;
-
-// 按照换行符将字符串 s，拆分长多行
-using split_lines_proc = std::function<int(std::string_view line)>;
-auto str::split_lines(std::string_view s, bool keepends, split_lines_proc proc) -> void;
-
-// 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
-using split_path_proc = std::function<int(std::string_view elem)>;
-auto str::split_path(std::string_view s, split_path_proc proc) -> void;
-
-// 将 s 视作路径，拆分出该路径的驱动字符串（仅win下有效）
-auto str::split_drive(std::string_view s) -> std::string;
-
-// 拆分 csv 数据
-auto str::split_csv(std::string_view s) -> std::vector<std::string>;
-
-//  大小写转换
-auto str::to_lower(std::string& s) -> std::string&;
-auto str::to_lower(std::string_view s) -> std::string;
-auto str::to_upper(std::string& s) -> std::string&;
-auto str::to_upper(std::string_view s) -> std::string;
-auto str::swap_case(std::string& s, std::string& other) -> void;
-auto str::case_fold(std::string& s) -> std::string&;
-auto str::case_fold(std::string_view s) -> std::string;
-
-// 字符映射
-using translate_proc = std::function<value_type(value_type)>;
-auto str::translate(std::string& s, translate_proc proc) -> std::string& {
+auto str::translate(std::string& s, const char_mapping_proc& proc) -> std::string& {
     pointer ptr = s.data();
     while (*ptr) {
         *ptr = proc(*ptr);
@@ -901,11 +836,7 @@ auto str::translate(std::string& s, translate_proc proc) -> std::string& {
     return s;
 }
 
-auto str::translate(std::string& s, std::string_view from, std::string_view to) -> std::string&;
-
-// 字符串化简，将字符串中的多个空白压缩成一个空格
-using simplified_proc = std::function<bool(value_type ch)>;
-auto str::simplified(std::string& s, simplified_proc proc) -> std::string& {
+auto str::simplified_proc(std::string& s, const char_checker_proc& proc) -> std::string& {
     if (s.size() == 0) {
         return s;
     }
@@ -941,13 +872,13 @@ auto str::simplified(std::string& s, simplified_proc proc) -> std::string& {
 }
 
 auto str::simplified(std::string_view s) -> std::string {
-    if (s.size() == 0) {
-        return s;
+    if (s.empty()) {
+        return std::string{s};
     }
 
     std::string result;
     bool found = true;
-    const_pointer r = s.c_str();
+    const_pointer r = s.data();
     while (*r != '\0') {
         value_type ch = *r;
         if (found) {
@@ -979,8 +910,8 @@ auto str::simplified(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::simplified(std::string& s) -> std::string& {
-    if (s.size() == 0) {
+auto str::simplified_inplace(std::string& s) -> std::string& {
+    if (s.empty()) {
         return s;
     }
 
@@ -1020,21 +951,6 @@ auto str::simplified(std::string& s) -> std::string& {
     return s;
 }
 
-// 空白祛除
-using trim_proc = std::function<bool(value_type ch)>;
-auto str::ltrim(std::string_view s, trim_proc proc) -> std::string;
-auto str::ltrim(std::string_view s) -> std::string;
-auto str::ltrim(std::string& s) -> std::string&;
-auto str::rtrim(std::string_view s, trim_proc proc) -> std::string;
-auto str::rtrim(std::string_view s) -> std::string;
-auto str::rtrim(std::string& s) -> std::string&;
-auto str::trim(std::string_view s, trim_proc proc) -> std::string;
-auto str::trim(std::string_view s) -> std::string;
-auto str::trim(std::string& s) -> std::string&;
-auto str::trim_all(std::string_view s, trim_proc proc) -> std::string;
-auto str::trim_all(std::string_view s) -> std::string;
-auto str::trim_all(std::string& s) -> std::string&;
-
 // 切除
 auto str::drop_right(std::string& s, size_type n) -> std::string& {
     if (n > s.size()) {
@@ -1053,32 +969,6 @@ auto str::drop_right(std::string_view s, size_type n) -> std::string {
 
     return s.substr(0, s.size() - n);
 }
-
-auto str::drop_left(std::string& s, size_type n) -> std::string&;
-auto str::drop_left(std::string_view s, size_type n) -> std::string;
-
-// 变量展开
-using expand_vars_proc = std::function<std::optional<std::string>(std::string_view key)>;
-auto str::expand_envs(std::string_view s, expand_vars_proc proc) -> std::string;
-auto str::expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string;
-auto str::expand_envs(std::string_view s, const std::tuple<std::string_view, std::string_view>& pair) -> std::string;
-auto str::expand_envs(std::string_view s, const std::tuple<const std::string_view, const std::string_view>& pair) -> std::string;
-auto str::expand_envs(std::string_view s) -> std::string;
-
-// 将字符串中的 tab 符号(\t)按照 tab 宽度替换成空白
-auto str::expand_tabs(std::string_view s, size_type tab_size = 8) -> std::string;
-
-// 扩展字符串中的 ~ 前缀
-auto str::expand_user(std::string_view s) -> std::string;
-
-// 路径正常化
-auto str::normpath(std::string_view s) -> std::string;
-
-//  拷贝和交换
-auto str::copy(pointer dest, size_type max_n, std::string_view s) -> size_type;
-
-// 路径处理
-auto str::is_abs(std::string_view s) -> bool;
 
 // 将 s 视作为文件路径，获取其目录名
 auto str::dirname(std::string_view s) -> std::string {

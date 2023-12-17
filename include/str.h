@@ -31,84 +31,89 @@ public:
 
     static const size_type npos = std::string::npos;
 
-    using string_view_provider = std::function<std::optional<std::string_view>()>;
-    using string_pair_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
+    // 生产器
+    using view_provider_provider = std::function<std::optional<std::string_view>()>;
+    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
+
+    // 消费器
+    using view_consumer_proc = std::function<int(std::string_view item)>;
+    using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
+
+    //  映射和校验
+    using char_mapping_proc = std::function<value_type(value_type)>;
+    using char_checker_proc = std::function<bool(value_type ch)>;
+
+    // 匹配和检索
     using char_match_proc = std::function<std::optional<bool>(value_type ch)>;
     using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
-    using split_list_proc = std::function<int(std::string_view item)>;
-    using split_map_proc = std::function<int(std::string_view key, std::string_view value)>;
-    using split_lines_proc = std::function<int(std::string_view line)>;
-    using split_path_proc = std::function<int(std::string_view elem)>;
-    using translate_proc = std::function<value_type(value_type)>;
-    using simplified_proc = std::function<bool(value_type ch)>;
 
-    template <typename Sequance, typename WrapperType = std::string_view, typename = Sequance::const_iterator>
-    class enumerator {
-    public:
-        explicit enumerator(const Sequance& seq)
-            : seq_{seq} {
-            itr_ = seq_.begin();
-        }
-
-        auto operator()() -> std::optional<WrapperType> {
-            if (itr_ == seq_.cend()) {
-                return std::nullopt;
-            }
-
-            return *(itr_++);
-        }
-
-    private:
-        const Sequance& seq_;
-        typename Sequance::const_iterator itr_;
-    };
-
-    class charset {
-    public:
-        auto operator[](const value_type ch) const -> bool {
-            const uint8_t index = static_cast<uint8_t>(ch) / 8;
-            const uint8_t offset = static_cast<uint8_t>(ch) / 8;
-            return bits_[index] & (uint8_t{1} << offset) != 0;
-        }
-
-        auto set(const value_type ch) -> void {
-            const uint8_t index = static_cast<uint8_t>(ch) / 8;
-            const uint8_t offset = static_cast<uint8_t>(ch) / 8;
-            bits_[index] |= (uint8_t{1} << offset);
-        }
-
-        auto clr(const value_type ch) -> void {
-            const uint8_t index = static_cast<uint8_t>(ch) / 8;
-            const uint8_t offset = static_cast<uint8_t>(ch) / 8;
-            bits_[index] ^= ~(uint8_t{1} << offset);
-        }
-
-    private:
-        uint8_t bits_[32]{};
-    };
-
-    template <typename T>
-    static auto make_string_view_provider(const T& val) -> enumerator<T, std::string_view> {
-        return enumerator<T, std::string_view>(val);
-    }
+    //     template <typename Sequance, typename WrapperType = std::string_view, typename = Sequance::const_iterator>
+    //     class enumerator {
+    //     public:
+    //         explicit enumerator(const Sequance& seq)
+    //             : seq_{seq} {
+    //             itr_ = seq_.begin();
+    //         }
+    //
+    //         auto operator()() -> std::optional<WrapperType> {
+    //             if (itr_ == seq_.cend()) {
+    //                 return std::nullopt;
+    //             }
+    //
+    //             return *(itr_++);
+    //         }
+    //
+    //     private:
+    //         const Sequance& seq_;
+    //         typename Sequance::const_iterator itr_;
+    //     };
+    //
+    //     class charset {
+    //     public:
+    //         auto operator[](const value_type ch) const -> bool {
+    //             const uint8_t index = static_cast<uint8_t>(ch) / 8;
+    //             const uint8_t offset = static_cast<uint8_t>(ch) / 8;
+    //             return bits_[index] & (uint8_t{1} << offset) != 0;
+    //         }
+    //
+    //         auto set(const value_type ch) -> void {
+    //             const uint8_t index = static_cast<uint8_t>(ch) / 8;
+    //             const uint8_t offset = static_cast<uint8_t>(ch) / 8;
+    //             bits_[index] |= (uint8_t{1} << offset);
+    //         }
+    //
+    //         auto clr(const value_type ch) -> void {
+    //             const uint8_t index = static_cast<uint8_t>(ch) / 8;
+    //             const uint8_t offset = static_cast<uint8_t>(ch) / 8;
+    //             bits_[index] ^= ~(uint8_t{1} << offset);
+    //         }
+    //
+    //     private:
+    //         uint8_t bits_[32]{};
+    //     };
+    //
+    //     template <typename T>
+    //     static auto make_string_view_provider(const T& val) -> enumerator<T, std::string_view> {
+    //         return enumerator<T, std::string_view>(val);
+    //     }
 
     //!  在尾部追加
     static auto append(std::string& s, std::string_view other) -> std::string&;
     static auto append(std::string& s, value_type ch) -> std::string&;
     static auto append(std::string& s, value_type ch, size_type n) -> std::string&;
-    static auto append(std::string& s, const string_view_provider& provide) -> std::string&;
+    static auto append(std::string& s, const view_provider_provider& provide) -> std::string&;
 
     //!  在头部追加
     static auto prepend(std::string& s, std::string_view other) -> std::string&;
     static auto prepend(std::string& s, value_type ch) -> std::string&;
     static auto prepend(std::string& s, value_type ch, size_type n) -> std::string&;
-    static auto prepend(std::string& s, const string_view_provider& provide) -> std::string&;
+    static auto prepend(std::string& s, const view_provider_provider& provide) -> std::string&;
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string& s, size_type pos, std::string_view other) -> std::string&;
     static auto insert(std::string& s, size_type pos, value_type ch) -> std::string&;
     static auto insert(std::string& s, size_type pos, value_type ch, size_type n) -> std::string&;
-    static auto insert(std::string& s, const string_view_provider& provide) -> std::string&;
+    static auto insert(std::string& s, const view_provider_provider& provide) -> std::string&;
 
     //  在字符串尾部追加
     static auto push_back(std::string& s, std::string_view other) -> std::string&;
@@ -267,22 +272,34 @@ public:
     static auto space(size_type width) -> std::string;
 
     //  基于本字符串生成新字符串
-    static auto join(std::string_view s, const string_view_provider& proc) -> std::string;
+    static auto join(std::string_view s, const view_provider_provider& proc) -> std::string;
 
     // 使用逗号和冒号拼接 map
-    static auto join_map(string_pair_proc proc) -> std::string;
+    static auto join_map(view_pair_provider_proc proc) -> std::string;
 
     // 使用逗号拼接 list
-    static auto join_list(string_pair_proc proc) -> std::string;
+    static auto join_list(view_pair_provider_proc proc) -> std::string;
 
     // 文件路径拼接
-    static auto join_path(const string_view_provider& proc) -> std::string;
+    static auto join_path(const view_provider_provider& proc) -> std::string;
+    static auto join_path(std::initializer_list<std::string_view> items) -> std::string;
+    template <typename Sequence, typename = typename Sequence::const_iterator>
+    static auto join_path(const Sequence& items) -> std::string {
+        auto itr = items.begin();
+        return join_path([&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
+
+            return *(itr++);
+        });
+    }
 
     // 拼接成搜索路径
-    static auto join_search_path(const string_view_provider& proc) -> std::string;
+    static auto join_search_path(const view_provider_provider& proc) -> std::string;
 
     // 字符串拼接
-    static auto concat(const string_view_provider& proc) -> std::string;
+    static auto concat(const view_provider_provider& proc) -> std::string;
 
     //  Title 化：首字母大写
     static auto capitalize(std::string& s) -> std::string&;
@@ -299,20 +316,19 @@ public:
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
 
     // 拆分字符串
-    static auto split_list(std::string_view s, std::string_view sep, split_list_proc proc) -> void;
-    static auto split_list(std::string_view s, value_type sep, split_list_proc proc) -> void;
+    static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, std::string_view sep) -> std::vector<std::string>;
     static auto split_list(std::string_view s, value_type sep) -> std::vector<std::string>;
 
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
-    static auto split_map(const std::string& s, split_map_proc proc) -> void;
+    static auto split_map(const std::string& s, view_pair_consumer_proc proc) -> void;
     static auto split_map(const std::string& s) -> std::map<std::string, std::string>;
 
     // 按照换行符将字符串 s，拆分长多行
-    static auto split_lines(const std::string& s, bool keep_ends, split_lines_proc proc) -> void;
+    static auto split_lines(const std::string& s, bool keep_ends, view_consumer_proc proc) -> void;
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
-    static auto split_path(const std::string& s, split_path_proc proc) -> void;
+    static auto split_path(const std::string& s, view_consumer_proc proc) -> void;
 
     // 将 s 视作路径，拆分出该路径的驱动字符串（仅win下有效）
     static auto split_drive(const std::string& s) -> std::string;
@@ -335,35 +351,40 @@ public:
     static auto case_fold(const std::string& s) -> std::string;
 
     // 字符映射
-    static auto translate(std::string& s, translate_proc proc) -> std::string&;
+    static auto translate(std::string& s, const char_mapping_proc& proc) -> std::string&;
     static auto translate(std::string& s, std::string_view from, std::string_view to) -> std::string&;
 
     // 字符串化简，将字符串中的多个空白压缩成一个空格
-    static auto simplified(std::string_view s, simplified_proc proc) -> std::string;
-    static auto simplified(std::string& s, simplified_proc proc) -> std::string&;
+    static auto simplified_proc(std::string_view s, const char_checker_proc& proc) -> std::string;
     static auto simplified(std::string_view s) -> std::string;
-    static auto simplified(std::string& s) -> std::string&;
+    static auto simplified_inplace(std::string& s) -> std::string&;
 
-    // 空白祛除
-    using trim_proc = std::function<bool(value_type ch)>;
-    static auto ltrim(const std::string& s, trim_proc proc) -> std::string;
-    static auto ltrim(const std::string& s) -> std::string;
-    static auto ltrim(std::string& s) -> std::string&;
-    static auto rtrim(const std::string& s, trim_proc proc) -> std::string;
-    static auto rtrim(const std::string& s) -> std::string;
-    static auto rtrim(std::string& s) -> std::string&;
-    static auto trim(const std::string& s, trim_proc proc) -> std::string;
-    static auto trim(const std::string& s) -> std::string;
-    static auto trim(std::string& s) -> std::string&;
-    static auto trim_all(const std::string& s, trim_proc proc) -> std::string;
-    static auto trim_all(const std::string& s) -> std::string;
-    static auto trim_all(std::string& s) -> std::string&;
+    // 去掉字符串左侧的空白
+    static auto trim_left_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_left(std::string_view s) -> std::string;
+    static auto trim_left_inplace(std::string& s) -> std::string&;
+
+    // 去掉字符串右侧的空白
+    static auto trim_right_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_right(std::string_view s) -> std::string;
+    static auto trim_right(std::string& s) -> std::string&;
+
+    // 去掉字符串首尾的空白
+    static auto trim_surrounding_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_surrounding(std::string_view s) -> std::string;
+    static auto trim_surrounding(std::string& s) -> std::string&;
+
+    // 去掉字符串中任何位置的空白
+    static auto trim_anywhere_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_anywhere(std::string_view s) -> std::string;
+    static auto trim_anywhere_inplace(std::string& s) -> std::string&;
 
     // 切除
-    static auto drop_right(std::string& s, size_type n) -> std::string&;
-    static auto drop_right(const std::string& s, size_type n) -> std::string;
     static auto drop_left(std::string& s, size_type n) -> std::string&;
-    static auto drop_left(const std::string& s, size_type n) -> std::string;
+    static auto drop_left(std::string_view s, size_type n) -> std::string;
+    static auto drop_right(std::string& s, size_type n) -> std::string&;
+    static auto drop_right(std::string_view s, size_type n) -> std::string;
+
 
     // 变量展开
     using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
