@@ -385,7 +385,6 @@ public:
     static auto drop_right(std::string& s, size_type n) -> std::string&;
     static auto drop_right(std::string_view s, size_type n) -> std::string;
 
-
     // 变量展开
     using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
     static auto expand_envs(const std::string& s, expand_vars_proc proc) -> std::string;
@@ -421,33 +420,30 @@ public:
     static auto split_dirname(std::string_view s) -> std::tuple<std::string, std::string>;
 
     //  处理路径中文件名的部分
-    static auto basename_ptr(const std::string& s) -> const_pointer;
-    static auto basename_ptr(std::string& s) -> pointer;
-    static auto basename(const std::string& s) -> std::string;
-    static auto remove_basename(const std::string& s) -> std::string;
-    static auto remove_basename(std::string& s) -> std::string&;
-    static auto replace_basename(std::string& s, const std::string& name) -> std::string&;
-    static auto replace_basename(std::string& s, std::string_view name) -> std::string&;
-    static auto replace_basename(const std::string& s, const std::string& name) -> std::string;
-    static auto replace_basename(const std::string& s, std::string_view name) -> std::string;
+    static auto basename_view(std::string_view s) -> std::string_view;
+    static auto basename(std::string_view s) -> std::string;
+    static auto basename_inplace(std::string& s) -> std::string&;
+    static auto remove_basename(std::string_view s) -> std::string;
+    static auto remove_basename_inplace(std::string& s) -> std::string&;
+    static auto replace_basename(std::string_view s, std::string_view name) -> std::string;
+    static auto replace_basename_inplace(std::string& s, std::string_view name) -> std::string&;
     static auto split_basename(std::string_view s) -> std::tuple<std::string, std::string>;
 
     // 扩展名相关操作
-    static auto extname_ptr(const std::string& s) -> const_pointer;
-    static auto extname_ptr(std::string& s) -> pointer;
-    static auto extname(const std::string& s) -> std::string;
-    static auto remove_extname(const std::string& s) -> std::string;
-    static auto remove_extname(std::string& s) -> std::string&;
-    static auto replace_extname(std::string& s, const std::string& name) -> std::string&;
-    static auto replace_extname(std::string& s, std::string_view name) -> std::string&;
-    static auto replace_extname(const std::string& s, const std::string& name) -> std::string;
-    static auto replace_extname(const std::string& s, std::string_view name) -> std::string;
+    static auto extname_view(std::string_view s) -> std::string_view;
+    static auto extname(std::string_view s) -> std::string;
+    static auto extname_inplace(std::string& s) -> std::string&;
+    static auto remove_extname(std::string_view s) -> std::string;
+    static auto remove_extname_inplace(std::string& s) -> std::string&;
+    static auto replace_extname(std::string_view s, std::string_view name) -> std::string;
+    static auto replace_extname_inplace(std::string& s, std::string_view name) -> std::string&;
     static auto split_extname(std::string_view s) -> std::tuple<std::string, std::string>;
 
     //  转换为 hash 值
     static auto hash(std::string_view s, uint32_t mod) -> uint32_t;
     static auto hash(std::string_view s, uint64_t mod) -> uint64_t;
     static auto md5(std::string_view s) -> std::string;
+    static auto md5(void* data, size_type n) -> std::string;
 
     // 转义
     static auto encode_cstr(std::string& s) -> std::string&;

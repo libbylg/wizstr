@@ -3,6 +3,8 @@
 //
 #include "str.h"
 
+#include <gtest/gtest.h>
+
 auto str::append(std::string& s, std::string_view other) -> std::string& {
     return s.append(other);
 }
@@ -836,13 +838,13 @@ auto str::translate(std::string& s, const char_mapping_proc& proc) -> std::strin
     return s;
 }
 
-auto str::simplified_proc(std::string& s, const char_checker_proc& proc) -> std::string& {
-    if (s.size() == 0) {
+auto str::simplified_proc(std::string_view s, const char_checker_proc& proc) -> std::string {
+    if (s.empty()) {
         return s;
     }
 
     bool found = false;
-    pointer w = s.data();
+    const_pointer w = s.data();
     pointer r = s.data();
     while (*r != '\0') {
         value_type ch = *r;
@@ -967,92 +969,71 @@ auto str::drop_right(std::string_view s, size_type n) -> std::string {
         return "";
     }
 
-    return s.substr(0, s.size() - n);
-}
-
-// 将 s 视作为文件路径，获取其目录名
-auto str::dirname(std::string_view s) -> std::string {
-    if (s.empty()) {
-        return ".";
-    }
-
-    // 如果尾部为斜杠，应该跳过所有的斜杠
-    size_type pos = s.size();
-    while (pos > 0) {
-        if (s[pos - 1] != '/') {
-            break;
-        }
-        pos--;
-    }
-
-    // 继续找最近的一个斜杠
-    while (pos > 0) {
-        if (s[pos - 1] == '/') {
-            break;
-        }
-        pos--;
-    }
-
-    // 路径可能并不标准，可能会连续输入多个斜杠，此时将所有的斜杠吸收掉
-    while (pos > 0) {
-        if (s[pos - 1] != '/') {
-            break;
-        }
-        pos--;
-    }
-
-    if (pos == 0) {
-        return (s[pos] == '/') ? "/" : ".";
-    }
-
-    return s.substr(0, pos);
+    return std::string{s.substr(0, s.size() - n)};
 }
 
 //  处理路径中文件名的部分
-auto str::basename_ptr(std::string_view s) -> const_pointer {
-    size_type pos = s.find_last_of('/');
-    if (pos == std::string::npos) {
-        return s.c_str();
+static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
+    ASSERT(!s.empty);
+
+    std::string::const_pointer ptr = s.data() + s.size();
+    while (ptr > s.data()) {
+#ifdef WIN32
+        if ((*(ptr-1) == '/') || (*(ptr-1) == '\\')) {
+            break;
+        }
+#else
+        if (*(ptr - 1) == '/') {
+            break;
+        }
+#endif
     }
 
-    return s.c_str() + pos + 1;
+    return ptr;
 }
 
-auto str::basename_ptr(std::string& s) -> pointer {
-    size_type pos = s.find_last_of('/');
-    if (pos == std::string::npos) {
-        return s.data();
+// 扩展名相关操作
+static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
+    ASSERT(!s.empty());
+
+    std::string::const_pointer base_ptr = str_basename_ptr(s);
+    std::string::const_pointer end = s.data() + s.size();
+
+    if (base_ptr[0] == '.') {
+        while (base_ptr < end) {
+            if (*base_ptr != '.') {
+                break;
+            }
+            base_ptr++;
+        }
     }
 
-    return s.data() + pos + 1;
+    std::string::const_pointer ptr = s.data() + s.size();
+
+
+    return ptr;
 }
 
 auto str::basename(std::string_view s) -> std::string {
-    return basename_ptr(s);
+    return str_basename_ptr(s);
 }
 
 auto str::remove_basename(std::string_view s) -> std::string {
-    const_pointer ptr = basename_ptr(s);
-    return s.substr(0, ptr - s.c_str());
+    return std::string{s.data(), str_basename_ptr(s)};
 }
 
-auto str::remove_basename(std::string& s) -> std::string& {
+auto str::remove_basename_inplace(std::string& s) -> std::string& {
     const_pointer ptr = basename_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
-auto str::replace_basename(std::string& s, std::string_view name) -> std::string& {
-    pointer ptr = basename_ptr(s);
-    s.resize((ptr - s.c_str()) + name.size());
-    std::memcpy(ptr, name.c_str(), name.size());
-    return s;
-}
-
-auto str::replace_basename(std::string& s, std::string_view name) -> std::string& {
-    pointer ptr = basename_ptr(s);
-    s.resize((ptr - s.c_str()) + name.size());
-    std::memcpy(ptr, name.data(), name.size());
+auto str::replace_basename_inplace(std::string& s, std::string_view name) -> std::string& {
+    const_pointer ptr = basename_ptr(s);
+    size_type dir_len = (ptr - s.c_str());
+    s.reserve(dir_len + name.size());
+    s.resize(dir_len);
+    s.append(name);
     return s;
 }
 
@@ -1063,30 +1044,6 @@ auto str::replace_basename(std::string_view s, std::string_view name) -> std::st
     result.append(s.c_str(), ptr - s.c_str());
     result.append(name);
     return result;
-}
-
-auto str::replace_basename(std::string_view s, std::string_view name) -> std::string {
-    const_pointer ptr = basename_ptr(s);
-    std::string result;
-    result.reserve((ptr - s.c_str()) + name.size());
-    result.append(s.c_str(), ptr - s.c_str());
-    result.append(name);
-    return result;
-}
-
-// 扩展名相关操作
-auto str::extname_ptr(std::string_view s) -> const_pointer {
-    const_pointer ptr = basename_ptr(s);
-    if (ptr[0] == '.') {
-        return s.c_str() + s.size();
-    }
-
-    ptr = std::strchr(ptr, '.');
-    if (ptr == nullptr) {
-        return s.c_str() + s.size();
-    }
-
-    return ptr;
 }
 
 auto str::extname_ptr(std::string& s) -> pointer {
@@ -1112,26 +1069,19 @@ auto str::remove_extname(std::string_view s) -> std::string {
     return s.substr(0, ptr - s.c_str());
 }
 
-auto str::remove_extname(std::string& s) -> std::string& {
+auto str::remove_extname_inplace(std::string& s) -> std::string& {
     const_pointer ptr = extname_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
-auto str::replace_extname(std::string& s, std::string_view name) -> std::string& {
+auto str::replace_extname_inplace(std::string& s, std::string_view name) -> std::string& {
     pointer ptr = extname_ptr(s);
     s.resize((ptr - s.c_str()) + name.size());
     std::memcpy(ptr, name.c_str(), name.size());
     return s;
 }
 
-auto str::replace_extname(std::string& s, std::string_view name) -> std::string& {
-    pointer ptr = extname_ptr(s);
-    s.resize((ptr - s.c_str()) + name.size());
-    std::memcpy(ptr, name.data(), name.size());
-    return s;
-}
-
 auto str::replace_extname(std::string_view s, std::string_view name) -> std::string {
     const_pointer ptr = basename_ptr(s);
     std::string result;
@@ -1140,83 +1090,6 @@ auto str::replace_extname(std::string_view s, std::string_view name) -> std::str
     result.append(name);
     return result;
 }
-
-auto str::replace_extname(std::string_view s, std::string_view name) -> std::string {
-    const_pointer ptr = basename_ptr(s);
-    std::string result;
-    result.reserve((ptr - s.c_str()) + name.size());
-    result.append(s.c_str(), ptr - s.c_str());
-    result.append(name);
-    return result;
-}
-
-// 最后一截扩展名相关操作
-auto str::last_extname_ptr(std::string_view s) -> const_pointer {
-    const_pointer base = basename_ptr(s);
-    while (base < (s.c_str() + s.size())) {
-        if (*base != '.') {
-            break;
-        }
-
-        base++;
-    }
-
-    if (base >= (s.c_str() + s.size())) {
-        return (s.c_str() + s.size());
-    }
-
-    const_pointer ext = s.c_str() + s.size() - 1;
-    while (ext >= base) {
-        if (*ext == '.') {
-            break;
-        }
-        ext--;
-    }
-
-    if (ext <= base) {
-        return s.c_str() + s.size();
-    }
-
-    return ext;
-}
-
-auto str::last_extname_ptr(std::string& s) -> pointer {
-    if (s.empty()) {
-        return s.data();
-    }
-
-    const_pointer base = basename_ptr(s);
-
-    pointer ext = s.data() + s.size() - 1;
-    while (ext >= base) {
-        if (*ext == '.') {
-            break;
-        }
-        ext--;
-    }
-
-    if (ext <= base) {
-        return s.data() + s.size();
-    }
-
-    return ext;
-}
-
-auto str::last_extname(std::string_view s) -> std::string {
-    return last_extname_ptr(s);
-}
-
-auto str::remove_last_extname(std::string_view s) -> std::string;
-auto str::remove_last_extname(std::string& s) -> std::string&;
-auto str::replace_last_extname(std::string& s, std::string_view name) -> std::string&;
-auto str::replace_last_extname(std::string& s, std::string_view name) -> std::string&;
-auto str::replace_last_extname(std::string_view s, std::string_view name) -> std::string;
-auto str::replace_last_extname(std::string_view s, std::string_view name) -> std::string;
-
-//  转换为 hash 值
-auto str::hash(std::string_view s, uint32_t mod) -> uint32_t;
-auto str::hash(std::string_view s, uint64_t mod) -> uint64_t;
-auto str::md5(std::string_view s) -> std::string;
 
 template <typename T>
 auto str::to(std::string_view s, std::tuple<int> base) -> std::optional<T> {
