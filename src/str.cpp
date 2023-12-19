@@ -1091,309 +1091,283 @@ auto str::replace_extname(std::string_view s, std::string_view name) -> std::str
     return result;
 }
 
-template <typename T>
-auto str::to(std::string_view s, std::tuple<int> base) -> std::optional<T> {
-    return {};
-}
-
-template <typename T>
-auto str::to(std::string_view s) -> std::optional<T> {
-    return {};
-}
-
-template <typename T>
-auto str::to(std::string_view s, T def, std::tuple<int> base) -> T {
-    auto result = to<T>(s, base);
-    return result ? result.value() : def;
-}
-
-template <typename T>
-auto str::to(std::string_view s, T def) -> T {
-    auto result = to<T>(s);
-    return result ? result.value() : def;
-}
-
-template <>
-inline auto to<bool>(std::string_view s [[maybe_unused]]) -> std::optional<bool> {
-    return {};
-}
-
-template <>
-inline auto to<float>(std::string_view s) -> std::optional<float> {
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtof(s.c_str(), &endptr);
-    static_assert(sizeof(result) >= sizeof(float));
-    if (result <= std::numeric_limits<float>::epsilon()) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<double>(std::string_view s) -> std::optional<double> {
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtod(s.c_str(), &endptr);
-    static_assert(sizeof(result) >= sizeof(double));
-    if (result <= std::numeric_limits<double>::epsilon()) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    return result;
-}
-
-static inline constexpr auto correct_base(int base) -> int {
-    if (base != 0) {
-        if (base < 2) {
-            return 2;
-        }
-        if (base > 36) {
-            return 36;
-        }
-    }
-
-    return base;
-}
-
-template <>
-inline auto to<int8_t>(std::string_view s, std::tuple<int> base) -> std::optional<int8_t> {
-    int nbase = correct_base(std::get<0>(base));
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtol(s.c_str(), &endptr, nbase);
-    static_assert(sizeof(result) >= sizeof(int8_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    if ((result > std::numeric_limits<int8_t>::max()) || (result < std::numeric_limits<int8_t>::min())) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<int16_t>(std::string_view s, std::tuple<int> base) -> std::optional<int16_t> {
-    int nbase = correct_base(std::get<0>(base));
-
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtol(s.c_str(), &endptr, nbase);
-    static_assert(sizeof(result) >= sizeof(int16_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    if ((result > std::numeric_limits<int16_t>::max()) || (result < std::numeric_limits<int16_t>::min())) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<int32_t>(std::string_view s, std::tuple<int> base) -> std::optional<int32_t> {
-    int nbase = correct_base(std::get<0>(base));
-
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtol(s.c_str(), &endptr, nbase);
-    static_assert(sizeof(result) >= sizeof(int32_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    if ((result > std::numeric_limits<int32_t>::max()) || (result < std::numeric_limits<int32_t>::min())) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<int64_t>(std::string_view s, std::tuple<int> base) -> std::optional<int64_t> {
-    int nbase = correct_base(std::get<0>(base));
-
-    errno = 0;
-    char* endptr = nullptr;
-#if defined __LP64__
-    auto result = std::strtol(s.c_str(), &endptr, nbase);
-#else
-    auto result = std::strtoll(s.c_str(), &endptr, nbase);
-#endif
-    static_assert(sizeof(result) >= sizeof(int64_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    if ((result > std::numeric_limits<int64_t>::max()) || (result < std::numeric_limits<int64_t>::min())) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<uint8_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint8_t> {
-    int nbase = correct_base(std::get<0>(base));
-
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtoul(s.c_str(), &endptr, nbase);
-    static_assert(sizeof(result) >= sizeof(uint8_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    if ((result > std::numeric_limits<uint8_t>::max())) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<uint16_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint16_t> {
-    int nbase = correct_base(std::get<0>(base));
-
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtoul(s.c_str(), &endptr, nbase);
-    static_assert(sizeof(result) >= sizeof(uint16_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    if ((result > std::numeric_limits<uint16_t>::max())) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<uint32_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint32_t> {
-    int nbase = correct_base(std::get<0>(base));
-
-    errno = 0;
-    char* endptr = nullptr;
-    auto result = std::strtoul(s.c_str(), &endptr, nbase);
-    static_assert(sizeof(result) >= sizeof(uint32_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    if ((result > std::numeric_limits<uint32_t>::max())) {
-        return {};
-    }
-
-    return result;
-}
-
-template <>
-inline auto to<uint64_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint64_t> {
-    int nbase = correct_base(std::get<0>(base));
-
-    errno = 0;
-    char* endptr = nullptr;
-#if defined __LP64__
-    auto result = std::strtoul(s.c_str(), &endptr, nbase);
-#else
-    auto result = std::strtoull(s.c_str(), &endptr, nbase);
-#endif
-    static_assert(sizeof(result) >= sizeof(int64_t));
-    if (result == 0) {
-        if (endptr == s.c_str()) {
-            return {};
-        }
-    }
-
-    if (errno == ERANGE) {
-        return {};
-    }
-
-    return result;
-}
-
-auto str::from(double n, value_type format = 'g', int precision = 6) -> std::string;
-auto str::from(float n, value_type format = 'g', int precision = 6) -> std::string;
-auto str::from(int8_t n, int base = 10) -> std::string;
-inline auto from(int16_t n, int base = 10) -> std::string;
-inline auto from(int32_t n, int base = 10) -> std::string;
-inline auto from(int64_t n, int base = 10) -> std::string;
-inline auto from(uint8_t n, int base = 10) -> std::string;
-inline auto from(uint16_t n, int base = 10) -> std::string;
-inline auto from(uint32_t n, int base = 10) -> std::string;
-inline auto from(uint64_t n, int base = 10) -> std::string;
-
-// 转义
-auto str::encode_cstr(std::string& s) -> std::string&;
-auto str::decode_cstr(std::string& s) -> std::string&;
-auto str::encode_xml(std::string& s) -> std::string&;
-auto str::decode_xml(std::string& s) -> std::string&;
-auto str::encode_hex(std::string& s) -> std::string&;
-auto str::decode_hex(std::string& s) -> std::string&;
-auto str::encode_base64(std::string& s) -> std::string&;
-auto str::decode_base64(std::string& s) -> std::string&;
-auto str::encode_url(std::string& s) -> std::string&;
-auto str::decode_url(std::string& s) -> std::string&;
-
-auto str::join_properties(std::string& s) -> std::string&;
-auto str::split_properties(std::string& s) -> std::string&;
+// template <typename T>
+// auto str::to(std::string_view s, std::tuple<int> base) -> std::optional<T> {
+//     return {};
+// }
+//
+// template <typename T>
+// auto str::to(std::string_view s) -> std::optional<T> {
+//     return {};
+// }
+//
+// template <typename T>
+// auto str::to(std::string_view s, T def, std::tuple<int> base) -> T {
+//     auto result = to<T>(s, base);
+//     return result ? result.value() : def;
+// }
+//
+// template <typename T>
+// auto str::to(std::string_view s, T def) -> T {
+//     auto result = to<T>(s);
+//     return result ? result.value() : def;
+// }
+//
+// template <>
+// inline auto to<bool>(std::string_view s [[maybe_unused]]) -> std::optional<bool> {
+//     return {};
+// }
+//
+// template <>
+// inline auto to<float>(std::string_view s) -> std::optional<float> {
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtof(s.c_str(), &endptr);
+//     static_assert(sizeof(result) >= sizeof(float));
+//     if (result <= std::numeric_limits<float>::epsilon()) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<double>(std::string_view s) -> std::optional<double> {
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtod(s.c_str(), &endptr);
+//     static_assert(sizeof(result) >= sizeof(double));
+//     if (result <= std::numeric_limits<double>::epsilon()) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// static inline constexpr auto correct_base(int base) -> int {
+//     if (base != 0) {
+//         if (base < 2) {
+//             return 2;
+//         }
+//         if (base > 36) {
+//             return 36;
+//         }
+//     }
+//
+//     return base;
+// }
+//
+// template <>
+// inline auto to<int8_t>(std::string_view s, std::tuple<int> base) -> std::optional<int8_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtol(s.c_str(), &endptr, nbase);
+//     static_assert(sizeof(result) >= sizeof(int8_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     if ((result > std::numeric_limits<int8_t>::max()) || (result < std::numeric_limits<int8_t>::min())) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<int16_t>(std::string_view s, std::tuple<int> base) -> std::optional<int16_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtol(s.c_str(), &endptr, nbase);
+//     static_assert(sizeof(result) >= sizeof(int16_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     if ((result > std::numeric_limits<int16_t>::max()) || (result < std::numeric_limits<int16_t>::min())) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<int32_t>(std::string_view s, std::tuple<int> base) -> std::optional<int32_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtol(s.c_str(), &endptr, nbase);
+//     static_assert(sizeof(result) >= sizeof(int32_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     if ((result > std::numeric_limits<int32_t>::max()) || (result < std::numeric_limits<int32_t>::min())) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<int64_t>(std::string_view s, std::tuple<int> base) -> std::optional<int64_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//
+//     errno = 0;
+//     char* endptr = nullptr;
+// #if defined __LP64__
+//     auto result = std::strtol(s.c_str(), &endptr, nbase);
+// #else
+//     auto result = std::strtoll(s.c_str(), &endptr, nbase);
+// #endif
+//     static_assert(sizeof(result) >= sizeof(int64_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     if ((result > std::numeric_limits<int64_t>::max()) || (result < std::numeric_limits<int64_t>::min())) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<uint8_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint8_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
+//     static_assert(sizeof(result) >= sizeof(uint8_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     if ((result > std::numeric_limits<uint8_t>::max())) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<uint16_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint16_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
+//     static_assert(sizeof(result) >= sizeof(uint16_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     if ((result > std::numeric_limits<uint16_t>::max())) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<uint32_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint32_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//
+//     errno = 0;
+//     char* endptr = nullptr;
+//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
+//     static_assert(sizeof(result) >= sizeof(uint32_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     if ((result > std::numeric_limits<uint32_t>::max())) {
+//         return {};
+//     }
+//
+//     return result;
+// }
+//
+// template <>
+// inline auto to<uint64_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint64_t> {
+//     int nbase = correct_base(std::get<0>(base));
+//
+//     errno = 0;
+//     char* endptr = nullptr;
+// #if defined __LP64__
+//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
+// #else
+//     auto result = std::strtoull(s.c_str(), &endptr, nbase);
+// #endif
+//     static_assert(sizeof(result) >= sizeof(int64_t));
+//     if (result == 0) {
+//         if (endptr == s.c_str()) {
+//             return {};
+//         }
+//     }
+//
+//     if (errno == ERANGE) {
+//         return {};
+//     }
+//
+//     return result;
+// }
