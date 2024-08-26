@@ -17,11 +17,11 @@
 #include <vector>
 
 #include <array>
+#include <bitset>
 #include <cstring>
 #include <regex>
-#include <bitset>
 
-class view {
+class str {
 public:
     using size_type = std::string::size_type;
     using ssize_type = ssize_t;
@@ -50,56 +50,6 @@ public:
     // 匹配和检索
     using char_match_proc = std::function<std::optional<bool>(value_type ch)>;
     using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
-
-    //     template <typename Sequance, typename WrapperType = std::string_view, typename = Sequance::const_iterator>
-    //     class enumerator {
-    //     public:
-    //         explicit enumerator(const Sequance& seq)
-    //             : seq_{seq} {
-    //             itr_ = seq_.begin();
-    //         }
-    //
-    //         auto operator()() -> std::optional<WrapperType> {
-    //             if (itr_ == seq_.cend()) {
-    //                 return std::nullopt;
-    //             }
-    //
-    //             return *(itr_++);
-    //         }
-    //
-    //     private:
-    //         const Sequance& seq_;
-    //         typename Sequance::const_iterator itr_;
-    //     };
-    //
-    //     class charset_type {
-    //     public:
-    //         auto operator[](const value_type ch) const -> bool {
-    //             const uint8_t index = static_cast<uint8_t>(ch) / 8;
-    //             const uint8_t offset = static_cast<uint8_t>(ch) / 8;
-    //             return bits_[index] & (uint8_t{1} << offset) != 0;
-    //         }
-    //
-    //         auto set(const value_type ch) -> void {
-    //             const uint8_t index = static_cast<uint8_t>(ch) / 8;
-    //             const uint8_t offset = static_cast<uint8_t>(ch) / 8;
-    //             bits_[index] |= (uint8_t{1} << offset);
-    //         }
-    //
-    //         auto clr(const value_type ch) -> void {
-    //             const uint8_t index = static_cast<uint8_t>(ch) / 8;
-    //             const uint8_t offset = static_cast<uint8_t>(ch) / 8;
-    //             bits_[index] ^= ~(uint8_t{1} << offset);
-    //         }
-    //
-    //     private:
-    //         uint8_t bits_[32]{};
-    //     };
-    //
-    //     template <typename T>
-    //     static auto make_string_view_provider(const T& val) -> enumerator<T, std::string_view> {
-    //         return enumerator<T, std::string_view>(val);
-    //     }
 
     //!  在尾部追加
     static auto append(std::string& s, std::string_view other) -> std::string&;
@@ -133,9 +83,11 @@ public:
     static auto pop_back(std::string& s) -> value_type;
     static auto pop_front(std::string& s) -> value_type;
 
-    // 删除最后一个字段，并返回该字段
+    // 一个字段，并返回该字段
     static auto pop_back_word(std::string& s) -> std::string;
     static auto pop_front_word(std::string& s) -> std::string;
+    static auto remove_back_word(std::string& s) -> std::string&;
+    static auto remove_front_word(std::string& s) -> std::string&;
 
     //  部分数据移动：柔性移动和裁剪移动
     static auto flex_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string&;
@@ -151,6 +103,7 @@ public:
     static auto remove(std::string& s, char_match_proc proc) -> std::string&;
     // static auto remove(std::string& s, func) -> std::string&;
 
+    //  删除字符串 s 的前缀 prefix，如果 s 确实以 prefix 开头，执行移除
     static auto remove_prefix(std::string& s, std::string_view prefix) -> std::string&;
     static auto remove_prefix(std::string& s, value_type prefix) -> std::string&;
 
@@ -212,7 +165,7 @@ public:
 
     // 去掉字符串首尾的空白
     static auto trim_surrounding_proc(std::string& s, char_checker_proc proc) -> std::string&;
-string    static auto trim_surrounding(std::string& s) -> std::string&;
+    static auto trim_surrounding(std::string& s) -> std::string&;
 
     // 去掉字符串中任何位置的空白
     static auto trim_anywhere(std::string s, char_checker_proc proc) -> std::string;

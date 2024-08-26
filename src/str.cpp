@@ -3,13 +3,11 @@
 //
 #include "str.h"
 
-#include <gtest/gtest.h>
-
 auto str::append(std::string& s, std::string_view other) -> std::string& {
     return s.append(other);
 }
 
-auto str::append(std::string& s, value_type ch) -> std::string& {
+auto str::append(std::string& s, str::value_type ch) -> std::string& {
     return s.append(&ch, 1);
 }
 
@@ -979,7 +977,7 @@ static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
     std::string::const_pointer ptr = s.data() + s.size();
     while (ptr > s.data()) {
 #ifdef WIN32
-        if ((*(ptr-1) == '/') || (*(ptr-1) == '\\')) {
+        if ((*(ptr - 1) == '/') || (*(ptr - 1) == '\\')) {
             break;
         }
 #else
@@ -1009,7 +1007,6 @@ static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
     }
 
     std::string::const_pointer ptr = s.data() + s.size();
-
 
     return ptr;
 }

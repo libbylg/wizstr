@@ -1,7 +1,6 @@
 //
 // Created by libbylg on 2023/6/1.
 //
-
 #ifndef TINY_STR_H
 #define TINY_STR_H
 
@@ -21,7 +20,7 @@
 #include <cstring>
 #include <regex>
 
-class str {
+class view {
 public:
     using size_type = std::string::size_type;
     using ssize_type = ssize_t;
@@ -31,7 +30,7 @@ public:
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
 
-    static const size_type npos = std::string::npos;
+    static inline constexpr size_type npos = std::string::npos;
 
     using charset_type = std::bitset<256>;
 
@@ -159,7 +158,6 @@ public:
     static auto prev_eol(std::string_view& s, size_type pos) -> size_type;
     static auto next_word(std::string_view s, size_type pos) -> std::string_view;
     static auto prev_word(std::string_view s, size_type pos) -> std::string_view;
-
 
     //  按各种方式遍历
     static auto walk(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n, const_pointer next)> proc) -> void;
