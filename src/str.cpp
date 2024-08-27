@@ -85,7 +85,7 @@ auto str::prepend(std::string& s, std::string_view other, size_type n) -> std::s
     for (size_type i = 0; i < n; i++) {
         std::memcpy(result.data() + (other.size() * i), other.data(), other.size());
     }
-    std::memcpy(result.data + (other.size() * n), s.data(), s.size());
+    std::memcpy(result.data() + (other.size() * n), s.data(), s.size());
 
     // result 赋值给 s
     s = std::move(result);
