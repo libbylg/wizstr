@@ -129,7 +129,7 @@ public:
     static auto count(std::string_view s, value_type ch) -> size_type;
     static auto count(std::string_view s, char_match_proc proc) -> size_type;
 
-    // 计算公共前后缀的长度
+    //  计算公共前后缀的长度
     static auto prefix(std::string_view s, std::string_view other) -> size_type;
     static auto suffix(std::string_view s, std::string_view other) -> size_type;
 

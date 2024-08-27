@@ -4,7 +4,6 @@
 #include "view.h"
 #include "str.h"
 
-
 #include <gtest/gtest.h>
 
 auto view::append(std::string& s, std::string_view other) -> std::string& {
@@ -148,7 +147,6 @@ auto view::pop_front(std::string& s) -> value_type {
 // auto view::clip_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
 // }
 
-//  前缀操作
 auto view::prefix(std::string_view s, std::string_view other) -> size_type {
     if ((s.empty()) || (other.empty())) {
         return 0;
@@ -159,6 +157,26 @@ auto view::prefix(std::string_view s, std::string_view other) -> size_type {
         if (s[pos] != other[pos]) {
             return pos;
         }
+    }
+
+    return len;
+}
+
+auto view::suffix(std::string_view s, std::string_view other) -> size_type {
+    if ((s.empty()) || (other.empty())) {
+        return 0;
+    }
+
+    size_type len = std::min(s.size(), other.size());
+    const_pointer ptr_s = &s.back();
+    const_pointer ptr_other = &other.back();
+    while (ptr_s != (&s.back() - len)) {
+        if (*ptr_s != *ptr_other) {
+            return &s.back() - ptr_s;
+        }
+
+        ptr_s--;
+        ptr_other--;
     }
 
     return len;

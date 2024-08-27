@@ -68,9 +68,10 @@ public:
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string& s, size_type pos, std::string_view other) -> std::string&;
+    static auto insert(std::string& s, size_type pos, std::string_view other, size_type n) -> std::string&;
     static auto insert(std::string& s, size_type pos, value_type ch) -> std::string&;
     static auto insert(std::string& s, size_type pos, value_type ch, size_type n) -> std::string&;
-    static auto insert(std::string& s, const view_provider_proc& proc) -> std::string&;
+    static auto insert(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string&;
 
     //  在字符串尾部追加
     static auto push_back(std::string& s, std::string_view other) -> std::string&;
@@ -109,33 +110,39 @@ public:
     //  删除字符串 s 的前缀 prefix，如果 s 确实以 prefix 开头，执行移除
     static auto remove_prefix(std::string& s, std::string_view prefix) -> std::string&;
     static auto remove_prefix(std::string& s, value_type prefix) -> std::string&;
+    static auto remove_prefix(std::string& s, size_type n) -> std::string&;
 
     //  后缀操作
     static auto remove_suffix(std::string& s, std::string_view suffix) -> std::string&;
     static auto remove_suffix(std::string& s, value_type suffix) -> std::string&;
+    static auto remove_suffix(std::string& s, size_type n) -> std::string&;
 
     //  填充
     static auto fill(std::string& s, std::string_view other, size_type pos = 0, size_type max_n = npos) -> std::string&;
     static auto fill(std::string& s, value_type ch, size_type pos = 0, size_type max_n = npos) -> std::string&;
 
-    //  按定宽，向右对齐
-    static auto align_right(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
+    //  子串提取
+    static auto left_n(std::string& s, size_type n) -> std::string&;
+    static auto right_n(std::string& s, size_type n) -> std::string&;
+    static auto mid_n(std::string& s, size_type pos, size_type n) -> std::string&;
+    static auto substr(std::string& s, size_type pos, ssize_type offset) -> std::string&;
 
-    //  按定宽，向左对齐
+    //  按定宽和指定方式对齐对齐
     static auto align_left(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
-
-    //  按定宽，居中对齐
+    static auto align_right(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_center(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
 
     //  按定宽，向右对齐，对齐之后左侧使用 0 填充
     static auto zfill(std::string& s, size_type width) -> std::string&;
 
-    //  Title 化：首字母大写
+    //  capitalize 和 title 操作
     static auto capitalize(std::string& s) -> std::string&;
-
     static auto title(std::string& s) -> std::string&;
-
     static auto title_words(std::string& s) -> std::string&;
+
+    //  特殊字符串生成
+    static auto repeat(std::string& s, size_type times) -> std::string&;
+    static auto space(size_type width) -> std::string;
 
     //  反转：字符串逆序
     static auto invert(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;

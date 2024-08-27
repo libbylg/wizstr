@@ -8,7 +8,7 @@ auto str::append(std::string& s, std::string_view other) -> std::string& {
     return s.append(other);
 }
 
-static auto append(std::string& s, std::string_view other, size_type n) -> std::string& {
+auto str::append(std::string& s, std::string_view other, size_type n) -> std::string& {
     s.reserve(s.size() + other.size() * n);
     for (size_type i = 0; i < n; i++) {
         s.append(other);
@@ -25,7 +25,7 @@ auto str::append(std::string& s, value_type ch, size_type n) -> std::string& {
     return s;
 }
 
-auto str::append(std::string& s, const view_provider_provider& proc) -> std::string& {
+auto str::append(std::string& s, const view_provider_proc& proc) -> std::string& {
     const auto item = proc();
     while (item) {
         s.append(item.value());
@@ -35,9 +35,20 @@ auto str::append(std::string& s, const view_provider_provider& proc) -> std::str
 }
 
 auto str::append(std::string& s, std::initializer_list<std::string_view> others) -> std::string& {
+    // 先计算出需要追加的数据的总长度
+    size_t append_size = 0;
+    for (auto itr = others.begin(); itr != others.end(); itr++) {
+        append_size += itr->size();
+    }
+
+    // 做一个一次性扩容
+    s.reserve(s.size() + append_size);
+
+    // 再逐个添加
     for (auto itr = others.begin(); itr != others.end(); itr++) {
         s.append(*itr);
     }
+
     return s;
 }
 
@@ -58,10 +69,28 @@ auto str::prepend(std::string& s, std::string_view other) -> std::string& {
 auto str::prepend(std::string& s, std::string_view other, size_type n) -> std::string& {
     size_type require_size = s.size() + other.size() * n;
     if (s.capacity() >= require_size) {
-        size_type len = s.size();
+        size_type origin_size = s.size();
         s.resize(require_size);
-        std::memmove(s.c_str(), s.size);
+        std::memmove(s.data() + (other.size() * n), s.data(), origin_size);
+        for (size_type i = 0; i < n; i++) {
+            std::memcpy(s.data() + (other.size() * i), other.data(), other.size());
+        }
+
+        return s;
     }
+
+    // 反正要分配新内存，还不如创建新对象
+    std::string result;
+    result.resize(require_size);
+    for (size_type i = 0; i < n; i++) {
+        std::memcpy(result.data() + (other.size() * i), other.data(), other.size());
+    }
+    std::memcpy(result.data + (other.size() * n), s.data(), s.size());
+
+    // result 赋值给 s
+    s = std::move(result);
+
+    return s;
 }
 
 auto str::prepend(std::string& s, value_type ch) -> std::string& {
@@ -84,8 +113,8 @@ auto str::prepend(std::string& s, value_type ch, size_type n) -> std::string& {
     return s;
 }
 
-auto str::prepend(std::string& s, const view_provider_provider& provide) -> std::string& {
-    const auto item = provide();
+auto str::prepend(std::string& s, const view_provider_proc& proc) -> std::string& {
+    const auto item = proc();
     while (item) {
         prepend(s, item.value());
     }
@@ -110,14 +139,32 @@ auto str::insert(std::string& s, size_type pos, std::string_view other) -> std::
     return s;
 }
 
+auto str::insert(std::string& s, size_type pos, std::string_view other, size_type n) -> std::string& {
+    // TODO 性能不是最优的，主要是会导致多次扩容
+    size_type count = 0;
+    str::insert(s, pos, [n, &count, &other]() -> std::optional<std::string_view> {
+        if (count >= n) {
+            return {};
+        }
+
+        count++;
+        return other;
+    });
+
+    return s;
+}
+
 auto str::insert(std::string& s, size_type pos, value_type ch) -> std::string& {
     return insert(s, pos, std::string_view{&ch, 1});
 }
 
-// auto str::insert(std::string& s, size_type pos, value_type ch, size_type n) -> std::string& {
-// }
+auto str::insert(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string& {
+    auto item = proc();
+    while (item) {
+        str::insert(s, pos, item.value()); // TODO 不是最优的，会导致多次扩容
+    }
 
-auto str::insert(std::string& s, const view_provider_provider& provide) -> std::string& {
+    return s;
 }
 
 //  首尾操作
@@ -154,44 +201,53 @@ auto str::pop_front(std::string& s) -> value_type {
     return ch;
 }
 
-// auto str::pop_back_field(std::string& s) -> std::string {
-// }
-//
-// auto str::pop_front_field(std::string& s) -> std::string {
-// }
+auto str::pop_back_word(std::string& s) -> std::string {
+}
 
-// auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
-// }
-//
-// auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset, value_type ch) -> std::string& {
-// }
-//
-// auto str::clip_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
-// }
+auto str::pop_front_word(std::string& s) -> std::string {
+}
 
-// //  前缀操作
-// auto str::prefix(std::string_view s, std::string_view other) -> size_type {
-//     return view::prefix(s, other);
-// }
+auto str::remove_back_word(std::string& s) -> std::string& {
+}
 
-// auto str::has_prefix(std::string_view s, value_type ch) -> bool {
-//     return view::has_prefix(s, ch);
-// }
+auto str::remove_front_word(std::string& s) -> std::string& {
+}
 
-// auto str::has_prefix(std::string_view s, std::string_view prefix) -> bool {
-//     return view::has_prefix(s, prefix);
-// }
+auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
+}
 
-// auto str::starts_with(std::string_view s, value_type ch) -> bool {
-//     return view::starts_with(s, ch);
-// }
+auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset, value_type ch) -> std::string& {
+}
 
-// auto str::starts_with(std::string_view s, std::string_view prefix) -> bool {
-//     return view::starts_with(s, prefix);
-// }
+auto str::clip_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
+}
+
+auto str::remove(std::string& s, size_type pos) -> std::string& {
+    if (pos >= s.size()) {
+        return s;
+    }
+
+    s.resize(pos);
+    return s;
+}
+
+auto str::remove(std::string& s, size_type pos, size_type n) -> std::string& {
+}
+
+auto str::remove(std::string& s, size_type pos, ssize_type offset) -> std::string& {
+}
+
+auto str::remove(std::string& s, value_type ch) -> std::string& {
+}
+
+auto str::remove(std::string& s, std::string_view other) -> std::string& {
+}
+
+auto str::remove(std::string& s, char_match_proc proc) -> std::string& {
+}
 
 auto str::remove_prefix(std::string& s, std::string_view prefix) -> std::string& {
-    if (!has_prefix(s, prefix)) {
+    if (!view::has_prefix(s, prefix)) {
         return s;
     }
 
@@ -204,45 +260,15 @@ auto str::remove_prefix(std::string& s, value_type prefix) -> std::string& {
     return remove_prefix(s, {&prefix, 1});
 }
 
-//  后缀操作
-auto str::suffix(std::string_view s, std::string_view other) -> size_type {
-    if ((s.empty()) || (other.empty())) {
-        return 0;
+auto str::remove_prefix(std::string& s, size_type n) -> std::string& {
+    if (n >= s.size()) {
+        s.clear();
+        return s;
     }
 
-    size_type len = std::min(s.size(), other.size());
-    const_pointer ptr_s = &s.back();
-    const_pointer ptr_other = &other.back();
-    while (ptr_s != (&s.back() - len)) {
-        if (*ptr_s != *ptr_other) {
-            return &s.back() - ptr_s;
-        }
-
-        ptr_s--;
-        ptr_other--;
-    }
-
-    return len;
-}
-
-auto str::has_suffix(std::string_view s, value_type suffix) -> bool {
-    if (s.empty()) {
-        return false;
-    }
-
-    return s.back() == suffix;
-}
-
-auto str::has_suffix(std::string_view s, std::string_view suffix) -> bool {
-    return str::suffix(s, suffix) == suffix.size();
-}
-
-auto str::ends_with(std::string_view s, value_type suffix) -> bool {
-    return has_suffix(s, suffix);
-}
-
-auto str::ends_with(std::string_view s, std::string_view suffix) -> bool {
-    return has_suffix(s, suffix);
+    std::memmove(s.data(), s.data() + n, (s.size() - n));
+    s.resize(s.size() - n);
+    return s;
 }
 
 auto str::remove_suffix(std::string& s, std::string_view suffix) -> std::string& {
@@ -258,7 +284,16 @@ auto str::remove_suffix(std::string& s, value_type suffix) -> std::string& {
     return remove_suffix(s, {&suffix, 1});
 }
 
-//  填充
+auto str::remove_suffix(std::string& s, size_type n) -> std::string& {
+    if (n >= s.size()) {
+        s.clear();
+        return s;
+    }
+
+    s.resize(s.size() - n);
+    return s;
+}
+
 auto str::fill(std::string& s, std::string_view other, size_type pos, size_type max_n) -> std::string& {
     if (s.empty() || other.empty()) {
         return s;
@@ -302,230 +337,7 @@ auto str::fill(std::string& s, value_type ch, size_type pos, size_type max_n) ->
     return s;
 }
 
-auto str::is_lower(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::islower(*ptr)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-auto str::is_upper(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isupper(*ptr)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-auto str::is_title(std::string_view s) -> bool {
-    if (s.empty()) {
-        return false;
-    }
-
-    return std::isupper(s[0]);
-}
-
-auto str::is_digit(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isdigit(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_xdigit(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isxdigit(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_ascii(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if ((*ptr & 0x80) != 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_alpha(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isalpha(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_alnum(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isalnum(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_space(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isspace(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_blank(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isblank(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_print(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isprint(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_graph(std::string_view s) -> bool {
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isgraph(*ptr)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-auto str::is_identifier(std::string_view s) -> bool {
-    if (s.empty()) {
-        return false;
-    }
-
-    if (!std::isalpha(s[0]) && s[0] != '_') {
-        return false;
-    }
-
-    for (const_pointer ptr = s.data() + 1; ptr < s.data() + s.size(); ptr++) {
-        if (!std::isalnum(*ptr) && (*ptr != '_')) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-auto str::is_bool(std::string_view s) -> bool {
-    if (s.empty()) {
-        return false;
-    }
-
-    //  "1"     "0"
-    //  "on"    "off"
-    //  "ON"    "OFF"
-    //  "Yes"   "No"
-    //  "yes"   "no"
-    //  "YES"   "NO"
-    //  "True"  "False"
-    //  "true"  "false"
-    //  "TRUE"  "FALSE"
-
-    const_pointer ptr = s.data();
-    switch (s.size()) {
-        case 5:
-            if ((ptr[0] == 'f') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
-                return true;
-            }
-            if ((ptr[0] == 'F') && (ptr[1] == 'a') && (ptr[2] == 'l') && (ptr[3] == 's') && (ptr[4] == 'e')) {
-                return true;
-            }
-            if ((ptr[0] == 'F') && (ptr[1] == 'A') && (ptr[2] == 'L') && (ptr[3] == 'S') && (ptr[4] == 'E')) {
-                return true;
-            }
-            return false;
-        case 4:
-            if ((ptr[0] == 't') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
-                return true;
-            }
-            if ((ptr[0] == 'T') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
-                return true;
-            }
-            if ((ptr[0] == 'T') && (ptr[1] == 'R') && (ptr[2] == 'U') && (ptr[3] == 'E')) {
-                return true;
-            }
-            return false;
-        case 3:
-            if ((ptr[0] == 'y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
-                return true;
-            }
-            if ((ptr[0] == 'Y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
-                return true;
-            }
-            if ((ptr[0] == 'Y') && (ptr[1] == 'E') && (ptr[2] == 'S')) {
-                return true;
-            }
-            if ((ptr[0] == 'o') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
-                return true;
-            }
-            if ((ptr[0] == 'O') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
-                return true;
-            }
-            if ((ptr[0] == 'O') && (ptr[1] == 'F') && (ptr[2] == 'F')) {
-                return true;
-            }
-            return false;
-        case 2:
-            if ((ptr[0] == 'o') && (ptr[1] == 'n')) {
-                return true;
-            }
-            if ((ptr[0] == 'O') && (ptr[1] == 'n')) {
-                return true;
-            }
-            if ((ptr[0] == 'O') && (ptr[1] == 'N')) {
-                return true;
-            }
-            if ((ptr[0] == 'n') && (ptr[1] == 'o')) {
-                return true;
-            }
-            if ((ptr[0] == 'N') && (ptr[1] == 'o')) {
-                return true;
-            }
-            if ((ptr[0] == 'N') && (ptr[1] == 'O')) {
-                return true;
-            }
-            return false;
-        case 1:
-            switch (*ptr) {
-                case '0':
-                    return false;
-                case '1':
-                    return true;
-                default:
-                    return false;
-            }
-        default:
-            return false;
-    }
-
-    return false;
-}
-
-//  提取子串
-auto str::left_n(std::string_view s, size_type n) -> std::string {
+auto str::left_n(std::string& s, size_type n) -> std::string& {
     if (n == 0) {
         return "";
     }
@@ -537,7 +349,7 @@ auto str::left_n(std::string_view s, size_type n) -> std::string {
     return std::string{s.substr(0, n)};
 }
 
-auto str::right_n(std::string_view s, size_type n) -> std::string {
+auto str::right_n(std::string& s, size_type n) -> std::string& {
     if (n == 0) {
         return {};
     }
@@ -549,7 +361,23 @@ auto str::right_n(std::string_view s, size_type n) -> std::string {
     return std::string{s.substr(s.size() - n, n)};
 }
 
-auto str::substr(std::string_view s, size_type pos, ssize_type offset) -> std::string {
+auto str::mid_n(std::string& s, size_type pos, size_type n) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (pos >= s.size()) {
+        s.clear();
+        return s;
+    }
+
+    size_type move_size = ((pos + n) < s.size()) ? n : (s.size() - pos);
+    std::memmove(s.data(), s.data() + pos, move_size);
+    s.resize(move_size);
+    return s;
+}
+
+auto str::substr(std::string& s, size_type pos, ssize_type offset) -> std::string& {
     if (offset > 0) {
         size_type n = offset;
         return std::string{s.substr(pos, std::min(n, pos + n))};
@@ -563,8 +391,16 @@ auto str::substr(std::string_view s, size_type pos, ssize_type offset) -> std::s
     return "";
 }
 
-//  定宽对齐调整
-auto str::rjust_inplace(std::string& s, size_type width, value_type ch) -> std::string& {
+auto str::align_left(std::string& s, size_type width, value_type ch) -> std::string& {
+    if (s.size() >= width) {
+        return s;
+    }
+
+    s.resize(width, ch);
+    return s;
+}
+
+auto str::align_right(std::string& s, size_type width, value_type ch) -> std::string& {
     if (s.size() >= width) {
         return s;
     }
@@ -576,40 +412,7 @@ auto str::rjust_inplace(std::string& s, size_type width, value_type ch) -> std::
     return s;
 }
 
-auto str::rjust(std::string_view s, size_type width, value_type ch) -> std::string {
-    if (s.size() >= width) {
-        return std::string{s};
-    }
-
-    std::string result;
-    result.resize(width);
-    std::fill(result.data(), result.data() + (width - s.size()), ch);
-    std::memcpy(result.data() + (width - s.size()), s.data(), s.size());
-    return result;
-}
-
-auto str::ljust_inplace(std::string& s, size_type width, value_type ch) -> std::string& {
-    if (s.size() >= width) {
-        return s;
-    }
-
-    s.resize(width, ch);
-    return s;
-}
-
-auto str::ljust(std::string_view s, size_type width, value_type ch) -> std::string {
-    if (s.size() >= width) {
-        return std::string{s};
-    }
-
-    std::string result;
-    result.reserve(width);
-    result.append(s);
-    result.append(width - s.size(), ch);
-    return result;
-}
-
-auto str::center_inplace(std::string& s, size_type width, value_type ch) -> std::string& {
+auto str::align_center(std::string& s, size_type width, value_type ch) -> std::string& {
     if (s.size() >= width) {
         return s;
     }
@@ -624,23 +427,7 @@ auto str::center_inplace(std::string& s, size_type width, value_type ch) -> std:
     return s;
 }
 
-auto str::center(std::string_view s, size_type width, value_type ch) -> std::string {
-    if (s.size() >= width) {
-        return std::string{s};
-    }
-
-    size_type left_len = (width - s.size()) / 2;
-    size_type right_len = (width - left_len) - s.size();
-
-    std::string result;
-    result.reserve(width);
-    result.append(left_len, ch);
-    result.append(s);
-    result.append(right_len, ch);
-    return result;
-}
-
-auto str::zfill_inplace(std::string& s, size_type width) -> std::string& {
+auto str::zfill(std::string& s, size_type width) -> std::string& {
     if (s.empty()) {
         s.resize(0);
         return s;
@@ -651,7 +438,7 @@ auto str::zfill_inplace(std::string& s, size_type width) -> std::string& {
     }
 
     if ((s[0] != '+') && (s[0] != '-')) {
-        return ljust_inplace(s, width, '0');
+        return align_left(s, width, '0');
     }
 
     size_type old_len = s.size();
@@ -664,35 +451,16 @@ auto str::zfill_inplace(std::string& s, size_type width) -> std::string& {
     return s;
 }
 
-auto str::zfill(std::string_view s, size_type width) -> std::string {
-    if (s.empty()) {
-        std::string r;
-        r.resize(width, '0');
-        return r;
-    }
-
-    if (s.size() >= width) {
-        return std::string{s};
-    }
-
-    if ((s[0] != '+') && (s[0] != '-')) {
-        return ljust(s, width, '0');
-    }
-
-    std::string result;
-    result.resize(width);
-    pointer ptr = result.data();
-    *ptr = s[0];
-    ptr++;
-    std::fill(ptr, ptr + (width - s.size()), '0');
-    ptr += (width - s.size());
-    std::memcpy(ptr, s.data(), s.size());
-
-    return result;
+auto str::capitalize(std::string& s) -> std::string& {
 }
 
-// 字符串生成
-auto str::repeat(std::string_view s, size_type times) -> std::string {
+auto str::title(std::string& s) -> std::string& {
+}
+
+auto str::title_words(std::string& s) -> std::string& {
+}
+
+auto str::repeat(std::string& s, size_type times) -> std::string& {
     if (s.empty() || (times == 0)) {
         return "";
     }
@@ -708,32 +476,7 @@ auto str::repeat(std::string_view s, size_type times) -> std::string {
 }
 
 auto str::space(size_type width) -> std::string {
-    return repeat(" ", width);
-}
-
-//  基于本字符串生成新字符串
-
-auto str::join(std::string_view s, const view_provider_provider& proc) -> std::string {
-    std::string result;
-    for (auto item = proc(); item; item = proc()) {
-        if (!result.empty()) {
-            result.append(s);
-        }
-        result.append(item.value());
-    }
-    return result;
-}
-
-// 路径拼接
-auto str::join_path(const view_provider_provider& proc) -> std::string {
-    std::string result;
-    for (auto item = proc(); item; item = proc()) {
-        if (!result.empty()) {
-            result.append("/");
-        }
-        result.append(item.value());
-    }
-    return result;
+    return view::repeat(" ", width);
 }
 
 auto str::join_path(std::initializer_list<std::string_view> items) -> std::string {
@@ -747,11 +490,11 @@ auto str::join_path(std::initializer_list<std::string_view> items) -> std::strin
     });
 }
 
-auto str::join_search_path(const view_provider_provider& proc) -> std::string {
+auto str::join_search_path(const view_provider_proc& proc) -> std::string {
     return join(":", proc);
 }
 
-auto str::concat(const view_provider_provider& proc) -> std::string {
+auto str::concat(const view_provider_proc& proc) -> std::string {
     std::string result;
     auto item = proc();
     while (item) {
