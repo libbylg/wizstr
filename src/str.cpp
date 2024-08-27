@@ -2,9 +2,18 @@
 // Created by libbylg on 2023/6/1.
 //
 #include "str.h"
+#include "view.h"
 
 auto str::append(std::string& s, std::string_view other) -> std::string& {
     return s.append(other);
+}
+
+static auto append(std::string& s, std::string_view other, size_type n) -> std::string& {
+    s.reserve(s.size() + other.size() * n);
+    for (size_type i = 0; i < n; i++) {
+        s.append(other);
+    }
+    return s;
 }
 
 auto str::append(std::string& s, str::value_type ch) -> std::string& {
@@ -16,12 +25,19 @@ auto str::append(std::string& s, value_type ch, size_type n) -> std::string& {
     return s;
 }
 
-auto str::append(std::string& s, const view_provider_provider& provide) -> std::string& {
-    const auto item = provide();
+auto str::append(std::string& s, const view_provider_provider& proc) -> std::string& {
+    const auto item = proc();
     while (item) {
         s.append(item.value());
     }
 
+    return s;
+}
+
+auto str::append(std::string& s, std::initializer_list<std::string_view> others) -> std::string& {
+    for (auto itr = others.begin(); itr != others.end(); itr++) {
+        s.append(*itr);
+    }
     return s;
 }
 
@@ -37,6 +53,15 @@ auto str::prepend(std::string& s, std::string_view other) -> std::string& {
     std::memmove(s.data() + other.size(), s.c_str(), s.size() * sizeof(value_type));
     std::memcpy(s.data(), other.data(), other.size());
     return s;
+}
+
+auto str::prepend(std::string& s, std::string_view other, size_type n) -> std::string& {
+    size_type require_size = s.size() + other.size() * n;
+    if (s.capacity() >= require_size) {
+        size_type len = s.size();
+        s.resize(require_size);
+        std::memmove(s.c_str(), s.size);
+    }
 }
 
 auto str::prepend(std::string& s, value_type ch) -> std::string& {
@@ -144,41 +169,26 @@ auto str::pop_front(std::string& s) -> value_type {
 // auto str::clip_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
 // }
 
-//  前缀操作
-auto str::prefix(std::string_view s, std::string_view other) -> size_type {
-    if ((s.empty()) || (other.empty())) {
-        return 0;
-    }
+// //  前缀操作
+// auto str::prefix(std::string_view s, std::string_view other) -> size_type {
+//     return view::prefix(s, other);
+// }
 
-    size_type len = std::min(s.size(), other.size());
-    for (size_type pos = 0; pos < len; pos++) {
-        if (s[pos] != other[pos]) {
-            return pos;
-        }
-    }
+// auto str::has_prefix(std::string_view s, value_type ch) -> bool {
+//     return view::has_prefix(s, ch);
+// }
 
-    return len;
-}
+// auto str::has_prefix(std::string_view s, std::string_view prefix) -> bool {
+//     return view::has_prefix(s, prefix);
+// }
 
-auto str::has_prefix(std::string_view s, value_type ch) -> bool {
-    if (s.empty()) {
-        return false;
-    }
+// auto str::starts_with(std::string_view s, value_type ch) -> bool {
+//     return view::starts_with(s, ch);
+// }
 
-    return s[0] == ch;
-}
-
-auto str::has_prefix(std::string_view s, std::string_view prefix) -> bool {
-    return str::prefix(s, prefix) == prefix.size();
-}
-
-auto str::starts_with(std::string_view s, value_type ch) -> bool {
-    return has_prefix(s, ch);
-}
-
-auto str::starts_with(std::string_view s, std::string_view prefix) -> bool {
-    return has_prefix(s, prefix);
-}
+// auto str::starts_with(std::string_view s, std::string_view prefix) -> bool {
+//     return view::starts_with(s, prefix);
+// }
 
 auto str::remove_prefix(std::string& s, std::string_view prefix) -> std::string& {
     if (!has_prefix(s, prefix)) {

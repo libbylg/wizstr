@@ -1,7 +1,9 @@
 //
 // Created by libbylg on 2023/6/1.
 //
+#include "view.h"
 #include "str.h"
+
 
 #include <gtest/gtest.h>
 
@@ -979,7 +981,7 @@ static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
     std::string::const_pointer ptr = s.data() + s.size();
     while (ptr > s.data()) {
 #ifdef WIN32
-        if ((*(ptr-1) == '/') || (*(ptr-1) == '\\')) {
+        if ((*(ptr - 1) == '/') || (*(ptr - 1) == '\\')) {
             break;
         }
 #else
@@ -1009,7 +1011,6 @@ static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
     }
 
     std::string::const_pointer ptr = s.data() + s.size();
-
 
     return ptr;
 }

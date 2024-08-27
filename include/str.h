@@ -36,7 +36,7 @@ public:
     using charset_type = std::bitset<256>;
 
     // 生产器
-    using view_provider_provider = std::function<std::optional<std::string_view>()>;
+    using view_provider_proc = std::function<std::optional<std::string_view>()>;
     using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
 
     // 消费器
@@ -53,21 +53,24 @@ public:
 
     //!  在尾部追加
     static auto append(std::string& s, std::string_view other) -> std::string&;
+    static auto append(std::string& s, std::string_view other, size_type n) -> std::string&;
     static auto append(std::string& s, value_type ch) -> std::string&;
     static auto append(std::string& s, value_type ch, size_type n) -> std::string&;
-    static auto append(std::string& s, const view_provider_provider& provide) -> std::string&;
+    static auto append(std::string& s, const view_provider_proc& proc) -> std::string&;
+    static auto append(std::string& s, std::initializer_list<std::string_view> others) -> std::string&;
 
     //!  在头部追加
     static auto prepend(std::string& s, std::string_view other) -> std::string&;
+    static auto prepend(std::string& s, std::string_view other, size_type n) -> std::string&;
     static auto prepend(std::string& s, value_type ch) -> std::string&;
     static auto prepend(std::string& s, value_type ch, size_type n) -> std::string&;
-    static auto prepend(std::string& s, const view_provider_provider& provide) -> std::string&;
+    static auto prepend(std::string& s, const view_provider_proc& proc) -> std::string&;
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string& s, size_type pos, std::string_view other) -> std::string&;
     static auto insert(std::string& s, size_type pos, value_type ch) -> std::string&;
     static auto insert(std::string& s, size_type pos, value_type ch, size_type n) -> std::string&;
-    static auto insert(std::string& s, const view_provider_provider& provide) -> std::string&;
+    static auto insert(std::string& s, const view_provider_proc& proc) -> std::string&;
 
     //  在字符串尾部追加
     static auto push_back(std::string& s, std::string_view other) -> std::string&;
