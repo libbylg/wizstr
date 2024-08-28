@@ -272,7 +272,7 @@ auto str::remove_prefix(std::string& s, size_type n) -> std::string& {
 }
 
 auto str::remove_suffix(std::string& s, std::string_view suffix) -> std::string& {
-    if (!has_prefix(s, suffix)) {
+    if (!view::has_prefix(s, suffix)) {
         return s;
     }
 
@@ -339,26 +339,34 @@ auto str::fill(std::string& s, value_type ch, size_type pos, size_type max_n) ->
 
 auto str::left_n(std::string& s, size_type n) -> std::string& {
     if (n == 0) {
-        return "";
+        s.clear();
+        return s;
     }
 
     if (n > s.size()) {
-        return std::string{s};
+        return s;
     }
 
-    return std::string{s.substr(0, n)};
+    s.resize(n);
+
+    return s;
 }
 
 auto str::right_n(std::string& s, size_type n) -> std::string& {
     if (n == 0) {
-        return {};
+        s.clear();
+        return s;
     }
 
     if (n > s.size()) {
-        return std::string{s};
+        return s;
     }
 
-    return std::string{s.substr(s.size() - n, n)};
+    size_type len = (s.size() - n);
+    std::memmove(s.data(), s.c_str() + len, n);
+    s.resize(n);
+
+    return s;
 }
 
 auto str::mid_n(std::string& s, size_type pos, size_type n) -> std::string& {
@@ -379,16 +387,15 @@ auto str::mid_n(std::string& s, size_type pos, size_type n) -> std::string& {
 
 auto str::substr(std::string& s, size_type pos, ssize_type offset) -> std::string& {
     if (offset > 0) {
-        size_type n = offset;
-        return std::string{s.substr(pos, std::min(n, pos + n))};
+        return str::mid_n(s, pos, offset);
     }
 
     if (offset < 0) {
-        size_type n = -offset;
-        return std::string{s.substr(pos, std::min(n, pos + n))};
+        return str::mid_n(s, pos - offset, offset);
     }
 
-    return "";
+    s.clear();
+    return s;
 }
 
 auto str::align_left(std::string& s, size_type width, value_type ch) -> std::string& {
@@ -467,9 +474,10 @@ auto str::title(std::string& s) -> std::string& {
 // }
 
 auto str::repeat(std::string& s, size_type times) -> std::string& {
-    ASSERT(times != npos);
+    assert(times != npos);
     if (s.empty() || (times == 0)) {
-        return "";
+        s.clear();
+        return s;
     }
 
     std::string result;
@@ -570,30 +578,90 @@ auto str::simplified(std::string& s) -> std::string& {
     return s;
 }
 
-// auto str::trim_left(std::string& s, char_checker_proc proc) -> std::string& {
-// }
-
-// auto str::trim_left(std::string& s) -> std::string& {
-// }
-
-// auto str::trim_right(std::string& s, char_checker_proc proc) -> std::string& {
-// }
-
-auto str::trim_right(std::string& s, size_type n) -> std::string& {
-    if (n > s.size()) {
-        s.resize(0);
+auto str::trim_left(std::string& s, char_checker_proc proc) -> std::string& {
+    if (s.empty()) [[unlikely]] {
         return s;
     }
 
-    s.resize(s.size() - n);
+    auto left_ptr = s.c_str();
+    while (left_ptr < (s.c_str() + s.size())) {
+        if (!proc(*left_ptr)) [[unlikely]] {
+            break;
+        }
+
+        left_ptr++;
+    }
+
+    size_type remain_size = s.size() - (left_ptr - s.c_str());
+    std::memmove(s.data(), left_ptr, remain_size);
+    s.resize(remain_size);
+
     return s;
 }
 
-// auto str::trim_surrounding(std::string& s, char_checker_proc proc) -> std::string& {
-// }
+auto str::trim_left(std::string& s) -> std::string& {
+    return str::trim_left(s, [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
 
-// auto str::trim_surrounding(std::string& s) -> std::string& {
-// }
+auto str::trim_right(std::string& s, char_checker_proc proc) -> std::string& {
+    if (s.empty()) [[unlikely]] {
+        return s;
+    }
+
+    auto right_ptr = s.c_str() + s.size();
+    while (right_ptr > s.c_str()) {
+        if (!proc(*(right_ptr - 1))) {
+            break;
+        }
+        right_ptr--;
+    }
+
+    s.resize(right_ptr - s.c_str());
+    return s;
+}
+
+auto str::trim_right(std::string& s) -> std::string& {
+    return str::trim_right(s, [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
+
+auto str::trim_surrounding(std::string& s, char_checker_proc proc) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    auto left_ptr = s.c_str();
+    while (left_ptr < (s.c_str() + s.size())) {
+        if (!proc(*left_ptr)) [[unlikely]] {
+            break;
+        }
+
+        left_ptr++;
+    }
+
+    auto right_ptr = s.c_str() + s.size();
+    while (right_ptr > left_ptr) {
+        if (!proc(*(right_ptr - 1))) {
+            break;
+        }
+        right_ptr--;
+    }
+
+    size_type len = right_ptr - left_ptr;
+    std::memmove(s.data(), left_ptr, len);
+    s.resize(len);
+
+    return s;
+}
+
+auto str::trim_surrounding(std::string& s) -> std::string& {
+    return str::trim_surrounding(s, [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
 
 // auto str::trim_anywhere(std::string s, char_checker_proc proc) -> std::string {
 // }
@@ -633,7 +701,7 @@ auto str::trim_right(std::string& s, size_type n) -> std::string& {
 
 //  处理路径中文件名的部分
 static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
-    ASSERT(!s.empty);
+    assert(!s.empty);
 
     std::string::const_pointer ptr = s.data() + s.size();
     while (ptr > s.data()) {
@@ -653,7 +721,7 @@ static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
 
 // 扩展名相关操作
 static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
-    ASSERT(!s.empty());
+    assert(!s.empty());
 
     std::string::const_pointer base_ptr = str_basename_ptr(s);
     std::string::const_pointer end = s.data() + s.size();

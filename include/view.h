@@ -1,8 +1,8 @@
 //
 // Created by libbylg on 2023/6/1.
 //
-#ifndef TINY_STR_H
-#define TINY_STR_H
+#ifndef TINY_VIEW_H
+#define TINY_VIEW_H
 
 #include <cinttypes>
 #include <functional>
@@ -709,4 +709,4 @@ public:
 // inline auto from(uint32_t n, int base = 10) -> std::string;
 // inline auto from(uint64_t n, int base = 10) -> std::string;
 
-#endif // TINY_STR_H
+#endif // TINY_VIEW_H
