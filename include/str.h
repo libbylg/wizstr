@@ -142,7 +142,6 @@ public:
 
     //  特殊字符串生成
     static auto repeat(std::string& s, size_type times) -> std::string&;
-    static auto space(size_type width) -> std::string;
 
     //  反转：字符串逆序
     static auto invert(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
@@ -150,11 +149,7 @@ public:
     //  大小写转换
     static auto to_lower(std::string& s) -> std::string&;
     static auto to_upper(std::string& s) -> std::string&;
-
-    //  大小写翻转
     static auto swap_case(std::string& s) -> std::string&;
-
-    // 统一大小写
     static auto case_fold(std::string& s) -> std::string&;
 
     // 字符映射
@@ -174,7 +169,7 @@ public:
     static auto trim_right(std::string& s) -> std::string&;
 
     // 去掉字符串首尾的空白
-    static auto trim_surrounding_proc(std::string& s, char_checker_proc proc) -> std::string&;
+    static auto trim_surrounding(std::string& s, char_checker_proc proc) -> std::string&;
     static auto trim_surrounding(std::string& s) -> std::string&;
 
     // 去掉字符串中任何位置的空白

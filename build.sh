@@ -179,13 +179,12 @@ function cmd_cdb()
 
 function main()
 {
-    if [[ $# -lt 1 ]]; then
-        error   "Missing parameter, try -h for help"
-        return  1
+    local action="$1"
+    if [[ "${action}" == "" ]]; then
+        action="compile"
     fi
 
-    local action="$1"
-    case "$1" in
+    case "${action}" in
         help|-h|--help)
             cmd_help        "$@"
             return          "$?"

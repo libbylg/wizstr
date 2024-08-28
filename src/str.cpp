@@ -201,26 +201,26 @@ auto str::pop_front(std::string& s) -> value_type {
     return ch;
 }
 
-auto str::pop_back_word(std::string& s) -> std::string {
-}
+// auto str::pop_back_word(std::string& s) -> std::string {
+// }
 
-auto str::pop_front_word(std::string& s) -> std::string {
-}
+// auto str::pop_front_word(std::string& s) -> std::string {
+// }
 
-auto str::remove_back_word(std::string& s) -> std::string& {
-}
+// auto str::remove_back_word(std::string& s) -> std::string& {
+// }
 
-auto str::remove_front_word(std::string& s) -> std::string& {
-}
+// auto str::remove_front_word(std::string& s) -> std::string& {
+// }
 
-auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
-}
+// auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
+// }
 
-auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset, value_type ch) -> std::string& {
-}
+// auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset, value_type ch) -> std::string& {
+// }
 
-auto str::clip_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
-}
+// auto str::clip_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
+// }
 
 auto str::remove(std::string& s, size_type pos) -> std::string& {
     if (pos >= s.size()) {
@@ -231,20 +231,20 @@ auto str::remove(std::string& s, size_type pos) -> std::string& {
     return s;
 }
 
-auto str::remove(std::string& s, size_type pos, size_type n) -> std::string& {
-}
+// auto str::remove(std::string& s, size_type pos, size_type n) -> std::string& {
+// }
 
-auto str::remove(std::string& s, size_type pos, ssize_type offset) -> std::string& {
-}
+// auto str::remove(std::string& s, size_type pos, ssize_type offset) -> std::string& {
+// }
 
-auto str::remove(std::string& s, value_type ch) -> std::string& {
-}
+// auto str::remove(std::string& s, value_type ch) -> std::string& {
+// }
 
-auto str::remove(std::string& s, std::string_view other) -> std::string& {
-}
+// auto str::remove(std::string& s, std::string_view other) -> std::string& {
+// }
 
-auto str::remove(std::string& s, char_match_proc proc) -> std::string& {
-}
+// auto str::remove(std::string& s, char_match_proc proc) -> std::string& {
+// }
 
 auto str::remove_prefix(std::string& s, std::string_view prefix) -> std::string& {
     if (!view::has_prefix(s, prefix)) {
@@ -451,16 +451,23 @@ auto str::zfill(std::string& s, size_type width) -> std::string& {
     return s;
 }
 
-auto str::capitalize(std::string& s) -> std::string& {
-}
+// auto str::capitalize(std::string& s) -> std::string& {
+// }
 
 auto str::title(std::string& s) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    s[0] = static_cast<value_type>(std::toupper(s[0]));
+    return s;
 }
 
-auto str::title_words(std::string& s) -> std::string& {
-}
+// auto str::title_words(std::string& s) -> std::string& {
+// }
 
 auto str::repeat(std::string& s, size_type times) -> std::string& {
+    ASSERT(times != npos);
     if (s.empty() || (times == 0)) {
         return "";
     }
@@ -475,56 +482,8 @@ auto str::repeat(std::string& s, size_type times) -> std::string& {
     return result;
 }
 
-auto str::space(size_type width) -> std::string {
-    return view::repeat(" ", width);
-}
-
-auto str::join_path(std::initializer_list<std::string_view> items) -> std::string {
-    auto itr = items.begin();
-    return join_path([&itr, &items]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return {};
-        }
-
-        return *itr;
-    });
-}
-
-auto str::join_search_path(const view_provider_proc& proc) -> std::string {
-    return join(":", proc);
-}
-
-auto str::concat(const view_provider_proc& proc) -> std::string {
-    std::string result;
-    auto item = proc();
-    while (item) {
-        result.append(item.value());
-    }
-    return result;
-}
-
-auto str::title_inplace(std::string& s) -> std::string& {
-    if (s.empty()) {
-        return s;
-    }
-
-    s[0] = static_cast<value_type>(std::toupper(s[0]));
-    return s;
-}
-
-auto str::title(std::string_view s) -> std::string {
-    std::string result{s};
-    title_inplace(result);
-    return result;
-}
-
-//  反转：字符串逆序
-auto str::invert_inplace(std::string& s, size_type pos, size_type max_n) -> std::string& {
-    if (s.empty()) {
-        return s;
-    }
-
-    if (pos >= s.size()) {
+auto str::invert(std::string& s, size_type pos, size_type max_n) -> std::string& {
+    if (s.empty() || (pos >= s.size()) || (max_n == 0)) {
         return s;
     }
 
@@ -543,43 +502,18 @@ auto str::invert_inplace(std::string& s, size_type pos, size_type max_n) -> std:
     return s;
 }
 
-auto str::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
-    std::string result{s};
-    invert_inplace(result, pos, max_n);
-    return result;
+auto str::to_lower(std::string& s) -> std::string& {
 }
 
-// 拆分字符串
-auto str::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
-    size_type pos_start = 0;
-    while (pos_start < s.size()) {
-        size_type pos_end = s.find(sep, pos_start);
-        if (pos_end == std::string::npos) {
-            break;
-        }
-
-        if (proc(std::string_view{s.data() + pos_start, pos_end - pos_start}) != 0) {
-            pos_start = pos_end + sep.size();
-            break;
-        }
-        pos_start = pos_end + sep.size();
-    }
-
-    proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
+auto str::to_upper(std::string& s) -> std::string& {
 }
 
-auto str::split_list(std::string_view s, std::string_view sep) -> std::vector<std::string> {
-    std::vector<std::string> result;
-    split_list(s, sep, [&result](std::string_view item) -> int {
-        result.emplace_back(item);
-        return 0;
-    });
-    return result;
+auto str::swap_case(std::string& s) -> std::string& {
 }
 
-auto str::split_list(std::string_view s, value_type sep) -> std::vector<std::string> {
-    return split_list(s, std::string_view{&sep, 1});
+auto str::case_fold(std::string& s) -> std::string& {
 }
+
 auto str::translate(std::string& s, const char_mapping_proc& proc) -> std::string& {
     pointer ptr = s.data();
     while (*ptr) {
@@ -589,81 +523,13 @@ auto str::translate(std::string& s, const char_mapping_proc& proc) -> std::strin
     return s;
 }
 
-auto str::simplified_proc(std::string_view s, const char_checker_proc& proc) -> std::string {
-    if (s.empty()) {
-        return s;
-    }
+// auto str::translate(std::string& s, std::string_view from, std::string_view to) -> std::string& {
+// }
 
-    bool found = false;
-    const_pointer w = s.data();
-    pointer r = s.data();
-    while (*r != '\0') {
-        value_type ch = *r;
-        if (found) {
-            if (proc(ch)) {
-                r++;
-                continue;
-            }
+// auto str::simplified(std::string& s, const char_checker_proc& proc) -> std::string& {
+// }
 
-            found = false;
-            *(w++) = *(r++);
-            continue;
-        }
-
-        if (proc(ch)) {
-            found = true;
-            *(w++) = ' ';
-            r++;
-            continue;
-        }
-
-        *(w++) = *(r++);
-    }
-
-    s.resize(w - s.data());
-    return s;
-}
-
-auto str::simplified(std::string_view s) -> std::string {
-    if (s.empty()) {
-        return std::string{s};
-    }
-
-    std::string result;
-    bool found = true;
-    const_pointer r = s.data();
-    while (*r != '\0') {
-        value_type ch = *r;
-        if (found) {
-            if (std::isspace(ch)) {
-                r++;
-                continue;
-            }
-
-            found = false;
-            result.append(r, 1);
-            r++;
-            continue;
-        }
-
-        if (std::isspace(ch)) {
-            found = true;
-        }
-
-        result.append(r, 1);
-        r++;
-    }
-
-    if (!result.empty()) {
-        if (std::isspace(result.back())) {
-            result.resize(result.size() - 1);
-        }
-    }
-
-    return result;
-}
-
-auto str::simplified_inplace(std::string& s) -> std::string& {
+auto str::simplified(std::string& s) -> std::string& {
     if (s.empty()) {
         return s;
     }
@@ -704,8 +570,16 @@ auto str::simplified_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-// 切除
-auto str::drop_right(std::string& s, size_type n) -> std::string& {
+// auto str::trim_left(std::string& s, char_checker_proc proc) -> std::string& {
+// }
+
+// auto str::trim_left(std::string& s) -> std::string& {
+// }
+
+// auto str::trim_right(std::string& s, char_checker_proc proc) -> std::string& {
+// }
+
+auto str::trim_right(std::string& s, size_type n) -> std::string& {
     if (n > s.size()) {
         s.resize(0);
         return s;
@@ -715,13 +589,47 @@ auto str::drop_right(std::string& s, size_type n) -> std::string& {
     return s;
 }
 
-auto str::drop_right(std::string_view s, size_type n) -> std::string {
-    if (n > s.size()) {
-        return "";
-    }
+// auto str::trim_surrounding(std::string& s, char_checker_proc proc) -> std::string& {
+// }
 
-    return std::string{s.substr(0, s.size() - n)};
-}
+// auto str::trim_surrounding(std::string& s) -> std::string& {
+// }
+
+// auto str::trim_anywhere(std::string s, char_checker_proc proc) -> std::string {
+// }
+
+// auto str::trim_anywhere(std::string& s) -> std::string& {
+// }
+
+// auto str::drop_left(std::string& s, size_type n) -> std::string& {
+// }
+
+// auto str::drop_right(std::string& s, size_type n) -> std::string& {
+// }
+
+// auto str::expand_envs(std::string& s, expand_vars_proc proc) -> std::string& {
+// }
+
+// auto str::expand_envs(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string& {
+// }
+
+// auto str::expand_envs(std::string& s, const std::tuple<const std::string&, const std::string&>& pair) -> std::string& {
+// }
+
+// auto str::expand_envs(std::string& s, const std::tuple<const std::string_view, const std::string_view>& pair) -> std::string& {
+// }
+
+// auto str::expand_envs(std::string& s) -> std::string& {
+// }
+
+// auto str::expand_tabs(std::string& s, size_type tab_size = 8) -> std::string& {
+// }
+
+// auto str::expand_user(std::string& s) -> std::string& {
+// }
+
+// auto str::normpath(std::string& s) -> std::string& {
+// }
 
 //  处理路径中文件名的部分
 static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
@@ -764,21 +672,26 @@ static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
     return ptr;
 }
 
+// auto str::dirname(std::string& s) -> std::string& {
+// }
+
+// auto str::remove_dirname(std::string& s) -> std::string& {
+// }
+
+// auto str::replace_dirname(std::string& s, std::string_view newname) -> std::string& {
+// }
+
 auto str::basename(std::string_view s) -> std::string {
     return str_basename_ptr(s);
 }
 
-auto str::remove_basename(std::string_view s) -> std::string {
-    return std::string{s.data(), str_basename_ptr(s)};
-}
-
-auto str::remove_basename_inplace(std::string& s) -> std::string& {
+auto str::remove_basename(std::string& s) -> std::string& {
     const_pointer ptr = basename_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
-auto str::replace_basename_inplace(std::string& s, std::string_view name) -> std::string& {
+auto str::replace_basename(std::string& s, std::string_view name) -> std::string& {
     const_pointer ptr = basename_ptr(s);
     size_type dir_len = (ptr - s.c_str());
     s.reserve(dir_len + name.size());
@@ -787,337 +700,48 @@ auto str::replace_basename_inplace(std::string& s, std::string_view name) -> std
     return s;
 }
 
-auto str::replace_basename(std::string_view s, std::string_view name) -> std::string {
-    const_pointer ptr = basename_ptr(s);
-    std::string result;
-    result.reserve((ptr - s.c_str()) + name.size());
-    result.append(s.c_str(), ptr - s.c_str());
-    result.append(name);
-    return result;
-}
+// auto str::extname(std::string& s) -> std::string& {
+// }
 
-auto str::extname_ptr(std::string& s) -> pointer {
-    pointer ptr = basename_ptr(s);
-    if (ptr[0] == '.') {
-        return s.data() + s.size();
-    }
-
-    ptr = std::strchr(ptr, '.');
-    if (ptr == nullptr) {
-        return s.data() + s.size();
-    }
-
-    return ptr;
-}
-
-auto str::extname(std::string_view s) -> std::string {
-    return extname_ptr(s);
-}
-
-auto str::remove_extname(std::string_view s) -> std::string {
-    const_pointer ptr = extname_ptr(s);
-    return s.substr(0, ptr - s.c_str());
-}
-
-auto str::remove_extname_inplace(std::string& s) -> std::string& {
+auto str::remove_extname(std::string& s) -> std::string& {
     const_pointer ptr = extname_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
-auto str::replace_extname_inplace(std::string& s, std::string_view name) -> std::string& {
+auto str::replace_extname(std::string& s, std::string_view name) -> std::string& {
     pointer ptr = extname_ptr(s);
     s.resize((ptr - s.c_str()) + name.size());
     std::memcpy(ptr, name.c_str(), name.size());
     return s;
 }
 
-auto str::replace_extname(std::string_view s, std::string_view name) -> std::string {
-    const_pointer ptr = basename_ptr(s);
-    std::string result;
-    result.reserve((ptr - s.c_str()) + name.size());
-    result.append(s.c_str(), ptr - s.c_str());
-    result.append(name);
-    return result;
-}
+// auto str::encode_cstr(std::string& s) -> std::string& {
+// }
 
-// template <typename T>
-// auto str::to(std::string_view s, std::tuple<int> base) -> std::optional<T> {
-//     return {};
+// auto str::decode_cstr(std::string& s) -> std::string& {
 // }
-//
-// template <typename T>
-// auto str::to(std::string_view s) -> std::optional<T> {
-//     return {};
+
+// auto str::encode_xml(std::string& s) -> std::string& {
 // }
-//
-// template <typename T>
-// auto str::to(std::string_view s, T def, std::tuple<int> base) -> T {
-//     auto result = to<T>(s, base);
-//     return result ? result.value() : def;
+
+// auto str::decode_xml(std::string& s) -> std::string& {
 // }
-//
-// template <typename T>
-// auto str::to(std::string_view s, T def) -> T {
-//     auto result = to<T>(s);
-//     return result ? result.value() : def;
+
+// auto str::encode_hex(std::string& s) -> std::string& {
 // }
-//
-// template <>
-// inline auto to<bool>(std::string_view s [[maybe_unused]]) -> std::optional<bool> {
-//     return {};
+
+// auto str::decode_hex(std::string& s) -> std::string& {
 // }
-//
-// template <>
-// inline auto to<float>(std::string_view s) -> std::optional<float> {
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtof(s.c_str(), &endptr);
-//     static_assert(sizeof(result) >= sizeof(float));
-//     if (result <= std::numeric_limits<float>::epsilon()) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
+
+// auto str::encode_base64(std::string& s) -> std::string& {
 // }
-//
-// template <>
-// inline auto to<double>(std::string_view s) -> std::optional<double> {
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtod(s.c_str(), &endptr);
-//     static_assert(sizeof(result) >= sizeof(double));
-//     if (result <= std::numeric_limits<double>::epsilon()) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
+
+// auto str::decode_base64(std::string& s) -> std::string& {
 // }
-//
-// static inline constexpr auto correct_base(int base) -> int {
-//     if (base != 0) {
-//         if (base < 2) {
-//             return 2;
-//         }
-//         if (base > 36) {
-//             return 36;
-//         }
-//     }
-//
-//     return base;
+
+// auto str::encode_url(std::string& s) -> std::string& {
 // }
-//
-// template <>
-// inline auto to<int8_t>(std::string_view s, std::tuple<int> base) -> std::optional<int8_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int8_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int8_t>::max()) || (result < std::numeric_limits<int8_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int16_t>(std::string_view s, std::tuple<int> base) -> std::optional<int16_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int16_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int16_t>::max()) || (result < std::numeric_limits<int16_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int32_t>(std::string_view s, std::tuple<int> base) -> std::optional<int32_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int32_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int32_t>::max()) || (result < std::numeric_limits<int32_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int64_t>(std::string_view s, std::tuple<int> base) -> std::optional<int64_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-// #if defined __LP64__
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-// #else
-//     auto result = std::strtoll(s.c_str(), &endptr, nbase);
-// #endif
-//     static_assert(sizeof(result) >= sizeof(int64_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int64_t>::max()) || (result < std::numeric_limits<int64_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint8_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint8_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint8_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint8_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint16_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint16_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint16_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint16_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint32_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint32_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint32_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint32_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint64_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint64_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-// #if defined __LP64__
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-// #else
-//     auto result = std::strtoull(s.c_str(), &endptr, nbase);
-// #endif
-//     static_assert(sizeof(result) >= sizeof(int64_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
+
+// auto str::decode_url(std::string& s) -> std::string& {
 // }
