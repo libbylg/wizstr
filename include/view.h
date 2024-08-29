@@ -52,7 +52,7 @@ public:
 
     //!  在尾部追加
     static auto append(std::string_view s, std::string_view other) -> std::string;
-    static auto append(std::string_view s, std::string_view other, size_type n)) -> std::string;
+    static auto append(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto append(std::string_view s, value_type ch) -> std::string;
     static auto append(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& provide) -> std::string;
@@ -66,9 +66,10 @@ public:
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string_view s, size_type pos, std::string_view other) -> std::string;
+    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
-    static auto insert(std::string_view s, const view_provider_provider& provide) -> std::string;
+    static auto insert(std::string_view s, size_type pos, const view_provider_provider& provide) -> std::string;
 
     //  在字符串尾部追加
     static auto push_back(std::string_view s, std::string_view other) -> std::string;
@@ -79,28 +80,6 @@ public:
     static auto push_front(std::string_view s, std::string_view other) -> std::string;
     static auto push_front(std::string_view s, value_type ch) -> std::string;
     static auto push_front(std::string_view s, value_type ch, size_type n) -> std::string;
-
-    // 删除最后一个字符，如果当前字符串为空，返回 '\0'
-    static auto pop_back(std::string_view s) -> value_type;
-    static auto pop_front(std::string_view s) -> value_type;
-
-    // 删除最后一个字段，并返回该字段
-    static auto pop_back_word(std::string_view s) -> std::string;
-    static auto pop_front_word(std::string_view s) -> std::string;
-
-    //  部分数据移动：柔性移动和裁剪移动
-    static auto flex_move(std::string_view s, size_type pos, size_type n, ssize_type offset) -> std::string&;
-    static auto flex_move(std::string_view s, size_type pos, size_type n, ssize_type offset, value_type ch) -> std::string&;
-    static auto clip_move(std::string_view s, size_type pos, size_type n, ssize_type offset) -> std::string&;
-
-    //  删除数据
-    static auto remove(std::string_view s, size_type pos) -> std::string;
-    static auto remove(std::string_view s, size_type pos, size_type n) -> std::string;
-    static auto remove(std::string_view s, size_type pos, ssize_type offset) -> std::string;
-    static auto remove(std::string_view s, value_type ch) -> std::string;
-    static auto remove(std::string_view s, std::string_view other) -> std::string;
-    static auto remove(std::string_view s, char_match_proc proc) -> std::string;
-    // static auto remove(std::string& s, func) -> std::string&;
 
     //  比较
     static auto compare(std::string_view s, std::string_view other) -> int;
@@ -140,16 +119,18 @@ public:
     static auto has_prefix(std::string_view s, std::string_view prefix) -> bool;
     static auto starts_with(std::string_view s, value_type ch) -> bool;
     static auto starts_with(std::string_view s, std::string_view prefix) -> bool;
-    static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string;
-    static auto remove_prefix(std::string_view s, value_type prefix) -> std::string;
+    static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string_view;
+    static auto remove_prefix(std::string_view s, value_type prefix) -> std::string_view;
+    static auto remove_prefix(std::string_view s, size_type n) -> std::string_view;
 
     //  后缀操作
     static auto has_suffix(std::string_view s, value_type suffix) -> bool;
     static auto has_suffix(std::string_view s, std::string_view suffix) -> bool;
     static auto ends_with(std::string_view s, value_type suffix) -> bool;
     static auto ends_with(std::string_view s, std::string_view suffix) -> bool;
-    static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string;
-    static auto remove_suffix(std::string_view s, value_type suffix) -> std::string;
+    static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string_view;
+    static auto remove_suffix(std::string_view s, value_type suffix) -> std::string_view;
+    static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
 
     //  从指定的位置查找特定的字符
     static auto next_char(std::string_view s, size_type pos, value_type ch) -> size_type;
