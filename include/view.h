@@ -35,7 +35,7 @@ public:
     using charset_type = std::bitset<256>;
 
     // 生产器
-    using view_provider_provider = std::function<std::optional<std::string_view>()>;
+    using view_provider_proc = std::function<std::optional<std::string_view>()>;
     using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
 
     // 消费器
@@ -55,21 +55,21 @@ public:
     static auto append(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto append(std::string_view s, value_type ch) -> std::string;
     static auto append(std::string_view s, value_type ch, size_type n) -> std::string;
-    static auto append(std::string_view s, const view_provider_proc& provide) -> std::string;
+    static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
 
     //!  在头部追加
     static auto prepend(std::string_view s, std::string_view other) -> std::string;
     static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, value_type ch) -> std::string;
     static auto prepend(std::string_view s, value_type ch, size_type n) -> std::string;
-    static auto prepend(std::string_view s, const view_provider_provider& provide) -> std::string;
+    static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string_view s, size_type pos, std::string_view other) -> std::string;
     static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
-    static auto insert(std::string_view s, size_type pos, const view_provider_provider& provide) -> std::string;
+    static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
 
     //  在字符串尾部追加
     static auto push_back(std::string_view s, std::string_view other) -> std::string;
@@ -133,14 +133,24 @@ public:
     static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
 
     //  从指定的位置查找特定的字符
-    static auto next_char(std::string_view s, size_type pos, value_type ch) -> size_type;
-    static auto prev_char(std::string_view s, value_type ch) -> size_type;
-    static auto next_string(std::string_view s, size_type pos, std::string_view other) -> size_type;
-    static auto prev_string(std::string_view s, std::string_view other) -> size_type;
-    static auto next_eol(std::string_view s, size_type pos) -> size_type;
-    static auto prev_eol(std::string_view& s, size_type pos) -> size_type;
-    static auto next_word(std::string_view s, size_type pos) -> std::string_view;
-    static auto prev_word(std::string_view s, size_type pos) -> std::string_view;
+    static auto find_next_char(std::string_view s, size_type pos, value_type ch) -> size_type;
+    static auto find_prev_char(std::string_view s, size_type pos, value_type ch) -> size_type;
+    static auto find_next_string(std::string_view s, size_type pos, std::string_view other) -> size_type;
+    static auto find_prev_string(std::string_view s, size_type pos, std::string_view other) -> size_type;
+    static auto find_next_eol(std::string_view s, size_type pos) -> size_type;
+    static auto find_prev_eol(std::string_view s, size_type pos) -> size_type;
+    static auto find_next_word(std::string_view s, size_type pos) -> std::string_view;
+    static auto find_prev_word(std::string_view s, size_type pos) -> std::string_view;
+
+    //  迭代找下一个
+    static auto iter_next_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto iter_prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
+    static auto iter_prev_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
+    static auto iter_next_eol(std::string_view s, size_type& pos) -> size_type;
+    static auto iter_prev_eol(std::string_view s, size_type& pos) -> size_type;
+    static auto iter_next_word(std::string_view s, size_type& pos) -> std::string_view;
+    static auto iter_prev_word(std::string_view s, size_type& pos) -> std::string_view;
 
     //  按各种方式遍历
     static auto walk(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n, const_pointer next)> proc) -> void;
@@ -206,7 +216,7 @@ public:
     static auto prev_space(std::string_view s, size_type pos) -> size_type;
 
     //  基于本字符串生成新字符串
-    static auto join(std::string_view s, const view_provider_provider& proc) -> std::string;
+    static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
 
     // 使用逗号和冒号拼接 map
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
@@ -215,7 +225,7 @@ public:
     static auto join_list(const view_pair_provider_proc& proc) -> std::string;
 
     // 文件路径拼接
-    static auto join_path(const view_provider_provider& proc) -> std::string;
+    static auto join_path(const view_provider_proc& proc) -> std::string;
     static auto join_path(std::initializer_list<std::string_view> items) -> std::string;
     template <typename Sequence, typename = typename Sequence::const_iterator>
     static auto join_path(const Sequence& items) -> std::string {
@@ -230,10 +240,10 @@ public:
     }
 
     // 拼接成搜索路径
-    static auto join_search_path(const view_provider_provider& proc) -> std::string;
+    static auto join_search_path(const view_provider_proc& proc) -> std::string;
 
     // 字符串拼接
-    static auto concat(const view_provider_provider& proc) -> std::string;
+    static auto concat(const view_provider_proc& proc) -> std::string;
 
     //  Title 化：首字母大写
     static auto capitalize(std::string_view s) -> std::string;
