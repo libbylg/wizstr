@@ -52,12 +52,14 @@ public:
 
     //!  在尾部追加
     static auto append(std::string_view s, std::string_view other) -> std::string;
+    static auto append(std::string_view s, std::string_view other, size_type n)) -> std::string;
     static auto append(std::string_view s, value_type ch) -> std::string;
     static auto append(std::string_view s, value_type ch, size_type n) -> std::string;
-    static auto append(std::string_view s, const view_provider_provider& provide) -> std::string;
+    static auto append(std::string_view s, const view_provider_proc& provide) -> std::string;
 
     //!  在头部追加
     static auto prepend(std::string_view s, std::string_view other) -> std::string;
+    static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, value_type ch) -> std::string;
     static auto prepend(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto prepend(std::string_view s, const view_provider_provider& provide) -> std::string;

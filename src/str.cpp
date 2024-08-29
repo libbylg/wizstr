@@ -700,8 +700,8 @@ auto str::trim_surrounding(std::string& s) -> std::string& {
 // }
 
 //  处理路径中文件名的部分
-static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
-    assert(!s.empty);
+static auto basename_ptr(std::string_view s) -> std::string::const_pointer {
+    assert(!s.empty());
 
     std::string::const_pointer ptr = s.data() + s.size();
     while (ptr > s.data()) {
@@ -720,10 +720,10 @@ static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
 }
 
 // 扩展名相关操作
-static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
+static auto extname_ptr(std::string_view s) -> std::string::const_pointer {
     assert(!s.empty());
 
-    std::string::const_pointer base_ptr = str_basename_ptr(s);
+    std::string::const_pointer base_ptr = basename_ptr(s);
     std::string::const_pointer end = s.data() + s.size();
 
     if (base_ptr[0] == '.') {
@@ -749,12 +749,16 @@ static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
 // auto str::replace_dirname(std::string& s, std::string_view newname) -> std::string& {
 // }
 
-auto str::basename(std::string_view s) -> std::string {
-    return str_basename_ptr(s);
+auto str::basename(std::string& s) -> std::string& {
+    auto ptr = basename_ptr(s);
+    auto len = s.size() - (ptr - s.c_str());
+    std::memmove(s.data(), ptr, len);
+    s.resize(len);
+    return s;
 }
 
 auto str::remove_basename(std::string& s) -> std::string& {
-    const_pointer ptr = basename_ptr(s);
+    auto ptr = basename_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
@@ -772,15 +776,15 @@ auto str::replace_basename(std::string& s, std::string_view name) -> std::string
 // }
 
 auto str::remove_extname(std::string& s) -> std::string& {
-    const_pointer ptr = extname_ptr(s);
+    auto ptr = extname_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
 auto str::replace_extname(std::string& s, std::string_view name) -> std::string& {
-    pointer ptr = extname_ptr(s);
+    pointer ptr = const_cast<pointer>(extname_ptr(s));
     s.resize((ptr - s.c_str()) + name.size());
-    std::memcpy(ptr, name.c_str(), name.size());
+    std::memcpy(ptr, name.data(), name.size());
     return s;
 }
 
