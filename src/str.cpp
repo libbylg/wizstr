@@ -4,6 +4,8 @@
 #include "str.h"
 #include "view.h"
 
+#include <cassert>
+
 auto str::append(std::string& s, std::string_view other) -> std::string& {
     return s.append(other);
 }
@@ -158,6 +160,28 @@ auto str::insert(std::string& s, size_type pos, value_type ch) -> std::string& {
     return insert(s, pos, std::string_view{&ch, 1});
 }
 
+auto str::insert(std::string& s, size_type pos, value_type ch, size_type n) -> std::string& {
+    if (pos >= s.size()) {
+        s.append(ch, n);
+        return s;
+    }
+
+    if (s.capacity() > (s.size() + n)) {
+        s.resize(s.size() + n);
+        std::memmove(s.data() + pos + n, s.data() + pos, (s.size() - pos));
+        std::fill(s.data() + pos, s.data() + pos + n, ch);
+        return s;
+    }
+
+    std::string result;
+    result.reserve(s.size() + n);
+    result.append(s.data(), pos);
+    result.append(ch, n);
+    result.append(s.data() + pos, s.size() - pos);
+    s = std::move(result);
+    return s;
+}
+
 auto str::insert(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string& {
     auto item = proc();
     while (item) {
@@ -167,24 +191,7 @@ auto str::insert(std::string& s, size_type pos, const view_provider_proc& proc) 
     return s;
 }
 
-//  首尾操作
-auto str::push_back(std::string& s, std::string_view other) -> std::string& {
-    return append(s, other);
-}
-
-auto str::push_back(std::string& s, value_type ch) -> std::string& {
-    return append(s, ch);
-}
-
-auto str::push_front(std::string& s, std::string_view other) -> std::string& {
-    return append(s, other);
-}
-
-auto str::push_front(std::string& s, value_type ch) -> std::string& {
-    return prepend(s, ch);
-}
-
-auto str::pop_back(std::string& s) -> value_type {
+auto str::pop_back_char(std::string& s) -> value_type {
     if (s.empty()) {
         return '\0';
     }
@@ -194,7 +201,7 @@ auto str::pop_back(std::string& s) -> value_type {
     return ch;
 }
 
-auto str::pop_front(std::string& s) -> value_type {
+auto str::pop_front_char(std::string& s) -> value_type {
     value_type ch = s.front();
     std::memmove(s.data(), s.data() + 1, s.size() - 1);
     s.resize(s.size() - 1);

@@ -144,6 +144,10 @@ auto view::push_back(std::string_view s, value_type ch) -> std::string {
     return view::append(s, ch);
 }
 
+auto view::push_back(std::string_view s, value_type ch, size_type n) -> std::string {
+    return view::append(s, ch, n);
+}
+
 auto view::push_front(std::string_view s, std::string_view other) -> std::string {
     return view::append(s, other);
 }
@@ -883,37 +887,38 @@ auto view::is_literal_bool(std::string_view s) -> bool {
 //     return result;
 // }
 
-// // 拆分字符串
-// auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
-//     size_type pos_start = 0;
-//     while (pos_start < s.size()) {
-//         size_type pos_end = s.find(sep, pos_start);
-//         if (pos_end == std::string::npos) {
-//             break;
-//         }
+// 拆分字符串
+auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
+    size_type pos_start = 0;
+    while (pos_start < s.size()) {
+        size_type pos_end = s.find(sep, pos_start);
+        if (pos_end == std::string::npos) {
+            break;
+        }
 
-//         if (proc(std::string_view{s.data() + pos_start, pos_end - pos_start}) != 0) {
-//             pos_start = pos_end + sep.size();
-//             break;
-//         }
-//         pos_start = pos_end + sep.size();
-//     }
+        if (proc(std::string_view{s.data() + pos_start, pos_end - pos_start}) != 0) {
+            pos_start = pos_end + sep.size();
+            break;
+        }
+        pos_start = pos_end + sep.size();
+    }
 
-//     proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
-// }
+    proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
+}
 
-// auto view::split_list(std::string_view s, std::string_view sep) -> std::vector<std::string> {
-//     std::vector<std::string> result;
-//     split_list(s, sep, [&result](std::string_view item) -> int {
-//         result.emplace_back(item);
-//         return 0;
-//     });
-//     return result;
-// }
+auto view::split_list(std::string_view s, std::string_view sep) -> std::vector<std::string> {
+    std::vector<std::string> result;
+    split_list(s, sep, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
+}
 
-// auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::string> {
-//     return split_list(s, std::string_view{&sep, 1});
-// }
+auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::string> {
+    return split_list(s, std::string_view{&sep, 1});
+}
+
 // auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
 //     pointer ptr = s.data();
 //     while (*ptr) {

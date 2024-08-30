@@ -1,70 +1,71 @@
 #include "str.h"
+#include "view.h"
 
-// #include "catch2/catch_all.hpp"
+#include "catch2/catch_all.hpp"
 
-#include "gtest/gtest.h"
-
-#define TEST_CASE TEST
-#define SECTION(desc)
-#define REQUIRE(expr) EXPECT_TRUE(expr)
+//#include "gtest/gtest.h"
+//
+//#define TEST_CASE TEST
+//#define SECTION(desc)
+//#define REQUIRE(expr) EXPECT_TRUE(expr)
 
 // TEST_CASE("prefix", "prefix") {
-// TEST_CASE(prefix, prefix) {
-//     SECTION("一般情况") {
-//         REQUIRE(str::prefix("aaa", "aab") == 2);
-//     }
-//     SECTION("无共同前缀") {
-//         REQUIRE(str::prefix("aaa", "bbb") == 0);
-//     }
-//     SECTION("完全相同") {
-//         REQUIRE(str::prefix("aaa", "aaa") == 3);
-//     }
-//     SECTION("部分为空") {
-//         REQUIRE(str::prefix("", "aaa") == 0);
-//         REQUIRE(str::prefix("aaa", "") == 0);
-//     }
-//     SECTION("空对空") {
-//         REQUIRE(str::prefix("", "") == 0);
-//     }
-//     SECTION("包含关系") {
-//         REQUIRE(str::prefix("aaa", "aa") == 2);
-//     }
-// }
-//
-// // TEST_CASE("split_list", "as vector") {
-// TEST_CASE(split_list, as_vector) {
-//     SECTION("一般情况") {
-//         auto items = str::split_list("a,b,c", ',');
-//         REQUIRE(items.size() == 3u);
-//         REQUIRE(items[0] == "a");
-//         REQUIRE(items[1] == "b");
-//         REQUIRE(items[2] == "c");
-//     }
-//     SECTION("全空情况") {
-//         auto items = str::split_list(",,", ',');
-//         REQUIRE(items.size() == 3u);
-//         REQUIRE(items[0] == "");
-//         REQUIRE(items[1] == "");
-//         REQUIRE(items[2] == "");
-//     }
-//     SECTION("没有替换分个符") {
-//         auto items = str::split_list("abc", ',');
-//         REQUIRE(items.size() == 1u);
-//         REQUIRE(items[0] == "abc");
-//     }
-//     SECTION("分隔符号在开头") {
-//         auto items = str::split_list(",abc", ',');
-//         REQUIRE(items.size() == 2u);
-//         REQUIRE(items[0] == "");
-//         REQUIRE(items[1] == "abc");
-//     }
-//     SECTION("分隔符号在结尾") {
-//         auto items = str::split_list("abc,", ',');
-//         REQUIRE(items.size() == 2u);
-//         REQUIRE(items[0] == "abc");
-//         REQUIRE(items[1] == "");
-//     }
-// }
+TEST_CASE("prefix", "prefix") {
+    SECTION("一般情况") {
+        REQUIRE(view::prefix("aaa", "aab") == 2);
+    }
+    SECTION("无共同前缀") {
+        REQUIRE(view::prefix("aaa", "bbb") == 0);
+    }
+    SECTION("完全相同") {
+        REQUIRE(view::prefix("aaa", "aaa") == 3);
+    }
+    SECTION("部分为空") {
+        REQUIRE(view::prefix("", "aaa") == 0);
+        REQUIRE(view::prefix("aaa", "") == 0);
+    }
+    SECTION("空对空") {
+        REQUIRE(view::prefix("", "") == 0);
+    }
+    SECTION("包含关系") {
+        REQUIRE(view::prefix("aaa", "aa") == 2);
+    }
+}
+
+ TEST_CASE("split_list", "as vector") {
+ //TEST_CASE(split_list, as_vector) {
+     SECTION("一般情况") {
+         auto items = str::split_list("a,b,c", ',');
+         REQUIRE(items.size() == 3u);
+         REQUIRE(items[0] == "a");
+         REQUIRE(items[1] == "b");
+         REQUIRE(items[2] == "c");
+     }
+     SECTION("全空情况") {
+         auto items = str::split_list(",,", ',');
+         REQUIRE(items.size() == 3u);
+         REQUIRE(items[0] == "");
+         REQUIRE(items[1] == "");
+         REQUIRE(items[2] == "");
+     }
+     SECTION("没有替换分个符") {
+         auto items = str::split_list("abc", ',');
+         REQUIRE(items.size() == 1u);
+         REQUIRE(items[0] == "abc");
+     }
+     SECTION("分隔符号在开头") {
+         auto items = str::split_list(",abc", ',');
+         REQUIRE(items.size() == 2u);
+         REQUIRE(items[0] == "");
+         REQUIRE(items[1] == "abc");
+     }
+     SECTION("分隔符号在结尾") {
+         auto items = str::split_list("abc,", ',');
+         REQUIRE(items.size() == 2u);
+         REQUIRE(items[0] == "abc");
+         REQUIRE(items[1] == "");
+     }
+ }
 //
 // TEST_CASE(last_extname_ptr, last_extname_ptr) {
 //     SECTION("简单裸名字") {

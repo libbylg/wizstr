@@ -73,19 +73,9 @@ public:
     static auto insert(std::string& s, size_type pos, value_type ch, size_type n) -> std::string&;
     static auto insert(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string&;
 
-    //  在字符串尾部追加
-    static auto push_back(std::string& s, std::string_view other) -> std::string&;
-    static auto push_back(std::string& s, value_type ch) -> std::string&;
-    static auto push_back(std::string& s, value_type ch, size_type n) -> std::string&;
-
-    //  在字符串首部追加
-    static auto push_front(std::string& s, std::string_view other) -> std::string&;
-    static auto push_front(std::string& s, value_type ch) -> std::string&;
-    static auto push_front(std::string& s, value_type ch, size_type n) -> std::string&;
-
     // 删除最后一个字符，如果当前字符串为空，返回 '\0'
-    static auto pop_back(std::string& s) -> value_type;
-    static auto pop_front(std::string& s) -> value_type;
+    static auto pop_back_char(std::string& s) -> value_type;
+    static auto pop_front_char(std::string& s) -> value_type;
 
     // 一个字段，并返回该字段
     static auto pop_back_word(std::string& s) -> std::string;

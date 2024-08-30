@@ -111,7 +111,6 @@ function cmd_compile()
     cd "${compile_dir}" \
         && cmake .. -DCMAKE_INSTALL_PREFIX="${install_dir}"   \
         && make \
-        && make install \
         && echo  "Compile success: '${install_dir}'"
     RESULT=$?
     if [[ ${RESULT} -ne 0 ]]; then
