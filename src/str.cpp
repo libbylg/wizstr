@@ -238,11 +238,26 @@ auto str::remove(std::string& s, size_type pos) -> std::string& {
     return s;
 }
 
-// auto str::remove(std::string& s, size_type pos, size_type n) -> std::string& {
-// }
+auto str::remove(std::string& s, size_type pos, size_type n) -> std::string& {
+    if ((pos >= s.size()) || (n == 0) || (s.empty())) {
+        return s;
+    }
 
-// auto str::remove(std::string& s, size_type pos, ssize_type offset) -> std::string& {
-// }
+    if (n >= (s.size() - pos)) {
+        s.resize(pos);
+        return s;
+    }
+
+    std::memmove(s.data() + pos, s.data() + pos + n, (s.size() - pos - n));
+    s.resize(s.size() - n);
+    return s;
+}
+
+auto str::remove(std::string& s, scope_t scope) -> std::string& {
+    size_type len = (scope.offset > 0) ? scope.offset : -scope.offset;
+    size_type pos = (scope.offset > 0) ? scope.pos : (scope.pos + scope.offset);
+    return str::remove(s, pos, len);
+}
 
 // auto str::remove(std::string& s, value_type ch) -> std::string& {
 // }

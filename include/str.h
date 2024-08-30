@@ -51,6 +51,11 @@ public:
     using char_match_proc = std::function<std::optional<bool>(value_type ch)>;
     using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
 
+    struct scope_t {
+        size_type pos;
+        ssize_type offset;
+    };
+
     //!  在尾部追加
     static auto append(std::string& s, std::string_view other) -> std::string&;
     static auto append(std::string& s, std::string_view other, size_type n) -> std::string&;
@@ -91,11 +96,10 @@ public:
     //  删除数据
     static auto remove(std::string& s, size_type pos) -> std::string&;
     static auto remove(std::string& s, size_type pos, size_type n) -> std::string&;
-    static auto remove(std::string& s, size_type pos, ssize_type offset) -> std::string&;
+    static auto remove(std::string& s, scope_t scope) -> std::string&;
     static auto remove(std::string& s, value_type ch) -> std::string&;
     static auto remove(std::string& s, std::string_view other) -> std::string&;
     static auto remove(std::string& s, char_match_proc proc) -> std::string&;
-    // static auto remove(std::string& s, func) -> std::string&;
 
     //  删除字符串 s 的前缀 prefix，如果 s 确实以 prefix 开头，执行移除
     static auto remove_prefix(std::string& s, std::string_view prefix) -> std::string&;

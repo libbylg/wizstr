@@ -3,6 +3,8 @@
 //
 #include "view.h"
 
+#include <cassert>
+
 auto view::append(std::string_view s, std::string_view other) -> std::string {
     std::string result;
     result.reserve(s.size() + other.size());
@@ -135,27 +137,6 @@ auto view::insert(std::string_view s, size_type pos, const view_provider_proc& p
     return result;
 }
 
-//  首尾操作
-auto view::push_back(std::string_view s, std::string_view other) -> std::string {
-    return view::append(s, other);
-}
-
-auto view::push_back(std::string_view s, value_type ch) -> std::string {
-    return view::append(s, ch);
-}
-
-auto view::push_back(std::string_view s, value_type ch, size_type n) -> std::string {
-    return view::append(s, ch, n);
-}
-
-auto view::push_front(std::string_view s, std::string_view other) -> std::string {
-    return view::append(s, other);
-}
-
-auto view::push_front(std::string_view s, value_type ch) -> std::string {
-    return view::prepend(s, ch);
-}
-
 // auto view::compare(std::string_view s, std::string_view other) -> int {
 // }
 
@@ -192,20 +173,54 @@ auto view::push_front(std::string_view s, value_type ch) -> std::string {
 // auto view::iequals(std::string_view s, value_type c) -> int {
 // }
 
-// auto view::contains(std::string_view s, std::string_view other) -> bool {
-// }
+auto view::contains(std::string_view s, std::string_view other) -> bool {
+    return s.find(other) != std::string_view::npos;
+}
 
-// auto view::contains(std::string_view s, value_type ch) -> bool {
-// }
+auto view::contains(std::string_view s, value_type ch) -> bool {
+    return s.find(ch) != std::string_view::npos;
+}
 
-// auto view::count(std::string_view s, std::string_view other) -> view::size_type {
-// }
+auto view::count(std::string_view s, std::string_view other) -> view::size_type {
+    if (other.empty()) {
+        return s.size() + 1;
+    }
 
-// auto view::count(std::string_view s, value_type ch) -> view::size_type {
-// }
+    size_type count = 0;
 
-// auto view::count(std::string_view s, char_match_proc proc) -> view::size_type {
-// }
+    size_type pos = 0;
+    while (true) {
+        pos = s.find(other, pos);
+        if (pos == std::string_view::npos) {
+            break;
+        }
+
+        count++;
+        pos += other.size();
+    }
+
+    return count;
+}
+
+auto view::count(std::string_view s, value_type ch) -> view::size_type {
+    size_type count = 0;
+    for (auto itr = s.begin(); itr != s.end(); itr++) {
+        count += ((*itr == ch) ? 1 : 0);
+    }
+    return count;
+}
+
+auto view::count(std::string_view s, char_match_proc proc) -> view::size_type {
+    size_type count = 0;
+    for (auto itr = s.begin(); itr != s.end(); itr++) {
+        auto result = proc(*itr);
+        if (!result) {
+            break;
+        }
+        count += (result.value() ? 1 : 0);
+    }
+    return count;
+}
 
 auto view::prefix(std::string_view s, std::string_view other) -> view::size_type {
     if ((s.empty()) || (other.empty())) {
