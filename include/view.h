@@ -122,16 +122,18 @@ public:
     static auto find_prev_word(std::string_view s, size_type pos = npos) -> std::optional<std::string_view>;
 
     //  迭代找下一个
-    static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> size_type;
-    static auto iter_prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> size_type;
+    static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
+    static auto iter_prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
+    static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
+    static auto iter_prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
     static auto iter_next_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto iter_prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
     static auto iter_prev_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
     static auto iter_next_eol(std::string_view s, size_type& pos) -> size_type;
     static auto iter_prev_eol(std::string_view s, size_type& pos) -> size_type;
-    static auto iter_next_word(std::string_view s, size_type& pos) -> std::string_view;
-    static auto iter_prev_word(std::string_view s, size_type& pos) -> std::string_view;
+    static auto iter_next_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
+    static auto iter_prev_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
 
     //  按各种方式遍历
     static auto walk(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n, const_pointer next)> proc) -> void;
