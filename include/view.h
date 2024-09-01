@@ -71,25 +71,13 @@ public:
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
 
-    //  比较
-    static auto compare(std::string_view s, std::string_view other) -> int;
-    static auto compare(std::string_view s, std::string_view other, size_type max_n) -> int;
-    static auto compare(std::string_view s, value_type c) -> int;
-
     // 不区分大小写的比较
     static auto icompare(std::string_view s, std::string_view other) -> int;
     static auto icompare(std::string_view s, std::string_view other, size_type max_n) -> int;
-    static auto icompare(std::string_view s, value_type c) -> int;
-
-    // 判断是否相等
-    static auto equals(std::string_view s, std::string_view other) -> int;
-    static auto equals(std::string_view s, std::string_view other, size_type max_n) -> int;
-    static auto equals(std::string_view s, value_type c) -> int;
 
     // 不区分大小写，判断是否相等
-    static auto iequals(std::string_view s, std::string_view other) -> int;
-    static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> int;
-    static auto iequals(std::string_view s, value_type c) -> int;
+    static auto iequals(std::string_view s, std::string_view other) -> bool;
+    static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
 
     //  是否包含子串
     static auto contains(std::string_view s, std::string_view other) -> bool;
@@ -123,16 +111,15 @@ public:
     static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
 
     //  从指定的位置查找特定的字符
-    static auto find_next_char(std::string_view s, size_type pos, value_type ch) -> size_type;
-    static auto find_prev_char(std::string_view s, size_type pos, value_type ch) -> size_type;
-    static auto find_next_string(std::string_view s, size_type pos, std::string_view other) -> size_type;
-    static auto find_prev_string(std::string_view s, size_type pos, std::string_view other) -> size_type;
+    static auto find_next_regex(std::string_view s, size_type pos, std::string_view pattern) -> size_type;
     static auto find_next_eol(std::string_view s, size_type pos) -> size_type;
     static auto find_prev_eol(std::string_view s, size_type pos) -> size_type;
     static auto find_next_word(std::string_view s, size_type pos) -> std::string_view;
     static auto find_prev_word(std::string_view s, size_type pos) -> std::string_view;
 
     //  迭代找下一个
+    static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> size_type;
+    static auto iter_prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> size_type;
     static auto iter_next_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto iter_prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;

@@ -137,41 +137,51 @@ auto view::insert(std::string_view s, size_type pos, const view_provider_proc& p
     return result;
 }
 
-// auto view::compare(std::string_view s, std::string_view other) -> int {
-// }
+auto view::icompare(std::string_view s, std::string_view other) -> int {
+    if (s.size() < other.size()) {
+        int ret = strncasecmp(s.data(), other.data(), s.size());
+        return (ret == 0)?other[s.size()]:ret;
+    }
 
-// auto view::compare(std::string_view s, std::string_view other, size_type max_n) -> int {
-// }
+    if (s.size() > other.size()) {
+        int ret = strncasecmp(s.data(), other.data(), other.size());
+        return (ret == 0)?s[other.size()]:ret;
+    }
 
-// auto view::compare(std::string_view s, value_type c) -> int {
-// }
+    return strncasecmp(s.data(), other.data(), other.size());
+}
 
-// auto view::icompare(std::string_view s, std::string_view other) -> int {
-// }
+auto view::icompare(std::string_view s, std::string_view other, size_type max_n) -> int {
+    if (max_n < s.size()) {
+        s = s.substr(0, max_n);
+    }
 
-// auto view::icompare(std::string_view s, std::string_view other, size_type max_n) -> int {
-// }
+    if (max_n < other.size()) {
+        other = other.substr(0, max_n);
+    }
 
-// auto view::icompare(std::string_view s, value_type c) -> int {
-// }
+    return view::icompare(s, other);
+}
 
-// auto view::equals(std::string_view s, std::string_view other) -> int {
-// }
+auto view::iequals(std::string_view s, std::string_view other) -> bool {
+    if (s.size() != other.size()) {
+        return false;
+    }
 
-// auto view::equals(std::string_view s, std::string_view other, size_type max_n) -> int {
-// }
+    return strncasecmp(s.data(), other.data(), s.size()) == 0;
+}
 
-// auto view::equals(std::string_view s, value_type c) -> int {
-// }
+auto view::iequals(std::string_view s, std::string_view other, size_type max_n) -> bool {
+    if (max_n < s.size()) {
+        s = s.substr(0, max_n);
+    }
 
-// auto view::iequals(std::string_view s, std::string_view other) -> int {
-// }
+    if (max_n < other.size()) {
+        other = other.substr(0, max_n);
+    }
 
-// auto view::iequals(std::string_view s, std::string_view other, size_type max_n) -> int {
-// }
-
-// auto view::iequals(std::string_view s, value_type c) -> int {
-// }
+    return view::iequals(s, other);
+}
 
 auto view::contains(std::string_view s, std::string_view other) -> bool {
     return s.find(other) != std::string_view::npos;
