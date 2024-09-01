@@ -140,12 +140,12 @@ auto view::insert(std::string_view s, size_type pos, const view_provider_proc& p
 auto view::icompare(std::string_view s, std::string_view other) -> int {
     if (s.size() < other.size()) {
         int ret = strncasecmp(s.data(), other.data(), s.size());
-        return (ret == 0)?other[s.size()]:ret;
+        return (ret == 0) ? other[s.size()] : ret;
     }
 
     if (s.size() > other.size()) {
         int ret = strncasecmp(s.data(), other.data(), other.size());
-        return (ret == 0)?s[other.size()]:ret;
+        return (ret == 0) ? s[other.size()] : ret;
     }
 
     return strncasecmp(s.data(), other.data(), other.size());
@@ -198,7 +198,7 @@ auto view::count(std::string_view s, std::string_view other) -> view::size_type 
 
     size_type count = 0;
 
-    size_type pos = 0;
+    size_type pos;
     while (true) {
         pos = s.find(other, pos);
         if (pos == std::string_view::npos) {
@@ -238,7 +238,7 @@ auto view::prefix(std::string_view s, std::string_view other) -> view::size_type
     }
 
     size_type len = std::min(s.size(), other.size());
-    for (size_type pos = 0; pos < len; pos++) {
+    for (size_type pos; pos < len; pos++) {
         if (s[pos] != other[pos]) {
             return pos;
         }
@@ -347,29 +347,63 @@ auto view::remove_suffix(std::string_view s, size_type n) -> std::string_view {
     return std::string_view{s.data(), s.size() - n};
 }
 
-// auto view::next_char(std::string_view s, size_type pos, value_type ch) -> size_type {
+auto view::find_next_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
+    if (pos >= s.size()) {
+        s = {};
+    } else {
+        s = s.substr(pos);
+    }
+
+    std::match_results<std::string_view::const_iterator> result;
+    if (!std::regex_search(s.begin(), s.end(), result, pattern)) {
+        return std::nullopt;
+    }
+
+    return std::string_view{result[0].first, static_cast<size_type>(result[0].second - result[0].first)};
+}
+
+// auto view::find_prev_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
 // }
 
-// auto view::prev_char(std::string_view s, value_type ch) -> size_type {
+auto view::find_next_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
+    return find_next_regex(s, std::regex{pattern.begin(), pattern.end()}, pos);
+}
+
+// auto view::find_prev_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
 // }
 
-// auto view::next_string(std::string_view s, size_type pos, std::string_view other) -> size_type {
-// }
+auto view::find_next_eol(std::string_view s, size_type pos) -> size_type {
+    return s.find('\n', pos);
+}
 
-// auto view::prev_string(std::string_view s, std::string_view other) -> size_type {
-// }
+auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
+    return s.rfind('\n', pos);
+}
 
-// auto view::next_eol(std::string_view s, size_type pos) -> size_type {
-// }
+auto view::find_next_word(std::string_view s, size_type pos) -> std::optional<std::string_view> {
+    if (pos >= s.size()) {
+        s = s.substr(0, pos);
+    }
 
-// auto view::prev_eol(std::string_view& s, size_type pos) -> size_type {
-// }
+    auto start = std::find_if(s.begin(), s.end(), [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
 
-// auto view::next_word(std::string_view s, size_type pos) -> std::string_view {
-// }
+    if (start == s.end()) {
+        return std::nullopt;
+    }
 
-// auto view::prev_word(std::string_view s, size_type pos) -> std::string_view {
-// }
+    auto end = std::find_if_not(start, s.end(), [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+
+    return std::string_view{start, static_cast<size_type>(end - start)};
+}
+
+auto view::find_prev_word(std::string_view s, size_type pos) -> std::optional<std::string_view> {
+}
+
+
 
 // auto view::walk(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n, const_pointer next)> proc) -> void {
 // }

@@ -10,6 +10,7 @@
 #include <map>
 #include <numeric>
 #include <optional>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -110,12 +111,15 @@ public:
     static auto remove_suffix(std::string_view s, value_type suffix) -> std::string_view;
     static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
 
-    //  从指定的位置查找特定的字符
-    static auto find_next_regex(std::string_view s, size_type pos, std::string_view pattern) -> size_type;
-    static auto find_next_eol(std::string_view s, size_type pos) -> size_type;
-    static auto find_prev_eol(std::string_view s, size_type pos) -> size_type;
-    static auto find_next_word(std::string_view s, size_type pos) -> std::string_view;
-    static auto find_prev_word(std::string_view s, size_type pos) -> std::string_view;
+    //  一次性查找
+    static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
+    static auto find_prev_regex(std::string_view s, const std::regex& pattern, size_type pos = npos) -> std::optional<std::string_view>;
+    static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
+    static auto find_prev_regex(std::string_view s, std::string_view pattern, size_type pos = npos) -> std::optional<std::string_view>;
+    static auto find_next_eol(std::string_view s, size_type pos = 0) -> size_type;
+    static auto find_prev_eol(std::string_view s, size_type pos = npos) -> size_type;
+    static auto find_next_word(std::string_view s, size_type pos = 0) -> std::optional<std::string_view>;
+    static auto find_prev_word(std::string_view s, size_type pos = npos) -> std::optional<std::string_view>;
 
     //  迭代找下一个
     static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> size_type;
