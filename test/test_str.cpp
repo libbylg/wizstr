@@ -35,32 +35,32 @@ TEST_CASE("prefix", "prefix") {
  TEST_CASE("split_list", "as vector") {
  //TEST_CASE(split_list, as_vector) {
      SECTION("一般情况") {
-         auto items = str::split_list("a,b,c", ',');
+         auto items = view::split_list("a,b,c", ',');
          REQUIRE(items.size() == 3u);
          REQUIRE(items[0] == "a");
          REQUIRE(items[1] == "b");
          REQUIRE(items[2] == "c");
      }
      SECTION("全空情况") {
-         auto items = str::split_list(",,", ',');
+         auto items = view::split_list(",,", ',');
          REQUIRE(items.size() == 3u);
          REQUIRE(items[0] == "");
          REQUIRE(items[1] == "");
          REQUIRE(items[2] == "");
      }
      SECTION("没有替换分个符") {
-         auto items = str::split_list("abc", ',');
+         auto items = view::split_list("abc", ',');
          REQUIRE(items.size() == 1u);
          REQUIRE(items[0] == "abc");
      }
      SECTION("分隔符号在开头") {
-         auto items = str::split_list(",abc", ',');
+         auto items = view::split_list(",abc", ',');
          REQUIRE(items.size() == 2u);
          REQUIRE(items[0] == "");
          REQUIRE(items[1] == "abc");
      }
      SECTION("分隔符号在结尾") {
-         auto items = str::split_list("abc,", ',');
+         auto items = view::split_list("abc,", ',');
          REQUIRE(items.size() == 2u);
          REQUIRE(items[0] == "abc");
          REQUIRE(items[1] == "");

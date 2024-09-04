@@ -4,8 +4,8 @@
 #include "str.h"
 #include "view.h"
 
-#include <fstream>
 #include <cassert>
+#include <fstream>
 
 auto str::append(std::string& s, std::string_view other) -> std::string& {
     return s.append(other);
@@ -841,26 +841,34 @@ auto str::replace_extname(std::string& s, std::string_view name) -> std::string&
 // auto str::decode_url(std::string& s) -> std::string& {
 // }
 
+auto str::read_all(const std::string& filename) -> std::string {
+}
+
 auto str::read_line(FILE* file) -> std::string {
     assert(file != nullptr);
 
     std::string result;
 
     char buffer[512];
-    while (!feof(file) || !ferror(file)) {
+    while (!feof(file) && !ferror(file)) {
         char* ptr = fgets(buffer, sizeof(buffer), file);
         if (ptr == nullptr) {
             return result;
         }
 
-        // [\n][\0]$
         size_type len = strlen(ptr);
-        if (len < (sizeof(buffer) - 1)) {
-            result.append(buffer, len);
-            return result;
-        }
-
         result.append(buffer, len);
+
+        // fgets 会自动补字符串尾部的\0，所以长度一定小于缓冲区长度
+        assert(len < sizeof(buffer));
+
+        // 缓冲区没填充满，说明结束了
+        if (len >= (sizeof(buffer) - 1)) {
+            // 如果缓冲区结尾刚好就是换行符号，说明遇到结束符了: [\n][\0]$
+            if (buffer[sizeof(buffer) - 2] == '\n') [[unlikely]] {
+                return result;
+            }
+        }
     }
 }
 
@@ -885,14 +893,19 @@ auto str::read_lines(FILE* file, std::function<int(size_type line_index, std::st
         }
 
         size_type len = strlen(ptr);
+        line_text.append(buffer, len);
 
-        // [\n][\0]$
+        // "fgets 会自动补字符串尾部的\\0，所以长度一定小于缓冲区长度"
+        assert(len < sizeof(buffer));
+
+        // 缓冲区已经填满，需要看尾部换行以裁定是否遇到行尾
         if (len >= (sizeof(buffer) - 1)) {
-            line_text.append(buffer, len);
-            continue;
+            // 缓冲区已经填满，需要看尾部换行以裁定是否遇到行尾
+            if (buffer[sizeof(buffer) - 2] != '\n') [[unlikely]] {
+                continue;
+            }
         }
 
-        line_text.append(buffer, len);
         if (proc(line_index, line_text) != 0) {
             return;
         }
