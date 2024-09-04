@@ -958,6 +958,8 @@ auto str::read_lines(std::istream& file, size_type max_n) -> std::vector<std::st
 
         return 0;
     });
+
+    return result;
 }
 
 auto str::read_lines(const std::string& filename, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {

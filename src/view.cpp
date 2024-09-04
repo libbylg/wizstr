@@ -238,13 +238,15 @@ auto view::prefix(std::string_view s, std::string_view other) -> view::size_type
     }
 
     size_type len = std::min(s.size(), other.size());
-    for (size_type pos; pos < len; pos++) {
+    size_type pos = 0;
+    while (pos < len) {
         if (s[pos] != other[pos]) {
-            return pos;
+            break;
         }
+        pos++;
     }
 
-    return len;
+    return pos;
 }
 
 auto view::suffix(std::string_view s, std::string_view other) -> size_type {
@@ -491,8 +493,8 @@ auto view::iter_next_eol(std::string_view s, size_type& pos) -> size_type {
     return next_pos;
 }
 
-//auto view::iter_prev_eol(std::string_view s, size_type& pos) -> size_type {
-//}
+// auto view::iter_prev_eol(std::string_view s, size_type& pos) -> size_type {
+// }
 
 auto view::iter_next_word(std::string_view s, size_type& pos) -> std::optional<std::string_view> {
     auto result = view::find_next_word(s, pos);
@@ -505,8 +507,8 @@ auto view::iter_next_word(std::string_view s, size_type& pos) -> std::optional<s
     return result.value();
 }
 
-//auto view::iter_prev_word(std::string_view s, size_type& pos) -> std::string_view {
-//}
+// auto view::iter_prev_word(std::string_view s, size_type& pos) -> std::string_view {
+// }
 
 // auto view::walk(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n, const_pointer next)> proc) -> void {
 // }

@@ -3,11 +3,14 @@
 
 #include "catch2/catch_all.hpp"
 
+
 //#include "gtest/gtest.h"
 //
 //#define TEST_CASE TEST
 //#define SECTION(desc)
 //#define REQUIRE(expr) EXPECT_TRUE(expr)
+
+#include <fstream>
 
 // TEST_CASE("prefix", "prefix") {
 TEST_CASE("prefix", "prefix") {
@@ -66,7 +69,16 @@ TEST_CASE("prefix", "prefix") {
          REQUIRE(items[1] == "");
      }
  }
-//
+
+ TEST_CASE("read_line", "read_lines_name_vector") {
+    SECTION("") {
+         //view::dirname()
+         std::ifstream stream("/mnt/e/gitee.com/libbylg/str/test/test-gernial.txt");
+         auto result = str::read_lines(stream);
+         REQUIRE(result.size() == 0);
+    }
+ }
+
 // TEST_CASE(last_extname_ptr, last_extname_ptr) {
 //     SECTION("简单裸名字") {
 //         REQUIRE(str::last_extname("abc") == std::string(""));
