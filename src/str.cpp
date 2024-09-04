@@ -4,6 +4,7 @@
 #include "str.h"
 #include "view.h"
 
+#include <fstream>
 #include <cassert>
 
 auto str::append(std::string& s, std::string_view other) -> std::string& {
@@ -839,3 +840,119 @@ auto str::replace_extname(std::string& s, std::string_view name) -> std::string&
 
 // auto str::decode_url(std::string& s) -> std::string& {
 // }
+
+auto str::read_line(FILE* file) -> std::string {
+    assert(file != nullptr);
+
+    std::string result;
+
+    char buffer[512];
+    while (!feof(file) || !ferror(file)) {
+        char* ptr = fgets(buffer, sizeof(buffer), file);
+        if (ptr == nullptr) {
+            return result;
+        }
+
+        // [\n][\0]$
+        size_type len = strlen(ptr);
+        if (len < (sizeof(buffer) - 1)) {
+            result.append(buffer, len);
+            return result;
+        }
+
+        result.append(buffer, len);
+    }
+}
+
+auto str::read_line(std::istream& file) -> std::string {
+    std::string line_text;
+    std::getline(file, line_text);
+    return line_text;
+}
+
+auto str::read_lines(FILE* file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {
+    assert(file != nullptr);
+
+    size_type line_index = 0;
+    std::string line_text;
+
+    char buffer[512];
+    while (!feof(file) || !ferror(file)) {
+        char* ptr = fgets(buffer, sizeof(buffer), file);
+        if (ptr == nullptr) {
+            proc(line_index, line_text);
+            return;
+        }
+
+        size_type len = strlen(ptr);
+
+        // [\n][\0]$
+        if (len >= (sizeof(buffer) - 1)) {
+            line_text.append(buffer, len);
+            continue;
+        }
+
+        line_text.append(buffer, len);
+        if (proc(line_index, line_text) != 0) {
+            return;
+        }
+
+        line_index++;
+        line_text.clear();
+    }
+}
+
+auto str::read_lines(FILE* file, size_type max_n) -> std::vector<std::string> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string> result;
+    read_lines(file, [max_n, &result](size_type line_index, std::string_view line_text) -> int {
+        result.emplace_back(line_text);
+        if (result.size() == max_n) {
+            return 1;
+        }
+
+        return 0;
+    });
+}
+
+auto str::read_lines(std::istream& file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {
+    size_type line_index = 0;
+    std::string line_text;
+    while (!file.bad() && !file.eof()) {
+        std::getline(file, line_text);
+        if (proc(line_index, line_text) != 0) {
+            return;
+        }
+        line_index++;
+        line_text.clear();
+    }
+}
+
+auto str::read_lines(std::istream& file, size_type max_n) -> std::vector<std::string> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string> result;
+    read_lines(file, [max_n, &result](size_type line_index, std::string_view line_text) -> int {
+        result.emplace_back(line_text);
+        if (result.size() == max_n) {
+            return 1;
+        }
+
+        return 0;
+    });
+}
+
+auto str::read_lines(const std::string& filename, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {
+    std::ifstream file{filename};
+    str::read_lines(file, proc);
+}
+
+auto str::read_lines(const std::string& filename, size_type max_n) -> std::vector<std::string> {
+    std::ifstream file{filename};
+    return str::read_lines(file, max_n);
+}

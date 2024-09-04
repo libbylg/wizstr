@@ -249,6 +249,17 @@ public:
     // 按块切分
     static auto chunked_view(std::string_view s, size_type size) -> std::vector<std::string_view>;
     static auto chunked(std::string_view s, size_type size) -> std::vector<std::string>;
+
+    // 读取文件内容
+    static auto read_line(FILE* file) -> std::string;
+    static auto read_line(std::istream& file) -> std::string;
+    static auto read_lines(FILE* file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void;
+    static auto read_lines(FILE* file, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(std::istream& file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void;
+    static auto read_lines(std::istream& file, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(const std::string& filename, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void;
+    static auto read_lines(const std::string& filename, size_type max_n = npos) -> std::vector<std::string>;
+
 };
 //
 // template <typename T>
