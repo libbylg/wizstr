@@ -990,28 +990,43 @@ auto view::title(std::string_view s) -> std::string {
     return str::title(result);
 }
 
-//auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
-//}
+auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
+}
 
-// // 字符串生成
-// auto view::repeat(std::string_view s, size_type times) -> std::string {
-//     if (s.empty() || (times == 0)) {
-//         return "";
-//     }
+// 字符串生成
+auto view::repeat(std::string_view s, size_type times) -> std::string {
+    if (s.empty() || (times == 0)) {
+        return "";
+    }
 
-//     std::string result;
-//     result.reserve(times * s.size());
+    std::string result;
+    result.reserve(times * s.size());
 
-//     for (size_type i = 0; i < times; i++) {
-//         result.append(s);
-//     }
+    for (size_type i = 0; i < times; i++) {
+        result.append(s);
+    }
 
-//     return result;
-// }
+    return result;
+}
 
-// auto view::space(size_type width) -> std::string {
-//     return repeat(" ", width);
-// }
+auto view::repeat(value_type ch, size_type times) -> std::string {
+    std::string result;
+    result.resize(times, ch);
+    return result;
+}
+
+auto view::spaces(size_type width) -> std::string {
+    return repeat(' ', width);
+}
+
+auto view::skip_space(std::string_view s, size_type pos) -> size_type {
+}
+
+auto view::next_space(std::string_view s, size_type pos) -> size_type {
+}
+
+auto view::prev_space(std::string_view s, size_type pos) -> size_type {
+}
 
 // //  基于本字符串生成新字符串
 
