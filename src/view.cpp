@@ -375,13 +375,35 @@ auto view::find_next_regex(std::string_view s, std::string_view pattern, size_ty
 // auto view::find_prev_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
 // }
 
-auto view::find_next_eol(std::string_view s, size_type pos) -> size_type {
-    return s.find('\n', pos);
+auto view::find_next_eol(std::string_view s, size_type pos) -> std::optional<std::string_view> {
+    if (s.empty()) {
+        return std::nullopt;
+    }
+
+    const_pointer endptr = (s.data() + s.size());
+    const_pointer ptr = s.data();
+    while (ptr < endptr) {
+        if (*ptr == '\r') [[unlikely]] {
+            // 遇到 xxx\r\nyyyy
+            if (((ptr + 1) < endptr) && (*ptr == '\n')) {
+                return std::string_view{ptr, 2};
+            }
+
+            // 遇到 xxx\ryyyy
+            return std::string_view{ptr, 1};
+        }
+
+        // 遇到 xxx\nyyyy
+        if (*ptr == '\n') {
+            return std::string_view{ptr, 1};
+        }
+
+        ptr++;
+    }
 }
 
-auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
-    return s.rfind('\n', pos);
-}
+//auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
+//}
 
 auto view::find_next_word(std::string_view s, size_type pos) -> std::optional<std::string_view> {
     if (pos < s.size()) {
@@ -1148,17 +1170,49 @@ auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::st
     return split_list(s, std::string_view{&sep, 1});
 }
 
-//auto view::split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void {
-//}
-//
-//auto view::split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view> {
-//}
-//
-//auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
-//}
-//
-//auto view::split_csv(std::string_view s) -> std::vector<std::string> {
-//}
+auto view::split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void {
+    if (s.empty()) {
+        return;
+    }
+
+    size_type start = 0;
+    while (start < s.size()) {
+        auto eol = view::find_next_eol(s, start);
+
+        // 最后一部分没有结束符
+        if (!eol) {
+            proc(std::string_view{s.data() + start, (s.size() - start)});
+            return;
+        }
+
+        assert(!eol.value().empty());
+
+        // 遇到结束符
+        const_pointer next_start = eol.value().data() + eol.value().size();
+        const_pointer line_text = s.data() + start;
+        size_type line_size = keep_ends ? (next_start -  line_text) : (next_start -  line_text - eol.value().size());
+        if (proc(std::string_view{line_text, line_size}) != 0) {
+            return;
+        }
+
+        start = next_start - s.data();
+    }
+}
+
+auto view::split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    view::split_lines(s, keep_ends, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
+}
+
+auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
+}
+
+// auto view::split_csv(std::string_view s) -> std::vector<std::string> {
+// }
 
 // auto view::split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void {
 // }
@@ -1166,45 +1220,43 @@ auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::st
 // auto view::split_map(const std::string_view s) -> std::map<std::string, std::string> {
 // }
 
-auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
-    std::string result{s};
-    return str::translate(s, proc);
-}
+// auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
+// }
 
-auto view::simplified(std::string_view s, const char_checker_proc& proc) -> std::string {
-    if (s.empty()) {
-        return s;
-    }
-
-    bool found = false;
-    const_pointer w = s.data();
-    pointer r = s.data();
-    while (*r != '\0') {
-        value_type ch = *r;
-        if (found) {
-            if (proc(ch)) {
-                r++;
-                continue;
-            }
-
-            found = false;
-            *(w++) = *(r++);
-            continue;
-        }
-
-        if (proc(ch)) {
-            found = true;
-            *(w++) = ' ';
-            r++;
-            continue;
-        }
-
-        *(w++) = *(r++);
-    }
-
-    s.resize(w - s.data());
-    return s;
-}
+//auto view::simplified(std::string_view s, const char_checker_proc& proc) -> std::string {
+//    if (s.empty()) {
+//        return s;
+//    }
+//
+//    bool found = false;
+//    const_pointer w = s.data();
+//    pointer r = s.data();
+//    while (*r != '\0') {
+//        value_type ch = *r;
+//        if (found) {
+//            if (proc(ch)) {
+//                r++;
+//                continue;
+//            }
+//
+//            found = false;
+//            *(w++) = *(r++);
+//            continue;
+//        }
+//
+//        if (proc(ch)) {
+//            found = true;
+//            *(w++) = ' ';
+//            r++;
+//            continue;
+//        }
+//
+//        *(w++) = *(r++);
+//    }
+//
+//    s.resize(w - s.data());
+//    return s;
+//}
 
 auto view::simplified(std::string_view s) -> std::string {
     if (s.empty()) {

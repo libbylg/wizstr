@@ -116,7 +116,7 @@ public:
     static auto find_prev_regex(std::string_view s, const std::regex& pattern, size_type pos = npos) -> std::optional<std::string_view>;
     static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
     static auto find_prev_regex(std::string_view s, std::string_view pattern, size_type pos = npos) -> std::optional<std::string_view>;
-    static auto find_next_eol(std::string_view s, size_type pos = 0) -> size_type;
+    static auto find_next_eol(std::string_view s, size_type pos = 0) -> std::optional<std::string_view>;
     static auto find_prev_eol(std::string_view s, size_type pos = npos) -> size_type;
     static auto find_next_word(std::string_view s, size_type pos = 0) -> std::optional<std::string_view>;
     static auto find_prev_word(std::string_view s, size_type pos = npos) -> std::optional<std::string_view>;
@@ -247,15 +247,15 @@ public:
     static auto split_list(std::string_view s, value_type sep = ',') -> std::vector<std::string>;
 
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
-    static auto split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void;
-    static auto split_map(const std::string_view s) -> std::map<std::string, std::string>;
+    static auto split_map(std::string_view s, std::string_view sep[2], view_pair_consumer_proc proc) -> void;
+    static auto split_map(std::string_view s) -> std::map<std::string, std::string>;
 
     // 按照换行符将字符串 s，拆分长多行
     static auto split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void;
     static auto split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view>;
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
-    static auto split_path(view_consumer_proc proc) -> void;
+    static auto split_path(std::string_view s, view_consumer_proc proc) -> void;
 
     // 拆分 csv 数据
     static auto split_csv(std::string_view s) -> std::vector<std::string>;
