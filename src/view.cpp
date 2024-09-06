@@ -2,6 +2,7 @@
 // Created by libbylg on 2023/6/1.
 //
 #include "view.h"
+#include "str.h"
 
 #include <cassert>
 
@@ -214,16 +215,16 @@ auto view::count(std::string_view s, std::string_view other) -> view::size_type 
 
 auto view::count(std::string_view s, value_type ch) -> view::size_type {
     size_type count = 0;
-    for (auto itr = s.begin(); itr != s.end(); itr++) {
-        count += ((*itr == ch) ? 1 : 0);
+    for (auto elem_ch : s) {
+        count += ((elem_ch == ch) ? 1 : 0);
     }
     return count;
 }
 
-auto view::count(std::string_view s, char_match_proc proc) -> view::size_type {
+auto view::count(std::string_view s, const char_match_proc& proc) -> view::size_type {
     size_type count = 0;
-    for (auto itr = s.begin(); itr != s.end(); itr++) {
-        auto result = proc(*itr);
+    for (value_type ch : s) {
+        auto result = proc(ch);
         if (!result) {
             break;
         }
@@ -510,17 +511,58 @@ auto view::iter_next_word(std::string_view s, size_type& pos) -> std::optional<s
 // auto view::iter_prev_word(std::string_view s, size_type& pos) -> std::string_view {
 // }
 
-// auto view::walk(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n, const_pointer next)> proc) -> void {
-// }
+auto view::foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void {
+    if (pos >= s.size()) {
+        return;
+    }
 
-// auto view::walk_byte(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr)> proc) -> void {
-// }
+    const_pointer start = s.data() + pos;
+    do {
+        // 跳过所有空白
+        while (start < (s.data() + s.size())) {
+            if (!std::isspace(*start)) {
+                break;
+            }
+            start++;
+        }
 
-// auto view::walk_byte(std::string_view s, size_type pos, size_type n, std::function<int(pointer ptr)> proc) -> void {
-// }
+        // 如果跳过空白后已经到字符串结尾了
+        if (start == (s.data() + s.size())) {
+            break;
+        }
 
-// auto view::walk_word(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n)> proc) -> void {
-// }
+        // 找到下一个空白位置
+        const_pointer end = start;
+        while (start < (s.data() + s.size())) {
+            if (std::isspace(*start)) {
+                break;
+            }
+            start++;
+        }
+
+        // 通知消费方
+        if (proc(start - s.data(), end - start) != 0) {
+            break;
+        }
+    } while (start < (s.data() + s.size()));
+    assert(start == (s.data() + s.size()));
+}
+
+auto view::foreach_word(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void {
+    view::foreach_word(s, pos, [&s, &proc](size_type pos, size_type n) -> int {
+        return proc(std::string_view{s.data() + pos, n});
+    });
+}
+
+auto view::foreach_word(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void {
+    view::foreach_word(s, 0, proc);
+}
+
+auto view::foreach_word(std::string_view s, const std::function<int(std::string_view word)>& proc) -> void {
+    view::foreach_word(s, 0, [&s, &proc](size_type pos, size_type n) -> int {
+        return proc(std::string_view{s.data() + pos, n});
+    });
+}
 
 // auto view::is_match_wild(std::string_view s, std::string_view pattern) -> bool {
 // }
@@ -662,6 +704,74 @@ auto view::is_identifier(std::string_view s) -> bool {
 }
 
 auto view::is_literal_bool(std::string_view s) -> bool {
+    return view::is_literal_true(s) || view::is_literal_false(s);
+}
+
+auto view::is_literal_true(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    //  "1"     "0"
+    //  "on"    "off"
+    //  "ON"    "OFF"
+    //  "Yes"   "No"
+    //  "yes"   "no"
+    //  "YES"   "NO"
+    //  "True"  "False"
+    //  "true"  "false"
+    //  "TRUE"  "FALSE"
+
+    const_pointer ptr = s.data();
+    switch (s.size()) {
+        case 4:
+            if ((ptr[0] == 't') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
+                return true;
+            }
+            if ((ptr[0] == 'T') && (ptr[1] == 'R') && (ptr[2] == 'U') && (ptr[3] == 'E')) {
+                return true;
+            }
+            return false;
+        case 3:
+            if ((ptr[0] == 'y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
+                return true;
+            }
+            if ((ptr[0] == 'Y') && (ptr[1] == 'E') && (ptr[2] == 'S')) {
+                return true;
+            }
+            return false;
+        case 2:
+            if ((ptr[0] == 'o') && (ptr[1] == 'n')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'n')) {
+                return true;
+            }
+            if ((ptr[0] == 'O') && (ptr[1] == 'N')) {
+                return true;
+            }
+            return false;
+        case 1:
+            switch (*ptr) {
+                case '1':
+                    return true;
+                default:
+                    return false;
+            }
+        default:
+            return false;
+    }
+
+    return false;
+}
+
+auto view::is_literal_false(std::string_view s) -> bool {
     if (s.empty()) {
         return false;
     }
@@ -701,15 +811,6 @@ auto view::is_literal_bool(std::string_view s) -> bool {
             }
             return false;
         case 3:
-            if ((ptr[0] == 'y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
-                return true;
-            }
-            if ((ptr[0] == 'Y') && (ptr[1] == 'e') && (ptr[2] == 's')) {
-                return true;
-            }
-            if ((ptr[0] == 'Y') && (ptr[1] == 'E') && (ptr[2] == 'S')) {
-                return true;
-            }
             if ((ptr[0] == 'o') && (ptr[1] == 'f') && (ptr[2] == 'f')) {
                 return true;
             }
@@ -721,15 +822,6 @@ auto view::is_literal_bool(std::string_view s) -> bool {
             }
             return false;
         case 2:
-            if ((ptr[0] == 'o') && (ptr[1] == 'n')) {
-                return true;
-            }
-            if ((ptr[0] == 'O') && (ptr[1] == 'n')) {
-                return true;
-            }
-            if ((ptr[0] == 'O') && (ptr[1] == 'N')) {
-                return true;
-            }
             if ((ptr[0] == 'n') && (ptr[1] == 'o')) {
                 return true;
             }
@@ -743,8 +835,6 @@ auto view::is_literal_bool(std::string_view s) -> bool {
         case 1:
             switch (*ptr) {
                 case '0':
-                    return false;
-                case '1':
                     return true;
                 default:
                     return false;
@@ -756,12 +846,6 @@ auto view::is_literal_bool(std::string_view s) -> bool {
     return false;
 }
 
-// auto view::is_literal_true(std::string_view s) -> bool {
-// }
-
-// auto view::is_literal_false(std::string_view s) -> bool {
-// }
-
 // auto view::is_literal_real(std::string_view s) -> bool {
 // }
 
@@ -770,171 +854,144 @@ auto view::is_literal_bool(std::string_view s) -> bool {
 
 ///////////////////11111111111111111111
 
-// auto view::left_n(std::string_view s, size_type n) -> std::string {
-//     if (n == 0) {
-//         return "";
-//     }
+auto view::left_n(std::string_view s, size_type n) -> std::string_view {
+    if (n == 0) {
+        return "";
+    }
 
-//     if (n > s.size()) {
-//         return std::string{s};
-//     }
+    if (n > s.size()) {
+        return s;
+    }
 
-//     return std::string{s.substr(0, n)};
-// }
+    return std::string_view{s.substr(0, n)};
+}
 
-// auto view::right_n(std::string_view s, size_type n) -> std::string {
-//     if (n == 0) {
-//         return {};
-//     }
+auto view::right_n(std::string_view s, size_type n) -> std::string_view {
+    if (n == 0) {
+        return {};
+    }
 
-//     if (n > s.size()) {
-//         return std::string{s};
-//     }
+    if (n > s.size()) {
+        return s;
+    }
 
-//     return std::string{s.substr(s.size() - n, n)};
-// }
+    return std::string_view{s.substr(s.size() - n, n)};
+}
 
-// auto view::substr(std::string_view s, size_type pos, ssize_type offset) -> std::string {
-//     if (offset > 0) {
-//         size_type n = offset;
-//         return std::string{s.substr(pos, std::min(n, pos + n))};
-//     }
+auto view::mid_n(std::string_view s, size_type pos, size_type n) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
 
-//     if (offset < 0) {
-//         size_type n = -offset;
-//         return std::string{s.substr(pos, std::min(n, pos + n))};
-//     }
+    if (pos >= s.size()) {
+        return {};
+    }
 
-//     return "";
-// }
+    size_type move_size = ((pos + n) < s.size()) ? n : (s.size() - pos);
+    return {s.data() + pos, move_size};
+}
 
-// //  定宽对齐调整
-// auto view::rjust_inplace(std::string_view s, size_type width, value_type ch) -> std::string {
-//     if (s.size() >= width) {
-//         return s;
-//     }
+auto view::substr(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
+    if (offset > 0) {
+        size_type n = offset;
+        return s.substr(pos, std::min(n, pos + n));
+    }
 
-//     size_type old_len = s.size();
-//     s.resize(width);
-//     std::memmove(s.data() + width - old_len, s.data(), old_len);
-//     std::fill(s.data(), s.data() + width - old_len, ch);
-//     return s;
-// }
+    if (offset < 0) {
+        size_type n = -offset;
+        return s.substr(pos, std::min(n, pos + n));
+    }
 
-// auto view::rjust(std::string_view s, size_type width, value_type ch) -> std::string {
-//     if (s.size() >= width) {
-//         return std::string{s};
-//     }
+    return {};
+}
 
-//     std::string result;
-//     result.resize(width);
-//     std::fill(result.data(), result.data() + (width - s.size()), ch);
-//     std::memcpy(result.data() + (width - s.size()), s.data(), s.size());
-//     return result;
-// }
+auto view::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
+    if (s.size() >= width) {
+        return std::string{s};
+    }
 
-// auto view::ljust_inplace(std::string_view s, size_type width, value_type ch) -> std::string {
-//     if (s.size() >= width) {
-//         return s;
-//     }
+    std::string result;
+    result.reserve(width);
+    result.append(s);
+    result.append(width - s.size(), ch);
+    return result;
+}
 
-//     s.resize(width, ch);
-//     return s;
-// }
+auto view::align_right(std::string_view s, size_type width, value_type ch) -> std::string {
+    if (s.size() >= width) {
+        return std::string{s};
+    }
 
-// auto view::ljust(std::string_view s, size_type width, value_type ch) -> std::string {
-//     if (s.size() >= width) {
-//         return std::string{s};
-//     }
+    std::string result;
+    result.resize(width);
+    std::fill(result.data(), result.data() + (width - s.size()), ch);
+    std::memcpy(result.data() + (width - s.size()), s.data(), s.size());
+    return result;
+}
 
-//     std::string result;
-//     result.reserve(width);
-//     result.append(s);
-//     result.append(width - s.size(), ch);
-//     return result;
-// }
+auto view::align_center(std::string_view s, size_type width, value_type ch) -> std::string {
+    if (s.size() >= width) {
+        return std::string{s};
+    }
 
-// auto view::center_inplace(std::string_view s, size_type width, value_type ch) -> std::string {
-//     if (s.size() >= width) {
-//         return s;
-//     }
+    size_type left_len = (width - s.size()) / 2;
+    size_type right_len = (width - left_len) - s.size();
 
-//     size_type left_len = (width - s.size()) / 2;
-//     size_type right_len = (width - left_len) - s.size();
+    std::string result;
+    result.reserve(width);
+    result.append(left_len, ch);
+    result.append(s);
+    result.append(right_len, ch);
+    return result;
+}
 
-//     s.resize(width);
-//     std::memmove(s.data() + left_len, s.c_str(), s.size());
-//     std::fill(s.data(), s.data() + left_len, ch);
-//     std::fill(s.data() + width - right_len, s.data() + width, ch);
-//     return s;
-// }
+auto view::zfill(std::string_view s, size_type width) -> std::string {
+    if (s.empty()) {
+        std::string r;
+        r.resize(width, '0');
+        return r;
+    }
 
-// auto view::center(std::string_view s, size_type width, value_type ch) -> std::string {
-//     if (s.size() >= width) {
-//         return std::string{s};
-//     }
+    if (s.size() >= width) {
+        return std::string{s};
+    }
 
-//     size_type left_len = (width - s.size()) / 2;
-//     size_type right_len = (width - left_len) - s.size();
+    if ((s[0] != '+') && (s[0] != '-')) {
+        return align_left(s, width, '0');
+    }
 
-//     std::string result;
-//     result.reserve(width);
-//     result.append(left_len, ch);
-//     result.append(s);
-//     result.append(right_len, ch);
-//     return result;
-// }
+    std::string result;
+    result.resize(width);
+    pointer ptr = result.data();
+    *ptr = s[0];
+    ptr++;
+    std::fill(ptr, ptr + (width - s.size()), '0');
+    ptr += (width - s.size());
+    std::memcpy(ptr, s.data(), s.size());
 
-// auto view::zfill_inplace(std::string_view s, size_type width) -> std::string {
-//     if (s.empty()) {
-//         s.resize(0);
-//         return s;
-//     }
+    return result;
+}
 
-//     if (s.size() >= width) {
-//         return s;
-//     }
+auto view::capitalize(std::string_view s) -> std::string {
+    if (s.empty()) {
+        return {};
+    }
 
-//     if ((s[0] != '+') && (s[0] != '-')) {
-//         return ljust_inplace(s, width, '0');
-//     }
+    std::string result{s};
+    if (std::islower(s[0])) {
+        result[0] = static_cast<value_type>(std::toupper(s[0]));
+    }
 
-//     size_type old_len = s.size();
-//     s.resize(width);
-//     if (old_len - 1 > 0) {
-//         std::memmove(s.data() + s.size() - (old_len - 1), s.c_str() + 1, old_len - 1);
-//     }
+    return result;
+}
 
-//     std::fill(s.data() + 1, s.data() + s.size() - (old_len - 1), '0');
-//     return s;
-// }
+auto view::title(std::string_view s) -> std::string {
+    std::string result{s};
+    return str::title(result);
+}
 
-// auto view::zfill(std::string_view s, size_type width) -> std::string {
-//     if (s.empty()) {
-//         std::string r;
-//         r.resize(width, '0');
-//         return r;
-//     }
-
-//     if (s.size() >= width) {
-//         return std::string{s};
-//     }
-
-//     if ((s[0] != '+') && (s[0] != '-')) {
-//         return ljust(s, width, '0');
-//     }
-
-//     std::string result;
-//     result.resize(width);
-//     pointer ptr = result.data();
-//     *ptr = s[0];
-//     ptr++;
-//     std::fill(ptr, ptr + (width - s.size()), '0');
-//     ptr += (width - s.size());
-//     std::memcpy(ptr, s.data(), s.size());
-
-//     return result;
-// }
+//auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
+//}
 
 // // 字符串生成
 // auto view::repeat(std::string_view s, size_type times) -> std::string {

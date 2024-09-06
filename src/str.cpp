@@ -484,10 +484,7 @@ auto str::zfill(std::string& s, size_type width) -> std::string& {
     return s;
 }
 
-// auto str::capitalize(std::string& s) -> std::string& {
-// }
-
-auto str::title(std::string& s) -> std::string& {
+auto str::capitalize(std::string& s) -> std::string& {
     if (s.empty()) {
         return s;
     }
@@ -496,8 +493,21 @@ auto str::title(std::string& s) -> std::string& {
     return s;
 }
 
-// auto str::title_words(std::string& s) -> std::string& {
-// }
+auto str::title(std::string& s) -> std::string& {
+    view::foreach_word(s, [&s](size_type pos, size_type n) -> int {
+        pointer ptr = s.data() + pos;
+        while (ptr < (s.data() + pos + n)) {
+            if (std::islower(*ptr)) {
+                *ptr = static_cast<value_type>(std::toupper(*ptr));
+                break;
+            }
+        }
+        return 0;
+    });
+
+    return s;
+}
+
 
 auto str::repeat(std::string& s, size_type times) -> std::string& {
     assert(times != npos);
@@ -804,8 +814,13 @@ auto str::replace_basename(std::string& s, std::string_view name) -> std::string
     return s;
 }
 
-// auto str::extname(std::string& s) -> std::string& {
-// }
+auto str::extname(std::string& s) -> std::string& {
+    auto ptr = view::extname_ptr(s);
+    size_type extname_len = s.data() + s.size() - ptr;
+    std::memmove(s.data(), ptr, extname_len);
+    s.resize(extname_len);
+    return s;
+}
 
 auto str::remove_extname(std::string& s) -> std::string& {
     auto ptr = view::extname_ptr(s);
@@ -957,7 +972,7 @@ auto str::read_lines(FILE* file, size_type max_n) -> std::vector<std::string> {
     }
 
     std::vector<std::string> result;
-    read_lines(file, [max_n, &result](size_type line_index[[maybe_unused]], std::string_view line_text) -> int {
+    read_lines(file, [max_n, &result](size_type line_index [[maybe_unused]], std::string_view line_text) -> int {
         result.emplace_back(line_text);
         if (result.size() == max_n) {
             return 1;

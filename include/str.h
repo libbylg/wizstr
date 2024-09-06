@@ -125,20 +125,18 @@ public:
     static auto align_left(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_right(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_center(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
-
-    //  按定宽，向右对齐，对齐之后左侧使用 0 填充
     static auto zfill(std::string& s, size_type width) -> std::string&;
 
     //  capitalize 和 title 操作
     static auto capitalize(std::string& s) -> std::string&;
     static auto title(std::string& s) -> std::string&;
-    static auto title_words(std::string& s) -> std::string&;
+
+    //  反转：字符串逆序
+    static auto invert(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
 
     //  特殊字符串生成
     static auto repeat(std::string& s, size_type times) -> std::string&;
 
-    //  反转：字符串逆序
-    static auto invert(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
 
     //  大小写转换
     static auto to_lower(std::string& s) -> std::string&;

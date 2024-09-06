@@ -87,7 +87,7 @@ public:
     //  子串统计
     static auto count(std::string_view s, std::string_view other) -> size_type;
     static auto count(std::string_view s, value_type ch) -> size_type;
-    static auto count(std::string_view s, char_match_proc proc) -> size_type;
+    static auto count(std::string_view s, const char_match_proc& proc) -> size_type;
 
     //  计算公共前后缀的长度
     static auto prefix(std::string_view s, std::string_view other) -> size_type;
@@ -136,10 +136,12 @@ public:
     static auto iter_prev_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
 
     //  按各种方式遍历
-    static auto walk(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n, const_pointer next)> proc) -> void;
-    static auto walk_byte(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr)> proc) -> void;
-    static auto walk_byte(std::string_view s, size_type pos, size_type n, std::function<int(pointer ptr)> proc) -> void;
-    static auto walk_word(std::string_view s, size_type pos, size_type n, std::function<int(const_pointer ptr, size_type n)> proc) -> void;
+    static auto foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void;
+    static auto foreach_word(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void;
+    static auto foreach_word(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void;
+    static auto foreach_word(std::string_view s, const std::function<int(std::string_view word)>& proc) -> void;
+    static auto foreach_fragment(std::string_view s, size_type pos, value_type sep, const std::function<int(size_type pos, size_type n)>& proc) -> void;
+    static auto foreach_fragment(std::string_view s, size_type pos, std::string_view sep, const std::function<int(size_type pos, size_type n)>& proc) -> void;
 
     //  匹配
     static auto is_match_wild(std::string_view s, std::string_view pattern) -> bool;
@@ -169,24 +171,24 @@ public:
     static auto is_literal_real(std::string_view s) -> bool;
     static auto is_literal_integer(std::string_view s) -> bool;
 
-    //  按数量提取子串
-    static auto take_left(std::string_view s, size_type n) -> std::string;
-    static auto take_right(std::string_view s, size_type n) -> std::string;
-
     // 提取子串
-    static auto substr(std::string_view s, size_type pos, ssize_type offset) -> std::string;
+    static auto left_n(std::string_view s, size_type n) -> std::string_view;
+    static auto right_n(std::string_view s, size_type n) -> std::string_view;
+    static auto mid_n(std::string_view s, size_type pos, size_type n) -> std::string_view;
+    static auto substr(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
 
-    //  按定宽，向右对齐
-    static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
-
-    //  按定宽，向左对齐
+    //  对齐
     static auto align_left(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
-
-    //  按定宽，居中对齐
+    static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_center(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
-
-    //  按定宽，向右对齐，对齐之后左侧使用 0 填充
     static auto zfill(std::string_view s, size_type width) -> std::string;
+
+    //  Title 化：首字母大写
+    static auto capitalize(std::string_view s) -> std::string;
+    static auto title(std::string_view s) -> std::string;
+
+    //  反转：字符串逆序
+    static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
 
     // 生成字符串 s 或者 字符 ch 的内容重复出现 times 次后的新字符串
     static auto repeat(std::string_view s, size_type times) -> std::string;
@@ -228,15 +230,6 @@ public:
     // 字符串拼接
     static auto concat(const view_provider_proc& proc) -> std::string;
 
-    //  Title 化：首字母大写
-    static auto capitalize(std::string_view s) -> std::string;
-
-    static auto title(std::string_view s) -> std::string;
-
-    static auto title_words(std::string_view s) -> std::string;
-
-    //  反转：字符串逆序
-    static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
 
     // 拆分字符串
     static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
