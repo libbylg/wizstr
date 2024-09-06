@@ -4,6 +4,9 @@
 #include "str.h"
 #include "view.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+
 #include <cassert>
 #include <fstream>
 
@@ -503,14 +506,16 @@ auto str::repeat(std::string& s, size_type times) -> std::string& {
         return s;
     }
 
-    std::string result;
-    result.reserve(times * s.size());
-
-    for (size_type i = 0; i < times; i++) {
-        result.append(s);
+    if (s.capacity() < (times * s.size())) {
+        s.reserve((times * s.size()));
     }
 
-    return result;
+    size_t tmpl_size = s.size();
+    for (size_type i = 0; i < (times - 1); i++) {
+        s.append(s.data(), tmpl_size);
+    }
+
+    return s;
 }
 
 auto str::invert(std::string& s, size_type pos, size_type max_n) -> std::string& {
@@ -534,15 +539,31 @@ auto str::invert(std::string& s, size_type pos, size_type max_n) -> std::string&
 }
 
 auto str::to_lower(std::string& s) -> std::string& {
+    for (value_type& ch : s) {
+        ch = static_cast<value_type>(std::tolower(ch));
+    }
+
+    return s;
 }
 
 auto str::to_upper(std::string& s) -> std::string& {
+    for (value_type& ch : s) {
+        ch = static_cast<value_type>(std::toupper(ch));
+    }
+
+    return s;
 }
 
 auto str::swap_case(std::string& s) -> std::string& {
-}
+    for (value_type& ch : s) {
+        if (std::islower(ch)) {
+            ch = static_cast<value_type>(std::toupper(ch));
+        } else if (std::islower(ch)) {
+            ch = static_cast<value_type>(std::tolower(ch));
+        }
+    }
 
-auto str::case_fold(std::string& s) -> std::string& {
+    return s;
 }
 
 auto str::translate(std::string& s, const char_mapping_proc& proc) -> std::string& {
@@ -722,7 +743,6 @@ auto str::trim_surrounding(std::string& s) -> std::string& {
 // auto str::normpath(std::string& s) -> std::string& {
 // }
 
-
 auto str::dirname(std::string& s) -> std::string& {
     auto ptr = view::dirname_ptr(s);
     s.resize(ptr - s.c_str());
@@ -745,7 +765,8 @@ auto str::replace_dirname(std::string& s, std::string_view newdir) -> std::strin
     size_type remain_len = s.data() + s.size() - ptr;
     size_type result_len = newdir.size() + remain_len;
     if (result_len < s.capacity()) {
-        s.resize(result_len);;
+        s.resize(result_len);
+        ;
         std::memmove(s.data() + newdir.size(), ptr, remain_len);
         std::memcpy(s.data(), newdir.data(), newdir.size());
         return s;
@@ -761,7 +782,7 @@ auto str::replace_dirname(std::string& s, std::string_view newdir) -> std::strin
 }
 
 auto str::basename(std::string& s) -> std::string& {
-    auto ptr = basename_ptr(s);
+    auto ptr = view::basename_ptr(s);
     auto len = s.size() - (ptr - s.c_str());
     std::memmove(s.data(), ptr, len);
     s.resize(len);
@@ -769,13 +790,13 @@ auto str::basename(std::string& s) -> std::string& {
 }
 
 auto str::remove_basename(std::string& s) -> std::string& {
-    auto ptr = basename_ptr(s);
+    auto ptr = view::basename_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
 auto str::replace_basename(std::string& s, std::string_view name) -> std::string& {
-    const_pointer ptr = basename_ptr(s);
+    const_pointer ptr = view::basename_ptr(s);
     size_type dir_len = (ptr - s.c_str());
     s.reserve(dir_len + name.size());
     s.resize(dir_len);
@@ -787,13 +808,13 @@ auto str::replace_basename(std::string& s, std::string_view name) -> std::string
 // }
 
 auto str::remove_extname(std::string& s) -> std::string& {
-    auto ptr = extname_ptr(s);
+    auto ptr = view::extname_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
 auto str::replace_extname(std::string& s, std::string_view name) -> std::string& {
-    pointer ptr = const_cast<pointer>(extname_ptr(s));
+    auto ptr = const_cast<pointer>(view::extname_ptr(s));
     s.resize((ptr - s.c_str()) + name.size());
     std::memcpy(ptr, name.data(), name.size());
     return s;
@@ -830,6 +851,31 @@ auto str::replace_extname(std::string& s, std::string_view name) -> std::string&
 // }
 
 auto str::read_all(const std::string& filename) -> std::string {
+    std::string result;
+
+    FILE* file = fopen(filename.c_str(), "r");
+    if (file == nullptr) {
+        return result;
+    }
+
+    struct stat buff {};
+    if (fstat(fileno(file), &buff) != 0) {
+        return result;
+    }
+
+    result.resize(buff.st_size);
+
+    errno = 0;
+    size_t n = fread(result.data(), 1, buff.st_size, file);
+    if (n == 0) {
+        return result;
+    }
+
+    assert(n <= result.size());
+
+    result.resize(n);
+
+    return result;
 }
 
 auto str::read_line(FILE* file) -> std::string {
@@ -858,6 +904,8 @@ auto str::read_line(FILE* file) -> std::string {
             }
         }
     }
+
+    return result;
 }
 
 auto str::read_line(std::istream& file) -> std::string {
@@ -909,7 +957,7 @@ auto str::read_lines(FILE* file, size_type max_n) -> std::vector<std::string> {
     }
 
     std::vector<std::string> result;
-    read_lines(file, [max_n, &result](size_type line_index, std::string_view line_text) -> int {
+    read_lines(file, [max_n, &result](size_type line_index[[maybe_unused]], std::string_view line_text) -> int {
         result.emplace_back(line_text);
         if (result.size() == max_n) {
             return 1;
@@ -917,6 +965,8 @@ auto str::read_lines(FILE* file, size_type max_n) -> std::vector<std::string> {
 
         return 0;
     });
+
+    return result;
 }
 
 auto str::read_lines(std::istream& file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {
@@ -938,7 +988,7 @@ auto str::read_lines(std::istream& file, size_type max_n) -> std::vector<std::st
     }
 
     std::vector<std::string> result;
-    read_lines(file, [max_n, &result](size_type line_index, std::string_view line_text) -> int {
+    read_lines(file, [max_n, &result](size_type line_index [[maybe_unused]], std::string_view line_text) -> int {
         result.emplace_back(line_text);
         if (result.size() == max_n) {
             return 1;

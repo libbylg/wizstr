@@ -331,21 +331,21 @@ public:
     static auto dirname(std::string_view s) -> std::string;
     static auto remove_dirname(std::string_view s) -> std::string;
     static auto replace_dirname(std::string_view s, std::string_view newname) -> std::string;
-    static auto split_dirname(std::string_view s) -> std::tuple<std::string, std::string>;
+    static auto split_dirname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
 
     //  处理路径中文件名的部分
     static auto basename_view(std::string_view s) -> std::string_view;
     static auto basename(std::string_view s) -> std::string;
     static auto remove_basename(std::string_view s) -> std::string;
     static auto replace_basename(std::string_view s, std::string_view name) -> std::string;
-    static auto split_basename(std::string_view s) -> std::tuple<std::string, std::string>;
+    static auto split_basename(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
 
     // 扩展名相关操作
     static auto extname_view(std::string_view s) -> std::string_view;
     static auto extname(std::string_view s) -> std::string;
     static auto remove_extname(std::string_view s) -> std::string;
     static auto replace_extname(std::string_view s, std::string_view name) -> std::string;
-    static auto split_extname(std::string_view s) -> std::tuple<std::string, std::string>;
+    static auto split_extname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
 
     //  转换为 hash 值
     static auto hash(std::string_view s, uint32_t mod) -> uint32_t;

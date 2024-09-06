@@ -144,7 +144,6 @@ public:
     static auto to_lower(std::string& s) -> std::string&;
     static auto to_upper(std::string& s) -> std::string&;
     static auto swap_case(std::string& s) -> std::string&;
-    static auto case_fold(std::string& s) -> std::string&;
 
     // 字符映射
     static auto translate(std::string& s, const char_mapping_proc& proc) -> std::string&;
