@@ -991,6 +991,8 @@ auto view::title(std::string_view s) -> std::string {
 }
 
 auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
+    std::string result{s};
+    return str::invert(result, pos, max_n);
 }
 
 // 字符串生成
@@ -1164,88 +1166,84 @@ auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::st
 // auto view::split_map(const std::string_view s) -> std::map<std::string, std::string> {
 // }
 
-// auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
-//     pointer ptr = s.data();
-//     while (*ptr) {
-//         *ptr = proc(*ptr);
-//         ptr++;
-//     }
-//     return s;
-// }
+auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
+    std::string result{s};
+    return str::translate(s, proc);
+}
 
-// auto view::simplified_proc(std::string_view s, const char_checker_proc& proc) -> std::string {
-//     if (s.empty()) {
-//         return s;
-//     }
+auto view::simplified(std::string_view s, const char_checker_proc& proc) -> std::string {
+    if (s.empty()) {
+        return s;
+    }
 
-//     bool found = false;
-//     const_pointer w = s.data();
-//     pointer r = s.data();
-//     while (*r != '\0') {
-//         value_type ch = *r;
-//         if (found) {
-//             if (proc(ch)) {
-//                 r++;
-//                 continue;
-//             }
+    bool found = false;
+    const_pointer w = s.data();
+    pointer r = s.data();
+    while (*r != '\0') {
+        value_type ch = *r;
+        if (found) {
+            if (proc(ch)) {
+                r++;
+                continue;
+            }
 
-//             found = false;
-//             *(w++) = *(r++);
-//             continue;
-//         }
+            found = false;
+            *(w++) = *(r++);
+            continue;
+        }
 
-//         if (proc(ch)) {
-//             found = true;
-//             *(w++) = ' ';
-//             r++;
-//             continue;
-//         }
+        if (proc(ch)) {
+            found = true;
+            *(w++) = ' ';
+            r++;
+            continue;
+        }
 
-//         *(w++) = *(r++);
-//     }
+        *(w++) = *(r++);
+    }
 
-//     s.resize(w - s.data());
-//     return s;
-// }
+    s.resize(w - s.data());
+    return s;
+}
 
-// auto view::simplified(std::string_view s) -> std::string {
-//     if (s.empty()) {
-//         return std::string{s};
-//     }
+auto view::simplified(std::string_view s) -> std::string {
+    if (s.empty()) {
+        return std::string{s};
+    }
 
-//     std::string result;
-//     bool found = true;
-//     const_pointer r = s.data();
-//     while (*r != '\0') {
-//         value_type ch = *r;
-//         if (found) {
-//             if (std::isspace(ch)) {
-//                 r++;
-//                 continue;
-//             }
+    std::string result;
+    bool found = true;
+    const_pointer r = s.data();
+    while (*r != '\0') {
+        value_type ch = *r;
+        if (found) {
+            if (std::isspace(ch)) {
+                r++;
+                continue;
+            }
 
-//             found = false;
-//             result.append(r, 1);
-//             r++;
-//             continue;
-//         }
+            found = false;
+            result.append(r, 1);
+            r++;
+            continue;
+        }
 
-//         if (std::isspace(ch)) {
-//             found = true;
-//         }
+        if (std::isspace(ch)) {
+            found = true;
+        }
 
-//         result.append(r, 1);
-//         r++;
-//     }
+        result.append(r, 1);
+        r++;
+    }
 
-//     if (!result.empty()) {
-//         if (std::isspace(result.back())) {
-//             result.resize(result.size() - 1);
-//         }
-//     }
+    if (!result.empty()) {
+        if (std::isspace(result.back())) {
+            result.resize(result.size() - 1);
+        }
+    }
 
-//     return result;
-// }
+    return result;
+}
 
 // auto view::simplified_inplace(std::string_view s) -> std::string {
 //     if (s.empty()) {

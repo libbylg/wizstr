@@ -255,10 +255,7 @@ public:
     static auto split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view>;
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
-    static auto split_path(std::string_view s, view_consumer_proc proc) -> void;
-
-    // 将 s 视作路径，拆分出该路径的驱动字符串（仅win下有效）
-    static auto split_drive(std::string_view s) -> std::string;
+    static auto split_path(view_consumer_proc proc) -> void;
 
     // 拆分 csv 数据
     static auto split_csv(std::string_view s) -> std::vector<std::string>;
@@ -274,32 +271,35 @@ public:
     static auto case_fold(std::string_view s) -> std::string;
 
     // 字符映射
-    static auto translate(std::string_view s, const char_mapping_proc& proc) -> std::string&;
+    static auto translate(std::string_view s, const char_mapping_proc& proc) -> std::string;
     static auto translate(std::string_view s, std::string_view from, std::string_view to) -> std::string;
 
     // 字符串化简，将字符串中的多个空白压缩成一个空格
-    static auto simplified_proc(std::string_view s, const char_checker_proc& proc) -> std::string;
     static auto simplified(std::string_view s) -> std::string;
 
     // 去掉字符串左侧的空白
-    static auto trim_left_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_left(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_left(std::string_view s) -> std::string;
 
     // 去掉字符串右侧的空白
-    static auto trim_right_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_right(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_right(std::string_view s) -> std::string;
 
     // 去掉字符串首尾的空白
-    static auto trim_surrounding_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_surrounding(std::string_view s) -> std::string;
 
     // 去掉字符串中任何位置的空白
-    static auto trim_anywhere_proc(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_anywhere(std::string_view s) -> std::string;
 
     // 切除
     static auto drop_left(std::string_view s, size_type n) -> std::string;
     static auto drop_right(std::string_view s, size_type n) -> std::string;
+
+    //  拷贝,交换,填充
+    static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;
+    static auto fill(pointer dest, size_type size, std::string_view s) -> size_type;
 
     // 变量展开
     using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
@@ -318,8 +318,6 @@ public:
     // 路径正常化
     static auto normpath(std::string_view s) -> std::string;
 
-    //  拷贝和交换
-    static auto copy(pointer dest, size_type max_n, std::string_view s) -> size_type;
 
     // 路径处理
     static auto is_absolute(std::string_view s) -> bool;

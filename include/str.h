@@ -137,7 +137,6 @@ public:
     //  特殊字符串生成
     static auto repeat(std::string& s, size_type times) -> std::string&;
 
-
     //  大小写转换
     static auto to_lower(std::string& s) -> std::string&;
     static auto to_upper(std::string& s) -> std::string&;
@@ -148,7 +147,6 @@ public:
     static auto translate(std::string& s, std::string_view from, std::string_view to) -> std::string&;
 
     // 字符串化简，将字符串中的多个空白压缩成一个空格
-    static auto simplified(std::string& s, const char_checker_proc& proc) -> std::string&;
     static auto simplified(std::string& s) -> std::string&;
 
     // 去掉字符串左侧的空白
