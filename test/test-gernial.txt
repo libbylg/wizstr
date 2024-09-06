@@ -1,10 +1,2 @@
-#include "tester.h"
-
-#include "tiny/bytes.h"
-
-#include <cstdint>
-#include <string>
-
-#ifndef SECTION
-#define SECTION(xx)
-#endif
+ABCDE12345
+ABCDE12345

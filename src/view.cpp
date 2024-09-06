@@ -1624,3 +1624,88 @@ auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::st
 //
 //     return result;
 // }
+
+//  处理路径中文件名的部分
+auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
+    assert(!s.empty());
+
+    std::string::const_pointer ptr = s.data() + s.size();
+    while (ptr > s.data()) {
+#ifdef WIN32
+        if ((*(ptr - 1) == '/') || (*(ptr - 1) == '\\')) {
+            break;
+        }
+#else
+        if (*(ptr - 1) == '/') {
+            break;
+        }
+#endif
+    }
+
+    return ptr;
+}
+
+// 扩展名相关操作
+auto view::extname_ptr(std::string_view s) -> std::string::const_pointer {
+    assert(!s.empty());
+
+    std::string::const_pointer base_ptr = basename_ptr(s);
+    std::string::const_pointer end = s.data() + s.size();
+
+    if (base_ptr[0] == '.') {
+        while (base_ptr < end) {
+            if (*base_ptr != '.') {
+                break;
+            }
+            base_ptr++;
+        }
+    }
+
+    std::string::const_pointer ptr = s.data() + s.size();
+
+    return ptr;
+}
+
+auto view::dirname_ptr(std::string_view s) -> std::string::const_pointer {
+    auto ptr = basename_ptr(s);
+    while (ptr > s.data()) {
+        if (*(ptr - 1) != '\\') {
+            break;
+        }
+
+        ptr--;
+    }
+    return ptr;
+}
+
+auto view::dirname_view(std::string_view s) -> std::string_view {
+    auto ptr = view::dirname_ptr(s);
+    return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
+}
+
+auto view::dirname(std::string_view s) -> std::string {
+    return std::string{dirname_view(s)};
+}
+
+auto view::remove_dirname(std::string_view s) -> std::string {
+    auto ptr = view::dirname_ptr(s);
+    return std::string{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
+}
+
+auto view::replace_dirname(std::string_view s, std::string_view newdir) -> std::string {
+    auto ptr = view::dirname_ptr(s);
+    auto remain_len = (s.data() + s.size() - ptr);
+    size_type result_len = newdir.size() + remain_len;
+    std::string result;
+    result.reserve(result_len);
+    result.append(newdir);
+    result.append(ptr, result_len);
+    return result;
+}
+
+auto view::split_dirname(std::string_view s) -> std::tuple<std::string, std::string> {
+    auto base_ptr = view::basename_ptr(s);
+    auto dir_ptr = view::dirname_ptr({s.data(), static_cast<size_type>(base_ptr - s.data())});
+    return {{s.data(), static_cast<size_type>(dir_ptr - s.data())},
+        {base_ptr, static_cast<size_type>((s.data() + s.size()) - base_ptr)}};
+}

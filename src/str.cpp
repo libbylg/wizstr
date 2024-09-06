@@ -722,55 +722,43 @@ auto str::trim_surrounding(std::string& s) -> std::string& {
 // auto str::normpath(std::string& s) -> std::string& {
 // }
 
-//  处理路径中文件名的部分
-static auto basename_ptr(std::string_view s) -> std::string::const_pointer {
-    assert(!s.empty());
 
-    std::string::const_pointer ptr = s.data() + s.size();
-    while (ptr > s.data()) {
-#ifdef WIN32
-        if ((*(ptr - 1) == '/') || (*(ptr - 1) == '\\')) {
-            break;
-        }
-#else
-        if (*(ptr - 1) == '/') {
-            break;
-        }
-#endif
-    }
-
-    return ptr;
+auto str::dirname(std::string& s) -> std::string& {
+    auto ptr = view::dirname_ptr(s);
+    s.resize(ptr - s.c_str());
+    return s;
 }
 
-// 扩展名相关操作
-static auto extname_ptr(std::string_view s) -> std::string::const_pointer {
-    assert(!s.empty());
-
-    std::string::const_pointer base_ptr = basename_ptr(s);
-    std::string::const_pointer end = s.data() + s.size();
-
-    if (base_ptr[0] == '.') {
-        while (base_ptr < end) {
-            if (*base_ptr != '.') {
-                break;
-            }
-            base_ptr++;
-        }
+auto str::remove_dirname(std::string& s) -> std::string& {
+    auto ptr = view::dirname_ptr(s);
+    size_type shift = s.size() - (ptr - s.data());
+    if (shift > 0) {
+        std::memmove(s.data(), ptr, shift);
     }
 
-    std::string::const_pointer ptr = s.data() + s.size();
-
-    return ptr;
+    s.resize(shift);
+    return s;
 }
 
-// auto str::dirname(std::string& s) -> std::string& {
-// }
+auto str::replace_dirname(std::string& s, std::string_view newdir) -> std::string& {
+    auto ptr = view::dirname_ptr(s);
+    size_type remain_len = s.data() + s.size() - ptr;
+    size_type result_len = newdir.size() + remain_len;
+    if (result_len < s.capacity()) {
+        s.resize(result_len);;
+        std::memmove(s.data() + newdir.size(), ptr, remain_len);
+        std::memcpy(s.data(), newdir.data(), newdir.size());
+        return s;
+    }
 
-// auto str::remove_dirname(std::string& s) -> std::string& {
-// }
+    std::string result;
+    result.reserve(result_len);
+    result.append(result);
+    result.append(ptr, remain_len);
+    s.swap(result);
 
-// auto str::replace_dirname(std::string& s, std::string_view newname) -> std::string& {
-// }
+    return s;
+}
 
 auto str::basename(std::string& s) -> std::string& {
     auto ptr = basename_ptr(s);

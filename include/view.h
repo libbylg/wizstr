@@ -321,6 +321,11 @@ public:
     static auto is_absolute(std::string_view s) -> bool;
     static auto is_relative(std::string_view s) -> bool;
 
+    // 基本的路径操控函数
+    static auto basename_ptr(std::string_view s) -> std::string::const_pointer;
+    static auto extname_ptr(std::string_view s) -> std::string::const_pointer;
+    static auto dirname_ptr(std::string_view s) -> std::string::const_pointer;
+
     // 将 s 视作为文件路径，获取其目录名
     static auto dirname_view(std::string_view s) -> std::string_view;
     static auto dirname(std::string_view s) -> std::string;
