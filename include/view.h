@@ -197,21 +197,35 @@ public:
     // 生成由 width 个空格组成的新字符串
     static auto spaces(size_type width) -> std::string;
     static auto skip_space(std::string_view s, size_type pos) -> size_type;
-    static auto next_space(std::string_view s, size_type pos) -> size_type;
-    static auto prev_space(std::string_view s, size_type pos) -> size_type;
 
-    //  基于本字符串生成新字符串
-    static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
+    // 用指定的分隔符,拼接一个字符串序列
+    static auto join_list(std::string_view s, const view_provider_proc& proc) -> std::string;
+    static auto join_list(const view_provider_proc& proc) -> std::string;
+    template <typename Sequence, typename = typename Sequence::const_iterator>
+    static auto join_list(std::string_view s, const Sequence& items) -> std::string {
+        std::string result;
+        auto itr = items.begin();
+        return join_list([&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
+
+            return *(itr++);
+        });
+    }
+
+    template <typename Sequence, typename = typename Sequence::const_iterator>
+    static auto join_list(const Sequence& items) -> std::string {
+        return join_list(",", items);
+    }
 
     // 使用逗号和冒号拼接 map
+    static auto join_map(std::string_view s[2], const view_pair_provider_proc& proc) -> std::string;
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
 
-    // 使用逗号拼接 list
-    static auto join_list(const view_pair_provider_proc& proc) -> std::string;
 
     // 文件路径拼接
     static auto join_path(const view_provider_proc& proc) -> std::string;
-    static auto join_path(std::initializer_list<std::string_view> items) -> std::string;
     template <typename Sequence, typename = typename Sequence::const_iterator>
     static auto join_path(const Sequence& items) -> std::string {
         auto itr = items.begin();
@@ -227,21 +241,18 @@ public:
     // 拼接成搜索路径
     static auto join_search_path(const view_provider_proc& proc) -> std::string;
 
-    // 字符串拼接
-    static auto concat(const view_provider_proc& proc) -> std::string;
-
-
     // 拆分字符串
     static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, std::string_view sep) -> std::vector<std::string>;
-    static auto split_list(std::string_view s, value_type sep) -> std::vector<std::string>;
+    static auto split_list(std::string_view s, value_type sep = ',') -> std::vector<std::string>;
 
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
-    static auto split_map(std::string_view s, view_pair_consumer_proc proc) -> void;
+    static auto split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void;
     static auto split_map(const std::string_view s) -> std::map<std::string, std::string>;
 
     // 按照换行符将字符串 s，拆分长多行
     static auto split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void;
+    static auto split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view>;
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
     static auto split_path(std::string_view s, view_consumer_proc proc) -> void;

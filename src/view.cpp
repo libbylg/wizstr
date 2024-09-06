@@ -1020,77 +1020,68 @@ auto view::spaces(size_type width) -> std::string {
 }
 
 auto view::skip_space(std::string_view s, size_type pos) -> size_type {
+    if (pos >= s.size()) {
+        return s.size();
+    }
+
+    const_pointer ptr = s.data() + pos;
+    while (ptr < s.data() + s.size()) {
+        if (!std::isspace(*ptr)) {
+            break;
+        }
+        ptr++;
+    }
+
+    return ptr - s.data();
 }
 
-auto view::next_space(std::string_view s, size_type pos) -> size_type {
+auto view::join_list(std::string_view s, const view_provider_proc& proc) -> std::string {
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        if (!result.empty()) {
+            result.append(s);
+        }
+        result.append(item.value());
+    }
+    return result;
 }
 
-auto view::prev_space(std::string_view s, size_type pos) -> size_type {
+auto view::join_list(const view_provider_proc& proc) -> std::string {
+    return view::join_list(",", proc);
 }
 
-// //  基于本字符串生成新字符串
+auto view::join_map(std::string_view s[2], const view_pair_provider_proc& proc) -> std::string {
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        if (!result.empty()) {
+            result.append(std::get<0>(item.value()));
+            result.append(s[1]);
+            result.append(std::get<1>(item.value()));
+            result.append(s[0]);
+        }
+    }
+    return result;
+}
 
-// auto view::join(std::string_view s, const view_provider_proc& proc) -> std::string {
-//     std::string result;
-//     for (auto item = proc(); item; item = proc()) {
-//         if (!result.empty()) {
-//             result.append(s);
-//         }
-//         result.append(item.value());
-//     }
-//     return result;
-// }
+auto view::join_map(const view_pair_provider_proc& proc) -> std::string {
+    std::string_view sep[]{"=", ","};
+    return view::join_map(sep, proc);
+}
 
-// // 路径拼接
-// auto view::join_path(const view_provider_proc& proc) -> std::string {
-//     std::string result;
-//     for (auto item = proc(); item; item = proc()) {
-//         if (!result.empty()) {
-//             result.append("/");
-//         }
-//         result.append(item.value());
-//     }
-//     return result;
-// }
+auto view::join_path(const view_provider_proc& proc) -> std::string {
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        if (!result.empty()) {
+            result.append("/");
+        }
+        result.append(item.value());
+    }
+    return result;
+}
 
-// auto view::join_path(std::initializer_list<std::string_view> items) -> std::string {
-//     auto itr = items.begin();
-//     return join_path([&itr, &items]() -> std::optional<std::string_view> {
-//         if (itr == items.end()) {
-//             return {};
-//         }
-
-//         return *itr;
-//     });
-// }
-
-// auto view::join_search_path(const view_provider_proc& proc) -> std::string {
-//     return join(":", proc);
-// }
-
-// auto view::concat(const view_provider_proc& proc) -> std::string {
-//     std::string result;
-//     auto item = proc();
-//     while (item) {
-//         result.append(item.value());
-//     }
-//     return result;
-// }
-
-// auto view::title_inplace(std::string_view s) -> std::string {
-//     if (s.empty()) {
-//         return s;
-//     }
-
-//     s[0] = static_cast<value_type>(std::toupper(s[0]));
-//     return s;
-// }
-
-// auto view::title(std::string_view s) -> std::string {
-//     std::string result{s};
-//     title_inplace(result);
-//     return result;
-// }
+auto view::join_search_path(const view_provider_proc& proc) -> std::string {
+    return view::join_list(":", proc);
+}
 
 // //  反转：字符串逆序
 // auto view::invert_inplace(std::string_view s, size_type pos, size_type max_n) -> std::string {
@@ -1154,6 +1145,24 @@ auto view::split_list(std::string_view s, std::string_view sep) -> std::vector<s
 auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::string> {
     return split_list(s, std::string_view{&sep, 1});
 }
+
+//auto view::split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void {
+//}
+//
+//auto view::split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view> {
+//}
+//
+//auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
+//}
+//
+//auto view::split_csv(std::string_view s) -> std::vector<std::string> {
+//}
+
+// auto view::split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void {
+// }
+//
+// auto view::split_map(const std::string_view s) -> std::map<std::string, std::string> {
+// }
 
 // auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
 //     pointer ptr = s.data();
