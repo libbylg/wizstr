@@ -1,49 +1,88 @@
-//
-// Created by root on 9/8/24.
-//
-// TEST_CASE("has_prefix") {
-//
-//    SECTION("一般情况") {
-//        REQUIRE(str::has_prefix("aaa", "aa") == true);
-//    }
-//    SECTION("无共同前缀") {
-//        REQUIRE(str::has_prefix("aaa", "bb") == false);
-//    }
-//    SECTION("完全相同") {
-//        REQUIRE(str::has_prefix("aaa", "aaa") == true);
-//    }
-//    SECTION("部分为空") {
-//        REQUIRE(str::has_prefix("", "aaa") == false);
-//        REQUIRE(str::has_prefix("aaa", "") == true);
-//    }
-//    SECTION("空对空") {
-//        REQUIRE(str::has_prefix("", "") == true);
-//    }
-//    SECTION("包含关系") {
-//        REQUIRE(str::has_prefix("aaa", "aa") == true);
-//    }
-//
-//    SECTION("简单测试") {
-//        std::string s("HelloWorld");
-//        REQUIRE(str::has_prefix(s, "Hello"));
-//        REQUIRE(str::has_prefix(s, std::string("Hello")));
-//        REQUIRE(str::has_prefix(s, 'H'));
-//        REQUIRE(str::has_prefix(s, { "HelloXYZ", 5 }));
-//        REQUIRE(str::has_prefix(s, { "", 0 }));
-//        REQUIRE(str::has_prefix(s, ""));
-//    }
-//
-//    SECTION("空字符串找前缀") {
-//        std::string s("");
-//        REQUIRE(str::has_prefix(s, "Hello") == false);
-//        REQUIRE(str::has_prefix(s, std::string("Hello")) == false);
-//        REQUIRE(str::has_prefix(s, 'H') == false);
-//        REQUIRE(str::has_prefix(s, { "HelloXYZ", 5 }) == false);
-//        REQUIRE(str::has_prefix(s, { "", 0 }) == true);
-//        REQUIRE(str::has_prefix(s, "") == true);
-//    }
-//}
-//
+#include "catch2/catch_all.hpp"
+
+#include "str.h"
+#include "view.h"
+
+TEST_CASE("prefix") {
+    SECTION("一般情况") {
+        REQUIRE(view::prefix("aaa", "aab") == 2);
+    }
+    SECTION("无共同前缀") {
+        REQUIRE(view::prefix("aaa", "bbb") == 0);
+    }
+    SECTION("完全相同") {
+        REQUIRE(view::prefix("aaa", "aaa") == 3);
+    }
+    SECTION("部分为空") {
+        REQUIRE(view::prefix("", "aaa") == 0);
+        REQUIRE(view::prefix("aaa", "") == 0);
+    }
+    SECTION("空对空") {
+        REQUIRE(view::prefix("", "") == 0);
+    }
+    SECTION("包含关系") {
+        REQUIRE(view::prefix("aaa", "aa") == 2);
+        REQUIRE(view::prefix("aa", "aaa") == 2);
+    }
+}
+
+TEST_CASE("has_prefix") {
+    SECTION("一般情况") {
+        REQUIRE(view::has_prefix("aaa", "aa") == true);
+    }
+    SECTION("无共同前缀") {
+        REQUIRE(view::has_prefix("aaa", "bb") == false);
+    }
+    SECTION("完全相同") {
+        REQUIRE(view::has_prefix("aaa", "aaa") == true);
+    }
+    SECTION("部分为空") {
+        REQUIRE(view::has_prefix("", "aaa") == false);
+        REQUIRE(view::has_prefix("aaa", "") == true);
+    }
+    SECTION("空对空") {
+        REQUIRE(view::has_prefix("", "") == true);
+    }
+    SECTION("包含关系") {
+        REQUIRE(view::has_prefix("aaa", "aa") == true);
+    }
+    SECTION("空字符串找前缀") {
+        REQUIRE(view::has_prefix("", "Hello") == false);
+        REQUIRE(view::has_prefix("Hello", "") == false);
+        REQUIRE(view::has_prefix("", "") == true);
+    }
+    SECTION("字符前缀") {
+        REQUIRE(view::has_prefix("HelloWorld", 'H') == true);
+        REQUIRE(view::has_prefix("HelloWorld", 'W') == false);
+        REQUIRE(view::has_prefix("", 'H') == false);
+        REQUIRE(view::has_prefix("", '\0') == false);
+    }
+
+}
+
+TEST_CASE("suffix") {
+    SECTION("一般情况") {
+        REQUIRE(view::suffix("aaa", "baa") == 2);
+    }
+    SECTION("无共同后缀") {
+        REQUIRE(view::suffix("aaa", "bbb") == 0);
+    }
+    SECTION("完全相同") {
+        REQUIRE(view::suffix("aaa", "aaa") == 3);
+    }
+    SECTION("部分为空") {
+        REQUIRE(view::suffix("", "aaa") == 0);
+        REQUIRE(view::suffix("aaa", "") == 0);
+    }
+    SECTION("空对空") {
+        REQUIRE(view::suffix("", "") == 0);
+    }
+    SECTION("包含关系") {
+        REQUIRE(view::suffix("aaa", "aa") == 2);
+        REQUIRE(view::suffix("aa", "aaa") == 2);
+    }
+}
+
 // TEST_CASE("str::has_suffix") {
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
@@ -55,7 +94,6 @@
 //        REQUIRE(str::has_suffix(s, ""));
 //    }
 //}
-
 
 // TEST(tiny_bytes, prefix_of) {
 //     SECTION("首个参数不同") {
@@ -110,4 +148,3 @@
 //         ASSERT_EQ(0, std::string::suffix_of(std::string{ "" }, std::string{ "abc" }));
 //     }
 // }
-

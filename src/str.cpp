@@ -339,7 +339,7 @@ auto str::fill(std::string& s, std::string_view other, size_type pos, size_type 
         ptr += other.size();
     }
 
-    if ((max_n % other.size()) >= 0) {
+    if ((max_n % other.size()) > 0) {
         std::memcpy(ptr, other.data(), (max_n % other.size()));
     }
 

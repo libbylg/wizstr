@@ -376,9 +376,11 @@ auto view::find_next_regex(std::string_view s, std::string_view pattern, size_ty
 // }
 
 auto view::find_next_eol(std::string_view s, size_type pos) -> std::optional<std::string_view> {
-    if (s.empty()) {
+    if (pos >= s.size()) {
         return std::nullopt;
     }
+
+    s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
 
     const_pointer endptr = (s.data() + s.size());
     const_pointer ptr = s.data();
@@ -400,6 +402,8 @@ auto view::find_next_eol(std::string_view s, size_type pos) -> std::optional<std
 
         ptr++;
     }
+
+    return std::nullopt;
 }
 
 // auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
@@ -1359,8 +1363,8 @@ auto view::simplified(std::string_view s) -> std::string {
     return result;
 }
 
-auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string {
-}
+// auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string {
+// }
 
 // auto view::trim_left(std::string_view s) -> std::string {
 // }

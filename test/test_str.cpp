@@ -5,27 +5,7 @@
 
 #include <fstream>
 
-TEST_CASE("prefix", "prefix") {
-    SECTION("一般情况") {
-        REQUIRE(view::prefix("aaa", "aab") == 2);
-    }
-    SECTION("无共同前缀") {
-        REQUIRE(view::prefix("aaa", "bbb") == 0);
-    }
-    SECTION("完全相同") {
-        REQUIRE(view::prefix("aaa", "aaa") == 3);
-    }
-    SECTION("部分为空") {
-        REQUIRE(view::prefix("", "aaa") == 0);
-        REQUIRE(view::prefix("aaa", "") == 0);
-    }
-    SECTION("空对空") {
-        REQUIRE(view::prefix("", "") == 0);
-    }
-    SECTION("包含关系") {
-        REQUIRE(view::prefix("aaa", "aa") == 2);
-    }
-}
+
 
  TEST_CASE("split_list", "as vector") {
  //TEST_CASE(split_list, as_vector) {
