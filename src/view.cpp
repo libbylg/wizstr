@@ -385,7 +385,7 @@ auto view::find_next_eol(std::string_view s, size_type pos) -> std::optional<std
     while (ptr < endptr) {
         if (*ptr == '\r') [[unlikely]] {
             // 遇到 xxx\r\nyyyy
-            if (((ptr + 1) < endptr) && (*ptr == '\n')) {
+            if (((ptr + 1) < endptr) && (*(ptr + 1) == '\n')) {
                 return std::string_view{ptr, 2};
             }
 

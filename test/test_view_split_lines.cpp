@@ -18,20 +18,14 @@ static auto eq(const std::vector<elem1_type>& a, const std::vector<elem1_type>& 
     return true;
 }
 
-// TEST_CASE("view::split_list") {
-//     SECTION("单个字符作为分隔符") {
-//         REQUIRE(eq(view::split_list("a,b,c,", ','), std::vector<std::string_view>{"a", "b", "c", ""}));
-//     }
+static auto operator==(const std::vector<std::string_view>& a, const std::vector<std::string_view>& b) -> bool {
+    return eq(a, b);
+}
 
-TEST_CASE("view::split_lines") {
+TEST_CASE("view::split_lines", "keep_ends=false") {
     SECTION("简单场景") {
         std::string s{"\na\r\nb\ncccc\n"};
-        std::vector<std::string_view> expect = {
-            "",
-            "a",
-            "b",
-            "cccc",
-        };
+        std::vector<std::string_view> expect = {"", "a", "b", "cccc"};
 
         std::vector<std::string_view> result;
         view::split_lines(s, false, [&result](std::string_view item) -> int {
@@ -41,129 +35,107 @@ TEST_CASE("view::split_lines") {
 
         REQUIRE(eq(expect, result));
     }
-    //    SECTION("空串") {
-    //        std::string s{""};
-    //        std::vector<std::string> fields = {
-    //            std::string{""},
-    //        };
-    //
-    //        std::vector<std::string> result;
-    //        s.split_lines([&result](std::string::const_pointer p, std::string::size_type n) -> int {
-    //            result.emplace_back(p, n);
-    //            return 0;
-    //        });
-    //
-    //        ASSERT_EQ(result, fields);
-    //    }
-    //    SECTION("纯换行") {
-    //        std::string s{"\n"};
-    //        std::vector<std::string> fields = {
-    //            std::string{""},
-    //            std::string{""},
-    //        };
-    //
-    //        std::vector<std::string> result;
-    //        s.split_lines([&result](std::string::const_pointer p, std::string::size_type n) -> int {
-    //            result.emplace_back(p, n);
-    //            return 0;
-    //        });
-    //
-    //        ASSERT_EQ(result, fields);
-    //    }
-    //
-    //    SECTION("综合测试") {
-    //        std::string s{"a\n\ryyy\r\r\nb\n\nc\n\r"};
-    //        std::vector<std::string> fields = {
-    //            std::string{"a"},
-    //            std::string{""},
-    //            std::string{"yyy"},
-    //            std::string{""},
-    //            std::string{"b"},
-    //            std::string{""},
-    //            std::string{"c"},
-    //            std::string{""},
-    //            std::string{""},
-    //        };
-    //
-    //        std::vector<std::string> result;
-    //        s.split_lines([&result](std::string::const_pointer p, std::string::size_type n) -> int {
-    //            result.emplace_back(p, n);
-    //            return 0;
-    //        });
-    //
-    //        ASSERT_EQ(result, fields);
-    //    }
+    SECTION("空串") {
+        std::string s{""};
+        std::vector<std::string_view> expect = {};
+
+        std::vector<std::string_view> result;
+        view::split_lines(s, false, [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            return 0;
+        });
+
+        REQUIRE(expect == result);
+    }
+    SECTION("各种换行场景") {
+        std::string s{"\n\r\r\n\r"};
+        std::vector<std::string_view> expect = {"", "", "", ""};
+
+        std::vector<std::string_view> result;
+        view::split_lines(s, false, [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            return 0;
+        });
+
+        REQUIRE(result == expect);
+    }
+    SECTION("综合测试") {
+        std::string s{"a\n\ryyy\r\r\nb\n\nc\n\r"};
+        std::vector<std::string_view> expect = {"a", "", "yyy", "", "b", "", "c", ""};
+
+        std::vector<std::string_view> result;
+        view::split_lines(s, false, [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            return 0;
+        });
+
+        REQUIRE(result == expect);
+    }
 }
 
-// TEST(tiny_bytes, split_lines_keepends) {
-//     SECTION("简单场景") {
-//         std::string s{ "\na\r\nb\ncccc\n" };
-//         std::vector<std::string> fields = {
-//             std::string{ "\n" },
-//             std::string{ "a\r\n" },
-//             std::string{ "b\n" },
-//             std::string{ "cccc\n" },
-//             std::string{ "" },
-//         };
-//
-//         std::vector<std::string> result;
-//         s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
-//             result.emplace_back(p, n);
-//             return 0;
-//         });
-//
-//         ASSERT_EQ(result, fields);
-//     }
-//     SECTION("空串") {
-//         std::string s{ "" };
-//         std::vector<std::string> fields = {
-//             std::string{ "" },
-//         };
-//
-//         std::vector<std::string> result;
-//         s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
-//             result.emplace_back(p, n);
-//             return 0;
-//         });
-//
-//         ASSERT_EQ(result, fields);
-//     }
-//     SECTION("纯换行") {
-//         std::string s{ "\n" };
-//         std::vector<std::string> fields = {
-//             std::string{ "\n" },
-//             std::string{ "" },
-//         };
-//
-//         std::vector<std::string> result;
-//         s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
-//             result.emplace_back(p, n);
-//             return 0;
-//         });
-//
-//         ASSERT_EQ(result, fields);
-//     }
-//
-//     SECTION("综合测试") {
-//         std::string s{ "a\n\ryyy\r\r\nb\n\nc\n\r" };
-//         std::vector<std::string> fields = {
-//             std::string{ "a\n" },
-//             std::string{ "\r" },
-//             std::string{ "yyy\r" },
-//             std::string{ "\r\n" },
-//             std::string{ "b\n" },
-//             std::string{ "\n" },
-//             std::string{ "c\n" },
-//             std::string{ "\r" },
-//             std::string{ "" },
-//         };
-//
-//         std::vector<std::string> result;
-//         s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
-//             result.emplace_back(p, n);
-//             return 0;
-//         });
-//
-//         ASSERT_EQ(result, fields);
-//     }
-// }
+TEST_CASE("view::split_lines", "keep_ends=true") {
+    SECTION("简单场景") {
+        std::string s{"\na\r\nb\ncccc\n"};
+        std::vector<std::string> expect = {"\n","a\r\n","b\n","cccc\n",""};
+
+        std::vector<std::string> result;
+        s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+    SECTION("空串") {
+        std::string s{""};
+        std::vector<std::string> fields = {
+            std::string{""},
+        };
+
+        std::vector<std::string> result;
+        s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+    SECTION("纯换行") {
+        std::string s{"\n"};
+        std::vector<std::string> fields = {
+            std::string{"\n"},
+            std::string{""},
+        };
+
+        std::vector<std::string> result;
+        s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+
+    SECTION("综合测试") {
+        std::string s{"a\n\ryyy\r\r\nb\n\nc\n\r"};
+        std::vector<std::string> fields = {
+            std::string{"a\n"},
+            std::string{"\r"},
+            std::string{"yyy\r"},
+            std::string{"\r\n"},
+            std::string{"b\n"},
+            std::string{"\n"},
+            std::string{"c\n"},
+            std::string{"\r"},
+            std::string{""},
+        };
+
+        std::vector<std::string> result;
+        s.split_lines(true, [&result](std::string::const_pointer p, std::string::size_type n) -> int {
+            result.emplace_back(p, n);
+            return 0;
+        });
+
+        ASSERT_EQ(result, fields);
+    }
+}
