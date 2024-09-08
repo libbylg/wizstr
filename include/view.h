@@ -56,21 +56,21 @@ public:
 
     //!  在尾部追加
     static auto append(std::string_view s, std::string_view other) -> std::string;
-    static auto append(std::string_view s, std::string_view other, size_type n) -> std::string;
+//    static auto append(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto append(std::string_view s, value_type ch) -> std::string;
     static auto append(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
 
     //!  在头部追加
     static auto prepend(std::string_view s, std::string_view other) -> std::string;
-    static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
+//    static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, value_type ch) -> std::string;
     static auto prepend(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string_view s, size_type pos, std::string_view other) -> std::string;
-    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
+//    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;

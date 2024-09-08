@@ -14,15 +14,15 @@ auto view::append(std::string_view s, std::string_view other) -> std::string {
     return result;
 }
 
-auto view::append(std::string_view s, std::string_view other, size_type n) -> std::string {
-    std::string result;
-    result.reserve(s.size() + other.size() * n);
-    result.append(s);
-    for (size_type index = 0; index < n; index++) {
-        result.append(other);
-    }
-    return result;
-}
+// auto view::append(std::string_view s, std::string_view other, size_type n) -> std::string {
+//     std::string result;
+//     result.reserve(s.size() + other.size() * n);
+//     result.append(s);
+//     for (size_type index = 0; index < n; index++) {
+//         result.append(other);
+//     }
+//     return result;
+// }
 
 auto view::append(std::string_view s, value_type ch) -> std::string {
     std::string result;
@@ -58,15 +58,15 @@ auto view::prepend(std::string_view s, std::string_view other) -> std::string {
     return result;
 }
 
-auto view::prepend(std::string_view s, std::string_view other, size_type n) -> std::string {
-    std::string result;
-    result.reserve(s.size() + other.size() * n);
-    for (size_type index = 0; index < n; index++) {
-        result.append(other);
-    }
-    result.append(s);
-    return result;
-}
+// auto view::prepend(std::string_view s, std::string_view other, size_type n) -> std::string {
+//     std::string result;
+//     result.reserve(s.size() + other.size() * n);
+//     for (size_type index = 0; index < n; index++) {
+//         result.append(other);
+//     }
+//     result.append(s);
+//     return result;
+// }
 
 auto view::prepend(std::string_view s, value_type ch) -> std::string {
     return prepend(s, std::string_view{&ch, 1});
@@ -99,18 +99,18 @@ auto view::insert(std::string_view s, size_type pos, std::string_view other) -> 
     return result;
 }
 
-auto view::insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string {
-    size_type len = other.size() * n + s.size();
-    std::string result;
-    result.reserve(len);
-    result.append(std::string_view{s.data(), pos});
-    for (size_type index = 0; index < n; index++) {
-        result.append(other);
-    }
-    result.resize(len);
-    result.append(std::string_view{s.data() + pos, s.size() - pos});
-    return result;
-}
+// auto view::insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string {
+//     size_type len = other.size() * n + s.size();
+//     std::string result;
+//     result.reserve(len);
+//     result.append(std::string_view{s.data(), pos});
+//     for (size_type index = 0; index < n; index++) {
+//         result.append(other);
+//     }
+//     result.resize(len);
+//     result.append(std::string_view{s.data() + pos, s.size() - pos});
+//     return result;
+// }
 
 auto view::insert(std::string_view s, size_type pos, value_type ch) -> std::string {
     return insert(s, pos, std::string_view{&ch, 1});
@@ -331,7 +331,7 @@ auto view::ends_with(std::string_view s, std::string_view suffix) -> bool {
 }
 
 auto view::remove_suffix(std::string_view s, std::string_view suffix) -> std::string_view {
-    if (!has_prefix(s, suffix)) {
+    if (!has_suffix(s, suffix)) {
         return s;
     }
 

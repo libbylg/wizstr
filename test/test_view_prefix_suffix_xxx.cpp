@@ -158,17 +158,95 @@ TEST_CASE("view::suffix") {
     }
 }
 
-// TEST_CASE("str::has_suffix") {
-//    SECTION("简单测试") {
-//        std::string s("HelloWorld");
-//        REQUIRE(str::has_suffix(s, "World"));
-//        REQUIRE(str::has_suffix(s, std::string("World")));
-//        REQUIRE(str::has_suffix(s, 'd'));
-//        REQUIRE(str::has_suffix(s, { "WorldXYZ", 5 }));
-//        REQUIRE(str::has_suffix(s, { "", 0 }));
-//        REQUIRE(str::has_suffix(s, ""));
-//    }
-//}
+TEST_CASE("view::has_suffix") {
+    SECTION("一般情况") {
+        REQUIRE(view::has_suffix("aaa", "baa") == false);
+    }
+    SECTION("无共同后缀") {
+        REQUIRE(view::has_suffix("aaa", "bbb") == false);
+    }
+    SECTION("完全相同") {
+        REQUIRE(view::has_suffix("aaa", "aaa") == true);
+    }
+    SECTION("部分为空") {
+        REQUIRE(view::has_suffix("", "aaa") == false);
+        REQUIRE(view::has_suffix("aaa", "") == true);
+    }
+    SECTION("空对空") {
+        REQUIRE(view::has_suffix("", "") == true);
+    }
+    SECTION("包含关系") {
+        REQUIRE(view::has_suffix("abc", "bc") == true);
+        REQUIRE(view::has_suffix("bc", "abc") == false);
+    }
+    SECTION("字符后缀") {
+        REQUIRE(view::has_suffix("HelloWorld", 'd') == true);
+        REQUIRE(view::has_suffix("HelloWorld", 'K') == false);
+        REQUIRE(view::has_suffix("", 'H') == false);
+        REQUIRE(view::has_suffix("", '\0') == false);
+    }
+}
+
+
+TEST_CASE("view::ends_with") {
+    SECTION("一般情况") {
+        REQUIRE(view::ends_with("aaa", "baa") == false);
+    }
+    SECTION("无共同后缀") {
+        REQUIRE(view::ends_with("aaa", "bbb") == false);
+    }
+    SECTION("完全相同") {
+        REQUIRE(view::ends_with("aaa", "aaa") == true);
+    }
+    SECTION("部分为空") {
+        REQUIRE(view::ends_with("", "aaa") == false);
+        REQUIRE(view::ends_with("aaa", "") == true);
+    }
+    SECTION("空对空") {
+        REQUIRE(view::ends_with("", "") == true);
+    }
+    SECTION("包含关系") {
+        REQUIRE(view::ends_with("abc", "bc") == true);
+        REQUIRE(view::ends_with("bc", "abc") == false);
+    }
+    SECTION("字符后缀") {
+        REQUIRE(view::ends_with("HelloWorld", 'd') == true);
+        REQUIRE(view::ends_with("HelloWorld", 'K') == false);
+        REQUIRE(view::ends_with("", 'H') == false);
+        REQUIRE(view::ends_with("", '\0') == false);
+    }
+}
+
+
+
+TEST_CASE("view::remove_suffix") {
+    SECTION("一般情况") {
+        REQUIRE(view::remove_suffix("aaa", "baa") == "aaa");
+    }
+    SECTION("无共同后缀") {
+        REQUIRE(view::remove_suffix("aaa", "bbb") == "aaa");
+    }
+    SECTION("完全相同") {
+        REQUIRE(view::remove_suffix("aaa", "aaa") == "");
+    }
+    SECTION("部分为空") {
+        REQUIRE(view::remove_suffix("", "aaa") == "");
+        REQUIRE(view::remove_suffix("aaa", "") == "aaa");
+    }
+    SECTION("空对空") {
+        REQUIRE(view::remove_suffix("", "") == "");
+    }
+    SECTION("包含关系") {
+        REQUIRE(view::remove_suffix("abc", "bc") == "a");
+        REQUIRE(view::remove_suffix("bc", "abc") == "bc");
+    }
+    SECTION("字符后缀") {
+        REQUIRE(view::remove_suffix("HelloWorld", 'd') == "HelloWorl");
+        REQUIRE(view::remove_suffix("HelloWorld", 'K') == "HelloWorld");
+        REQUIRE(view::remove_suffix("", 'H') == "");
+        REQUIRE(view::remove_suffix("", '\0') == "");
+    }
+}
 
 // TEST(tiny_bytes, prefix_of) {
 //     SECTION("首个参数不同") {
