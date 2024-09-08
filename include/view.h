@@ -103,7 +103,7 @@ public:
     static auto starts_with(std::string_view s, std::string_view prefix) -> bool;
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string_view;
     static auto remove_prefix(std::string_view s, value_type prefix) -> std::string_view;
-    static auto remove_prefix(std::string_view s, size_type n) -> std::string_view;
+//    static auto remove_prefix(std::string_view s, size_type n) -> std::string_view;
 
     //  后缀操作
     static auto has_suffix(std::string_view s, value_type suffix) -> bool;
@@ -112,7 +112,7 @@ public:
     static auto ends_with(std::string_view s, std::string_view suffix) -> bool;
     static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string_view;
     static auto remove_suffix(std::string_view s, value_type suffix) -> std::string_view;
-    static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
+//    static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
 
     //  一次性查找
     static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;

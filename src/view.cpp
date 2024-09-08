@@ -302,13 +302,13 @@ auto view::remove_prefix(std::string_view s, value_type prefix) -> std::string_v
     return remove_prefix(s, {&prefix, 1});
 }
 
-auto view::remove_prefix(std::string_view s, size_type n) -> std::string_view {
-    if (n >= s.size()) {
-        return {};
-    }
-
-    return std::string_view{s.data() + n, s.size() - n};
-}
+// auto view::remove_prefix(std::string_view s, size_type n) -> std::string_view {
+//     if (n >= s.size()) {
+//         return {};
+//     }
+//
+//     return std::string_view{s.data() + n, s.size() - n};
+// }
 
 auto view::has_suffix(std::string_view s, value_type suffix) -> bool {
     if (s.empty()) {
@@ -342,13 +342,13 @@ auto view::remove_suffix(std::string_view s, value_type suffix) -> std::string_v
     return remove_suffix(s, {&suffix, 1});
 }
 
-auto view::remove_suffix(std::string_view s, size_type n) -> std::string_view {
-    if (n >= s.size()) {
-        return {};
-    }
-
-    return std::string_view{s.data(), s.size() - n};
-}
+// auto view::remove_suffix(std::string_view s, size_type n) -> std::string_view {
+//     if (n >= s.size()) {
+//         return {};
+//     }
+//
+//     return std::string_view{s.data(), s.size() - n};
+// }
 
 auto view::find_next_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
     if (pos >= s.size()) {
