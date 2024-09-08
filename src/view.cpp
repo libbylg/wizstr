@@ -402,8 +402,8 @@ auto view::find_next_eol(std::string_view s, size_type pos) -> std::optional<std
     }
 }
 
-//auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
-//}
+// auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
+// }
 
 auto view::find_next_word(std::string_view s, size_type pos) -> std::optional<std::string_view> {
     if (pos < s.size()) {
@@ -1170,6 +1170,12 @@ auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::st
     return split_list(s, std::string_view{&sep, 1});
 }
 
+// auto view::split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void {
+// }
+//
+// auto view::split_map(const std::string_view s) -> std::map<std::string, std::string> {
+// }
+
 auto view::split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void {
     if (s.empty()) {
         return;
@@ -1190,7 +1196,7 @@ auto view::split_lines(std::string_view s, bool keep_ends, view_consumer_proc pr
         // 遇到结束符
         const_pointer next_start = eol.value().data() + eol.value().size();
         const_pointer line_text = s.data() + start;
-        size_type line_size = keep_ends ? (next_start -  line_text) : (next_start -  line_text - eol.value().size());
+        size_type line_size = keep_ends ? (next_start - line_text) : (next_start - line_text - eol.value().size());
         if (proc(std::string_view{line_text, line_size}) != 0) {
             return;
         }
@@ -1209,54 +1215,110 @@ auto view::split_lines(std::string_view s, bool keep_ends) -> std::vector<std::s
 }
 
 auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
+    if (s.empty()) {
+        return;
+    }
+
+    const_pointer ptr = s.data();
+    if (*ptr == '/') {
+        if (proc(std::string_view{ptr, 1}) != 0) {
+            return;
+        }
+
+        ptr++;
+    }
+
+    const_pointer endptr = s.data() + s.size();
+    while (ptr < endptr) {
+
+        // 跳过多余的斜杠，定位到起始位置
+        const_pointer start = ptr;
+        while (start >= endptr) {
+            if (*start != '/') {
+                break;
+            }
+            start++;
+        }
+
+        // 找到结束位置
+        ptr = start;
+        while (ptr >= endptr) {
+            if (*ptr == '/') {
+                break;
+            }
+            ptr++;
+        }
+
+        // 长度太短时，是无效的elem
+        auto len = static_cast<size_type>(ptr - start);
+        if (len == 0) {
+            break;
+        }
+
+        if (proc(std::string_view{start, len}) != 0) {
+            return;
+        }
+    }
 }
 
 // auto view::split_csv(std::string_view s) -> std::vector<std::string> {
 // }
 
-// auto view::split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void {
-// }
-//
-// auto view::split_map(const std::string_view s) -> std::map<std::string, std::string> {
+auto view::to_lower(std::string_view s) -> std::string {
+    std::string result{s};
+    return str::to_lower(result);
+}
+
+auto view::to_upper(std::string_view s) -> std::string {
+    std::string result{s};
+    return str::to_upper(result);
+}
+
+auto view::swap_case(std::string_view s) -> std::string {
+    std::string result{s};
+    return str::swap_case(result);
+}
+
+// auto view::case_fold(std::string_view s) -> std::string {
 // }
 
 // auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
 // }
 
-//auto view::simplified(std::string_view s, const char_checker_proc& proc) -> std::string {
-//    if (s.empty()) {
-//        return s;
-//    }
+// auto view::simplified(std::string_view s, const char_checker_proc& proc) -> std::string {
+//     if (s.empty()) {
+//         return s;
+//     }
 //
-//    bool found = false;
-//    const_pointer w = s.data();
-//    pointer r = s.data();
-//    while (*r != '\0') {
-//        value_type ch = *r;
-//        if (found) {
-//            if (proc(ch)) {
-//                r++;
-//                continue;
-//            }
+//     bool found = false;
+//     const_pointer w = s.data();
+//     pointer r = s.data();
+//     while (*r != '\0') {
+//         value_type ch = *r;
+//         if (found) {
+//             if (proc(ch)) {
+//                 r++;
+//                 continue;
+//             }
 //
-//            found = false;
-//            *(w++) = *(r++);
-//            continue;
-//        }
+//             found = false;
+//             *(w++) = *(r++);
+//             continue;
+//         }
 //
-//        if (proc(ch)) {
-//            found = true;
-//            *(w++) = ' ';
-//            r++;
-//            continue;
-//        }
+//         if (proc(ch)) {
+//             found = true;
+//             *(w++) = ' ';
+//             r++;
+//             continue;
+//         }
 //
-//        *(w++) = *(r++);
-//    }
+//         *(w++) = *(r++);
+//     }
 //
-//    s.resize(w - s.data());
-//    return s;
-//}
+//     s.resize(w - s.data());
+//     return s;
+// }
 
 auto view::simplified(std::string_view s) -> std::string {
     if (s.empty()) {
@@ -1297,45 +1359,28 @@ auto view::simplified(std::string_view s) -> std::string {
     return result;
 }
 
-// auto view::simplified_inplace(std::string_view s) -> std::string {
-//     if (s.empty()) {
-//         return s;
-//     }
+// auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string {
+// }
 
-//     bool found = true;
-//     pointer w = s.data();
-//     const_pointer r = s.c_str();
-//     while (*r != '\0') {
-//         if (found) {
-//             if (std::isspace(*r)) {
-//                 r++;
-//                 continue;
-//             }
+// auto view::trim_left(std::string_view s) -> std::string {
+// }
 
-//             found = false;
-//             *(w++) = *(r++);
-//             continue;
-//         }
+// auto view::trim_right(std::string_view s, char_checker_proc proc) -> std::string {
+// }
 
-//         if (std::isspace(*r)) {
-//             found = true;
-//             *(w++) = ' ';
-//             r++;
-//             continue;
-//         }
+// auto view::trim_right(std::string_view s) -> std::string {
+// }
 
-//         *(w++) = *(r++);
-//     }
+// auto view::trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string {
+// }
 
-//     s.resize(w - s.c_str());
+// auto view::trim_surrounding(std::string_view s) -> std::string {
+// }
 
-//     if (!s.empty()) {
-//         if (std::isspace(s.back())) {
-//             s.resize(s.size() - 1);
-//         }
-//     }
+// auto view::trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string {
+// }
 
-//     return s;
+// auto view::trim_anywhere(std::string_view s) -> std::string {
 // }
 
 // // 切除
@@ -1355,405 +1400,6 @@ auto view::simplified(std::string_view s) -> std::string {
 //     }
 
 //     return std::string{s.substr(0, s.size() - n)};
-// }
-
-// //  处理路径中文件名的部分
-// static auto str_basename_ptr(std::string_view s) -> std::string::const_pointer {
-//     ASSERT(!s.empty);
-
-//     std::string::const_pointer ptr = s.data() + s.size();
-//     while (ptr > s.data()) {
-// #ifdef WIN32
-//         if ((*(ptr - 1) == '/') || (*(ptr - 1) == '\\')) {
-//             break;
-//         }
-// #else
-//         if (*(ptr - 1) == '/') {
-//             break;
-//         }
-// #endif
-//     }
-
-//     return ptr;
-// }
-
-// // 扩展名相关操作
-// static auto str_extname_ptr(std::string_view s) -> std::string::const_pointer {
-//     ASSERT(!s.empty());
-
-//     std::string::const_pointer base_ptr = str_basename_ptr(s);
-//     std::string::const_pointer end = s.data() + s.size();
-
-//     if (base_ptr[0] == '.') {
-//         while (base_ptr < end) {
-//             if (*base_ptr != '.') {
-//                 break;
-//             }
-//             base_ptr++;
-//         }
-//     }
-
-//     std::string::const_pointer ptr = s.data() + s.size();
-
-//     return ptr;
-// }
-
-// auto view::basename(std::string_view s) -> std::string {
-//     return str_basename_ptr(s);
-// }
-
-// auto view::remove_basename(std::string_view s) -> std::string {
-//     return std::string{s.data(), str_basename_ptr(s)};
-// }
-
-// auto view::remove_basename_inplace(std::string_view s) -> std::string {
-//     const_pointer ptr = basename_ptr(s);
-//     s.resize(ptr - s.c_str());
-//     return s;
-// }
-
-// auto view::replace_basename_inplace(std::string_view s, std::string_view name) -> std::string {
-//     const_pointer ptr = basename_ptr(s);
-//     size_type dir_len = (ptr - s.c_str());
-//     s.reserve(dir_len + name.size());
-//     s.resize(dir_len);
-//     s.append(name);
-//     return s;
-// }
-
-// auto view::replace_basename(std::string_view s, std::string_view name) -> std::string {
-//     const_pointer ptr = basename_ptr(s);
-//     std::string result;
-//     result.reserve((ptr - s.c_str()) + name.size());
-//     result.append(s.c_str(), ptr - s.c_str());
-//     result.append(name);
-//     return result;
-// }
-
-// auto view::extname_ptr(std::string_view s) -> pointer {
-//     pointer ptr = basename_ptr(s);
-//     if (ptr[0] == '.') {
-//         return s.data() + s.size();
-//     }
-
-//     ptr = std::strchr(ptr, '.');
-//     if (ptr == nullptr) {
-//         return s.data() + s.size();
-//     }
-
-//     return ptr;
-// }
-
-// auto view::extname(std::string_view s) -> std::string {
-//     return extname_ptr(s);
-// }
-
-// auto view::remove_extname(std::string_view s) -> std::string {
-//     const_pointer ptr = extname_ptr(s);
-//     return s.substr(0, ptr - s.c_str());
-// }
-
-// auto view::remove_extname_inplace(std::string_view s) -> std::string {
-//     const_pointer ptr = extname_ptr(s);
-//     s.resize(ptr - s.c_str());
-//     return s;
-// }
-
-// auto view::replace_extname_inplace(std::string_view s, std::string_view name) -> std::string {
-//     pointer ptr = extname_ptr(s);
-//     s.resize((ptr - s.c_str()) + name.size());
-//     std::memcpy(ptr, name.c_str(), name.size());
-//     return s;
-// }
-
-// auto view::replace_extname(std::string_view s, std::string_view name) -> std::string {
-//     const_pointer ptr = basename_ptr(s);
-//     std::string result;
-//     result.reserve((ptr - s.c_str()) + name.size());
-//     result.append(s.c_str(), ptr - s.c_str());
-//     result.append(name);
-//     return result;
-// }
-
-// template <typename T>
-// auto view::to(std::string_view s, std::tuple<int> base) -> std::optional<T> {
-//     return {};
-// }
-//
-// template <typename T>
-// auto view::to(std::string_view s) -> std::optional<T> {
-//     return {};
-// }
-//
-// template <typename T>
-// auto view::to(std::string_view s, T def, std::tuple<int> base) -> T {
-//     auto result = to<T>(s, base);
-//     return result ? result.value() : def;
-// }
-//
-// template <typename T>
-// auto view::to(std::string_view s, T def) -> T {
-//     auto result = to<T>(s);
-//     return result ? result.value() : def;
-// }
-//
-// template <>
-// inline auto to<bool>(std::string_view s [[maybe_unused]]) -> std::optional<bool> {
-//     return {};
-// }
-//
-// template <>
-// inline auto to<float>(std::string_view s) -> std::optional<float> {
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtof(s.c_str(), &endptr);
-//     static_assert(sizeof(result) >= sizeof(float));
-//     if (result <= std::numeric_limits<float>::epsilon()) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<double>(std::string_view s) -> std::optional<double> {
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtod(s.c_str(), &endptr);
-//     static_assert(sizeof(result) >= sizeof(double));
-//     if (result <= std::numeric_limits<double>::epsilon()) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// static inline constexpr auto correct_base(int base) -> int {
-//     if (base != 0) {
-//         if (base < 2) {
-//             return 2;
-//         }
-//         if (base > 36) {
-//             return 36;
-//         }
-//     }
-//
-//     return base;
-// }
-//
-// template <>
-// inline auto to<int8_t>(std::string_view s, std::tuple<int> base) -> std::optional<int8_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int8_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int8_t>::max()) || (result < std::numeric_limits<int8_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int16_t>(std::string_view s, std::tuple<int> base) -> std::optional<int16_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int16_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int16_t>::max()) || (result < std::numeric_limits<int16_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int32_t>(std::string_view s, std::tuple<int> base) -> std::optional<int32_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int32_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int32_t>::max()) || (result < std::numeric_limits<int32_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int64_t>(std::string_view s, std::tuple<int> base) -> std::optional<int64_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-// #if defined __LP64__
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-// #else
-//     auto result = std::strtoll(s.c_str(), &endptr, nbase);
-// #endif
-//     static_assert(sizeof(result) >= sizeof(int64_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int64_t>::max()) || (result < std::numeric_limits<int64_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint8_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint8_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint8_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint8_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint16_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint16_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint16_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint16_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint32_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint32_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint32_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint32_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint64_t>(std::string_view s, std::tuple<int> base) -> std::optional<uint64_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-// #if defined __LP64__
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-// #else
-//     auto result = std::strtoull(s.c_str(), &endptr, nbase);
-// #endif
-//     static_assert(sizeof(result) >= sizeof(int64_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
 // }
 
 //  处理路径中文件名的部分

@@ -43,6 +43,9 @@ public:
     using view_consumer_proc = std::function<int(std::string_view item)>;
     using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
 
+    // path 消费器
+    using path_consumer_proc = std::function<int(int8_t type, std::string_view path_elem)>;
+
     //  映射和校验
     using char_mapping_proc = std::function<value_type(value_type)>;
     using char_checker_proc = std::function<bool(value_type ch)>;
@@ -263,8 +266,6 @@ public:
     //  大小写转换
     static auto to_lower(std::string_view s) -> std::string;
     static auto to_upper(std::string_view s) -> std::string;
-
-    //  大小写翻转
     static auto swap_case(std::string_view s) -> std::string;
 
     // 统一大小写
@@ -280,12 +281,8 @@ public:
     // 去掉字符串左侧的空白
     static auto trim_left(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_left(std::string_view s) -> std::string;
-
-    // 去掉字符串右侧的空白
     static auto trim_right(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_right(std::string_view s) -> std::string;
-
-    // 去掉字符串首尾的空白
     static auto trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_surrounding(std::string_view s) -> std::string;
 
