@@ -199,7 +199,7 @@ auto view::count(std::string_view s, std::string_view other) -> view::size_type 
 
     size_type count = 0;
 
-    size_type pos;
+    size_type pos = 0;
     while (true) {
         pos = s.find(other, pos);
         if (pos == std::string_view::npos) {
@@ -224,11 +224,9 @@ auto view::count(std::string_view s, value_type ch) -> view::size_type {
 auto view::count(std::string_view s, const char_match_proc& proc) -> view::size_type {
     size_type count = 0;
     for (value_type ch : s) {
-        auto result = proc(ch);
-        if (!result) {
-            break;
+        if (proc(ch)) {
+            count++;
         }
-        count += (result.value() ? 1 : 0);
     }
     return count;
 }

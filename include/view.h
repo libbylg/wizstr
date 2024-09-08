@@ -51,26 +51,26 @@ public:
     using char_checker_proc = std::function<bool(value_type ch)>;
 
     // 匹配和检索
-    using char_match_proc = std::function<std::optional<bool>(value_type ch)>;
+    using char_match_proc = std::function<bool(value_type ch)>;
     using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
 
     //!  在尾部追加
     static auto append(std::string_view s, std::string_view other) -> std::string;
-//    static auto append(std::string_view s, std::string_view other, size_type n) -> std::string;
+    //    static auto append(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto append(std::string_view s, value_type ch) -> std::string;
     static auto append(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
 
     //!  在头部追加
     static auto prepend(std::string_view s, std::string_view other) -> std::string;
-//    static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
+    //    static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, value_type ch) -> std::string;
     static auto prepend(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
 
     //  修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string_view s, size_type pos, std::string_view other) -> std::string;
-//    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
+    //    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
@@ -103,7 +103,7 @@ public:
     static auto starts_with(std::string_view s, std::string_view prefix) -> bool;
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string_view;
     static auto remove_prefix(std::string_view s, value_type prefix) -> std::string_view;
-//    static auto remove_prefix(std::string_view s, size_type n) -> std::string_view;
+    //    static auto remove_prefix(std::string_view s, size_type n) -> std::string_view;
 
     //  后缀操作
     static auto has_suffix(std::string_view s, value_type suffix) -> bool;
@@ -112,31 +112,31 @@ public:
     static auto ends_with(std::string_view s, std::string_view suffix) -> bool;
     static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string_view;
     static auto remove_suffix(std::string_view s, value_type suffix) -> std::string_view;
-//    static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
+    //    static auto remove_suffix(std::string_view s, size_type n) -> std::string_view;
 
     //  一次性查找
     static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
-    static auto find_prev_regex(std::string_view s, const std::regex& pattern, size_type pos = npos) -> std::optional<std::string_view>;
+    //    static auto find_prev_regex(std::string_view s, const std::regex& pattern, size_type pos = npos) -> std::optional<std::string_view>;
     static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
-    static auto find_prev_regex(std::string_view s, std::string_view pattern, size_type pos = npos) -> std::optional<std::string_view>;
+    //    static auto find_prev_regex(std::string_view s, std::string_view pattern, size_type pos = npos) -> std::optional<std::string_view>;
     static auto find_next_eol(std::string_view s, size_type pos = 0) -> std::optional<std::string_view>;
-    static auto find_prev_eol(std::string_view s, size_type pos = npos) -> size_type;
+    //    static auto find_prev_eol(std::string_view s, size_type pos = npos) -> size_type;
     static auto find_next_word(std::string_view s, size_type pos = 0) -> std::optional<std::string_view>;
-    static auto find_prev_word(std::string_view s, size_type pos = npos) -> std::optional<std::string_view>;
+    //    static auto find_prev_word(std::string_view s, size_type pos = npos) -> std::optional<std::string_view>;
 
     //  迭代找下一个
     static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
-    static auto iter_prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
+    //    static auto iter_prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
     static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
-    static auto iter_prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
+    //    static auto iter_prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
     static auto iter_next_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
-    static auto iter_prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    //    static auto iter_prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
-    static auto iter_prev_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
+    //    static auto iter_prev_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
     static auto iter_next_eol(std::string_view s, size_type& pos) -> size_type;
-    static auto iter_prev_eol(std::string_view s, size_type& pos) -> size_type;
+    //    static auto iter_prev_eol(std::string_view s, size_type& pos) -> size_type;
     static auto iter_next_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
-    static auto iter_prev_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
+    //    static auto iter_prev_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
 
     //  按各种方式遍历
     static auto foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void;
@@ -226,7 +226,6 @@ public:
     static auto join_map(std::string_view s[2], const view_pair_provider_proc& proc) -> std::string;
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
 
-
     // 文件路径拼接
     static auto join_path(const view_provider_proc& proc) -> std::string;
     template <typename Sequence, typename = typename Sequence::const_iterator>
@@ -314,7 +313,6 @@ public:
 
     // 路径正常化
     static auto normpath(std::string_view s) -> std::string;
-
 
     // 路径处理
     static auto is_absolute(std::string_view s) -> bool;
