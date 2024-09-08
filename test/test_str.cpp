@@ -1,18 +1,10 @@
+#include "catch2/catch_all.hpp"
+
 #include "str.h"
 #include "view.h"
 
-#include "catch2/catch_all.hpp"
-
-
-//#include "gtest/gtest.h"
-//
-//#define TEST_CASE TEST
-//#define SECTION(desc)
-//#define REQUIRE(expr) EXPECT_TRUE(expr)
-
 #include <fstream>
 
-// TEST_CASE("prefix", "prefix") {
 TEST_CASE("prefix", "prefix") {
     SECTION("一般情况") {
         REQUIRE(view::prefix("aaa", "aab") == 2);

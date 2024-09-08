@@ -1359,8 +1359,8 @@ auto view::simplified(std::string_view s) -> std::string {
     return result;
 }
 
-// auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string {
-// }
+auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string {
+}
 
 // auto view::trim_left(std::string_view s) -> std::string {
 // }
