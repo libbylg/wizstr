@@ -1142,6 +1142,8 @@ auto view::join_search_path(const view_provider_proc& proc) -> std::string {
 
 // 拆分字符串
 auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
+    assert(!sep.empty());
+
     size_type pos_start = 0;
     while (pos_start < s.size()) {
         size_type pos_end = s.find(sep, pos_start);
@@ -1150,8 +1152,7 @@ auto view::split_list(std::string_view s, std::string_view sep, const view_consu
         }
 
         if (proc(std::string_view{s.data() + pos_start, pos_end - pos_start}) != 0) {
-            pos_start = pos_end + sep.size();
-            break;
+            return;
         }
         pos_start = pos_end + sep.size();
     }
@@ -1159,17 +1160,22 @@ auto view::split_list(std::string_view s, std::string_view sep, const view_consu
     proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
 }
 
-auto view::split_list(std::string_view s, std::string_view sep) -> std::vector<std::string> {
-    std::vector<std::string> result;
-    split_list(s, sep, [&result](std::string_view item) -> int {
+auto view::split_list(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string_view> result;
+    split_list(s, sep, [&result, max_n](std::string_view item) -> int {
         result.emplace_back(item);
-        return 0;
+        return ((result.size() >= max_n) ? -1 : 0);
     });
+
     return result;
 }
 
-auto view::split_list(std::string_view s, value_type sep) -> std::vector<std::string> {
-    return split_list(s, std::string_view{&sep, 1});
+auto view::split_list(std::string_view s, value_type sep, size_type max_n) -> std::vector<std::string_view> {
+    return split_list(s, std::string_view{&sep, 1}, max_n);
 }
 
 // auto view::split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void {

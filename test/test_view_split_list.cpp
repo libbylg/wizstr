@@ -1,3 +1,34 @@
+#include "catch2/catch_all.hpp"
+
+#include "str.h"
+#include "view.h"
+
+template <typename elem1_type, typename elem2_type>
+static auto eq(const std::vector<elem1_type>& a, const std::vector<elem2_type>& b) -> bool {
+    if (a.size() != b.size()) {
+        return false;
+    }
+
+    for (view::size_type i = 0; i < a.size(); i++) {
+        if (a[i] != b[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+TEST_CASE("view::split_list") {
+    SECTION("单个字符作为分隔符") {
+        REQUIRE(eq(view::split_list("a,b,c,", ','), std::vector<std::string_view>{"a", "b", "c", ""}));
+    }
+    SECTION("字符串作为分隔符") {
+        REQUIRE(eq(view::split_list("a,b,c,", ","), std::vector<std::string_view>{"a", "b", "c", ""}));
+    }
+    SECTION("空串") {
+        REQUIRE(eq(view::split_list("", ","), std::vector<std::string_view>{""}));
+    }
+}
 
 //
 // // TEST_CASE("split_list", "as vector") {

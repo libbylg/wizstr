@@ -143,14 +143,14 @@ public:
     static auto foreach_word(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void;
     static auto foreach_word(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void;
     static auto foreach_word(std::string_view s, const std::function<int(std::string_view word)>& proc) -> void;
-    static auto foreach_fragment(std::string_view s, size_type pos, value_type sep, const std::function<int(size_type pos, size_type n)>& proc) -> void;
-    static auto foreach_fragment(std::string_view s, size_type pos, std::string_view sep, const std::function<int(size_type pos, size_type n)>& proc) -> void;
+    //    static auto foreach_fragment(std::string_view s, size_type pos, value_type sep, const std::function<int(size_type pos, size_type n)>& proc) -> void;
+    //    static auto foreach_fragment(std::string_view s, size_type pos, std::string_view sep, const std::function<int(size_type pos, size_type n)>& proc) -> void;
 
-    //  匹配
-    static auto is_match_wild(std::string_view s, std::string_view pattern) -> bool;
-    static auto is_match_charset(std::string_view s, charset_type set) -> bool;
-    static auto is_match_regex(std::string_view s, std::string_view pattern) -> bool;
-    static auto is_match_regex(std::string_view s, const std::regex& pattern) -> bool;
+    //    //  匹配
+    //    static auto is_match_wild(std::string_view s, std::string_view pattern) -> bool;
+    //    static auto is_match_charset(std::string_view s, charset_type set) -> bool;
+    //    static auto is_match_regex(std::string_view s, std::string_view pattern) -> bool;
+    //    static auto is_match_regex(std::string_view s, const std::regex& pattern) -> bool;
 
     //  字符串特征
     static auto is_lower(std::string_view s) -> bool;
@@ -171,8 +171,8 @@ public:
     static auto is_literal_bool(std::string_view s) -> bool;
     static auto is_literal_true(std::string_view s) -> bool;
     static auto is_literal_false(std::string_view s) -> bool;
-    static auto is_literal_real(std::string_view s) -> bool;
-    static auto is_literal_integer(std::string_view s) -> bool;
+    //    static auto is_literal_real(std::string_view s) -> bool;
+    //    static auto is_literal_integer(std::string_view s) -> bool;
 
     // 提取子串
     static auto left_n(std::string_view s, size_type n) -> std::string_view;
@@ -245,8 +245,16 @@ public:
 
     // 拆分字符串
     static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, std::string_view sep) -> std::vector<std::string>;
-    static auto split_list(std::string_view s, value_type sep = ',') -> std::vector<std::string>;
+    static auto split_list(std::string_view s, std::string_view sep, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_list(std::string_view s, value_type sep = ',', size_type max_n = npos) -> std::vector<std::string_view>;
+
+    // 按空格拆分，多个空格会作为一个分隔符
+    static auto split_words(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto split_words(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
+
+    // 将指定的模式作为分隔符拆分输入串
+    static auto split_pattern(std::string_view s, const std::regex& pattern, const view_consumer_proc& proc) -> void;
+    static auto split_pattern(std::string_view s, const std::regex& pattern, size_type max_n = npos) -> std::vector<std::string_view>;
 
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
     static auto split_map(std::string_view s, std::string_view sep[2], view_pair_consumer_proc proc) -> void;
@@ -254,7 +262,7 @@ public:
 
     // 按照换行符将字符串 s，拆分长多行
     static auto split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void;
-    static auto split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view>;
+    static auto split_lines(std::string_view s, bool keep_ends = false) -> std::vector<std::string_view>;
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
     static auto split_path(std::string_view s, view_consumer_proc proc) -> void;
