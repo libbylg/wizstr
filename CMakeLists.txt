@@ -27,7 +27,7 @@ list(APPEND QUALITY_OPTIONS -Werror=return-type)
 
 
 #   Define the building target
-add_executable(str_test ${SOURCES})
+add_executable(str_test ${SOURCES} test/test-compares.h)
 target_include_directories(str_test PRIVATE include ${INCLUDEPATH})
 target_compile_options(str_test PRIVATE ${QUALITY_OPTIONS})
 target_link_libraries(str_test PRIVATE Catch2::Catch2WithMain Catch2::Catch2WithMain -static-libgcc -static-libstdc++)

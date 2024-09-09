@@ -1140,7 +1140,6 @@ auto view::join_search_path(const view_provider_proc& proc) -> std::string {
 //     return result;
 // }
 
-// 拆分字符串
 auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
     assert(!sep.empty());
 
@@ -1154,6 +1153,7 @@ auto view::split_list(std::string_view s, std::string_view sep, const view_consu
         if (proc(std::string_view{s.data() + pos_start, pos_end - pos_start}) != 0) {
             return;
         }
+
         pos_start = pos_end + sep.size();
     }
 
@@ -1161,21 +1161,31 @@ auto view::split_list(std::string_view s, std::string_view sep, const view_consu
 }
 
 auto view::split_list(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
+    assert(!sep.empty());
+
     if (max_n == 0) {
-        return {};
+        return {s};
     }
 
     std::vector<std::string_view> result;
-    split_list(s, sep, [&result, max_n](std::string_view item) -> int {
-        result.emplace_back(item);
-        return ((result.size() >= max_n) ? -1 : 0);
-    });
 
+    size_type pos_start = 0;
+    while (pos_start < s.size()) {
+        size_type pos_end = s.find(sep, pos_start);
+        if (pos_end == std::string::npos) {
+            break;
+        }
+
+        result.emplace_back(s.data() + pos_start, pos_end - pos_start);
+        pos_start = pos_end + sep.size();
+
+        if (result.size() >= max_n) {
+            break;
+        }
+    }
+
+    result.emplace_back(s.data() + pos_start, s.size() - pos_start);
     return result;
-}
-
-auto view::split_list(std::string_view s, value_type sep, size_type max_n) -> std::vector<std::string_view> {
-    return split_list(s, std::string_view{&sep, 1}, max_n);
 }
 
 // auto view::split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void {
@@ -1184,7 +1194,7 @@ auto view::split_list(std::string_view s, value_type sep, size_type max_n) -> st
 // auto view::split_map(const std::string_view s) -> std::map<std::string, std::string> {
 // }
 
-auto view::split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void {
+auto view::split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
         return;
     }
@@ -1222,7 +1232,7 @@ auto view::split_lines(std::string_view s, bool keep_ends) -> std::vector<std::s
     return result;
 }
 
-auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
+auto view::split_path(std::string_view s, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
         return;
     }
@@ -1241,7 +1251,7 @@ auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
 
         // 跳过多余的斜杠，定位到起始位置
         const_pointer start = ptr;
-        while (start >= endptr) {
+        while (start < endptr) {
             if (*start != '/') {
                 break;
             }
@@ -1250,7 +1260,7 @@ auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
 
         // 找到结束位置
         ptr = start;
-        while (ptr >= endptr) {
+        while (ptr < endptr) {
             if (*ptr == '/') {
                 break;
             }
@@ -1267,6 +1277,15 @@ auto view::split_path(std::string_view s, view_consumer_proc proc) -> void {
             return;
         }
     }
+}
+
+auto view::split_path(std::string_view s) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    view::split_path(s, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
 }
 
 // auto view::split_csv(std::string_view s) -> std::vector<std::string> {

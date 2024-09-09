@@ -245,8 +245,7 @@ public:
 
     // 拆分字符串
     static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, std::string_view sep, size_type max_n = npos) -> std::vector<std::string_view>;
-    static auto split_list(std::string_view s, value_type sep = ',', size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_list(std::string_view s, std::string_view sep = ",", size_type max_n = npos) -> std::vector<std::string_view>;
 
     // 按空格拆分，多个空格会作为一个分隔符
     static auto split_words(std::string_view s, const view_consumer_proc& proc) -> void;
@@ -261,11 +260,12 @@ public:
     static auto split_map(std::string_view s) -> std::map<std::string, std::string>;
 
     // 按照换行符将字符串 s，拆分长多行
-    static auto split_lines(std::string_view s, bool keep_ends, view_consumer_proc proc) -> void;
+    static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void;
     static auto split_lines(std::string_view s, bool keep_ends = false) -> std::vector<std::string_view>;
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
-    static auto split_path(std::string_view s, view_consumer_proc proc) -> void;
+    static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto split_path(std::string_view s) -> std::vector<std::string_view>;
 
     // 拆分 csv 数据
     static auto split_csv(std::string_view s) -> std::vector<std::string>;

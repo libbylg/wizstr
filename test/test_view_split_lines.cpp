@@ -2,25 +2,7 @@
 
 #include "str.h"
 #include "view.h"
-
-template <typename elem1_type>
-static auto eq(const std::vector<elem1_type>& a, const std::vector<elem1_type>& b) -> bool {
-    if (a.size() != b.size()) {
-        return false;
-    }
-
-    for (view::size_type i = 0; i < a.size(); i++) {
-        if (a[i] != b[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static auto operator==(const std::vector<std::string_view>& a, const std::vector<std::string_view>& b) -> bool {
-    return eq(a, b);
-}
+#include "test-compares.h"
 
 TEST_CASE("view::split_lines:keep_ends=false") {
     SECTION("简单场景") {
