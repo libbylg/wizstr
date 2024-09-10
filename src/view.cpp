@@ -1398,11 +1398,36 @@ auto view::simplified(std::string_view s) -> std::string {
 // auto view::trim_right(std::string_view s) -> std::string {
 // }
 
-// auto view::trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string {
-// }
+auto view::trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
 
-// auto view::trim_surrounding(std::string_view s) -> std::string {
-// }
+    auto left_ptr = s.data();
+    while (left_ptr < (s.data() + s.size())) {
+        if (!proc(*left_ptr)) [[unlikely]] {
+            break;
+        }
+
+        left_ptr++;
+    }
+
+    auto right_ptr = s.data() + s.size();
+    while (right_ptr > left_ptr) {
+        if (!proc(*(right_ptr - 1))) {
+            break;
+        }
+        right_ptr--;
+    }
+
+    return std::string_view{left_ptr, static_cast<size_type>(right_ptr - left_ptr)};
+}
+
+auto view::trim_surrounding(std::string_view s) -> std::string_view {
+    return view::trim_surrounding(s, [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
 
 // auto view::trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string {
 // }

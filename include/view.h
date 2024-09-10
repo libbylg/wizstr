@@ -286,12 +286,12 @@ public:
     static auto simplified(std::string_view s) -> std::string;
 
     // 去掉字符串左侧的空白
-    static auto trim_left(std::string_view s, char_checker_proc proc) -> std::string;
-    static auto trim_left(std::string_view s) -> std::string;
-    static auto trim_right(std::string_view s, char_checker_proc proc) -> std::string;
-    static auto trim_right(std::string_view s) -> std::string;
-    static auto trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string;
-    static auto trim_surrounding(std::string_view s) -> std::string;
+    static auto trim_left(std::string_view s, char_checker_proc proc) -> std::string_view;
+    static auto trim_left(std::string_view s) -> std::string_view;
+    static auto trim_right(std::string_view s, char_checker_proc proc) -> std::string_view;
+    static auto trim_right(std::string_view s) -> std::string_view;
+    static auto trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string_view;
+    static auto trim_surrounding(std::string_view s) -> std::string_view;
 
     // 去掉字符串中任何位置的空白
     static auto trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string;

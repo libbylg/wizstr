@@ -157,8 +157,9 @@ TEST_CASE("view::split_lines:keep_ends=true") {
 }
 
 enum Status {
-    ST_SUFFIX = 0,
-    ST_PREFIX = 1,
+    ST_INITED = 0,
+    ST_SUFFIX = 1,
+    ST_PREFIX = 2,
 };
 
 class XSLineReader {
@@ -168,7 +169,9 @@ public:
     }
 
     auto ReadLine(std::string& resultLine) -> int32_t {
-        std::string currline;
+        resultLine.clear();
+
+        std::string currline = cachedLine_;
         Status currStatus = cachedStatus_;
 
         while (provider_(currline)) {
@@ -178,9 +181,29 @@ public:
             // 去掉首尾空白
             std::string_view tidyLine = view::trim_surrounding(currline);
 
+            // 初始状态
+            if (currStatus == ST_INITED) {
+                // 初始状态如果遇到空行或者注释行
+                if (tidyLine.empty() || view::starts_with(tidyLine, "//")) {
+                    continue; // 维持当前状态
+                }
+
+                // " xxxxx \ " 遇到行尾续行状态
+                if (view::ends_with(tidyLine, '\\')) {
+                    resultLine.append(tidyLine.data(), tidyLine.size() - 1);
+                    currStatus = ST_SUFFIX; // 转到行尾续行状态
+                    continue;
+                }
+
+                // 结束状态
+                resultLine.append(tidyLine.data(), tidyLine.size());
+                currStatus = ST_PREFIX;
+                continue;
+            }
+
             // 尾续行状态
             if (currStatus == ST_SUFFIX) {
-                // " xxxxx \ " 有行尾标识符
+                // " xxxxx \ " 有行尾标识符:继续续行
                 if (view::ends_with(tidyLine, '\\')) {
                     resultLine.append(" ");
                     resultLine.append(tidyLine.data(), tidyLine.size() - 1);
@@ -189,18 +212,24 @@ public:
                     continue;
                 }
 
-                // "  xxxxx " 无行尾标识符
+                // "  xxxxx " 无行尾标识符:续行结束了
                 resultLine.append(" ");
                 resultLine.append(tidyLine.data(), tidyLine.size());
                 resultLine.append(" ");
-                currStatus = ST_PREFIX; // 结束当前状态
+                currStatus = ST_PREFIX; // 转换到行首续行状态
+
                 continue;
             }
 
             // 首续行状态
             assert(currStatus == ST_PREFIX);
             if (view::starts_with(tidyLine, '+')) {
-                // "+  xxxxx \ " 同时有行首和行尾标识符
+                //                // 首续行之前没有任何前缀，这种语法错误的
+                //                if (resultLine.empty()) {
+                //                    return -1;
+                //                }
+
+                // "+  xxxxx \ " 同时有行首和行尾标识符:追加到当前行,并且继续续行
                 if (view::ends_with(tidyLine, '\\')) {
                     resultLine.append(" ");
                     resultLine.append(tidyLine.data() + 1, tidyLine.size() - 2);
@@ -209,7 +238,7 @@ public:
                     continue;
                 }
 
-                // "+ xxxx" 只有行首标识符
+                // "+ xxxx" 只有行首标识符:
                 resultLine.append(" ");
                 resultLine.append(tidyLine.data() + 1, tidyLine.size() - 1);
                 resultLine.append(" ");
@@ -219,40 +248,50 @@ public:
 
             // " xxxxx \ " 只有行尾标识符: 当前状态结束，下一条语句开始
             if (view::ends_with(tidyLine, '\\')) {
-                cachedLine_ = tidyLine.data(), tidyLine.size() - 1;
+                cachedLine_ = std::string_view{tidyLine.data(), tidyLine.size() - 1};
                 cachedStatus_ = ST_SUFFIX;
                 return 0; // RET
             }
 
             // "  xxxxx " 行首、行尾标识符都不存在
-            cachedLine_ = tidyLine.data(), tidyLine.size() - 1;
+            cachedLine_ = std::string_view{tidyLine.data(), tidyLine.size() - 1};
             cachedStatus_ = ST_PREFIX;
             return 0; // RET
         }
+
+        // 如果遇到文件结束，无论如何将当前数据提交
+        if (resultLine.empty()) {
+            return -1;
+        }
+
+        return 0;
     }
 
 private:
     std::function<bool(std::string&)> provider_;
     std::string cachedLine_;
-    Status cachedStatus_{ST_PREFIX};
+    Status cachedStatus_{ST_INITED};
 
     int32_t lineno_{0};
 };
 
 TEST_CASE("view::read_lines:xs") {
-
-    std::vector<std::string> lines{
+    std::vector<std::string> originLines{
         "r1 (1 2) resistor r=1\n",
         "+ p1=1\n",
     };
 
-    size_t pline = 0;
-
-    auto read_line = [&lines, &pline](std::string& line) -> bool {
-        if (pline >= lines.size()) {
+    size_t lineno = 0;
+    XSLineReader reader([&originLines, &lineno](std::string& line) -> bool {
+        if (lineno >= originLines.size()) {
             return false;
         }
-        line = lines[pline++];
+
+        line = originLines[lineno++];
         return true;
-    };
+    });
+
+    std::string line;
+    REQUIRE(reader.ReadLine(line) == 0);
+    REQUIRE(line == "r1 (1 2) resistor r=1 p1=1");
 }
