@@ -156,10 +156,47 @@ TEST_CASE("view::split_lines:keep_ends=true") {
     }
 }
 
-enum Status {
-    ST_INITED = 0,
-    ST_SUFFIX = 1,
-    ST_PREFIX = 2,
+class MemoryLineProvider {
+public:
+    MemoryLineProvider(std::initializer_list<std::string_view> lines) {
+        for (auto item : lines) {
+            lines_.emplace_back(item);
+        }
+    }
+
+    auto operator()(std::string& line) -> bool {
+        if (lineno_ >= lines_.size()) {
+            return false;
+        }
+
+        line = lines_[lineno_++];
+        return true;
+    }
+
+private:
+    size_t lineno_{0};
+    std::vector<std::string> lines_;
+};
+
+class FileLineProvider {
+public:
+    explicit FileLineProvider(const std::string& filename) {
+        file_ = fopen(filename.c_str(), "r");
+        assert(file_ != nullptr);
+    }
+
+    auto operator()(std::string& line) -> bool {
+        line = str::read_line(file_, true);
+        if (line.empty()) {
+            return false;
+        }
+
+        return true;
+    }
+
+private:
+    size_t lineno_{0};
+    FILE* file_{nullptr};
 };
 
 class XSLineReader {
@@ -171,18 +208,21 @@ public:
     auto ReadLine(std::string& resultLine) -> int32_t {
         resultLine.clear();
 
-        std::string currline = cachedLine_;
+        std::string currLine = cachedLine_;
         Status currStatus = cachedStatus_;
+        int32_t currLineno = cachedLineno_;
 
-        while (provider_(currline)) {
+        int32_t startLineno = currLineno;
+        while (provider_(currLine)) {
             // 递增行号
-            lineno_++;
+            currLineno++;
 
             // 去掉首尾空白
-            std::string_view tidyLine = view::trim_surrounding(currline);
+            std::string_view tidyLine = view::trim_surrounding(currLine);
 
             // 初始状态
             if (currStatus == ST_INITED) {
+                assert(cachedLine_.empty());
                 // 初始状态如果遇到空行或者注释行
                 if (tidyLine.empty() || view::starts_with(tidyLine, "//")) {
                     continue; // 维持当前状态
@@ -207,7 +247,6 @@ public:
                 if (view::ends_with(tidyLine, '\\')) {
                     resultLine.append(" ");
                     resultLine.append(tidyLine.data(), tidyLine.size() - 1);
-                    resultLine.append(" ");
                     currStatus = ST_SUFFIX; // 维持当前状态
                     continue;
                 }
@@ -215,7 +254,6 @@ public:
                 // "  xxxxx " 无行尾标识符:续行结束了
                 resultLine.append(" ");
                 resultLine.append(tidyLine.data(), tidyLine.size());
-                resultLine.append(" ");
                 currStatus = ST_PREFIX; // 转换到行首续行状态
 
                 continue;
@@ -223,17 +261,17 @@ public:
 
             // 首续行状态
             assert(currStatus == ST_PREFIX);
-            if (view::starts_with(tidyLine, '+')) {
-                //                // 首续行之前没有任何前缀，这种语法错误的
-                //                if (resultLine.empty()) {
-                //                    return -1;
-                //                }
 
+            // 在首续行状态，如果遇到是空行或者注释行:忽略该行
+            if (tidyLine.empty() || view::starts_with(tidyLine, "//")) {
+                continue;
+            }
+
+            if (view::starts_with(tidyLine, '+')) {
                 // "+  xxxxx \ " 同时有行首和行尾标识符:追加到当前行,并且继续续行
                 if (view::ends_with(tidyLine, '\\')) {
                     resultLine.append(" ");
                     resultLine.append(tidyLine.data() + 1, tidyLine.size() - 2);
-                    resultLine.append(" ");
                     currStatus = ST_SUFFIX; // 转换到尾续行状态
                     continue;
                 }
@@ -241,7 +279,6 @@ public:
                 // "+ xxxx" 只有行首标识符:
                 resultLine.append(" ");
                 resultLine.append(tidyLine.data() + 1, tidyLine.size() - 1);
-                resultLine.append(" ");
                 currStatus = ST_PREFIX; // 维持当前首续行状态
                 continue;
             }
@@ -250,48 +287,211 @@ public:
             if (view::ends_with(tidyLine, '\\')) {
                 cachedLine_ = std::string_view{tidyLine.data(), tidyLine.size() - 1};
                 cachedStatus_ = ST_SUFFIX;
-                return 0; // RET
+                return lineno_; // RET
             }
 
             // "  xxxxx " 行首、行尾标识符都不存在
             cachedLine_ = std::string_view{tidyLine.data(), tidyLine.size() - 1};
             cachedStatus_ = ST_PREFIX;
-            return 0; // RET
+            return lineno_; // RET
         }
 
         // 如果遇到文件结束，无论如何将当前数据提交
         if (resultLine.empty()) {
-            return -1;
+            return 0; // 文件结束
         }
 
-        return 0;
+        return lineno_;
     }
 
 private:
+    enum Status {
+        ST_INITED = 0,
+        ST_SUFFIX = 1,
+        ST_PREFIX = 2,
+    };
+
     std::function<bool(std::string&)> provider_;
     std::string cachedLine_;
     Status cachedStatus_{ST_INITED};
+    int32_t cachedLineno_{0};
 
-    int32_t lineno_{0};
+    //int32_t lineno_{0};
 };
 
 TEST_CASE("view::read_lines:xs") {
-    std::vector<std::string> originLines{
-        "r1 (1 2) resistor r=1\n",
-        "+ p1=1\n",
-    };
+    SECTION("一般首续行场景") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\n",
+            "+p1=1\n",
+            "+p2=2\n",
+        });
 
-    size_t lineno = 0;
-    XSLineReader reader([&originLines, &lineno](std::string& line) -> bool {
-        if (lineno >= originLines.size()) {
-            return false;
-        }
+        std::string line;
 
-        line = originLines[lineno++];
-        return true;
-    });
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p2=2");
 
-    std::string line;
-    REQUIRE(reader.ReadLine(line) == 0);
-    REQUIRE(line == "r1 (1 2) resistor r=1 p1=1");
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("一般尾续行场景") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\\\n",
+            "p1=1\\\n",
+            "p2=2\n",
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p2=2");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("尾续行遇到首续行：首续行字符失效") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\\\n",
+            "+ p1=1\n",
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 + p1=1");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("尾续行遇到尾续行：简单场景") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\\\n",
+            "p1=1\\\n",
+            "p2=2\n", // <<<
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p2=2");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("尾续行后面遇到文件结束：尾续行不跨文件") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\\\n",
+            "p1=1\\\n",
+            "p2=2\\\n", //
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p2=2");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+
+    SECTION("首续行遇到首续行：简单场景") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\n",
+            "+p1=1\n", //
+            "+p2=2\n", //
+            "+p3=3\n", //
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p2=2 p3=3");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("首续行遇到尾续行：尾续行结束后，仍然尝试首续行") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\n",
+            "+p1=1\\\n",
+            "p2=2\n",  //
+            "+p3=3\n", //
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p2=2 p3=3");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("首续行后面遇到文件结束：首续行不跨文件") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\n",
+            "+p1=1\n",
+            "+p2=2\n", //
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p2=2");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("首续行中间插入注释行：不影响首续行") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\n",
+            "+p1=1\n",
+            "//+p2=2\n",
+            "+p3=3\n",
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p3=3");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("首续行遇到普通行：当前首续行结束，但是开启新的语句") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\n",
+            "+p1=1\n",
+            "r2 (2 3) resistor p2=2\n",
+            "+p3=3\n",
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1");
+
+        REQUIRE(reader.ReadLine(line) == 2);
+        REQUIRE(line == "r2 (2 3) resistor p2=2 p3=3");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
+    SECTION("首续行遇到空白行：空白行不影响首续行，直接被忽略") {
+        XSLineReader reader(MemoryLineProvider{
+            "r1 (1 2) resistor r=1\n",
+            "+p1=1\n",
+            " \t \n",
+            " \t \n",
+            "+p3=3\n",
+        });
+
+        std::string line;
+
+        REQUIRE(reader.ReadLine(line) == 1);
+        REQUIRE(line == "r1 (1 2) resistor r=1 p1=1 p3=3");
+
+        REQUIRE(reader.ReadLine(line) == 0);
+        REQUIRE(line.empty());
+    }
 }
