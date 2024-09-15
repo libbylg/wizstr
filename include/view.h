@@ -119,9 +119,9 @@ public:
     //    static auto find_prev_regex(std::string_view s, const std::regex& pattern, size_type pos = npos) -> std::optional<std::string_view>;
     static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
     //    static auto find_prev_regex(std::string_view s, std::string_view pattern, size_type pos = npos) -> std::optional<std::string_view>;
-    static auto find_next_eol(std::string_view s, size_type pos = 0) -> std::optional<std::string_view>;
+    static auto find_next_eol(std::string_view s, size_type pos = 0) -> std::string_view;
     //    static auto find_prev_eol(std::string_view s, size_type pos = npos) -> size_type;
-    static auto find_next_word(std::string_view s, size_type pos = 0) -> std::optional<std::string_view>;
+    static auto find_next_word(std::string_view s, size_type pos = 0) -> std::string_view;
     //    static auto find_prev_word(std::string_view s, size_type pos = npos) -> std::optional<std::string_view>;
 
     //  迭代找下一个
@@ -133,9 +133,9 @@ public:
     //    static auto iter_prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
     //    static auto iter_prev_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
-    static auto iter_next_eol(std::string_view s, size_type& pos) -> size_type;
+    static auto iter_next_eol(std::string_view s, size_type& pos) -> std::string_view;
     //    static auto iter_prev_eol(std::string_view s, size_type& pos) -> size_type;
-    static auto iter_next_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
+    static auto iter_next_word(std::string_view s, size_type& pos) -> std::string_view;
     //    static auto iter_prev_word(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
 
     //  按各种方式遍历

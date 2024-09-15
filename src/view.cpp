@@ -373,9 +373,9 @@ auto view::find_next_regex(std::string_view s, std::string_view pattern, size_ty
 // auto view::find_prev_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
 // }
 
-auto view::find_next_eol(std::string_view s, size_type pos) -> std::optional<std::string_view> {
+auto view::find_next_eol(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
-        return std::nullopt;
+        return {};
     }
 
     s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
@@ -401,13 +401,13 @@ auto view::find_next_eol(std::string_view s, size_type pos) -> std::optional<std
         ptr++;
     }
 
-    return std::nullopt;
+    return {};
 }
 
 // auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
 // }
 
-auto view::find_next_word(std::string_view s, size_type pos) -> std::optional<std::string_view> {
+auto view::find_next_word(std::string_view s, size_type pos) -> std::string_view {
     if (pos < s.size()) {
         s = s.substr(pos);
     } else {
@@ -419,7 +419,7 @@ auto view::find_next_word(std::string_view s, size_type pos) -> std::optional<st
     });
 
     if (start == s.end()) {
-        return std::nullopt;
+        return {};
     }
 
     auto end = std::find_if_not(start, s.end(), [](value_type ch) -> bool {
@@ -502,34 +502,29 @@ auto view::iter_next_string(std::string_view s, size_type& pos, std::string_view
 // auto view::iter_prev_string(std::string_view s, size_type& pos, std::string_view other) -> size_type {
 // }
 
-auto view::iter_next_eol(std::string_view s, size_type& pos) -> size_type {
-    if (pos >= s.size()) {
+auto view::iter_next_eol(std::string_view s, size_type& pos) -> std::string_view {
+    std::string_view eol = view::find_next_eol(s, pos);
+    if (eol.empty()) {
         pos = s.size();
-        return npos;
+        return {};
     }
 
-    auto next_pos = s.find('\n', pos);
-    if (next_pos == std::string_view::npos) {
-        pos = s.size();
-        return npos;
-    }
-
-    pos = next_pos + 1;
-    return next_pos;
+    pos = static_cast<size_type>((eol.data() + eol.size()) - s.data());
+    return eol;
 }
 
 // auto view::iter_prev_eol(std::string_view s, size_type& pos) -> size_type {
 // }
 
-auto view::iter_next_word(std::string_view s, size_type& pos) -> std::optional<std::string_view> {
-    auto result = view::find_next_word(s, pos);
-    if (!result) {
+auto view::iter_next_word(std::string_view s, size_type& pos) -> std::string_view {
+    auto word = view::find_next_word(s, pos);
+    if (word.empty()) {
         pos = s.size();
-        return std::nullopt;
+        return {};
     }
 
-    pos = (result.value().data() + result.value().size()) - s.data();
-    return result.value();
+    pos = (word.data() + word.size()) - s.data();
+    return word;
 }
 
 // auto view::iter_prev_word(std::string_view s, size_type& pos) -> std::string_view {
@@ -1204,17 +1199,17 @@ auto view::split_lines(std::string_view s, bool keep_ends, const view_consumer_p
         auto eol = view::find_next_eol(s, start);
 
         // 最后一部分没有结束符
-        if (!eol) {
+        if (eol.empty()) {
             proc(std::string_view{s.data() + start, (s.size() - start)});
             return;
         }
 
-        assert(!eol.value().empty());
+        assert(!eol.empty());
 
         // 遇到结束符
-        const_pointer next_start = eol.value().data() + eol.value().size();
+        const_pointer next_start = eol.data() + eol.size();
         const_pointer line_text = s.data() + start;
-        size_type line_size = keep_ends ? (next_start - line_text) : (next_start - line_text - eol.value().size());
+        size_type line_size = keep_ends ? (next_start - line_text) : (next_start - line_text - eol.size());
         if (proc(std::string_view{line_text, line_size}) != 0) {
             return;
         }
