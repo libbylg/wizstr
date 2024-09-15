@@ -508,7 +508,6 @@ auto str::title(std::string& s) -> std::string& {
     return s;
 }
 
-
 auto str::repeat(std::string& s, size_type times) -> std::string& {
     assert(times != npos);
     if (s.empty() || (times == 0)) {
@@ -529,7 +528,7 @@ auto str::repeat(std::string& s, size_type times) -> std::string& {
 }
 
 auto str::invert(std::string& s, size_type pos, size_type max_n) -> std::string& {
-    if (s.empty() || (pos >= s.size()) || (max_n == 0)) {
+    if ((s.size() < 2) || (pos >= s.size()) || (max_n < 2)) {
         return s;
     }
 

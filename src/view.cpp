@@ -1453,7 +1453,7 @@ auto view::trim_surrounding(std::string_view s) -> std::string_view {
 auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
     assert(!s.empty());
 
-    std::string::const_pointer ptr = s.data() + s.size();
+    const_pointer ptr = s.data() + s.size();
     while (ptr > s.data()) {
 #ifdef WIN32
         if ((*(ptr - 1) == '/') || (*(ptr - 1) == '\\')) {
@@ -1463,6 +1463,7 @@ auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
         if (*(ptr - 1) == '/') {
             break;
         }
+        ptr--;
 #endif
     }
 
@@ -1493,7 +1494,7 @@ auto view::extname_ptr(std::string_view s) -> std::string::const_pointer {
 auto view::dirname_ptr(std::string_view s) -> std::string::const_pointer {
     auto ptr = basename_ptr(s);
     while (ptr > s.data()) {
-        if (*(ptr - 1) != '\\') {
+        if (*(ptr - 1) != '/') {
             break;
         }
 
@@ -1503,6 +1504,9 @@ auto view::dirname_ptr(std::string_view s) -> std::string::const_pointer {
 }
 
 auto view::dirname_view(std::string_view s) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
     auto ptr = view::dirname_ptr(s);
     return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
 }
@@ -1535,6 +1539,9 @@ auto view::split_dirname(std::string_view s) -> std::tuple<std::string_view, std
 }
 
 auto view::basename_view(std::string_view s) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
     auto ptr = view::basename_ptr(s);
     return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
 }
@@ -1563,6 +1570,9 @@ auto view::split_basename(std::string_view s) -> std::tuple<std::string_view, st
 }
 
 auto view::extname_view(std::string_view s) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
     auto ptr = view::extname_ptr(s);
     return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
 }
