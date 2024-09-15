@@ -26,15 +26,15 @@ TEST_CASE("view::dirname&view::basename") {
     }
     SECTION(".和..[1]") {
         REQUIRE(view::dirname(".") == "");
-        REQUIRE(view::basename(".") == "");
+        REQUIRE(view::basename(".") == ".");
     }
     SECTION(".和..[2]") {
         REQUIRE(view::dirname("..") == "");
-        REQUIRE(view::basename("..") == "");
+        REQUIRE(view::basename("..") == "..");
     }
     SECTION("无路径分隔符") {
-        REQUIRE(view::dirname("abc") == ".");
-        REQUIRE(view::basename("abc") == ".");
+        REQUIRE(view::dirname("abc") == "");
+        REQUIRE(view::basename("abc") == "abc");
     }
     SECTION("./和../[1]") {
         REQUIRE(view::dirname("./") == ".");
