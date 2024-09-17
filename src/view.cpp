@@ -1307,48 +1307,7 @@ auto view::swap_case(std::string_view s) -> std::string {
 // auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
 // }
 
-// auto view::simplified(std::string_view s, const char_checker_proc& proc) -> std::string {
-//     if (s.empty()) {
-//         return s;
-//     }
-//
-//     bool found = false;
-//     const_pointer w = s.data();
-//     pointer r = s.data();
-//     while (*r != '\0') {
-//         value_type ch = *r;
-//         if (found) {
-//             if (proc(ch)) {
-//                 r++;
-//                 continue;
-//             }
-//
-//             found = false;
-//             *(w++) = *(r++);
-//             continue;
-//         }
-//
-//         if (proc(ch)) {
-//             found = true;
-//             *(w++) = ' ';
-//             r++;
-//             continue;
-//         }
-//
-//         *(w++) = *(r++);
-//     }
-//
-//     s.resize(w - s.data());
-//     return s;
-// }
-
-auto view::simplified(std::string_view s) -> std::string {
-    return view::simplified(s, ' ', [](value_type ch) -> bool {
-        return std::isspace(ch);
-    });
-}
-
-auto view::simplified(std::string_view s, value_type sep, char_checker_proc proc) -> std::string {
+auto view::simplified(std::string_view s, std::string_view sep, char_checker_proc proc) -> std::string {
     if (s.empty()) {
         return std::string{s};
     }
@@ -1379,8 +1338,6 @@ auto view::simplified(std::string_view s, value_type sep, char_checker_proc proc
     }
 
     while (ptr < (s.data() + s.size())) {
-        result.append(&sep, 1);
-
         // 跳过空白
         while (ptr < (s.data() + s.size())) {
             if (!proc(*ptr)) {
@@ -1393,6 +1350,8 @@ auto view::simplified(std::string_view s, value_type sep, char_checker_proc proc
         if (ptr >= (s.data() + s.size())) {
             break;
         }
+
+        result.append(sep);
 
         // 非空白
         start = ptr;
@@ -1409,6 +1368,12 @@ auto view::simplified(std::string_view s, value_type sep, char_checker_proc proc
     }
 
     return result;
+}
+
+auto view::simplified(std::string_view s) -> std::string {
+    return view::simplified(s, " ", [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
 }
 
 auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string_view {

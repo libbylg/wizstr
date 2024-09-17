@@ -283,8 +283,8 @@ public:
     static auto translate(std::string_view s, std::string_view from, std::string_view to) -> std::string;
 
     // 字符串化简，将字符串中的多个空白压缩成一个空格
+    static auto simplified(std::string_view s, std::string_view sep, char_checker_proc proc) -> std::string;
     static auto simplified(std::string_view s) -> std::string;
-    static auto simplified(std::string_view s, value_type sep, char_checker_proc proc) -> std::string;
 
     // 去掉字符串左侧的空白
     static auto trim_left(std::string_view s, char_checker_proc proc) -> std::string_view;
