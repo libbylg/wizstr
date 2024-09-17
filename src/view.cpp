@@ -914,6 +914,10 @@ auto view::take_mid(std::string_view s, size_type pos, size_type n) -> std::stri
 }
 
 auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
+    if (s.empty()) {
+        return {};
+    }
+
     if (offset > 0) {
         if (pos >= s.size()) {
             return {};
@@ -925,15 +929,18 @@ auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::st
     if (offset < 0) {
         size_type n = -offset;
 
+        // 如果 pos 太大
         if (pos >= s.size()) {
             pos = s.size() - 1;
         }
 
-        if (pos < (n - 1)) {
-            pos = 0;
+        // 如果n太大
+        if (n > pos) {
+            return s.substr(0, (pos + 1));
         }
 
-        return s.substr(pos, n);
+        // 如果n较小
+        return s.substr(((pos + 1) - n), n);
     }
 
     return {};

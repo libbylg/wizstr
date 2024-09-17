@@ -68,12 +68,13 @@ TEST_CASE("view::take") {
     }
     SECTION("起始位置") {
         REQUIRE(view::take("3bc1233", 0, 2) == "3b");
-        REQUIRE(view::take("3bc1233", 0, -2) == "");
+        REQUIRE(view::take("3bc1233", 0, -2) == "3");
+        REQUIRE(view::take("3bc1233", 0, 0) == "");
         REQUIRE(view::take("3bc1233", 6, -7) == "3bc1233");
         REQUIRE(view::take("3bc1234", 6, 1) == "4");
         REQUIRE(view::take("3bc1234", 7, -1) == "4");
         REQUIRE(view::take("3bc1234", 7, -2) == "34");
-        REQUIRE(view::take("3bc1233", view::npos, 6) == "bc1233");
+        REQUIRE(view::take("3bc1233", view::npos, 6) == "");
     }
     SECTION("空串") {
         REQUIRE(view::take("", 0, 0) == "");
