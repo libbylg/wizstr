@@ -873,7 +873,7 @@ auto view::is_literal_false(std::string_view s) -> bool {
 
 ///////////////////11111111111111111111
 
-auto view::left_n(std::string_view s, size_type n) -> std::string_view {
+auto view::take_left(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
         return "";
     }
@@ -885,7 +885,7 @@ auto view::left_n(std::string_view s, size_type n) -> std::string_view {
     return std::string_view{s.substr(0, n)};
 }
 
-auto view::right_n(std::string_view s, size_type n) -> std::string_view {
+auto view::take_right(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
         return {};
     }
@@ -897,7 +897,7 @@ auto view::right_n(std::string_view s, size_type n) -> std::string_view {
     return std::string_view{s.substr(s.size() - n, n)};
 }
 
-auto view::mid_n(std::string_view s, size_type pos, size_type n) -> std::string_view {
+auto view::take_mid(std::string_view s, size_type pos, size_type n) -> std::string_view {
     if (s.empty()) {
         return s;
     }
@@ -910,7 +910,7 @@ auto view::mid_n(std::string_view s, size_type pos, size_type n) -> std::string_
     return {s.data() + pos, move_size};
 }
 
-auto view::substr(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
+auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
     if (offset > 0) {
         size_type n = offset;
         return s.substr(pos, std::min(n, pos + n));
@@ -964,7 +964,7 @@ auto view::align_center(std::string_view s, size_type width, value_type ch) -> s
     return result;
 }
 
-auto view::zfill(std::string_view s, size_type width) -> std::string {
+auto view::align_zfill(std::string_view s, size_type width) -> std::string {
     if (s.empty()) {
         std::string r;
         r.resize(width, '0');
@@ -976,17 +976,14 @@ auto view::zfill(std::string_view s, size_type width) -> std::string {
     }
 
     if ((s[0] != '+') && (s[0] != '-')) {
-        return align_left(s, width, '0');
+        return view::align_right(s, width, '0');
     }
 
     std::string result;
-    result.resize(width);
-    pointer ptr = result.data();
-    *ptr = s[0];
-    ptr++;
-    std::fill(ptr, ptr + (width - s.size()), '0');
-    ptr += (width - s.size());
-    std::memcpy(ptr, s.data(), s.size());
+    result.reserve(width);
+    result.append(s.data(), 1);
+    result.resize((width - s.size() + 1), '0');
+    result.append(s.data() + 1, static_cast<size_type>(s.size() - 1));
 
     return result;
 }

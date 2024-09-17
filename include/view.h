@@ -175,16 +175,24 @@ public:
     //    static auto is_literal_integer(std::string_view s) -> bool;
 
     // 提取子串
-    static auto left_n(std::string_view s, size_type n) -> std::string_view;
-    static auto right_n(std::string_view s, size_type n) -> std::string_view;
-    static auto mid_n(std::string_view s, size_type pos, size_type n) -> std::string_view;
-    static auto substr(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
+    static auto take_left(std::string_view s, size_type n) -> std::string_view;
+    static auto take_right(std::string_view s, size_type n) -> std::string_view;
+    static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string_view;
+    static auto take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
+    static auto take(std::string_view s, char_checker_proc proc);
+    static auto take(std::string_view s, charset_type set);
+    static auto drop_left(std::string_view s, size_type n) -> std::string_view;
+    static auto drop_right(std::string_view s, size_type n) -> std::string_view;
+    static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string_view;
+    static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
+    static auto drop(std::string_view s, char_checker_proc proc);
+    static auto drop(std::string_view s, charset_type set);
 
     //  对齐
     static auto align_left(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_center(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
-    static auto zfill(std::string_view s, size_type width) -> std::string;
+    static auto align_zfill(std::string_view s, size_type width) -> std::string;
 
     //  Title 化：首字母大写
     static auto capitalize(std::string_view s) -> std::string;
@@ -298,10 +306,6 @@ public:
     static auto trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string;
     static auto trim_anywhere(std::string_view s) -> std::string;
 
-    // 切除
-    static auto drop_left(std::string_view s, size_type n) -> std::string;
-    static auto drop_right(std::string_view s, size_type n) -> std::string;
-
     //  拷贝,交换,填充
     static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;
     static auto fill(pointer dest, size_type size, std::string_view s) -> size_type;
@@ -391,10 +395,6 @@ public:
     // 是否至少有一个满足proc或者在set范围内
     static auto has_any(std::string_view s, mapper_proc<bool> proc);
     static auto has_any(std::string_view s, charset_type set);
-
-    // 挑出满足条件的字符
-    static auto take(std::string_view s, mapper_proc<bool> proc);
-    static auto take(std::string_view s, charset_type set);
 
     // 按 proc 将字符序列分成两组，左边的满足proc，右边不满足proc
     static auto grouped(std::string_view s, mapper_proc<bool> proc) -> std::tuple<std::string, std::string>;
