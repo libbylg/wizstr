@@ -918,7 +918,10 @@ auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::st
 
     if (offset < 0) {
         size_type n = -offset;
-        return s.substr(pos, std::min(n, pos + n));
+        if (pos < (n - 1)) {
+            pos = 0;
+        }
+        return s.substr(pos - (n - 1), n);
     }
 
     return {};
