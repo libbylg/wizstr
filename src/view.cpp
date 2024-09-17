@@ -408,13 +408,11 @@ auto view::find_next_eol(std::string_view s, size_type pos) -> std::string_view 
 // }
 
 auto view::find_next_word(std::string_view s, size_type pos) -> std::string_view {
-    if (pos < s.size()) {
-        s = s.substr(pos);
-    } else {
-        s = {};
+    if (pos >= s.size()) {
+        return {};
     }
 
-    auto start = std::find_if(s.begin(), s.end(), [](value_type ch) -> bool {
+    auto start = std::find_if_not(s.begin() + pos, s.end(), [](value_type ch) -> bool {
         return std::isspace(ch);
     });
 
@@ -422,7 +420,7 @@ auto view::find_next_word(std::string_view s, size_type pos) -> std::string_view
         return {};
     }
 
-    auto end = std::find_if_not(start, s.end(), [](value_type ch) -> bool {
+    auto end = std::find_if(start, s.end(), [](value_type ch) -> bool {
         return std::isspace(ch);
     });
 
@@ -531,40 +529,17 @@ auto view::iter_next_word(std::string_view s, size_type& pos) -> std::string_vie
 // }
 
 auto view::foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void {
-    if (pos >= s.size()) {
-        return;
+    while (pos < s.size()) {
+        auto r = view::iter_next_word(s, pos);
+        if (r.empty()) {
+            assert(pos >= s.size());
+            break;
+        }
+
+        if (proc(r.data() - s.data(), r.size()) != 0) {
+            return;
+        }
     }
-
-    const_pointer start = s.data() + pos;
-    do {
-        // 跳过所有空白
-        while (start < (s.data() + s.size())) {
-            if (!std::isspace(*start)) {
-                break;
-            }
-            start++;
-        }
-
-        // 如果跳过空白后已经到字符串结尾了
-        if (start == (s.data() + s.size())) {
-            break;
-        }
-
-        // 找到下一个空白位置
-        const_pointer end = start;
-        while (start < (s.data() + s.size())) {
-            if (std::isspace(*start)) {
-                break;
-            }
-            start++;
-        }
-
-        // 通知消费方
-        if (proc(start - s.data(), end - start) != 0) {
-            break;
-        }
-    } while (start < (s.data() + s.size()));
-    assert(start == (s.data() + s.size()));
 }
 
 auto view::foreach_word(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void {
