@@ -906,22 +906,34 @@ auto view::take_mid(std::string_view s, size_type pos, size_type n) -> std::stri
         return {};
     }
 
-    size_type move_size = ((pos + n) < s.size()) ? n : (s.size() - pos);
-    return {s.data() + pos, move_size};
+    if (n > (s.size() - pos)) {
+        return {s.data() + pos, (s.size() - pos)};
+    }
+
+    return {s.data() + pos, n};
 }
 
 auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
     if (offset > 0) {
+        if (pos >= s.size()) {
+            return {};
+        }
         size_type n = offset;
         return s.substr(pos, std::min(n, pos + n));
     }
 
     if (offset < 0) {
         size_type n = -offset;
+
+        if (pos >= s.size()) {
+            pos = s.size() - 1;
+        }
+
         if (pos < (n - 1)) {
             pos = 0;
         }
-        return s.substr(pos - (n - 1), n);
+
+        return s.substr(pos, n);
     }
 
     return {};
