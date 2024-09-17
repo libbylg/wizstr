@@ -1343,38 +1343,68 @@ auto view::swap_case(std::string_view s) -> std::string {
 // }
 
 auto view::simplified(std::string_view s) -> std::string {
+    return view::simplified(s, ' ', [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
+
+auto view::simplified(std::string_view s, value_type sep, char_checker_proc proc) -> std::string {
     if (s.empty()) {
         return std::string{s};
     }
 
-    std::string result;
-    bool found = true;
-    const_pointer r = s.data();
-    while (*r != '\0') {
-        value_type ch = *r;
-        if (found) {
-            if (std::isspace(ch)) {
-                r++;
-                continue;
-            }
-
-            found = false;
-            result.append(r, 1);
-            r++;
-            continue;
+    // 字符串最左端的空白
+    const_pointer ptr = s.data();
+    while (ptr < (s.data() + s.size())) {
+        if (!proc(*ptr)) {
+            break;
         }
-
-        if (std::isspace(ch)) {
-            found = true;
-        }
-
-        result.append(r, 1);
-        r++;
+        ptr++;
     }
 
-    if (!result.empty()) {
-        if (std::isspace(result.back())) {
-            result.resize(result.size() - 1);
+    // 非空白
+    const_pointer start = ptr;
+    while (ptr < (s.data() + s.size())) {
+        value_type ch = *ptr;
+        if (proc(ch)) {
+            break;
+        }
+        ptr++;
+    }
+
+    // 保存非空白
+    std::string result;
+    if (ptr != start) {
+        result.append(start, (ptr - start));
+    }
+
+    while (ptr < (s.data() + s.size())) {
+        result.append(&sep, 1);
+
+        // 跳过空白
+        while (ptr < (s.data() + s.size())) {
+            if (!proc(*ptr)) {
+                break;
+            }
+            ptr++;
+        }
+
+        // 如果提前结束了
+        if (ptr >= (s.data() + s.size())) {
+            break;
+        }
+
+        // 非空白
+        start = ptr;
+        while (ptr < (s.data() + s.size())) {
+            if (proc(*ptr)) {
+                break;
+            }
+            ptr++;
+        }
+
+        if (ptr != start) {
+            result.append(start, (ptr - start));
         }
     }
 

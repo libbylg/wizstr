@@ -49,7 +49,6 @@ public:
     //  映射和校验
     using char_mapping_proc = std::function<value_type(value_type)>;
     using char_checker_proc = std::function<bool(value_type ch)>;
-    using clike_char_checker_proc = std::function<int(int ch)>;
 
     // 匹配和检索
     using char_match_proc = std::function<bool(value_type ch)>;
@@ -285,6 +284,7 @@ public:
 
     // 字符串化简，将字符串中的多个空白压缩成一个空格
     static auto simplified(std::string_view s) -> std::string;
+    static auto simplified(std::string_view s, value_type sep, char_checker_proc proc) -> std::string;
 
     // 去掉字符串左侧的空白
     static auto trim_left(std::string_view s, char_checker_proc proc) -> std::string_view;
