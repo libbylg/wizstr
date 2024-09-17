@@ -1381,17 +1381,50 @@ auto view::simplified(std::string_view s) -> std::string {
     return result;
 }
 
-// auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string {
-// }
+auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string_view {
+    if (s.empty()) [[unlikely]] {
+        return s;
+    }
 
-// auto view::trim_left(std::string_view s) -> std::string {
-// }
+    auto left_ptr = s.data();
+    while (left_ptr < (s.data() + s.size())) {
+        if (!proc(*left_ptr)) [[unlikely]] {
+            break;
+        }
 
-// auto view::trim_right(std::string_view s, char_checker_proc proc) -> std::string {
-// }
+        left_ptr++;
+    }
 
-// auto view::trim_right(std::string_view s) -> std::string {
-// }
+    return std::string_view{left_ptr, s.size() - (left_ptr - s.data())};
+}
+
+auto view::trim_left(std::string_view s) -> std::string_view {
+    return view::trim_left(s, [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
+
+auto view::trim_right(std::string_view s, char_checker_proc proc) -> std::string_view {
+    if (s.empty()) [[unlikely]] {
+        return s;
+    }
+
+    auto right_ptr = s.data() + s.size();
+    while (right_ptr > s.data()) {
+        if (!proc(*(right_ptr - 1))) {
+            break;
+        }
+        right_ptr--;
+    }
+
+    return {s.data(), static_cast<size_type>(right_ptr - s.data())};
+}
+
+auto view::trim_right(std::string_view s) -> std::string_view {
+    return view::trim_right(s, [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
 
 auto view::trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string_view {
     if (s.empty()) {

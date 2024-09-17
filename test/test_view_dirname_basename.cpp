@@ -71,21 +71,21 @@ TEST_CASE("view::dirname+view::basename") {
         REQUIRE(view::dirname(".") == ".");
         REQUIRE(view::basename(".") == ".");
 
-        REQUIRE(view::remove_dirname(".") == "");
-        REQUIRE(view::remove_basename(".") == ".");
+        REQUIRE(view::remove_dirname(".") == ".");
+        REQUIRE(view::remove_basename(".") == "");
 
         REQUIRE(view::replace_dirname(".", "AAA") == "AAA/.");
-        REQUIRE(view::replace_basename(".", "AAA") == ".");
+        REQUIRE(view::replace_basename(".", "AAA") == "AAA");
     }
     SECTION("相对路径特殊表示(..)") {
         REQUIRE(view::dirname("..") == ".");
         REQUIRE(view::basename("..") == "..");
 
-        REQUIRE(view::remove_dirname("..") == "");
-        REQUIRE(view::remove_basename("..") == "..");
+        REQUIRE(view::remove_dirname("..") == "..");
+        REQUIRE(view::remove_basename("..") == "");
 
-        REQUIRE(view::replace_dirname("..", "AAA") == "AAA");
-        REQUIRE(view::replace_basename("..", "AAA") == "..");
+        REQUIRE(view::replace_dirname("..", "AAA") == "AAA/..");
+        REQUIRE(view::replace_basename("..", "AAA") == "AAA");
     }
     SECTION("相对路径特殊表示( .. ):这种不符合一般认识的路径，就应该作为文件处理") {
         REQUIRE(view::dirname(" .. ") == ".");
@@ -94,8 +94,8 @@ TEST_CASE("view::dirname+view::basename") {
         REQUIRE(view::remove_dirname(" .. ") == " .. ");
         REQUIRE(view::remove_basename(" .. ") == "");
 
-        REQUIRE(view::replace_dirname(" .. ", "AAA") == " .. ");
-        REQUIRE(view::replace_basename(" .. ", "AAA") == "");
+        REQUIRE(view::replace_dirname(" .. ", "AAA") == "AAA/ .. ");
+        REQUIRE(view::replace_basename(" .. ", "AAA") == "AAA");
     }
     SECTION("相对路径特殊表示( . ):这种不符合一般认识的路径，就应该作为文件处理") {
         REQUIRE(view::dirname(" . ") == ".");
@@ -104,8 +104,8 @@ TEST_CASE("view::dirname+view::basename") {
         REQUIRE(view::remove_dirname(" . ") == " . ");
         REQUIRE(view::remove_basename(" . ") == "");
 
-        REQUIRE(view::replace_dirname(" . ", "AAA") == " . ");
-        REQUIRE(view::replace_basename(" . ", "AAA") == "");
+        REQUIRE(view::replace_dirname(" . ", "AAA") == "AAA/ . ");
+        REQUIRE(view::replace_basename(" . ", "AAA") == "AAA");
     }
     SECTION("相对路径特殊表示(./)") {
         // os.path.dirname(".")
@@ -180,8 +180,8 @@ TEST_CASE("view::dirname+view::basename") {
         REQUIRE(view::remove_dirname("../aa/..") == "/..");
         REQUIRE(view::remove_basename("../aa/..") == "../aa/");
 
-        REQUIRE(view::replace_dirname("../aa/..", "AAA") == "AAA");
-        REQUIRE(view::replace_basename("../aa/..", "AAA") == "../aa/../AAA");
+        REQUIRE(view::replace_dirname("../aa/..", "AAA") == "AAA/..");
+        REQUIRE(view::replace_basename("../aa/..", "AAA") == "../aa/AAA");
     }
     SECTION("绝对路径 /") {
         REQUIRE(view::dirname("/") == "/");

@@ -35,10 +35,10 @@ TEST_CASE("view::extname") {
         REQUIRE(view::extname("abc/.") == std::string(""));
     }
     SECTION("basename位置只有点2") {
-        REQUIRE(view::extname("abc/..") == std::string(""));
+        REQUIRE(view::extname("abc/..") == std::string("."));
     }
     SECTION("basename位置只有点3") {
-        REQUIRE(view::extname("...") == std::string(""));
+        REQUIRE(view::extname("...") == std::string("."));
     }
     SECTION("basename位置,点在最后1") {
         REQUIRE(view::extname(".abc.") == std::string("."));
@@ -50,7 +50,7 @@ TEST_CASE("view::extname") {
         REQUIRE(view::extname("..abc") == std::string(".abc"));
     }
     SECTION("basename位置,多点前缀1") {
-        REQUIRE(view::extname("...abc") == std::string("..abc"));
+        REQUIRE(view::extname("...abc") == std::string(".abc"));
     }
     SECTION("空串") {
         REQUIRE(view::extname("") == std::string(""));

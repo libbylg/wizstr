@@ -49,6 +49,7 @@ public:
     //  映射和校验
     using char_mapping_proc = std::function<value_type(value_type)>;
     using char_checker_proc = std::function<bool(value_type ch)>;
+    using clike_char_checker_proc = std::function<int(int ch)>;
 
     // 匹配和检索
     using char_match_proc = std::function<bool(value_type ch)>;
