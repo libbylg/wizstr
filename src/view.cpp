@@ -731,15 +731,15 @@ auto view::is_literal_true(std::string_view s) -> bool {
         return false;
     }
 
-    //  "1"     "0"
-    //  "on"    "off"
-    //  "ON"    "OFF"
-    //  "Yes"   "No"
-    //  "yes"   "no"
-    //  "YES"   "NO"
-    //  "True"  "False"
-    //  "true"  "false"
-    //  "TRUE"  "FALSE"
+    // "1"     "0"
+    // "on"    "off"
+    // "ON"    "OFF"
+    // "Yes"   "No"
+    // "yes"   "no"
+    // "YES"   "NO"
+    // "True"  "False"
+    // "true"  "false"
+    // "TRUE"  "FALSE"
 
     const_pointer ptr = s.data();
     switch (s.size()) {
@@ -795,15 +795,15 @@ auto view::is_literal_false(std::string_view s) -> bool {
         return false;
     }
 
-    //  "1"     "0"
-    //  "on"    "off"
-    //  "ON"    "OFF"
-    //  "Yes"   "No"
-    //  "yes"   "no"
-    //  "YES"   "NO"
-    //  "True"  "False"
-    //  "true"  "false"
-    //  "TRUE"  "FALSE"
+    // "1"     "0"
+    // "on"    "off"
+    // "ON"    "OFF"
+    // "Yes"   "No"
+    // "yes"   "no"
+    // "YES"   "NO"
+    // "True"  "False"
+    // "true"  "false"
+    // "TRUE"  "FALSE"
 
     const_pointer ptr = s.data();
     switch (s.size()) {
@@ -1110,23 +1110,23 @@ auto view::join_search_path(const view_provider_proc& proc) -> std::string {
 //         return s;
 //     }
 
-//     if (pos >= s.size()) {
-//         return s;
-//     }
-
-//     max_n = std::min(max_n, (s.size() - pos));
-//     pointer left = s.data() + pos;
-//     pointer right = s.data() + pos + max_n - 1;
-
-//     while (left < right) {
-//         value_type ch = *left;
-//         *left = *right;
-//         *right = ch;
-//         left++;
-//         right--;
-//     }
-
+// if (pos >= s.size()) {
 //     return s;
+// }
+
+// max_n = std::min(max_n, (s.size() - pos));
+// pointer left = s.data() + pos;
+// pointer right = s.data() + pos + max_n - 1;
+
+// while (left < right) {
+//     value_type ch = *left;
+//     *left = *right;
+//     *right = ch;
+//     left++;
+//     right--;
+// }
+
+// return s;
 // }
 
 // auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
@@ -1437,8 +1437,8 @@ auto view::trim_surrounding(std::string_view s) -> std::string_view {
 //         return s;
 //     }
 
-//     s.resize(s.size() - n);
-//     return s;
+// s.resize(s.size() - n);
+// return s;
 // }
 
 // auto view::drop_right(std::string_view s, size_type n) -> std::string {
@@ -1446,12 +1446,15 @@ auto view::trim_surrounding(std::string_view s) -> std::string_view {
 //         return "";
 //     }
 
-//     return std::string{s.substr(0, s.size() - n)};
+// return std::string{s.substr(0, s.size() - n)};
 // }
 
-//  处理路径中文件名的部分
+// 处理路径中文件名的部分
 auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
-    assert(!s.empty());
+    // if (s.empty() || (s == ".") || (s == "..")) [[unlikely]] {
+    if (s.empty()) [[unlikely]] {
+        return (s.data() + s.size());
+    }
 
     const_pointer ptr = s.data() + s.size();
     while (ptr > s.data()) {
@@ -1467,28 +1470,31 @@ auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
 #endif
     }
 
+    // auto base_view = std::string_view{ptr, s.size() - (ptr - s.data())};
+    // if ((base_view == "..") || (base_view == ".")) {
+    //     return ptr += base_view.size();
+    // }
+
     return ptr;
 }
 
 // 扩展名相关操作
 auto view::extname_ptr(std::string_view s) -> std::string::const_pointer {
-    assert(!s.empty());
-
-    std::string::const_pointer base_ptr = basename_ptr(s);
-    std::string::const_pointer end = s.data() + s.size();
-
-    if (base_ptr[0] == '.') {
-        while (base_ptr < end) {
-            if (*base_ptr != '.') {
-                break;
-            }
-            base_ptr++;
-        }
+    if (s.empty()) {
+        return (s.data() + s.size());
     }
 
-    std::string::const_pointer ptr = s.data() + s.size();
+    std::string::const_pointer base_ptr = basename_ptr(s);
+    std::string::const_pointer ptr = s.data() + s.size() - 1;
 
-    return ptr;
+    while (ptr > base_ptr) {
+        if (*ptr == '.') {
+            return ptr;
+        }
+        ptr--;
+    }
+
+    return s.data() + s.size();
 }
 
 auto view::dirname_ptr(std::string_view s) -> std::string::const_pointer {
@@ -1504,15 +1510,19 @@ auto view::dirname_ptr(std::string_view s) -> std::string::const_pointer {
 }
 
 auto view::dirname_view(std::string_view s) -> std::string_view {
-    if (s.empty()) {
-        return s;
-    }
     auto ptr = view::dirname_ptr(s);
+    if ((ptr == s.data()) && (*ptr == '/')) {
+        return std::string_view{s.data(), 1};
+    }
     return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
 }
 
 auto view::dirname(std::string_view s) -> std::string {
-    return std::string{dirname_view(s)};
+    std::string_view dir_view = dirname_view(s);
+    if (dir_view.empty()) {
+        return ".";
+    }
+    return std::string{dir_view};
 }
 
 auto view::remove_dirname(std::string_view s) -> std::string {
@@ -1522,12 +1532,24 @@ auto view::remove_dirname(std::string_view s) -> std::string {
 
 auto view::replace_dirname(std::string_view s, std::string_view newdir) -> std::string {
     auto ptr = view::dirname_ptr(s);
+
     auto remain_len = (s.data() + s.size() - ptr);
-    size_type result_len = newdir.size() + remain_len;
+
+    assert(ptr >= s.data());
+
     std::string result;
-    result.reserve(result_len);
-    result.append(newdir);
-    result.append(ptr, result_len);
+    size_type result_len = newdir.size() + remain_len;
+    if ((ptr < (s.data() + s.size())) && (*ptr == '/')) {
+        result.reserve(result_len);
+        result.append(newdir);
+        result.append(ptr, remain_len);
+    } else {
+        result.reserve((result_len + 1));
+        result.append(newdir);
+        result.append("/");
+        result.append(ptr, remain_len);
+    }
+
     return result;
 }
 
@@ -1539,9 +1561,9 @@ auto view::split_dirname(std::string_view s) -> std::tuple<std::string_view, std
 }
 
 auto view::basename_view(std::string_view s) -> std::string_view {
-    if (s.empty()) {
-        return s;
-    }
+    // if (s.empty()) {
+    //     return s;
+    // }
     auto ptr = view::basename_ptr(s);
     return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
 }
@@ -1570,9 +1592,6 @@ auto view::split_basename(std::string_view s) -> std::tuple<std::string_view, st
 }
 
 auto view::extname_view(std::string_view s) -> std::string_view {
-    if (s.empty()) {
-        return s;
-    }
     auto ptr = view::extname_ptr(s);
     return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
 }
