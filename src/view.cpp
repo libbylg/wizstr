@@ -42,9 +42,10 @@ auto view::append(std::string_view s, value_type ch, size_type n) -> std::string
 
 auto view::append(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result{s};
-    const auto item = proc();
+    auto item = proc();
     while (item) {
         result.append(item.value());
+        item = proc();
     }
 
     return result;
@@ -82,9 +83,10 @@ auto view::prepend(std::string_view s, value_type ch, size_type n) -> std::strin
 
 auto view::prepend(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
-    const auto item = proc();
+    auto item = proc();
     while (item) {
-        result.append(item.value());
+        result.insert(0, item.value());
+        item = proc();
     }
     result.append(s);
     return result;
