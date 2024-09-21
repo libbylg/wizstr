@@ -5,7 +5,7 @@
 
 TEST_CASE("view::title") {
     REQUIRE(view::title("abc def") == "Abc Def");
-    REQUIRE(view::title("   abc def") == "   Abc Def");
+    REQUIRE(view::title("   abc def  \r\t\n\v 123") == "   Abc Def  \r\t\n\v 123");
     REQUIRE(view::title("123abc def") == "123Abc Def");
     REQUIRE(view::title("") == "");
     REQUIRE(view::title("z") == "Z");

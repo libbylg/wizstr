@@ -568,8 +568,12 @@ auto str::swap_case(std::string& s) -> std::string& {
     for (value_type& ch : s) {
         if (std::islower(ch)) {
             ch = static_cast<value_type>(std::toupper(ch));
-        } else if (std::islower(ch)) {
+            continue;
+        }
+
+        if (std::isupper(ch)) {
             ch = static_cast<value_type>(std::tolower(ch));
+            continue;
         }
     }
 
