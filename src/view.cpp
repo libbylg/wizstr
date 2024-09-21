@@ -1086,16 +1086,16 @@ auto view::join_list(const view_provider_proc& proc) -> std::string {
     return view::join_list(",", proc);
 }
 
-auto view::join_map(std::string_view s[2], const view_pair_provider_proc& proc) -> std::string {
+auto view::join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string {
     std::string result;
     bool suffix = false;
     for (auto item = proc(); item; item = proc()) {
         if (suffix) {
-            result.append(s[1]);
+            result.append(sep_list);
         }
 
         result.append(std::get<0>(item.value()));
-        result.append(s[0]);
+        result.append(sep_pair);
         result.append(std::get<1>(item.value()));
         suffix = true;
     }
@@ -1103,8 +1103,7 @@ auto view::join_map(std::string_view s[2], const view_pair_provider_proc& proc) 
 }
 
 auto view::join_map(const view_pair_provider_proc& proc) -> std::string {
-    std::string_view sep[]{"=", ","};
-    return view::join_map(sep, proc);
+    return view::join_map("=", ",", proc);
 }
 
 auto view::join_path(const view_provider_proc& proc) -> std::string {
