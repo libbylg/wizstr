@@ -43,7 +43,7 @@ TEST_CASE("view::iter_next_word") {
         REQUIRE(view::iter_next_word("abc def", pos) == std::string(""));
         REQUIRE(pos == 7);
 
-        pos == view::npos;
+        pos = view::npos;
         REQUIRE(view::iter_next_word("abc def", pos) == std::string(""));
         REQUIRE(pos == 7);
         REQUIRE(view::iter_next_word("abc def", pos) == std::string(""));

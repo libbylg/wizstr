@@ -207,7 +207,7 @@ public:
 
     // 生成由 width 个空格组成的新字符串
     static auto spaces(size_type width) -> std::string;
-    static auto skip_space(std::string_view s, size_type pos) -> size_type;
+    static auto skip_space(std::string_view s, size_type pos = 0) -> std::string_view;
 
     // 用指定的分隔符,拼接一个字符串序列
     static auto join_list(std::string_view s, const view_provider_proc& proc) -> std::string;
@@ -216,7 +216,7 @@ public:
     static auto join_list(std::string_view s, const Sequence& items) -> std::string {
         std::string result;
         auto itr = items.begin();
-        return join_list([&items, &itr]() -> std::optional<std::string_view> {
+        return join_list(s, [&items, &itr]() -> std::optional<std::string_view> {
             if (itr == items.end()) {
                 return std::nullopt;
             }

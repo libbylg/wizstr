@@ -995,96 +995,6 @@ auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::st
     return str::invert(result, pos, max_n);
 }
 
-// 字符串生成
-auto view::repeat(std::string_view s, size_type times) -> std::string {
-    if (s.empty() || (times == 0)) {
-        return "";
-    }
-
-    std::string result;
-    result.reserve(times * s.size());
-
-    for (size_type i = 0; i < times; i++) {
-        result.append(s);
-    }
-
-    return result;
-}
-
-auto view::repeat(value_type ch, size_type times) -> std::string {
-    std::string result;
-    result.resize(times, ch);
-    return result;
-}
-
-auto view::spaces(size_type width) -> std::string {
-    return repeat(' ', width);
-}
-
-auto view::skip_space(std::string_view s, size_type pos) -> size_type {
-    if (pos >= s.size()) {
-        return s.size();
-    }
-
-    const_pointer ptr = s.data() + pos;
-    while (ptr < s.data() + s.size()) {
-        if (!std::isspace(*ptr)) {
-            break;
-        }
-        ptr++;
-    }
-
-    return ptr - s.data();
-}
-
-auto view::join_list(std::string_view s, const view_provider_proc& proc) -> std::string {
-    std::string result;
-    for (auto item = proc(); item; item = proc()) {
-        if (!result.empty()) {
-            result.append(s);
-        }
-        result.append(item.value());
-    }
-    return result;
-}
-
-auto view::join_list(const view_provider_proc& proc) -> std::string {
-    return view::join_list(",", proc);
-}
-
-auto view::join_map(std::string_view s[2], const view_pair_provider_proc& proc) -> std::string {
-    std::string result;
-    for (auto item = proc(); item; item = proc()) {
-        if (!result.empty()) {
-            result.append(std::get<0>(item.value()));
-            result.append(s[1]);
-            result.append(std::get<1>(item.value()));
-            result.append(s[0]);
-        }
-    }
-    return result;
-}
-
-auto view::join_map(const view_pair_provider_proc& proc) -> std::string {
-    std::string_view sep[]{"=", ","};
-    return view::join_map(sep, proc);
-}
-
-auto view::join_path(const view_provider_proc& proc) -> std::string {
-    std::string result;
-    for (auto item = proc(); item; item = proc()) {
-        if (!result.empty()) {
-            result.append("/");
-        }
-        result.append(item.value());
-    }
-    return result;
-}
-
-auto view::join_search_path(const view_provider_proc& proc) -> std::string {
-    return view::join_list(":", proc);
-}
-
 // //  反转：字符串逆序
 // auto view::invert_inplace(std::string_view s, size_type pos, size_type max_n) -> std::string {
 //     if (s.empty()) {
@@ -1115,6 +1025,102 @@ auto view::join_search_path(const view_provider_proc& proc) -> std::string {
 //     invert_inplace(result, pos, max_n);
 //     return result;
 // }
+
+// 字符串生成
+auto view::repeat(std::string_view s, size_type times) -> std::string {
+    if (s.empty() || (times == 0)) {
+        return "";
+    }
+
+    std::string result;
+    result.reserve(times * s.size());
+
+    for (size_type i = 0; i < times; i++) {
+        result.append(s);
+    }
+
+    return result;
+}
+
+auto view::repeat(value_type ch, size_type times) -> std::string {
+    std::string result;
+    result.resize(times, ch);
+    return result;
+}
+
+auto view::spaces(size_type width) -> std::string {
+    return repeat(' ', width);
+}
+
+auto view::skip_space(std::string_view s, size_type pos) -> std::string_view {
+    if (pos >= s.size()) {
+        return s;
+    }
+
+    const_pointer ptr = s.data() + pos;
+    while (ptr < s.data() + s.size()) {
+        if (!std::isspace(*ptr)) {
+            break;
+        }
+        ptr++;
+    }
+
+    auto n = static_cast<size_type>(s.size() - (ptr - s.data()));
+    return std::string_view{ptr, n};
+}
+
+auto view::join_list(std::string_view s, const view_provider_proc& proc) -> std::string {
+    std::string result;
+    bool suffix = false;
+    for (auto item = proc(); item; item = proc()) {
+        if (suffix) [[likely]] {
+            result.append(s);
+        }
+        result.append(item.value());
+        suffix = true;
+    }
+    return result;
+}
+
+auto view::join_list(const view_provider_proc& proc) -> std::string {
+    return view::join_list(",", proc);
+}
+
+auto view::join_map(std::string_view s[2], const view_pair_provider_proc& proc) -> std::string {
+    std::string result;
+    bool suffix = false;
+    for (auto item = proc(); item; item = proc()) {
+        if (suffix) {
+            result.append(s[1]);
+        }
+
+        result.append(std::get<0>(item.value()));
+        result.append(s[0]);
+        result.append(std::get<1>(item.value()));
+        suffix = true;
+    }
+    return result;
+}
+
+auto view::join_map(const view_pair_provider_proc& proc) -> std::string {
+    std::string_view sep[]{"=", ","};
+    return view::join_map(sep, proc);
+}
+
+auto view::join_path(const view_provider_proc& proc) -> std::string {
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        if (!result.empty()) {
+            result.append("/");
+        }
+        result.append(item.value());
+    }
+    return result;
+}
+
+auto view::join_search_path(const view_provider_proc& proc) -> std::string {
+    return view::join_list(":", proc);
+}
 
 auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
     assert(!sep.empty());
