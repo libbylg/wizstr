@@ -501,6 +501,7 @@ auto str::title(std::string& s) -> std::string& {
                 *ptr = static_cast<value_type>(std::toupper(*ptr));
                 break;
             }
+            ptr++;
         }
         return 0;
     });
