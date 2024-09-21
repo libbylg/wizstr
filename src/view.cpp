@@ -89,24 +89,19 @@ auto view::insert(std::string_view s, size_type pos, std::string_view other) -> 
     return result;
 }
 
-// auto view::insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string {
-//     size_type len = other.size() * n + s.size();
-//     std::string result;
-//     result.reserve(len);
-//     result.append(std::string_view{s.data(), pos});
-//     for (size_type index = 0; index < n; index++) {
-//         result.append(other);
-//     }
-//     result.resize(len);
-//     result.append(std::string_view{s.data() + pos, s.size() - pos});
-//     return result;
-// }
-
 auto view::insert(std::string_view s, size_type pos, value_type ch) -> std::string {
-    return insert(s, pos, std::string_view{&ch, 1});
+    return view::insert(s, pos, std::string_view{&ch, 1});
 }
 
 auto view::insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string {
+    if (n == 0) {
+        return std::string{s};
+    }
+
+    if (pos >= s.size()) {
+        pos = s.size();
+    }
+
     std::string result;
     result.reserve(s.size() + n);
     result.append(s.data(), pos);

@@ -114,6 +114,28 @@ TEST_CASE("view::insert") {
         REQUIRE(view::insert("", 1, "bbb") == "bbb");
         REQUIRE(view::insert("", view::npos, "bbb") == "bbb");
     }
+    SECTION("插入单个字符") {
+        REQUIRE(view::insert("aaa", 0, 'B') == "Baaa");
+        REQUIRE(view::insert("aaa", 1, 'B') == "aBaa");
+        REQUIRE(view::insert("aaa", 2, 'B') == "aaBa");
+        REQUIRE(view::insert("aaa", 3, 'B') == "aaaB");
+        REQUIRE(view::insert("aaa", 4, 'B') == "aaaB");
+        REQUIRE(view::insert("aaa", view::npos, 'B') == "aaaB");
+        REQUIRE(view::insert("", 0, 'B') == "B");
+        REQUIRE(view::insert("", 9, 'B') == "B");
+    }
+    SECTION("重复插入一个字符") {
+        REQUIRE(view::insert("aaa", 0, 'B', 3) == "BBBaaa");
+        REQUIRE(view::insert("aaa", 1, 'B', 3) == "aBBBaa");
+        REQUIRE(view::insert("aaa", 2, 'B', 3) == "aaBBBa");
+        REQUIRE(view::insert("aaa", 3, 'B', 3) == "aaaBBB");
+        REQUIRE(view::insert("aaa", 4, 'B', 3) == "aaaBBB");
+        REQUIRE(view::insert("aaa", view::npos, 'B', 3) == "aaaBBB");
+        REQUIRE(view::insert("", 0, 'B', 3) == "BBB");
+        REQUIRE(view::insert("", 9, 'B', 3) == "BBB");
+        REQUIRE(view::insert("", 0, 'B', 0) == "");
+        REQUIRE(view::insert("aaa", 2, 'B', 0) == "aaa");
+    }
     SECTION("通过proc提供数据:一般") {
         std::vector<std::string_view> items{
             "Hello",
