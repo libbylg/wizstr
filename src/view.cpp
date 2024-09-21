@@ -116,12 +116,17 @@ auto view::insert(std::string_view s, size_type pos, value_type ch, size_type n)
 }
 
 auto view::insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string {
+    if (pos > s.size()) {
+        pos = s.size();
+    }
+
     std::string result;
     result.append(s.data(), pos);
 
     auto item = proc();
     while (item) {
         result.append(item.value());
+        item = proc();
     }
 
     result.append(std::string_view{s.data() + pos, s.size() - pos});

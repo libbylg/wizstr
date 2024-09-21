@@ -108,10 +108,67 @@ TEST_CASE("view::insert") {
         REQUIRE(view::insert("aaa", 4, "") == "aaa");
         REQUIRE(view::insert("aaa", view::npos, "") == "aaa");
     }
-    SECTION("到空串") {
-        REQUIRE(view::insert("", 0, "") == "");
+    SECTION("插入到空串") {
+        REQUIRE(view::insert("", 0, "") == ""); // 将空串插入到空串
         REQUIRE(view::insert("", 0, "bbb") == "bbb");
         REQUIRE(view::insert("", 1, "bbb") == "bbb");
         REQUIRE(view::insert("", view::npos, "bbb") == "bbb");
+    }
+    SECTION("通过proc提供数据:一般") {
+        std::vector<std::string_view> items{
+            "Hello",
+            "World",
+            "",
+            "!!!",
+        };
+        view::size_type index = 0;
+        std::string result = view::insert("abc", 2, [&items, &index]() -> std::optional<std::string_view> {
+            if (index >= items.size()) {
+                return std::nullopt;
+            }
+
+            return items[index++];
+        });
+        REQUIRE(result == "abHelloWorld!!!c");
+    }
+    SECTION("通过proc提供数据:pos超出范围1") {
+        std::vector<std::string_view> items{
+            "Hello",
+            "World",
+            "",
+            "!!!",
+        };
+        view::size_type index = 0;
+        std::string result = view::insert("abc", 5, [&items, &index]() -> std::optional<std::string_view> {
+            if (index >= items.size()) {
+                return std::nullopt;
+            }
+
+            return items[index++];
+        });
+        REQUIRE(result == "abcHelloWorld!!!");
+    }
+    SECTION("通过proc提供数据:pos超出范围2") {
+        std::vector<std::string_view> items{
+            "Hello",
+            "World",
+            "",
+            "!!!",
+        };
+        view::size_type index = 0;
+        std::string result = view::insert("abc", view::npos, [&items, &index]() -> std::optional<std::string_view> {
+            if (index >= items.size()) {
+                return std::nullopt;
+            }
+
+            return items[index++];
+        });
+        REQUIRE(result == "abcHelloWorld!!!");
+    }
+    SECTION("通过proc提供数据:立即终止") {
+        std::string result = view::insert("abc", 2, []() -> std::optional<std::string_view> {
+            return std::nullopt;
+        });
+        REQUIRE(result == "abc");
     }
 }
