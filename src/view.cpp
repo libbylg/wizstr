@@ -14,16 +14,6 @@ auto view::append(std::string_view s, std::string_view other) -> std::string {
     return result;
 }
 
-// auto view::append(std::string_view s, std::string_view other, size_type n) -> std::string {
-//     std::string result;
-//     result.reserve(s.size() + other.size() * n);
-//     result.append(s);
-//     for (size_type index = 0; index < n; index++) {
-//         result.append(other);
-//     }
-//     return result;
-// }
-
 auto view::append(std::string_view s, value_type ch) -> std::string {
     std::string result;
     result.reserve(s.size() + 1);
@@ -59,16 +49,6 @@ auto view::prepend(std::string_view s, std::string_view other) -> std::string {
     return result;
 }
 
-// auto view::prepend(std::string_view s, std::string_view other, size_type n) -> std::string {
-//     std::string result;
-//     result.reserve(s.size() + other.size() * n);
-//     for (size_type index = 0; index < n; index++) {
-//         result.append(other);
-//     }
-//     result.append(s);
-//     return result;
-// }
-
 auto view::prepend(std::string_view s, value_type ch) -> std::string {
     return prepend(s, std::string_view{&ch, 1});
 }
@@ -93,6 +73,14 @@ auto view::prepend(std::string_view s, const view_provider_proc& proc) -> std::s
 }
 
 auto view::insert(std::string_view s, size_type pos, std::string_view other) -> std::string {
+    if (other.empty()) {
+        return std::string{s};
+    }
+
+    if (pos >= s.size()) {
+        pos = s.size();
+    }
+
     std::string result;
     result.reserve(other.size() + s.size());
     result.append(std::string_view{s.data(), pos});

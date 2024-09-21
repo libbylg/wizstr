@@ -47,7 +47,6 @@ TEST_CASE("view::append") {
     }
 }
 
-
 TEST_CASE("view::prepend") {
     SECTION("一般情况") {
         REQUIRE(view::prepend("aaa", "bbb") == "bbbaaa");
@@ -89,5 +88,30 @@ TEST_CASE("view::prepend") {
             return std::nullopt;
         });
         REQUIRE(result == "abc");
+    }
+}
+
+TEST_CASE("view::insert") {
+    SECTION("一般情况") {
+        REQUIRE(view::insert("aaa", 0, "bbb") == "bbbaaa");
+        REQUIRE(view::insert("aaa", 1, "bbb") == "abbbaa");
+        REQUIRE(view::insert("aaa", 2, "bbb") == "aabbba");
+        REQUIRE(view::insert("aaa", 3, "bbb") == "aaabbb");
+        REQUIRE(view::insert("aaa", 4, "bbb") == "aaabbb");
+        REQUIRE(view::insert("aaa", view::npos, "bbb") == "aaabbb");
+    }
+    SECTION("插入空串") {
+        REQUIRE(view::insert("aaa", 0, "") == "aaa");
+        REQUIRE(view::insert("aaa", 1, "") == "aaa");
+        REQUIRE(view::insert("aaa", 2, "") == "aaa");
+        REQUIRE(view::insert("aaa", 3, "") == "aaa");
+        REQUIRE(view::insert("aaa", 4, "") == "aaa");
+        REQUIRE(view::insert("aaa", view::npos, "") == "aaa");
+    }
+    SECTION("到空串") {
+        REQUIRE(view::insert("", 0, "") == "");
+        REQUIRE(view::insert("", 0, "bbb") == "bbb");
+        REQUIRE(view::insert("", 1, "bbb") == "bbb");
+        REQUIRE(view::insert("", view::npos, "bbb") == "bbb");
     }
 }
