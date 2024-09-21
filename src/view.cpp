@@ -131,7 +131,7 @@ auto view::insert(std::string_view s, size_type pos, const view_provider_proc& p
 auto view::icompare(std::string_view s, std::string_view other) -> int {
     if (s.size() < other.size()) {
         int ret = strncasecmp(s.data(), other.data(), s.size());
-        return (ret == 0) ? other[s.size()] : ret;
+        return (ret == 0) ? -other[s.size()] : ret;
     }
 
     if (s.size() > other.size()) {
@@ -290,14 +290,6 @@ auto view::remove_prefix(std::string_view s, value_type prefix) -> std::string_v
     return remove_prefix(s, {&prefix, 1});
 }
 
-// auto view::remove_prefix(std::string_view s, size_type n) -> std::string_view {
-//     if (n >= s.size()) {
-//         return {};
-//     }
-//
-//     return std::string_view{s.data() + n, s.size() - n};
-// }
-
 auto view::has_suffix(std::string_view s, value_type suffix) -> bool {
     if (s.empty()) {
         return false;
@@ -330,14 +322,6 @@ auto view::remove_suffix(std::string_view s, value_type suffix) -> std::string_v
     return remove_suffix(s, {&suffix, 1});
 }
 
-// auto view::remove_suffix(std::string_view s, size_type n) -> std::string_view {
-//     if (n >= s.size()) {
-//         return {};
-//     }
-//
-//     return std::string_view{s.data(), s.size() - n};
-// }
-
 auto view::find_next_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
     if (pos >= s.size()) {
         s = {};
@@ -353,15 +337,9 @@ auto view::find_next_regex(std::string_view s, const std::regex& pattern, size_t
     return std::string_view{result[0].first, static_cast<size_type>(result[0].second - result[0].first)};
 }
 
-// auto view::find_prev_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
-// }
-
 auto view::find_next_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
     return find_next_regex(s, std::regex{pattern.begin(), pattern.end()}, pos);
 }
-
-// auto view::find_prev_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
-// }
 
 auto view::find_next_eol(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
@@ -394,9 +372,6 @@ auto view::find_next_eol(std::string_view s, size_type pos) -> std::string_view 
     return {};
 }
 
-// auto view::find_prev_eol(std::string_view s, size_type pos) -> size_type {
-// }
-
 auto view::find_next_word(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         return {};
@@ -417,12 +392,6 @@ auto view::find_next_word(std::string_view s, size_type pos) -> std::string_view
     return std::string_view{start, static_cast<size_type>(end - start)};
 }
 
-// auto view::find_prev_word(std::string_view s, size_type pos) -> std::optional<std::string_view> {
-//     if (pos < s.size()) {
-//         s = s.substr(pos);
-//     }
-// }
-
 auto view::iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view> {
     auto result = view::find_next_regex(s, pattern, pos);
     if (!result) {
@@ -434,10 +403,6 @@ auto view::iter_next_regex(std::string_view s, size_type& pos, const std::regex&
     return result.value();
 }
 
-// auto view::iter_prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>
-//{
-// }
-
 auto view::iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view> {
     auto result = view::find_next_regex(s, pattern, pos);
     if (!result) {
@@ -448,28 +413,6 @@ auto view::iter_next_regex(std::string_view s, size_type& pos, std::string_view 
     pos = (result.value().data() + result.value().size()) - s.data();
     return result.value();
 }
-
-// auto view::iter_prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view> {
-// }
-
-auto view::iter_next_char(std::string_view s, size_type& pos, value_type ch) -> size_type {
-    if (pos >= s.size()) {
-        pos = s.size();
-        return npos;
-    }
-
-    auto next_pos = s.find(ch, pos);
-    if (next_pos == std::string_view::npos) {
-        pos = s.size();
-        return npos;
-    }
-
-    pos = next_pos + 1;
-    return next_pos;
-}
-
-// auto view::iter_prev_char(std::string_view s, size_type& pos, value_type ch) -> bool {
-// }
 
 auto view::iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type {
     if (pos >= s.size()) {
@@ -486,9 +429,6 @@ auto view::iter_next_string(std::string_view s, size_type& pos, std::string_view
     pos = next_pos + other.size();
     return next_pos;
 }
-
-// auto view::iter_prev_string(std::string_view s, size_type& pos, std::string_view other) -> size_type {
-// }
 
 auto view::iter_next_eol(std::string_view s, size_type& pos) -> std::string_view {
     std::string_view eol = view::find_next_eol(s, pos);
@@ -1575,9 +1515,6 @@ auto view::split_dirname(std::string_view s) -> std::tuple<std::string_view, std
 }
 
 auto view::basename_view(std::string_view s) -> std::string_view {
-    // if (s.empty()) {
-    //     return s;
-    // }
     auto ptr = view::basename_ptr(s);
     return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
 }
