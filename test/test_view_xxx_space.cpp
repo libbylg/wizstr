@@ -15,4 +15,6 @@ TEST_CASE("view::skip_space") {
     REQUIRE(view::skip_space("   abc  ") == "abc  ");
     REQUIRE(view::skip_space(" \r\t\n ") == "");
     REQUIRE(view::skip_space("") == "");
+    REQUIRE(view::skip_space("abc  def", 8) == "");
+    REQUIRE(view::skip_space("abc  def", view::npos) == "");
 }

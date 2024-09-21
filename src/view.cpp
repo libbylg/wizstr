@@ -501,6 +501,10 @@ auto view::foreach_word(std::string_view s, const std::function<int(std::string_
 // }
 
 auto view::is_lower(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::islower(*ptr)) {
             return false;
@@ -511,6 +515,10 @@ auto view::is_lower(std::string_view s) -> bool {
 }
 
 auto view::is_upper(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isupper(*ptr)) {
             return false;
@@ -725,13 +733,13 @@ auto view::is_literal_false(std::string_view s) -> bool {
             return false;
         case 4:
             if ((ptr[0] == 't') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
-                return true;
+                return false;
             }
             if ((ptr[0] == 'T') && (ptr[1] == 'r') && (ptr[2] == 'u') && (ptr[3] == 'e')) {
-                return true;
+                return false;
             }
             if ((ptr[0] == 'T') && (ptr[1] == 'R') && (ptr[2] == 'U') && (ptr[3] == 'E')) {
-                return true;
+                return false;
             }
             return false;
         case 3:
@@ -935,38 +943,6 @@ auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::st
     return str::invert(result, pos, max_n);
 }
 
-// //  反转：字符串逆序
-// auto view::invert_inplace(std::string_view s, size_type pos, size_type max_n) -> std::string {
-//     if (s.empty()) {
-//         return s;
-//     }
-
-// if (pos >= s.size()) {
-//     return s;
-// }
-
-// max_n = std::min(max_n, (s.size() - pos));
-// pointer left = s.data() + pos;
-// pointer right = s.data() + pos + max_n - 1;
-
-// while (left < right) {
-//     value_type ch = *left;
-//     *left = *right;
-//     *right = ch;
-//     left++;
-//     right--;
-// }
-
-// return s;
-// }
-
-// auto view::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
-//     std::string result{s};
-//     invert_inplace(result, pos, max_n);
-//     return result;
-// }
-
-// 字符串生成
 auto view::repeat(std::string_view s, size_type times) -> std::string {
     if (s.empty() || (times == 0)) {
         return "";
@@ -994,7 +970,7 @@ auto view::spaces(size_type width) -> std::string {
 
 auto view::skip_space(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
-        return s;
+        return {};
     }
 
     const_pointer ptr = s.data() + pos;
