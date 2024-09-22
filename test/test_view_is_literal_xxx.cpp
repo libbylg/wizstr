@@ -11,6 +11,8 @@ TEST_CASE("view::is_literal_bool") {
         REQUIRE(view::is_literal_bool("off"));
         REQUIRE(view::is_literal_bool("ON"));
         REQUIRE(view::is_literal_bool("OFF"));
+        REQUIRE(view::is_literal_bool("On"));
+        REQUIRE(view::is_literal_bool("Off"));
         REQUIRE(view::is_literal_bool("Yes"));
         REQUIRE(view::is_literal_bool("No"));
         REQUIRE(view::is_literal_bool("yes"));
@@ -45,6 +47,8 @@ TEST_CASE("view::is_literal_true") {
         REQUIRE(view::is_literal_true("off") == false);
         REQUIRE(view::is_literal_true("ON") == true);
         REQUIRE(view::is_literal_true("OFF") == false);
+        REQUIRE(view::is_literal_true("On") == true);
+        REQUIRE(view::is_literal_true("Off") == false);
         REQUIRE(view::is_literal_true("Yes") == true);
         REQUIRE(view::is_literal_true("No") == false);
         REQUIRE(view::is_literal_true("yes") == true);
@@ -79,6 +83,8 @@ TEST_CASE("view::is_literal_false") {
         REQUIRE(view::is_literal_false("off") == true);
         REQUIRE(view::is_literal_false("ON") == false);
         REQUIRE(view::is_literal_false("OFF") == true);
+        REQUIRE(view::is_literal_false("On") == false);
+        REQUIRE(view::is_literal_false("Off") == true);
         REQUIRE(view::is_literal_false("Yes") == false);
         REQUIRE(view::is_literal_false("No") == true);
         REQUIRE(view::is_literal_false("yes") == false);

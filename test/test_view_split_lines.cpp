@@ -105,6 +105,19 @@ TEST_CASE("view::split_lines:keep_ends=false") {
         std::vector<std::string_view> expect{"abcdef"};
         REQUIRE(view::split_lines(s) == expect);
     }
+    SECTION("proc:提前结束") {
+        std::string_view s{"a\nb\nc\nd\ne\nf"};
+        std::vector<std::string_view> expect{"a\n", "b\n"};
+        std::vector<std::string_view> result;
+        view::split_lines(s, true, [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            if (result.size() >= 2) {
+                return -1;
+            }
+            return 0;
+        });
+        REQUIRE(result == expect);
+    }
 }
 
 TEST_CASE("view::split_lines:keep_ends=true") {
