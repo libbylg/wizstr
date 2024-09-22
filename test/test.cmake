@@ -1,7 +1,7 @@
 list(APPEND INCLUDEPATH ${CMAKE_CURRENT_LIST_DIR})
 
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_align_xxx.cpp)
-list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_basename_xxx.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_split_words.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_case_xxx.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_contains_count.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_dirname_basename.cpp)

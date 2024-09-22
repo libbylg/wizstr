@@ -404,14 +404,7 @@ auto view::iter_next_regex(std::string_view s, size_type& pos, const std::regex&
 }
 
 auto view::iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view> {
-    auto result = view::find_next_regex(s, pattern, pos);
-    if (!result) {
-        pos = s.size();
-        return std::nullopt;
-    }
-
-    pos = (result.value().data() + result.value().size()) - s.data();
-    return result.value();
+    return view::iter_next_regex(s, pos, std::regex{pattern.begin(), pattern.end()});
 }
 
 auto view::iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type {
@@ -1056,54 +1049,164 @@ auto view::join_path(const view_provider_proc& proc) -> std::string {
 }
 
 auto view::join_search_path(const view_provider_proc& proc) -> std::string {
-    return view::join_list(":", proc);
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        // 如果每项为空,全部跳过
+        if (item->empty()) {
+            continue;
+        }
+
+        if (!result.empty()) {
+            result.append(":");
+        }
+
+        result.append(*item);
+    }
+
+    return result;
 }
 
-auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
+auto view::split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void {
     assert(!sep.empty());
 
+    // 最大拆分次数如果为0，就不需要拆了
+    if (max_n == 0) {
+        proc(s);
+        return;
+    }
+
+    size_type n = 0;
     size_type pos_start = 0;
     while (pos_start < s.size()) {
+        // 找到分隔符的位置
         size_type pos_end = s.find(sep, pos_start);
         if (pos_end == std::string::npos) {
             break;
         }
 
-        if (proc(std::string_view{s.data() + pos_start, pos_end - pos_start}) != 0) {
+        // 执行输出,如果用户希望提前结束就直接结束后续的部分不再理会
+        if (proc(std::string_view{s.data() + pos_start, (pos_end - pos_start)}) != 0) {
             return;
         }
 
+        // 准备好下次查找的起点
         pos_start = pos_end + sep.size();
+
+        // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
+        n++;
+        if (n >= max_n) {
+            break;
+        }
     }
 
     proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
 }
 
-auto view::split_list(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
-    assert(!sep.empty());
+auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
+    view::split_list(s, sep, view::npos, [&proc, &s](std::string_view item) -> int {
+        return proc(item);
+    });
+}
 
+auto view::split_list(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+
+    view::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+
+    return result;
+}
+
+auto view::split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void {
     if (max_n == 0) {
-        return {s};
+        proc(s);
+        return;
+    }
+
+    size_type n = 0;
+
+    size_type last_pos = 0;
+    size_type pos = 0;
+    while (pos < s.size()) {
+        // 找到满足正则表达式的位置
+        auto item = view::find_next_regex(s, sep, pos);
+        if (!item) {
+            pos = s.size();
+            break;
+        }
+
+        assert(!item->empty());
+
+        // 将找到的数据输出给调用方
+        size_type start = item->data() - s.data();
+        size_type stop = start + item->size();
+        if (proc(std::string_view{s.data() + last_pos, (start - last_pos)}) != 0) {
+            return;
+        }
+
+        // 为下次查找做准备
+        last_pos = stop;
+        pos = stop;
+
+        // 如果次数达到最大次数限制:中断循环，并将剩余的数据输出
+        n++;
+        if (n >= max_n) {
+            break;
+        }
+    }
+
+    // 最后一部分也需要单独拆出来
+    proc(std::string_view{s.data() + last_pos, (s.size() - last_pos)});
+}
+
+auto view::split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void {
+    view::split_list(s, sep, view::npos, proc);
+}
+
+auto view::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+
+    view::split_list(s, sep, max_n, [&result, max_n](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+
+    return result;
+}
+
+auto view::split_words(std::string_view s, const view_consumer_proc& proc) -> void {
+    size_type pos = 0;
+    while (pos < s.size()) {
+        std::string_view word = view::iter_next_word(s, pos);
+        if (word.empty()) {
+            assert(pos >= s.size());
+            continue;
+        }
+
+        if (proc(word) != 0) {
+            break;
+        }
+    }
+}
+
+auto view::split_words(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
+    if (max_n == 0) {
+        return {};
     }
 
     std::vector<std::string_view> result;
 
-    size_type pos_start = 0;
-    while (pos_start < s.size()) {
-        size_type pos_end = s.find(sep, pos_start);
-        if (pos_end == std::string::npos) {
-            break;
-        }
-
-        result.emplace_back(s.data() + pos_start, pos_end - pos_start);
-        pos_start = pos_end + sep.size();
-
+    view::split_words(s, [&result, max_n](std::string_view item) -> int {
+        assert(!item.empty());
+        result.emplace_back(item);
         if (result.size() >= max_n) {
-            break;
+            return -1;
         }
-    }
+        return 0;
+    });
 
-    result.emplace_back(s.data() + pos_start, s.size() - pos_start);
     return result;
 }
 

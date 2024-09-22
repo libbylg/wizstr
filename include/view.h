@@ -41,6 +41,7 @@ public:
     using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
 
     // 消费器
+    using split_consumer_proc = std::function<int(size_type pos, size_type n, size_type sep_end)>;
     using view_consumer_proc = std::function<int(std::string_view item)>;
     using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
 
@@ -266,16 +267,16 @@ public:
     }
 
     // 拆分字符串
+    static auto split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, std::string_view sep = ",", size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, const std::regex& sep, size_type max_n = npos) -> std::vector<std::string_view>;
 
     // 按空格拆分，多个空格会作为一个分隔符
     static auto split_words(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto split_words(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
-
-    // 将指定的模式作为分隔符拆分输入串
-    static auto split_pattern(std::string_view s, const std::regex& pattern, const view_consumer_proc& proc) -> void;
-    static auto split_pattern(std::string_view s, const std::regex& pattern, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_words(std::string_view s, size_type max_n = view::npos) -> std::vector<std::string_view>;
 
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
     static auto split_map(std::string_view s, std::string_view sep[2], view_pair_consumer_proc proc) -> void;
