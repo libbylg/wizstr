@@ -50,3 +50,5 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_title_capitalize.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_xxx_next_word.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_xxx_next_regex.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_xxx_space.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_iter_next_string.cpp)
+

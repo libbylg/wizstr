@@ -408,15 +408,17 @@ auto view::iter_next_regex(std::string_view s, size_type& pos, std::string_view 
 }
 
 auto view::iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type {
+    assert(!other.empty());
+
     if (pos >= s.size()) {
         pos = s.size();
-        return npos;
+        return view::npos;
     }
 
     auto next_pos = s.find(other, pos);
     if (next_pos == std::string_view::npos) {
         pos = s.size();
-        return npos;
+        return view::npos;
     }
 
     pos = next_pos + other.size();
