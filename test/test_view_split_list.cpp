@@ -159,17 +159,38 @@ TEST_CASE("view::split_list:regex") {
         REQUIRE(view::split_list("", sep, 0) == std::vector<std::string_view>{""});
         REQUIRE(view::split_list("", sep, 3) == std::vector<std::string_view>{""});
     }
-    SECTION("proc提前返回") {
+    SECTION("proc:不限拆分次数") {
+        std::regex sep("[ \t]*(:|,|;)[ \t]*");
+        std::vector<std::string_view> result;
+        view::split_list("aaa, bbb:ccc ;ddd ", sep, [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            return 0;
+        });
+        REQUIRE(result == std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "});
+    }
+    SECTION("proc:限制拆分次数+提前返回") {
         std::regex sep("[ \t]*(:|,|;)[ \t]*");
         std::vector<std::string_view> result;
         view::split_list("aaa, bbb:ccc ;ddd ", sep, 2, [&result](std::string_view item) -> int {
             result.emplace_back(item);
-            if (result.size() == 2) { // 提前返回,只存两个,尾部的数据直接丢弃
+            if (result.size() == 2) { // max_n 限制不起作用,这里的约束条件会提前触发,导致提前结束,所以只存两个,尾部的数据直接丢弃
                 return -1;
             }
             return 0;
         });
         REQUIRE(result == std::vector<std::string_view>{"aaa", "bbb"});
+    }
+    SECTION("proc:限制拆分次数+提前返回+限制次数较小") {
+        std::regex sep("[ \t]*(:|,|;)[ \t]*");
+        std::vector<std::string_view> result;
+        view::split_list("aaa, bbb:ccc ;ddd,MNP", sep, 2, [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            if (result.size() == 4) { // max_n 提前返回,限制起作用，实际能存三个
+                return -1;
+            }
+            return 0;
+        });
+        REQUIRE(result == std::vector<std::string_view>{"aaa", "bbb", "ccc ;ddd,MNP"});
     }
     SECTION("全都是分隔符") {
         std::regex sep(":|,|;");

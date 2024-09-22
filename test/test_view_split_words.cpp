@@ -12,7 +12,7 @@ TEST_CASE("view::split_words") {
         REQUIRE(view::split_words("Hello-World-patppy-boy") == std::vector<std::string_view>{"Hello-World-patppy-boy"});
     }
     SECTION("首尾有空白") {
-        REQUIRE(view::split_words("Hello \rWorld\n ") == std::vector<std::string_view>{"Hello", "World", "patppy", "boy"});
+        REQUIRE(view::split_words("Hello \rWorld\n ") == std::vector<std::string_view>{"Hello", "World"});
         REQUIRE(view::split_words(" \r\v\t\n Hello \rWorld\n ") == std::vector<std::string_view>{"Hello", "World"});
         REQUIRE(view::split_words(" \r\v\t\n Hello \rWorld") == std::vector<std::string_view>{"Hello", "World"});
     }
