@@ -20,6 +20,10 @@ TEST_CASE("view::join_list") {
         REQUIRE(view::join_list("*", std::array{"A", "B", "C"}) == "A*B*C");
         REQUIRE(view::join_list("*", std::array{"", "", ""}) == "**");
     }
+    SECTION("使用 initialize_list 形式") {
+        REQUIRE(view::join_list({"A", "B", "C"}) == "A,B,C");
+        REQUIRE(view::join_list(";", {"A", "B"}) == "A;B");
+    }
     SECTION("proc使用供给数据") {
         std::array items{"A", "B", "C"};
         size_t i = 0;

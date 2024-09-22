@@ -32,6 +32,9 @@ TEST_CASE("view::is_literal_bool") {
         REQUIRE(view::is_literal_bool("tRUe") == false);
         REQUIRE(view::is_literal_bool("true ") == false);
     }
+    SECTION("超长值") {
+        REQUIRE(view::is_literal_bool("hello-workd") == false);
+    }
 }
 
 TEST_CASE("view::is_literal_true") {
@@ -63,6 +66,9 @@ TEST_CASE("view::is_literal_true") {
         REQUIRE(view::is_literal_true("tRUe") == false);
         REQUIRE(view::is_literal_true("true ") == false);
     }
+    SECTION("超长值") {
+        REQUIRE(view::is_literal_true("hello-workd") == false);
+    }
 }
 
 TEST_CASE("view::is_literal_false") {
@@ -93,5 +99,8 @@ TEST_CASE("view::is_literal_false") {
         REQUIRE(view::is_literal_false("FalsE") == false);
         REQUIRE(view::is_literal_false("tRUe") == false);
         REQUIRE(view::is_literal_false("true ") == false);
+    }
+    SECTION("超长值") {
+        REQUIRE(view::is_literal_false("hello-workd") == false);
     }
 }

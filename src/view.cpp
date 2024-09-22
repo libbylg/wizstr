@@ -536,6 +536,14 @@ auto view::is_title(std::string_view s) -> bool {
     return std::isupper(s[0]);
 }
 
+auto view::is_capitalize(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    return std::isupper(s[0]);
+}
+
 auto view::is_digit(std::string_view s) -> bool {
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isdigit(*ptr)) {
@@ -1025,11 +1033,25 @@ auto view::join_map(const view_pair_provider_proc& proc) -> std::string {
 auto view::join_path(const view_provider_proc& proc) -> std::string {
     std::string result;
     for (auto item = proc(); item; item = proc()) {
-        if (!result.empty()) {
+        // 如果每项为空,全部跳过
+        if (item->empty()) {
+            continue;
+        }
+
+        // 如果某项以斜杠开头，那么该项目将作为绝对路径项替换已有内容
+        if (item->front() == '/') {
+            result = *item;
+            continue;
+        }
+
+        // 根据 result 的后缀决定是否要补路径分隔符
+        if (!result.empty() && (result.back() != '/')) {
             result.append("/");
         }
-        result.append(item.value());
+
+        result.append(*item);
     }
+
     return result;
 }
 
@@ -1184,6 +1206,12 @@ auto view::split_path(std::string_view s) -> std::vector<std::string_view> {
     });
     return result;
 }
+
+// auto view::split_search_path(std::string_view s, const view_consumer_proc& proc) -> void {
+// }
+//
+// auto view::split_search_path(std::string_view s) -> std::vector<std::string_view> {
+// }
 
 // auto view::split_csv(std::string_view s) -> std::vector<std::string> {
 // }

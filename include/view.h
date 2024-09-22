@@ -6,6 +6,7 @@
 
 #include <cinttypes>
 #include <functional>
+#include <initializer_list>
 #include <limits>
 #include <map>
 #include <numeric>
@@ -139,6 +140,7 @@ public:
     static auto is_lower(std::string_view s) -> bool;
     static auto is_upper(std::string_view s) -> bool;
     static auto is_title(std::string_view s) -> bool;
+    static auto is_capitalize(std::string_view s) -> bool;
     static auto is_digit(std::string_view s) -> bool;
     static auto is_xdigit(std::string_view s) -> bool;
     static auto is_ascii(std::string_view s) -> bool;
@@ -195,7 +197,7 @@ public:
     // 用指定的分隔符,拼接一个字符串序列
     static auto join_list(std::string_view s, const view_provider_proc& proc) -> std::string;
     static auto join_list(const view_provider_proc& proc) -> std::string;
-    template <typename Sequence, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_list(std::string_view s, const Sequence& items) -> std::string {
         std::string result;
         auto itr = items.begin();
@@ -208,7 +210,7 @@ public:
         });
     }
 
-    template <typename Sequence, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_list(const Sequence& items) -> std::string {
         return join_list(",", items);
     }
@@ -237,11 +239,11 @@ public:
 
     // 文件路径拼接
     static auto join_path(const view_provider_proc& proc) -> std::string;
-    template <typename Sequence, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_path(const Sequence& items) -> std::string {
         auto itr = items.begin();
-        return join_path([&items, &itr]() -> std::optional<std::string_view> {
-            if (itr == items.end()) {
+        return view::join_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
+            if (itr == end) {
                 return std::nullopt;
             }
 
@@ -251,6 +253,17 @@ public:
 
     // 拼接成搜索路径
     static auto join_search_path(const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_search_path(const Sequence& items) -> std::string {
+        auto itr = items.begin();
+        return view::join_search_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
+            if (itr == end) {
+                return std::nullopt;
+            }
+
+            return *(itr++);
+        });
+    }
 
     // 拆分字符串
     static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
@@ -275,6 +288,9 @@ public:
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
     static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_path(std::string_view s) -> std::vector<std::string_view>;
+
+    static auto split_search_path(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto split_search_path(std::string_view s) -> std::vector<std::string_view>;
 
     // 拆分 csv 数据
     static auto split_csv(std::string_view s) -> std::vector<std::string>;
