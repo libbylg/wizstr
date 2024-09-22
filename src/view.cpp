@@ -1142,7 +1142,7 @@ auto view::split_list(std::string_view s, std::string_view sep, size_type max_n,
 }
 
 auto view::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
-    view::split_list(s, sep, view::npos, [&proc, &s](std::string_view item) -> int {
+    view::split_list(s, sep, view::npos, [&proc](std::string_view item) -> int {
         return proc(item);
     });
 }
@@ -1207,7 +1207,7 @@ auto view::split_list(std::string_view s, const std::regex& sep, const view_cons
 auto view::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
 
-    view::split_list(s, sep, max_n, [&result, max_n](std::string_view item) -> int {
+    view::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });
