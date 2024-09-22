@@ -26,9 +26,16 @@ TEST_CASE("view::iter_next_string") {
         REQUIRE(view::iter_next_string(s, pos, "AA") == view::npos);
         REQUIRE(pos == 14);
     }
-    SECTION("pos超过范围") {
+    SECTION("pos超过范围:1") {
         std::string_view s{"AAabcAAdefAAAA"};
         size_t pos = 14;
+
+        REQUIRE(view::iter_next_string(s, pos, "AA") == view::npos);
+        REQUIRE(pos == 14);
+    }
+    SECTION("pos超过范围:npos") {
+        std::string_view s{"AAabcAAdefAAAA"};
+        size_t pos = view::npos;
 
         REQUIRE(view::iter_next_string(s, pos, "AA") == view::npos);
         REQUIRE(pos == 14);
@@ -39,5 +46,15 @@ TEST_CASE("view::iter_next_string") {
 
         REQUIRE(view::iter_next_string(s, pos, "AA") == view::npos);
         REQUIRE(pos == 0);
+    }
+    SECTION("空串") {
+        std::string_view s{"AACDEF"};
+        size_t pos = 0;
+
+        REQUIRE(view::iter_next_string(s, pos, "AA") == 0);
+        REQUIRE(pos == 2);
+
+        REQUIRE(view::iter_next_string(s, pos, "AA") == view::npos);
+        REQUIRE(pos == 6);
     }
 }
