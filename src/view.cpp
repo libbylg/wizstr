@@ -538,15 +538,24 @@ auto view::is_capitalize(std::string_view s) -> bool {
 }
 
 auto view::is_digit(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isdigit(*ptr)) {
             return false;
         }
     }
+
     return true;
 }
 
 auto view::is_xdigit(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isxdigit(*ptr)) {
             return false;
@@ -556,6 +565,10 @@ auto view::is_xdigit(std::string_view s) -> bool {
 }
 
 auto view::is_ascii(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if ((*ptr & 0x80) != 0) {
             return false;
@@ -565,6 +578,10 @@ auto view::is_ascii(std::string_view s) -> bool {
 }
 
 auto view::is_alpha(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isalpha(*ptr)) {
             return false;
@@ -574,6 +591,10 @@ auto view::is_alpha(std::string_view s) -> bool {
 }
 
 auto view::is_alnum(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isalnum(*ptr)) {
             return false;
@@ -583,6 +604,10 @@ auto view::is_alnum(std::string_view s) -> bool {
 }
 
 auto view::is_space(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isspace(*ptr)) {
             return false;
@@ -592,6 +617,10 @@ auto view::is_space(std::string_view s) -> bool {
 }
 
 auto view::is_blank(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isblank(*ptr)) {
             return false;
@@ -601,6 +630,10 @@ auto view::is_blank(std::string_view s) -> bool {
 }
 
 auto view::is_print(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isprint(*ptr)) {
             return false;
@@ -610,6 +643,10 @@ auto view::is_print(std::string_view s) -> bool {
 }
 
 auto view::is_graph(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
         if (!std::isgraph(*ptr)) {
             return false;
