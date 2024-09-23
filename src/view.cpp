@@ -1524,11 +1524,48 @@ auto view::trim_surrounding(std::string_view s) -> std::string_view {
     });
 }
 
-// auto view::trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string {
-// }
+auto view::trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string {
+    std::string result;
 
-// auto view::trim_anywhere(std::string_view s) -> std::string {
-// }
+    const_pointer r = s.data();
+    const_pointer end = s.data() + s.size();
+    const_pointer ptr = s.data();
+    while (ptr < end) {
+        // 找到需要清除的起点
+        while (ptr < end) {
+            if (proc(*ptr)) {
+                break;
+            }
+            ptr++;
+        }
+
+        if (r < ptr) {
+            result.append(r, ptr - r);
+        }
+        r = nullptr;
+
+        // 找到需要清除的终点
+        while (ptr < end) {
+            if (!proc(*ptr)) {
+                r = ptr;
+                break;
+            }
+            ptr++;
+        }
+    }
+
+    if ((r != nullptr) && (r < end)) {
+        result.append(r, end - r);
+    }
+
+    return result;
+}
+
+auto view::trim_anywhere(std::string_view s) -> std::string {
+    return view::trim_anywhere(s, [](value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+}
 
 // // 切除
 // auto view::drop_right(std::string_view s, size_type n) -> std::string {
