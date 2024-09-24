@@ -169,7 +169,7 @@ public:
     static auto take(std::string_view s, charset_type set);
     static auto drop_left(std::string_view s, size_type n) -> std::string_view;
     static auto drop_right(std::string_view s, size_type n) -> std::string_view;
-    static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string_view;
+    static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
     static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
     static auto drop(std::string_view s, char_checker_proc proc);
     static auto drop(std::string_view s, charset_type set);

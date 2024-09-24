@@ -896,6 +896,55 @@ auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::st
     return s.substr(((pos + 1) - n), n);
 }
 
+auto view::drop_left(std::string_view s, size_type n) -> std::string_view {
+    if (n > s.size()) {
+        return {};
+    }
+
+    return s.substr(n);
+}
+
+auto view::drop_right(std::string_view s, size_type n) -> std::string_view {
+    if (n > s.size()) {
+        return {};
+    }
+
+    return s.substr(0, s.size() - n);
+}
+
+auto view::drop_mid(std::string_view s, size_type pos, size_type n) -> std::string {
+    if ((n == 0) || (pos > s.size())) {
+        return std::string{s};
+    }
+
+    if (pos >= s.size()) {
+        return std::string{s};
+    }
+
+    if (n > (s.size() - pos)) {
+        return std::string{s.substr(0, pos)};
+    }
+
+
+    std::string result;
+    result.reserve(s.size() - n);
+    result.append(s.data(), pos);
+    result.append(s.data() + pos + n, (s.size() - pos - n));
+    return result;
+}
+
+//auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
+//
+//}
+//
+//auto view::drop(std::string_view s, char_checker_proc proc) {
+//
+//}
+//
+//auto view::drop(std::string_view s, charset_type set) {
+//
+//}
+
 auto view::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
         return std::string{s};
