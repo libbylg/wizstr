@@ -925,7 +925,6 @@ auto view::drop_mid(std::string_view s, size_type pos, size_type n) -> std::stri
         return std::string{s.substr(0, pos)};
     }
 
-
     std::string result;
     result.reserve(s.size() - n);
     result.append(s.data(), pos);
@@ -933,17 +932,49 @@ auto view::drop_mid(std::string_view s, size_type pos, size_type n) -> std::stri
     return result;
 }
 
-//auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
+auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string {
+    if (offset > 0) {
+        if (pos > s.size()) {
+            return std::string{s};
+        }
+
+        if (offset >= (s.size() - pos)) {
+            return std::string{s.data() + pos, pos};
+        }
+
+        std::string result;
+        result.append(s.data(), pos);
+        result.append(s.data() + pos + offset, s.size() - (pos + offset));
+        return result;
+    }
+
+    if (offset < 0) {
+        size_type n = -offset;
+
+        if (pos >= s.size()) {
+            pos = s.size() - 1;
+        }
+
+        if (n > pos) {
+            return std::string{s.substr(pos)};
+        }
+
+        std::string result;
+        result.append(s.substr(pos - n, s.size() - (pos - n)));
+        result.append(s.substr(pos));
+        return result;
+    }
+
+    return std::string{s};
+}
+
+// auto view::drop(std::string_view s, char_checker_proc proc) {
 //
-//}
+// }
 //
-//auto view::drop(std::string_view s, char_checker_proc proc) {
+// auto view::drop(std::string_view s, charset_type set) {
 //
-//}
-//
-//auto view::drop(std::string_view s, charset_type set) {
-//
-//}
+// }
 
 auto view::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
@@ -1616,24 +1647,40 @@ auto view::trim_anywhere(std::string_view s) -> std::string {
     });
 }
 
-// // 切除
-// auto view::drop_right(std::string_view s, size_type n) -> std::string {
-//     if (n > s.size()) {
-//         s.resize(0);
-//         return s;
-//     }
+auto view::expand_envs(std::string_view s, expand_vars_proc proc) -> std::string {
+    std::string result;
+    size_type start = 0;
+    while (start < s.size()) {
+        size_type pos = s.find('$', start);
+        if (pos == view::npos) {
+            return {};
+        }
 
-// s.resize(s.size() - n);
-// return s;
-// }
+        if (pos > start) {
+            result.append(s.substr(start , pos - start));
+        }
 
-// auto view::drop_right(std::string_view s, size_type n) -> std::string {
-//     if (n > s.size()) {
-//         return "";
-//     }
+        if ((pos + 1) < s.size()) {
+            if (s[pos + 1] == '{') {
+                size_type end = s.find('}', start);
+                auto val = proc(s.substr(pos + 2, end - (pos + 2)));
+                if (val) {
+                    result.append(*val);
+                } else {
+                    result.append(s.substr(pos, ((end + 1)-pos)));
+                }
+                continue;
+            }
 
-// return std::string{s.substr(0, s.size() - n)};
-// }
+            end = pos +1;
+            while (end < s.size()) {
+                if (std::isal)
+            }
+        }
+    }
+
+    return {};
+}
 
 // 处理路径中文件名的部分
 auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {

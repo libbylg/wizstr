@@ -170,7 +170,7 @@ public:
     static auto drop_left(std::string_view s, size_type n) -> std::string_view;
     static auto drop_right(std::string_view s, size_type n) -> std::string_view;
     static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
-    static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
+    static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string;
     static auto drop(std::string_view s, char_checker_proc proc);
     static auto drop(std::string_view s, charset_type set);
 
@@ -329,7 +329,7 @@ public:
     static auto fill(pointer dest, size_type size, std::string_view s) -> size_type;
 
     // 变量展开
-    using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
+    using expand_vars_proc = std::function<std::optional<std::string>(std::string_view key)>;
     static auto expand_envs(std::string_view s, expand_vars_proc proc) -> std::string;
     static auto expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string;
     static auto expand_envs(std::string_view s, const std::tuple<const std::string&, const std::string&>& pair) -> std::string;
