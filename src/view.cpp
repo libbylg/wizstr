@@ -1647,39 +1647,132 @@ auto view::trim_anywhere(std::string_view s) -> std::string {
     });
 }
 
-auto view::expand_envs(std::string_view s, expand_vars_proc proc) -> std::string {
+auto view::expand_envs(std::string_view s, bool keep_unexpanded, expand_vars_proc proc) -> std::string {
     std::string result;
     size_type start = 0;
+    std::string key;
     while (start < s.size()) {
         size_type pos = s.find('$', start);
+
+        // start 之后已经没有 $ 符号了
         if (pos == view::npos) {
-            return {};
+            break;
         }
 
+        // 将 start 到 pos 之间的部分原样保存起来
         if (pos > start) {
-            result.append(s.substr(start , pos - start));
+            result.append(s.substr(start, pos - start));
+            start = pos;
         }
 
-        if ((pos + 1) < s.size()) {
-            if (s[pos + 1] == '{') {
-                size_type end = s.find('}', start);
-                auto val = proc(s.substr(pos + 2, end - (pos + 2)));
-                if (val) {
-                    result.append(*val);
-                } else {
-                    result.append(s.substr(pos, ((end + 1)-pos)));
-                }
+        // 如果是  ${xxx} 的形式
+        if (((pos + 1) < s.size()) && (s[pos + 1] == '{')) {
+            size_type end = s.find('}', pos + 2);
+
+            // 如果只有 "${" 却没有 "}"
+            if (end == view::npos) {
+                break;
+            }
+
+            // 匹配到 ${xxx} 的形式，确定 key
+            key = s.substr(pos + 2, end - (pos + 2));
+
+            // 尝试找到替换值
+            auto val = proc(key);
+
+            // 如果找到匹配项
+            if (val) {
+                result.append(*val);
+                start = end + 1;
                 continue;
             }
 
-            end = pos +1;
-            while (end < s.size()) {
-                if (std::isal)
+            // 如果没有找到匹配项
+            if (keep_unexpanded) {
+                result.append(s.substr(pos, ((end + 1) - pos)));
             }
+
+            start = end + 1;
+            continue;
         }
+
+        // 如果是 $xxx 的形式
+
+        // 将 $ 之后的名字提取出来
+        size_type end = pos + 1;
+        while (end < s.size()) {
+            if (!(std::isalnum(s[end]) || (s[end] == '_'))) {
+                break;
+            }
+            end++;
+        }
+
+        if ((end - (pos + 1)) <= 0) {
+            break;
+        }
+
+        // 确定 key
+        key = s.substr(pos + 1, end - (pos + 1));
+
+        // 尝试找到替换值
+        auto val = proc(key);
+
+        // 如果找到匹配项
+        if (val) {
+            result.append(*val);
+            start = end;
+            continue;
+        }
+
+        // 如果没有找到匹配项
+        if (keep_unexpanded) {
+            result.append(s.substr(pos, (end - pos)));
+        }
+
+        start = end;
+        continue;
     }
 
-    return {};
+    if (start < s.size()) {
+        result.append(s.substr(start));
+    }
+    return result;
+}
+
+auto view::expand_envs(std::string_view s, bool keep_unexpanded) -> std::string {
+    return view::expand_envs(s, keep_unexpanded, [](const std::string& key) -> std::optional<std::string> {
+        const char* val = getenv(key.c_str());
+        if (val == nullptr) {
+            return std::nullopt;
+        }
+
+        return std::string{val};
+    });
+}
+
+auto view::expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string {
+    return view::expand_envs(s, keep_unexpanded, [&kvs](std::string key) -> std::optional<std::string> {
+        auto itr = kvs.find(key);
+        if (itr == kvs.cend()) {
+            return std::nullopt;
+        }
+
+        return itr->second;
+    });
+}
+
+auto view::expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string {
+    return view::expand_envs(s, false, kvs);
+}
+
+auto view::expand_envs(std::string_view s, std::string_view key, std::string_view val) -> std::string {
+    return view::expand_envs(s, true, [&key, &val](std::string name) -> std::optional<std::string> {
+        if (name != key) {
+            return std::nullopt;
+        }
+
+        return std::string{val};
+    });
 }
 
 // 处理路径中文件名的部分

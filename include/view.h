@@ -329,12 +329,12 @@ public:
     static auto fill(pointer dest, size_type size, std::string_view s) -> size_type;
 
     // 变量展开
-    using expand_vars_proc = std::function<std::optional<std::string>(std::string_view key)>;
-    static auto expand_envs(std::string_view s, expand_vars_proc proc) -> std::string;
+    using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
+    static auto expand_envs(std::string_view s, bool keep_unexpanded, expand_vars_proc proc) -> std::string;
+    static auto expand_envs(std::string_view s, bool keep_unexpanded = false) -> std::string;
+    static auto expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string;
     static auto expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string;
-    static auto expand_envs(std::string_view s, const std::tuple<const std::string&, const std::string&>& pair) -> std::string;
-    static auto expand_envs(std::string_view s, const std::tuple<const std::string_view, const std::string_view>& pair) -> std::string;
-    static auto expand_envs(std::string_view s) -> std::string;
+    static auto expand_envs(std::string_view s, std::string_view key, std::string_view val) -> std::string;
 
     // 将字符串中的 tab 符号(\t)按照 tab 宽度替换成空白
     static auto expand_tabs(std::string_view s, size_type tab_size = 8) -> std::string;
