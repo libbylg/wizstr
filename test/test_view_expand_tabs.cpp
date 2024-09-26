@@ -22,4 +22,16 @@ TEST_CASE("view::expand_tabs") {
         REQUIRE(view::expand_tabs("12345\t9", 4) == "12345   9");
         // clang-format on
     }
+    SECTION("不同宽度") {
+        REQUIRE(view::expand_tabs("1\t9", 0) == "1       9");
+        REQUIRE(view::expand_tabs("1\t9", 1) == "1 9");
+        REQUIRE(view::expand_tabs("1\t9", 2) == "1 9");
+        REQUIRE(view::expand_tabs("1\t9", 3) == "1  9");
+        REQUIRE(view::expand_tabs("1\t9", 4) == "1   9");
+        REQUIRE(view::expand_tabs("1\t9", 5) == "1    9");
+        REQUIRE(view::expand_tabs("1\t9", 6) == "1     9");
+        REQUIRE(view::expand_tabs("1\t9", 7) == "1      9");
+        REQUIRE(view::expand_tabs("1\t9", 8) == "1       9");
+        REQUIRE(view::expand_tabs("1\t9", 9) == "1        9");
+    }
 }

@@ -1823,6 +1823,24 @@ auto view::expand_tabs(std::string_view s, size_type tab_size) -> std::string {
     return result;
 }
 
+auto view::expand_user(std::string_view s) -> std::string {
+    if (((s.size() == 1) && (s[0] == '~')) || ((s.size() >= 2) && (s[0] == '~') && (s[1] == '/'))) {
+        const char* ptr_home = getenv("HOME");
+        if (ptr_home == nullptr) {
+            return std::string{s};
+        }
+
+        std::string_view home{ptr_home};
+
+        std::string result;
+        result.reserve(home.size() + s.size() - 1);
+        result.append(s.substr(1));
+        return result;
+    }
+
+    return std::string{s};
+}
+
 // 处理路径中文件名的部分
 auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
     // if (s.empty() || (s == ".") || (s == "..")) [[unlikely]] {
