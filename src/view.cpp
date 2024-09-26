@@ -1793,6 +1793,36 @@ auto view::expand_envs(std::string_view s, std::string_view key, std::string_vie
     });
 }
 
+auto view::expand_tabs(std::string_view s, size_type tab_size) -> std::string {
+    if (tab_size == 0) {
+        tab_size = 8;
+    }
+
+    std::string result;
+    result.reserve(s.size());
+
+    size_type start = 0;
+    size_type pos = 0;
+    while (start < s.size()) {
+        pos = s.find('\t', start);
+        if (pos == view::npos) {
+            break;
+        }
+
+        if (pos > start) {
+            result.append(s.substr(start, pos - start));
+        }
+        result.append(tab_size - (result.size() % tab_size), ' ');
+        start = pos + 1;
+    }
+
+    if (start < s.size()) {
+        result.append(s.substr(start));
+    }
+
+    return result;
+}
+
 // 处理路径中文件名的部分
 auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
     // if (s.empty() || (s == ".") || (s == "..")) [[unlikely]] {
