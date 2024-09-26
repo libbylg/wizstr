@@ -497,7 +497,7 @@ auto str::title(std::string& s) -> std::string& {
     view::foreach_word(s, [&s](size_type pos, size_type n) -> int {
         pointer ptr = s.data() + pos;
         while (ptr < (s.data() + pos + n)) {
-            if (std::islower(*ptr)) {
+            if (std::isalpha(*ptr)) {
                 *ptr = static_cast<value_type>(std::toupper(*ptr));
                 break;
             }

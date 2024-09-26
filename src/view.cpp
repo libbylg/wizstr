@@ -524,11 +524,23 @@ auto view::is_upper(std::string_view s) -> bool {
 }
 
 auto view::is_title(std::string_view s) -> bool {
-    if (s.empty()) {
-        return false;
-    }
+    bool result = true;
+    view::foreach_word(s, [&s, &result](size_type pos, size_type n) -> int {
+        const_pointer ptr = s.data() + pos;
+        while (ptr < (s.data() + pos + n)) {
+            if (std::isalpha(*ptr)) {
+                if (std::islower(*ptr)) {
+                    result = false;
+                    return -1;
+                }
+                break;
+            }
+            ptr++;
+        }
+        return 0;
+    });
 
-    return std::isupper(s[0]);
+    return result;
 }
 
 auto view::is_capitalize(std::string_view s) -> bool {
