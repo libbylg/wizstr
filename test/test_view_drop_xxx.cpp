@@ -65,17 +65,17 @@ TEST_CASE("view::drop") {
         REQUIRE(view::drop("3bc1233", 2, 5) == "3b");
         REQUIRE(view::drop("3bc1233", 2, -3) == "1233");
         REQUIRE(view::drop("3bc1233", 2, 6) == "3b");
-        REQUIRE(view::drop("3bc1233", 2, -4) == "3bc");
+        REQUIRE(view::drop("3bc1233", 2, -4) == "1233");
     }
     SECTION("起始位置") {
-        REQUIRE(view::drop("3bc1233", 0, 2) == "3b");
-        REQUIRE(view::drop("3bc1233", 0, -2) == "3");
-        REQUIRE(view::drop("3bc1233", 0, 0) == "");
-        REQUIRE(view::drop("3bc1233", 6, -7) == "3bc1233");
-        REQUIRE(view::drop("3bc1234", 6, 1) == "4");
-        REQUIRE(view::drop("3bc1234", 7, -1) == "4");
-        REQUIRE(view::drop("3bc1234", 7, -2) == "34");
-        REQUIRE(view::drop("3bc1233", view::npos, 6) == "");
+        REQUIRE(view::drop("3bc1233", 0, 2) == "c1233");
+        REQUIRE(view::drop("3bc1233", 0, -2) == "bc1233");
+        REQUIRE(view::drop("3bc1233", 0, 0) == "3bc1233");
+        REQUIRE(view::drop("3bc1233", 6, -7) == "");
+        REQUIRE(view::drop("3bc1234", 6, 1) == "3bc123");
+        REQUIRE(view::drop("3bc1234", 7, -1) == "3bc123");
+        REQUIRE(view::drop("3bc1234", 7, -2) == "3bc12");
+        REQUIRE(view::drop("3bc1233", view::npos, 6) == "3bc1233");
     }
     SECTION("空串") {
         REQUIRE(view::drop("", 0, 0) == "");
