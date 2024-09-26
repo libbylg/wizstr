@@ -1834,6 +1834,7 @@ auto view::expand_user(std::string_view s) -> std::string {
 
         std::string result;
         result.reserve(home.size() + s.size() - 1);
+        result.append(home);
         result.append(s.substr(1));
         return result;
     }
