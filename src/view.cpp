@@ -933,13 +933,17 @@ auto view::drop_mid(std::string_view s, size_type pos, size_type n) -> std::stri
 }
 
 auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string {
+    if (s.empty()) {
+        return std::string{s};
+    }
+
     if (offset > 0) {
         if (pos > s.size()) {
             return std::string{s};
         }
 
         if (offset >= (s.size() - pos)) {
-            return std::string{s.data() + pos, pos};
+            return std::string{s.substr(0, pos)};
         }
 
         std::string result;
@@ -956,12 +960,14 @@ auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::st
         }
 
         if (n > pos) {
-            return std::string{s.substr(pos)};
+            return std::string{s.substr(pos + 1)};
         }
 
         std::string result;
-        result.append(s.substr(pos - n, s.size() - (pos - n)));
-        result.append(s.substr(pos));
+        result.append(s.substr(0, ((pos + 1) - n)));
+        if ((pos + 1) < s.size()) {
+            result.append(s.substr(pos + 1));
+        }
         return result;
     }
 

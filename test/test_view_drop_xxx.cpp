@@ -35,7 +35,7 @@ TEST_CASE("view::drop_right") {
 
 TEST_CASE("view::drop_mid") {
     SECTION("一般场景") {
-        REQUIRE(view::drop_mid("3bc1233", 3, 0) == "");
+        REQUIRE(view::drop_mid("3bc1233", 3, 0) == "3bc1233");
         REQUIRE(view::drop_mid("3bc1233", 2, 3) == "3b33");
         REQUIRE(view::drop_mid("3bc1233", 2, 5) == "3b");
         REQUIRE(view::drop_mid("3bc1233", 2, 6) == "3b");
@@ -45,8 +45,9 @@ TEST_CASE("view::drop_mid") {
         REQUIRE(view::drop_mid("3bc1233", 0, 2) == "c1233");
         REQUIRE(view::drop_mid("3bc1233", 2, 3) == "3b33");
         REQUIRE(view::drop_mid("3bc1234", 6, 1) == "3bc123");
+        REQUIRE(view::drop_mid("3bc1234", 6, 2) == "3bc123");
         REQUIRE(view::drop_mid("3bc1234", 7, 1) == "3bc1234");
-        REQUIRE(view::drop_mid("3bc1233", view::npos, 6) == "3");
+        REQUIRE(view::drop_mid("3bc1233", view::npos, 6) == "3bc1233");
     }
     SECTION("空串") {
         REQUIRE(view::drop_mid("", 0, 0) == "");

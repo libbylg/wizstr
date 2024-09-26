@@ -45,6 +45,7 @@ TEST_CASE("view::take_mid") {
         REQUIRE(view::take_mid("3bc1233", 0, 2) == "3b");
         REQUIRE(view::take_mid("3bc1233", 2, 3) == "c12");
         REQUIRE(view::take_mid("3bc1234", 6, 1) == "4");
+        REQUIRE(view::drop_mid("3bc1234", 6, 2) == "4");
         REQUIRE(view::take_mid("3bc1234", 7, 1) == "");
         REQUIRE(view::take_mid("3bc1233", view::npos, 6) == "");
     }
