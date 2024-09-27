@@ -13,10 +13,13 @@ TEST_CASE("view::space") {
 TEST_CASE("view::skip_space_remain") {
     REQUIRE(view::skip_space_remain("abc") == "abc");
     REQUIRE(view::skip_space_remain("   abc  ") == "abc  ");
-    REQUIRE(view::skip_space_remain(" \r\t\n ") == "");
+    REQUIRE(view::skip_space_remain("   abc  ", 1) == "abc  ");
+    REQUIRE(view::skip_space_remain("   abc  ", 2) == "abc  ");
+    REQUIRE(view::skip_space_remain("   abc  ", 3) == "abc  ");
+    REQUIRE(view::skip_space_remain("   abc  ", 10) == "");
+    REQUIRE(view::skip_space_remain(" \r\t\n ", 0) == "");
     REQUIRE(view::skip_space_remain("") == "");
-    REQUIRE(view::skip_space_remain("abc  def", 8) == "");
-    REQUIRE(view::skip_space_remain("abc  def", view::npos) == "");
+    REQUIRE(view::skip_space_remain("abc  def") == "abc  def");
 }
 
 TEST_CASE("view::skip_space") {

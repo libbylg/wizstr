@@ -1108,6 +1108,7 @@ auto view::spaces(size_type width) -> std::string {
 
 auto view::skip_space_remain(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
+        pos = s.size();
         return {};
     }
 
@@ -1119,8 +1120,8 @@ auto view::skip_space_remain(std::string_view s, size_type pos) -> std::string_v
         ptr++;
     }
 
-    auto n = static_cast<size_type>(s.size() - (ptr - s.data()));
-    return std::string_view{ptr, n};
+    pos = ptr - s.data();
+    return s.substr(pos);
 }
 
 auto view::skip_space(std::string_view s, size_type pos) -> size_type {
@@ -1508,6 +1509,7 @@ auto view::split_search_path(std::string_view s, bool keep_empty) -> std::vector
     std::vector<std::string_view> result;
     view::split_search_path(s, keep_empty, [&result](std::string_view item) -> int {
         result.emplace_back(item);
+        return 0;
     });
     return result;
 }
