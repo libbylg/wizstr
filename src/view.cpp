@@ -1496,7 +1496,7 @@ auto view::split_path(std::string_view s) -> std::vector<std::string_view> {
 
 auto view::split_search_path(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void {
     view::split_list(s, std::string_view{&sep, 1}, [keep_empty, &proc](std::string_view item) -> int {
-        if (keep_empty && item.empty()) {
+        if (!keep_empty && item.empty()) {
             return 0;
         }
 

@@ -10,7 +10,7 @@ TEST_CASE("view::split_search_path") {
     }
     SECTION("空路径") {
         REQUIRE(view::split_search_path(":::") == std::vector<std::string_view>{});
-        REQUIRE(view::split_search_path(":::", true) == std::vector<std::string_view>{"", "", ""});
+        REQUIRE(view::split_search_path(":::", true) == std::vector<std::string_view>{"", "", "", ""});
 
         REQUIRE(view::split_search_path(":  : :") == std::vector<std::string_view>{"  ",  " "});
         REQUIRE(view::split_search_path(":  : :", true) == std::vector<std::string_view>{"", "  ", " ", ""});
