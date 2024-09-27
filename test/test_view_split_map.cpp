@@ -37,4 +37,9 @@ TEST_CASE("view::split_map") {
         auto expect = std::map<std::string, std::string>{{"aa", ""}, {"bb", ""}, {"c", ""}};
         REQUIRE(result == expect);
     }
+    SECTION("空串") {
+        auto result = view::split_map(",,,");
+        auto expect = std::map<std::string, std::string>{{"", ""}, {"", ""}, {"", ""}};
+        REQUIRE(result == expect);
+    }
 }
