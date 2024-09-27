@@ -193,7 +193,8 @@ public:
 
     // 生成由 width 个空格组成的新字符串
     static auto spaces(size_type width) -> std::string;
-    static auto skip_space(std::string_view s, size_type pos = 0) -> std::string_view;
+    static auto skip_space_remain(std::string_view s, size_type pos = 0) -> std::string_view;
+    static auto skip_space(std::string_view s, size_type pos) -> size_type;
 
     // 用指定的分隔符,拼接一个字符串序列
     static auto join_list(std::string_view s, const view_provider_proc& proc) -> std::string;
@@ -311,19 +312,19 @@ public:
     static auto translate(std::string_view s, std::string_view from, std::string_view to) -> std::string;
 
     // 字符串化简，将字符串中的多个空白压缩成一个空格
-    static auto simplified(std::string_view s, std::string_view sep, char_checker_proc proc) -> std::string;
+    static auto simplified(std::string_view s, std::string_view sep, const char_checker_proc& proc) -> std::string;
     static auto simplified(std::string_view s) -> std::string;
 
     // 去掉字符串左侧的空白
-    static auto trim_left(std::string_view s, char_checker_proc proc) -> std::string_view;
+    static auto trim_left(std::string_view s, const char_checker_proc& proc) -> std::string_view;
     static auto trim_left(std::string_view s) -> std::string_view;
-    static auto trim_right(std::string_view s, char_checker_proc proc) -> std::string_view;
+    static auto trim_right(std::string_view s, const char_checker_proc& proc) -> std::string_view;
     static auto trim_right(std::string_view s) -> std::string_view;
-    static auto trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string_view;
+    static auto trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string_view;
     static auto trim_surrounding(std::string_view s) -> std::string_view;
 
     // 去掉字符串中任何位置的空白
-    static auto trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string;
     static auto trim_anywhere(std::string_view s) -> std::string;
 
     // 拷贝,交换,填充
@@ -332,7 +333,7 @@ public:
 
     // 变量展开
     using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
-    static auto expand_envs(std::string_view s, bool keep_unexpanded, expand_vars_proc proc) -> std::string;
+    static auto expand_envs(std::string_view s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string;
     static auto expand_envs(std::string_view s, bool keep_unexpanded = false) -> std::string;
     static auto expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string;
     static auto expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string;

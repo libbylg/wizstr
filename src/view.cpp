@@ -954,7 +954,7 @@ auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::st
             return std::string{s};
         }
 
-        if (offset >= (s.size() - pos)) {
+        if (offset >= static_cast<ssize_t>(s.size() - pos)) {
             return std::string{s.substr(0, pos)};
         }
 
@@ -1106,7 +1106,7 @@ auto view::spaces(size_type width) -> std::string {
     return repeat(' ', width);
 }
 
-auto view::skip_space(std::string_view s, size_type pos) -> std::string_view {
+auto view::skip_space_remain(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         return {};
     }
@@ -1122,6 +1122,23 @@ auto view::skip_space(std::string_view s, size_type pos) -> std::string_view {
     auto n = static_cast<size_type>(s.size() - (ptr - s.data()));
     return std::string_view{ptr, n};
 }
+
+auto view::skip_space(std::string_view s, size_type pos) -> size_type {
+    if (pos >= s.size()) {
+        return s.size();
+    }
+
+    const_pointer ptr = s.data() + pos;
+    while (ptr < s.data() + s.size()) {
+        if (!std::isspace(*ptr)) {
+            break;
+        }
+        ptr++;
+    }
+
+    return ptr - s.data();
+}
+
 
 auto view::join_list(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
@@ -1347,7 +1364,7 @@ auto view::split_words(std::string_view s, size_type max_n) -> std::vector<std::
     return result;
 }
 
-auto view::split_pair(std::string_view s, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view> {
+auto view::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view> {
     std::array<std::string_view, 2> pair;
     size_t n = 0;
     view::split_list(s, sep, 1, [&n, &pair](std::string_view item) -> int {
@@ -1489,7 +1506,7 @@ auto view::split_search_path(std::string_view s, bool keep_empty, const view_con
 
 auto view::split_search_path(std::string_view s, bool keep_empty) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
-    view::split_search_path(s, keep_empty, [](std::string_view item) -> int {
+    view::split_search_path(s, keep_empty, [&result](std::string_view item) -> int {
         result.emplace_back(item);
     });
     return result;
@@ -1519,7 +1536,7 @@ auto view::swap_case(std::string_view s) -> std::string {
 // auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
 // }
 
-auto view::simplified(std::string_view s, std::string_view sep, char_checker_proc proc) -> std::string {
+auto view::simplified(std::string_view s, std::string_view sep,const  char_checker_proc& proc) -> std::string {
     if (s.empty()) {
         return std::string{s};
     }
@@ -1588,7 +1605,7 @@ auto view::simplified(std::string_view s) -> std::string {
     });
 }
 
-auto view::trim_left(std::string_view s, char_checker_proc proc) -> std::string_view {
+auto view::trim_left(std::string_view s,const char_checker_proc& proc) -> std::string_view {
     if (s.empty()) [[unlikely]] {
         return s;
     }
@@ -1611,7 +1628,7 @@ auto view::trim_left(std::string_view s) -> std::string_view {
     });
 }
 
-auto view::trim_right(std::string_view s, char_checker_proc proc) -> std::string_view {
+auto view::trim_right(std::string_view s, const char_checker_proc& proc) -> std::string_view {
     if (s.empty()) [[unlikely]] {
         return s;
     }
@@ -1633,7 +1650,7 @@ auto view::trim_right(std::string_view s) -> std::string_view {
     });
 }
 
-auto view::trim_surrounding(std::string_view s, char_checker_proc proc) -> std::string_view {
+auto view::trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string_view {
     if (s.empty()) {
         return s;
     }
@@ -1664,7 +1681,7 @@ auto view::trim_surrounding(std::string_view s) -> std::string_view {
     });
 }
 
-auto view::trim_anywhere(std::string_view s, char_checker_proc proc) -> std::string {
+auto view::trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string {
     std::string result;
 
     const_pointer r = s.data();
@@ -1707,7 +1724,7 @@ auto view::trim_anywhere(std::string_view s) -> std::string {
     });
 }
 
-auto view::expand_envs(std::string_view s, bool keep_unexpanded, expand_vars_proc proc) -> std::string {
+auto view::expand_envs(std::string_view s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string {
     std::string result;
     size_type start = 0;
     std::string key;
@@ -1790,7 +1807,6 @@ auto view::expand_envs(std::string_view s, bool keep_unexpanded, expand_vars_pro
         }
 
         start = end;
-        continue;
     }
 
     if (start < s.size()) {
@@ -1811,7 +1827,7 @@ auto view::expand_envs(std::string_view s, bool keep_unexpanded) -> std::string 
 }
 
 auto view::expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string {
-    return view::expand_envs(s, keep_unexpanded, [&kvs](std::string key) -> std::optional<std::string> {
+    return view::expand_envs(s, keep_unexpanded, [&kvs](const std::string& key) -> std::optional<std::string> {
         auto itr = kvs.find(key);
         if (itr == kvs.cend()) {
             return std::nullopt;
@@ -1826,7 +1842,7 @@ auto view::expand_envs(std::string_view s, const std::map<std::string, std::stri
 }
 
 auto view::expand_envs(std::string_view s, std::string_view key, std::string_view val) -> std::string {
-    return view::expand_envs(s, true, [&key, &val](std::string name) -> std::optional<std::string> {
+    return view::expand_envs(s, true, [&key, &val](const std::string& name) -> std::optional<std::string> {
         if (name != key) {
             return std::nullopt;
         }

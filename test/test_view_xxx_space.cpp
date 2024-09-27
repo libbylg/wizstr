@@ -10,11 +10,21 @@ TEST_CASE("view::space") {
     }
 }
 
+TEST_CASE("view::skip_space_remain") {
+    REQUIRE(view::skip_space_remain("abc") == "abc");
+    REQUIRE(view::skip_space_remain("   abc  ") == "abc  ");
+    REQUIRE(view::skip_space_remain(" \r\t\n ") == "");
+    REQUIRE(view::skip_space_remain("") == "");
+    REQUIRE(view::skip_space_remain("abc  def", 8) == "");
+    REQUIRE(view::skip_space_remain("abc  def", view::npos) == "");
+}
+
 TEST_CASE("view::skip_space") {
-    REQUIRE(view::skip_space("abc") == "abc");
-    REQUIRE(view::skip_space("   abc  ") == "abc  ");
-    REQUIRE(view::skip_space(" \r\t\n ") == "");
-    REQUIRE(view::skip_space("") == "");
-    REQUIRE(view::skip_space("abc  def", 8) == "");
-    REQUIRE(view::skip_space("abc  def", view::npos) == "");
+    REQUIRE(view::skip_space("abc", 0) == 0);
+    REQUIRE(view::skip_space("   abc  ", 0) == 3);
+    REQUIRE(view::skip_space(" \r\t\n ", 0) == 5);
+    REQUIRE(view::skip_space("", 0) == 0);
+    REQUIRE(view::skip_space("abc  def", 7) == 7);
+    REQUIRE(view::skip_space("abc  def", 8) == 8);
+    REQUIRE(view::skip_space("abc  def", view::npos) == 8);
 }
