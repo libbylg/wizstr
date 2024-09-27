@@ -278,9 +278,11 @@ public:
     static auto split_words(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_words(std::string_view s, size_type max_n = view::npos) -> std::vector<std::string_view>;
 
+    static auto split_pair(std::string_view sm, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view>;
+
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
-    static auto split_map(std::string_view s, std::string_view sep[2], view_pair_consumer_proc proc) -> void;
-    static auto split_map(std::string_view s) -> std::map<std::string, std::string>;
+    static auto split_map(std::string_view s, std::string_view sep_pair, std::string_view sep_list, const view_pair_consumer_proc& proc) -> void;
+    static auto split_map(std::string_view s, std::string_view sep_pair = ",", std::string_view sep_list = ":", size_type max_n = npos) -> std::map<std::string, std::string>;
 
     // 按照换行符将字符串 s，拆分长多行
     static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void;
@@ -290,8 +292,8 @@ public:
     static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_path(std::string_view s) -> std::vector<std::string_view>;
 
-    static auto split_search_path(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto split_search_path(std::string_view s) -> std::vector<std::string_view>;
+    static auto split_search_path(std::string_view s, bool keep_empty, const view_consumer_proc& proc) -> void;
+    static auto split_search_path(std::string_view s, bool keep_empty = false) -> std::vector<std::string_view>;
 
     // 拆分 csv 数据
     static auto split_csv(std::string_view s) -> std::vector<std::string>;

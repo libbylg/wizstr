@@ -1347,11 +1347,41 @@ auto view::split_words(std::string_view s, size_type max_n) -> std::vector<std::
     return result;
 }
 
-// auto view::split_map(std::string_view s[2], view_pair_consumer_proc proc) -> void {
-// }
-//
-// auto view::split_map(const std::string_view s) -> std::map<std::string, std::string> {
-// }
+auto view::split_pair(std::string_view s, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view> {
+    std::array<std::string_view, 2> pair;
+    size_t n = 0;
+    view::split_list(s, sep, 1, [&n, &pair](std::string_view item) -> int {
+        pair[n++] = item;
+        return 0;
+    });
+
+    return {pair[0], pair[1]};
+}
+
+auto view::split_map(std::string_view s, std::string_view sep_pair, std::string_view sep_list, const view_pair_consumer_proc& proc) -> void {
+    view::split_list(s, sep_list, view::npos, [sep_pair, &proc](std::string_view item) -> int {
+        auto key_val = view::split_pair(item, sep_pair);
+        return proc(std::get<0>(key_val), std::get<1>(key_val));
+    });
+}
+
+auto view::split_map(std::string_view s, std::string_view sep_pair, std::string_view sep_list, size_type max_n) -> std::map<std::string, std::string> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::map<std::string, std::string> result;
+    view::split_map(s, sep_pair, sep_list, [max_n, &result](std::string_view key, std::string_view value) -> int {
+        result[std::string{key}] = std::string{value};
+        if (result.size() >= max_n) {
+            return -1;
+        }
+
+        return 0;
+    });
+
+    return result;
+}
 
 auto view::split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
@@ -1447,11 +1477,23 @@ auto view::split_path(std::string_view s) -> std::vector<std::string_view> {
     return result;
 }
 
-// auto view::split_search_path(std::string_view s, const view_consumer_proc& proc) -> void {
-// }
-//
-// auto view::split_search_path(std::string_view s) -> std::vector<std::string_view> {
-// }
+auto view::split_search_path(std::string_view s, bool keep_empty, const view_consumer_proc& proc) -> void {
+    view::split_list(s, ":", [keep_empty, &proc](std::string_view item) -> int {
+        if (keep_empty && item.empty()) {
+            return 0;
+        }
+
+        return proc(item);
+    });
+}
+
+auto view::split_search_path(std::string_view s, bool keep_empty) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    view::split_search_path(s, keep_empty, [](std::string_view item) -> int {
+        result.emplace_back(item);
+    });
+    return result;
+}
 
 // auto view::split_csv(std::string_view s) -> std::vector<std::string> {
 // }

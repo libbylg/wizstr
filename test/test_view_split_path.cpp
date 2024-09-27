@@ -7,7 +7,7 @@
 TEST_CASE("view::split_path") {
     SECTION("绝对路径") {
         REQUIRE(view::split_path("/") == std::vector<std::string_view>{"/"});
-        REQUIRE(view::split_path("//") == std::vector<std::string_view>{"/"});
+        REQUIRE(view::split_path("///") == std::vector<std::string_view>{"/"});
         REQUIRE(view::split_path("//abc/def") == std::vector<std::string_view>{"/", "abc", "def"});
         REQUIRE(view::split_path("//abc/def/") == std::vector<std::string_view>{"/", "abc", "def"});
     }
