@@ -1140,7 +1140,6 @@ auto view::skip_space(std::string_view s, size_type pos) -> size_type {
     return ptr - s.data();
 }
 
-
 auto view::join_list(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
     bool suffix = false;
@@ -1495,8 +1494,8 @@ auto view::split_path(std::string_view s) -> std::vector<std::string_view> {
     return result;
 }
 
-auto view::split_search_path(std::string_view s, bool keep_empty, const view_consumer_proc& proc) -> void {
-    view::split_list(s, ":", [keep_empty, &proc](std::string_view item) -> int {
+auto view::split_search_path(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void {
+    view::split_list(s, std::string_view{&sep, 1}, [keep_empty, &proc](std::string_view item) -> int {
         if (keep_empty && item.empty()) {
             return 0;
         }
@@ -1505,9 +1504,9 @@ auto view::split_search_path(std::string_view s, bool keep_empty, const view_con
     });
 }
 
-auto view::split_search_path(std::string_view s, bool keep_empty) -> std::vector<std::string_view> {
+auto view::split_search_path(std::string_view s, bool keep_empty, value_type sep) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
-    view::split_search_path(s, keep_empty, [&result](std::string_view item) -> int {
+    view::split_search_path(s, keep_empty, sep, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });
@@ -1538,7 +1537,7 @@ auto view::swap_case(std::string_view s) -> std::string {
 // auto view::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
 // }
 
-auto view::simplified(std::string_view s, std::string_view sep,const  char_checker_proc& proc) -> std::string {
+auto view::simplified(std::string_view s, std::string_view sep, const char_checker_proc& proc) -> std::string {
     if (s.empty()) {
         return std::string{s};
     }
@@ -1607,7 +1606,7 @@ auto view::simplified(std::string_view s) -> std::string {
     });
 }
 
-auto view::trim_left(std::string_view s,const char_checker_proc& proc) -> std::string_view {
+auto view::trim_left(std::string_view s, const char_checker_proc& proc) -> std::string_view {
     if (s.empty()) [[unlikely]] {
         return s;
     }

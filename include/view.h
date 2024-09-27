@@ -293,8 +293,8 @@ public:
     static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_path(std::string_view s) -> std::vector<std::string_view>;
 
-    static auto split_search_path(std::string_view s, bool keep_empty, const view_consumer_proc& proc) -> void;
-    static auto split_search_path(std::string_view s, bool keep_empty = false) -> std::vector<std::string_view>;
+    static auto split_search_path(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
+    static auto split_search_path(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string_view>;
 
     // 拆分 csv 数据
     static auto split_csv(std::string_view s) -> std::vector<std::string>;
