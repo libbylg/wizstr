@@ -66,12 +66,20 @@ TEST_CASE("view::trim_xxx") {
         REQUIRE(view::trim_anywhere("33c1233", [](std::string::value_type ch) -> bool {
             return ch == '3';
         }) == "c12");
+
+        // 只去掉前三个匹配的字符
         size_t n = 0;
         REQUIRE(view::trim_anywhere("33c1233", [&n](std::string::value_type ch) -> bool {
-            if (++n >= 3) {
+            if (n >= 3) {
                 return false;
             }
-            return ch == '3';
+
+            if (ch == '3') {
+                n++;
+                return true;
+            }
+
+            return false;
         }) == "c123");
     }
 }

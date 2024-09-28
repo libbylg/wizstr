@@ -1693,35 +1693,12 @@ auto view::trim_surrounding(std::string_view s) -> std::string_view {
 auto view::trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string {
     std::string result;
 
-    const_pointer r = s.data();
-    const_pointer end = s.data() + s.size();
-    const_pointer ptr = s.data();
-    while (ptr < end) {
-        // 找到需要清除的起点
-        while (ptr < end) {
-            if (proc(*ptr)) {
-                break;
-            }
-            ptr++;
+    for (const_pointer r = s.data(); r < (s.data() + s.size()); r++) {
+        if (proc(*r)) {
+            continue;
         }
 
-        if (r < ptr) {
-            result.append(r, ptr - r);
-        }
-        r = nullptr;
-
-        // 找到需要清除的终点
-        while (ptr < end) {
-            if (!proc(*ptr)) {
-                r = ptr;
-                break;
-            }
-            ptr++;
-        }
-    }
-
-    if ((r != nullptr) && (r < end)) {
-        result.append(r, end - r);
+        result.append(1, *r);
     }
 
     return result;
