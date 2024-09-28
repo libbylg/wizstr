@@ -1376,6 +1376,14 @@ auto view::split_pair(std::string_view s, std::string_view sep) -> std::tuple<st
 }
 
 auto view::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void {
+    if (sep_list.empty()) {
+        sep_list = ",";
+    }
+
+    if (sep_pair.empty()) {
+        sep_pair = ":";
+    }
+
     view::split_list(s, sep_list, view::npos, [sep_pair, &proc](std::string_view item) -> int {
         auto key_val = view::split_pair(item, sep_pair);
         return proc(std::get<0>(key_val), std::get<1>(key_val));
