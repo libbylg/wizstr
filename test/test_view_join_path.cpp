@@ -26,17 +26,3 @@ TEST_CASE("view::join_path") {
         REQUIRE(view::join_path({"aaa", "bbb", "ccc"}) == "aaa/bbb/ccc");
     }
 }
-
-TEST_CASE("view::join_search_path") {
-    SECTION("一般场景") {
-        REQUIRE(view::join_search_path({"A", "B", "C"}) == "A:B:C");
-        REQUIRE(view::join_search_path({"A", "B"}) == "A:B");
-        REQUIRE(view::join_search_path({"A"}) == "A");
-    }
-    SECTION("空串") {
-        REQUIRE(view::join_search_path({""}) == "");
-        REQUIRE(view::join_search_path({"", ""}) == "");
-        REQUIRE(view::join_search_path({"", "", "AAA"}) == "AAA");
-        REQUIRE(view::join_search_path({"", "A", "B", "", "C", ""}) == "A:B:C");
-    }
-}

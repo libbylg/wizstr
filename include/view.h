@@ -304,13 +304,6 @@ public:
     static auto to_upper(std::string_view s) -> std::string;
     static auto swap_case(std::string_view s) -> std::string;
 
-    // 统一大小写
-    static auto case_fold(std::string_view s) -> std::string;
-
-    // 字符映射
-    static auto translate(std::string_view s, const char_mapping_proc& proc) -> std::string;
-    static auto translate(std::string_view s, std::string_view from, std::string_view to) -> std::string;
-
     // 字符串化简，将字符串中的多个空白压缩成一个空格
     static auto simplified(std::string_view s, std::string_view sep, const char_checker_proc& proc) -> std::string;
     static auto simplified(std::string_view s) -> std::string;

@@ -1221,7 +1221,9 @@ auto view::join_search_path(const view_provider_proc& proc) -> std::string {
 }
 
 auto view::split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void {
-    assert(!sep.empty());
+    if (sep.empty()) {
+        sep = ",";
+    }
 
     // 最大拆分次数如果为0，就不需要拆了
     if (max_n == 0) {
@@ -1712,6 +1714,12 @@ auto view::trim_anywhere(std::string_view s) -> std::string {
     return view::trim_anywhere(s, [](value_type ch) -> bool {
         return std::isspace(ch);
     });
+}
+
+auto view::copy(pointer dest, size_type size, std::string_view s) -> size_type {
+}
+
+auto view::fill(pointer dest, size_type size, std::string_view s) -> size_type {
 }
 
 auto view::expand_envs(std::string_view s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string {

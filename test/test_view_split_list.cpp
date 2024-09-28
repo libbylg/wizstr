@@ -26,9 +26,9 @@ TEST_CASE("view::split_list:vector") {
     SECTION("被拆分字符串无对应分隔符") {
         REQUIRE(view::split_list("abcdef#@#$", ",") == std::vector<std::string_view>{"abcdef#@#$"});
     }
-    // SECTION("空串作为分隔符") {
-    //     REQUIRE(view::split_list("abcdef", "") == std::vector<std::string_view>{"a", "b", "c", "d", "e", "f"});
-    // }
+    SECTION("空串作为分隔符") {
+        REQUIRE(view::split_list("ab,cdef", "") == std::vector<std::string_view>{"ab", "cdef"});
+    }
     SECTION("限制值为0") {
         REQUIRE(view::split_list(":aa::bb:cc:", ":", 0) == std::vector<std::string_view>{":aa::bb:cc:"});
     }
