@@ -1375,20 +1375,20 @@ auto view::split_pair(std::string_view s, std::string_view sep) -> std::tuple<st
     return {pair[0], pair[1]};
 }
 
-auto view::split_map(std::string_view s, std::string_view sep_pair, std::string_view sep_list, const view_pair_consumer_proc& proc) -> void {
+auto view::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void {
     view::split_list(s, sep_list, view::npos, [sep_pair, &proc](std::string_view item) -> int {
         auto key_val = view::split_pair(item, sep_pair);
         return proc(std::get<0>(key_val), std::get<1>(key_val));
     });
 }
 
-auto view::split_map(std::string_view s, std::string_view sep_pair, std::string_view sep_list, size_type max_n) -> std::map<std::string, std::string> {
-    if (max_n == 0) {
+auto view::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, size_type max_n) -> std::map<std::string, std::string> {
+    if ((max_n == 0) || s.empty()) {
         return {};
     }
 
     std::map<std::string, std::string> result;
-    view::split_map(s, sep_pair, sep_list, [max_n, &result](std::string_view key, std::string_view value) -> int {
+    view::split_map(s, sep_list, sep_pair, [max_n, &result](std::string_view key, std::string_view value) -> int {
         result[std::string{key}] = std::string{value};
         if (result.size() >= max_n) {
             return -1;

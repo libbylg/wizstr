@@ -12,6 +12,31 @@ TEST_CASE("view::split_map") {
         auto expect = std::map<std::string, std::string>{{"a", "1"}, {"b", "2"}, {"c", "3"}};
         REQUIRE(result == expect);
     }
+    SECTION("指定数量较小") {
+        auto result = view::split_map("a:1,b:2,c:3,d:4,e:5", ",", ":", 3);
+        auto expect = std::map<std::string, std::string>{{"a", "1"}, {"b", "2"}, {"c", "3"}};
+        REQUIRE(result == expect);
+    }
+    SECTION("指定数量较大1") {
+        auto result = view::split_map("a:1,b:2,c:3,d:4,e:5", ",", ":", 5);
+        auto expect = std::map<std::string, std::string>{{"a", "1"}, {"b", "2"}, {"c", "3"}, {"d", "4"}, {"e", "5"}};
+        REQUIRE(result == expect);
+    }
+    SECTION("指定数量较大2") {
+        auto result = view::split_map("a:1,b:2,c:3,d:4,e:5", ",", ":", 6);
+        auto expect = std::map<std::string, std::string>{{"a", "1"}, {"b", "2"}, {"c", "3"}, {"d", "4"}, {"e", "5"}};
+        REQUIRE(result == expect);
+    }
+    SECTION("指定数量较大3") {
+        auto result = view::split_map("a:1,b:2,c:3,d:4,e:5", ",", ":", view::npos);
+        auto expect = std::map<std::string, std::string>{{"a", "1"}, {"b", "2"}, {"c", "3"}, {"d", "4"}, {"e", "5"}};
+        REQUIRE(result == expect);
+    }
+    SECTION("指定数量为0") {
+        auto result = view::split_map("a:1,b:2,c:3,d:4,e:5", ",", ":", 0);
+        auto expect = std::map<std::string, std::string>{};
+        REQUIRE(result == expect);
+    }
     SECTION("空串") {
         auto result = view::split_map("");
         auto expect = std::map<std::string, std::string>{};

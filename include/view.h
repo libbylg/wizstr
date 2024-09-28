@@ -282,8 +282,8 @@ public:
     static auto split_pair(std::string_view sm, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view>;
 
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
-    static auto split_map(std::string_view s, std::string_view sep_pair, std::string_view sep_list, const view_pair_consumer_proc& proc) -> void;
-    static auto split_map(std::string_view s, std::string_view sep_pair = ",", std::string_view sep_list = ":", size_type max_n = npos) -> std::map<std::string, std::string>;
+    static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
+    static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":", size_type max_n = npos) -> std::map<std::string, std::string>;
 
     // 按照换行符将字符串 s，拆分长多行
     static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void;
