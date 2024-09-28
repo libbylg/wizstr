@@ -62,9 +62,14 @@ TEST_CASE("view::split_map") {
         auto expect = std::map<std::string, std::string>{{"aa", ""}, {"bb", ""}, {"c", ""}};
         REQUIRE(result == expect);
     }
-    SECTION("空串") {
+    SECTION("分隔空串") {
         auto result = view::split_map(",,,");
         auto expect = std::map<std::string, std::string>{{"", ""}, {"", ""}, {"", ""}};
+        REQUIRE(result == expect);
+    }
+    SECTION("指定分隔为空") {
+        auto result = view::split_map("a:1,:2,c:3", "", "");
+        auto expect = std::map<std::string, std::string>{{"a", "1"}, {"", "2"}, {"c", "3"}};
         REQUIRE(result == expect);
     }
 }
