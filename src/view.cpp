@@ -174,6 +174,43 @@ auto view::iequals(std::string_view s, std::string_view other, size_type max_n) 
     return view::iequals(s, other);
 }
 
+auto view::wildcmp(const char* pattern, const char* string) -> bool {
+    const char* cp = nullptr;
+    const char* mp = nullptr;
+
+    while ((*string) && (*pattern != '*')) {
+        if ((*pattern != *string) && (*pattern != '?')) {
+            return false;
+        }
+        pattern++;
+        string++;
+    }
+
+    while (*string) {
+        if (*pattern == '*') {
+            if (!*++pattern) {
+                return true;
+            }
+            mp = pattern;
+            cp = string + 1;
+        } else if ((*pattern == *string) || (*pattern == '?')) {
+            pattern++;
+            string++;
+        } else {
+            pattern = mp;
+            string = cp++;
+        }
+    }
+
+    while (*pattern == '*') {
+        pattern++;
+    }
+    return !*pattern;
+}
+
+auto view::wildcmp(std::string_view s, std::string_view pattern) -> bool {
+}
+
 auto view::contains(std::string_view s, std::string_view other) -> bool {
     return s.find(other) != std::string_view::npos;
 }
@@ -1717,9 +1754,14 @@ auto view::trim_anywhere(std::string_view s) -> std::string {
 }
 
 auto view::copy(pointer dest, size_type size, std::string_view s) -> size_type {
-}
+    assert(dest != nullptr);
+    size_type len = std::min(size, s.size());
+    if (len == 0) {
+        return len;
+    }
 
-auto view::fill(pointer dest, size_type size, std::string_view s) -> size_type {
+    std::memcpy(dest, s.data(), len);
+    return len;
 }
 
 auto view::expand_envs(std::string_view s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string {

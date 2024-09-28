@@ -76,12 +76,19 @@ public:
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
 
     // 不区分大小写的比较
-    static auto icompare(std::string_view s, std::string_view other) -> int;
-    static auto icompare(std::string_view s, std::string_view other, size_type max_n) -> int;
+    static auto icmp(std::string_view s, std::string_view other) -> int;
+    static auto icmp(std::string_view s, std::string_view other, size_type max_n) -> int;
 
     // 不区分大小写，判断是否相等
     static auto iequals(std::string_view s, std::string_view other) -> bool;
     static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
+
+    //  匹配
+    static auto wildcmp(const char * pattern, const char *string) -> bool;
+    static auto wildcmp(std::string_view s, std::string_view pattern) -> bool;
+    // static auto is_match_charset(std::string_view s, charset_type set) -> bool;
+    // static auto is_match_regex(std::string_view s, std::string_view pattern) -> bool;
+    // static auto is_match_regex(std::string_view s, const std::regex& pattern) -> bool;
 
     // 是否包含子串
     static auto contains(std::string_view s, std::string_view other) -> bool;
@@ -130,12 +137,6 @@ public:
     static auto foreach_word(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void;
     static auto foreach_word(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void;
     static auto foreach_word(std::string_view s, const std::function<int(std::string_view word)>& proc) -> void;
-
-    // //  匹配
-    // static auto is_match_wild(std::string_view s, std::string_view pattern) -> bool;
-    // static auto is_match_charset(std::string_view s, charset_type set) -> bool;
-    // static auto is_match_regex(std::string_view s, std::string_view pattern) -> bool;
-    // static auto is_match_regex(std::string_view s, const std::regex& pattern) -> bool;
 
     // 字符串特征
     static auto is_lower(std::string_view s) -> bool;
@@ -320,9 +321,8 @@ public:
     static auto trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string;
     static auto trim_anywhere(std::string_view s) -> std::string;
 
-    // 拷贝,交换,填充
+    // 拷贝
     static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;
-    static auto fill(pointer dest, size_type size, std::string_view s) -> size_type;
 
     // 变量展开
     using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
