@@ -1376,11 +1376,15 @@ auto view::split_pair(std::string_view s, std::string_view sep) -> std::tuple<st
 }
 
 auto view::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void {
-    if (sep_list.empty()) {
+    if (s.empty()) [[unlikely]] {
+        return;
+    }
+
+    if (sep_list.empty()) [[unlikely]] {
         sep_list = ",";
     }
 
-    if (sep_pair.empty()) {
+    if (sep_pair.empty()) [[unlikely]] {
         sep_pair = ":";
     }
 
@@ -1391,7 +1395,7 @@ auto view::split_map(std::string_view s, std::string_view sep_list, std::string_
 }
 
 auto view::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, size_type max_n) -> std::map<std::string, std::string> {
-    if ((max_n == 0) || s.empty()) {
+    if (max_n == 0) {
         return {};
     }
 
