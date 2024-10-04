@@ -128,7 +128,7 @@ auto view::insert(std::string_view s, size_type pos, const view_provider_proc& p
     return result;
 }
 
-auto view::icompare(std::string_view s, std::string_view other) -> int {
+auto view::icmp(std::string_view s, std::string_view other) -> int {
     if (s.size() < other.size()) {
         int ret = strncasecmp(s.data(), other.data(), s.size());
         return (ret == 0) ? -other[s.size()] : ret;
@@ -142,7 +142,7 @@ auto view::icompare(std::string_view s, std::string_view other) -> int {
     return strncasecmp(s.data(), other.data(), other.size());
 }
 
-auto view::icompare(std::string_view s, std::string_view other, size_type max_n) -> int {
+auto view::icmp(std::string_view s, std::string_view other, size_type max_n) -> int {
     if (max_n < s.size()) {
         s = s.substr(0, max_n);
     }
@@ -151,7 +151,7 @@ auto view::icompare(std::string_view s, std::string_view other, size_type max_n)
         other = other.substr(0, max_n);
     }
 
-    return view::icompare(s, other);
+    return view::icmp(s, other);
 }
 
 auto view::iequals(std::string_view s, std::string_view other) -> bool {
@@ -174,31 +174,31 @@ auto view::iequals(std::string_view s, std::string_view other, size_type max_n) 
     return view::iequals(s, other);
 }
 
-auto view::wildcmp(const char* pattern, const char* string) -> bool {
-    const char* cp = nullptr;
-    const char* mp = nullptr;
+auto view::wildcmp(const_pointer s, const_pointer pattern) -> bool {
+    const_pointer cp = nullptr;
+    const_pointer mp = nullptr;
 
-    while ((*string) && (*pattern != '*')) {
-        if ((*pattern != *string) && (*pattern != '?')) {
+    while ((*s) && (*pattern != '*')) {
+        if ((*pattern != *s) && (*pattern != '?')) {
             return false;
         }
         pattern++;
-        string++;
+        s++;
     }
 
-    while (*string) {
+    while (*s) {
         if (*pattern == '*') {
             if (!*++pattern) {
                 return true;
             }
             mp = pattern;
-            cp = string + 1;
-        } else if ((*pattern == *string) || (*pattern == '?')) {
+            cp = s + 1;
+        } else if ((*pattern == *s) || (*pattern == '?')) {
             pattern++;
-            string++;
+            s++;
         } else {
             pattern = mp;
-            string = cp++;
+            s = cp++;
         }
     }
 
@@ -208,8 +208,8 @@ auto view::wildcmp(const char* pattern, const char* string) -> bool {
     return !*pattern;
 }
 
-auto view::wildcmp(std::string_view s, std::string_view pattern) -> bool {
-}
+// auto view::wildcmp(std::string_view s, std::string_view pattern) -> bool {
+// }
 
 auto view::contains(std::string_view s, std::string_view other) -> bool {
     return s.find(other) != std::string_view::npos;
@@ -2106,4 +2106,387 @@ auto view::replace_extname(std::string_view s, std::string_view newname) -> std:
 auto view::split_extname(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
     auto ptr = view::extname_ptr(s);
     return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+}
+
+auto view::encode_base64(std::string_view s, view_consumer_proc proc) -> void {
+    if (s.empty()) {
+        proc({});
+        return;
+    }
+
+    // base64 的数据编码表
+    static const value_type table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    // 数据输入源
+    auto src = reinterpret_cast<const uint8_t*>(s.data());
+
+    // 不足3字节的长度
+    size_t mod = s.size() % 3;
+
+    // 整3字节的长度
+    size_t mod_len = s.size() - mod;
+
+    // 用于临时交换数据的缓冲区
+    uint8_t out[4];
+
+    size_t pos = 0;
+    for (pos = 0; pos < mod_len; pos += 3) {
+        // 将3字节组合在一起(总共24bit)
+        uint32_t cache = ((uint32_t)(src[pos]) << 16) + ((uint32_t)(src[pos + 1]) << 8) + (uint32_t)(src[pos + 2]);
+
+        // 拆分成4字节(每个字节实际只有6bit，对应0x3f的掩码)
+        out[0] = table[static_cast<uint8_t>((cache >> 18) & 0x3f)];
+        out[1] = table[static_cast<uint8_t>((cache >> 12) & 0x3f)];
+        out[2] = table[static_cast<uint8_t>((cache >> 6) & 0x3f)];
+        out[3] = table[static_cast<uint8_t>((cache >> 0) & 0x3f)];
+
+        // 输出一部分数据
+        if (proc(std::string_view(reinterpret_cast<const_pointer>(out), 4)) != 0) {
+            return;
+        }
+    }
+
+    // 输出最后一部分
+    if (mod == 1) {
+        uint32_t cache = (uint32_t)src[pos] << 16;
+        out[0] = table[(cache >> 18) & 0x3f];
+        out[1] = table[(cache >> 12) & 0x3f];
+        out[2] = '=';
+        out[3] = '=';
+        proc(std::string_view(reinterpret_cast<const_pointer>(out), 4));
+    } else if (mod == 2) {
+        uint32_t cache = ((uint32_t)(src[pos]) << 16) + ((uint32_t)(src[pos + 1]) << 8);
+        out[0] = table[(cache >> 18) & 0x3f];
+        out[1] = table[(cache >> 12) & 0x3f];
+        out[2] = table[(cache >> 6) & 0x3f];
+        out[3] = '=';
+        proc(std::string_view(reinterpret_cast<const_pointer>(out), 4));
+    }
+}
+
+auto view::encode_base64(std::string_view s) -> std::string {
+    std::string result;
+    result.reserve(((s.size() / 3 + ((s.size() % 3) ? 1 : 0)) * 4));
+    view::encode_base64(s, [&result](std::string_view item) -> int {
+        result.append(item);
+        return 0;
+    });
+    return result;
+}
+
+auto view::decode_base64(std::string_view s, view_consumer_proc proc) -> void {
+    static const uint8_t table[256] = {
+        ['+'] = 62,
+        ['/'] = 63,
+        ['0'] = 52,
+        ['1'] = 53,
+        ['2'] = 54,
+        ['3'] = 55,
+        ['4'] = 56,
+        ['5'] = 57,
+        ['6'] = 58,
+        ['7'] = 59,
+        ['8'] = 60,
+        ['9'] = 61,
+        ['='] = 0,
+        ['A'] = 0,
+        ['B'] = 1,
+        ['C'] = 2,
+        ['D'] = 3,
+        ['E'] = 4,
+        ['F'] = 5,
+        ['G'] = 6,
+        ['H'] = 7,
+        ['I'] = 8,
+        ['J'] = 9,
+        ['K'] = 10,
+        ['L'] = 11,
+        ['M'] = 12,
+        ['N'] = 13,
+        ['O'] = 14,
+        ['P'] = 15,
+        ['Q'] = 16,
+        ['R'] = 17,
+        ['S'] = 18,
+        ['T'] = 19,
+        ['U'] = 20,
+        ['V'] = 21,
+        ['W'] = 22,
+        ['X'] = 23,
+        ['Y'] = 24,
+        ['Z'] = 25,
+        ['a'] = 26,
+        ['b'] = 27,
+        ['c'] = 28,
+        ['d'] = 29,
+        ['e'] = 30,
+        ['f'] = 31,
+        ['g'] = 32,
+        ['h'] = 33,
+        ['i'] = 34,
+        ['j'] = 35,
+        ['k'] = 36,
+        ['l'] = 37,
+        ['m'] = 38,
+        ['n'] = 39,
+        ['o'] = 40,
+        ['p'] = 41,
+        ['q'] = 42,
+        ['r'] = 43,
+        ['s'] = 44,
+        ['t'] = 45,
+        ['u'] = 46,
+        ['v'] = 47,
+        ['w'] = 48,
+        ['x'] = 49,
+        ['y'] = 50,
+        ['z'] = 51,
+    };
+
+    if (s.empty()) {
+        proc(std::string_view{});
+        return;
+    }
+
+    assert((s.size() % 4) == 0);
+
+    size_t postfix_len = 0;
+    if (s[s.size() - 1] == '=') {
+        postfix_len += (s[s.size() - 2] == '=') ? 2 : 1;
+    }
+
+    uint8_t o[4] = {};
+    auto src = reinterpret_cast<const uint8_t*>(s.data());
+    for (size_t i = 0; i < s.size() / 4; i++) {
+        uint8_t t[4]{};
+        t[0] = table[src[i * 4]];
+        t[1] = table[src[i * 4 + 1]];
+        t[2] = table[src[i * 4 + 2]];
+        t[3] = table[src[i * 4 + 3]];
+
+        o[0] = ((t[0] & 0x3f) << 2) | ((t[1] & 0x30) >> 4);
+        o[1] = ((t[1] & 0x0f) << 4) | ((t[2] & 0x3c) >> 2);
+        o[2] = ((t[2] & 0x03) << 6) | ((t[3] & 0x3f) >> 0);
+
+        size_t n = 3;
+        if ((i + 4) >= s.size()) [[unlikely]] {
+            n = postfix_len;
+        }
+
+        if (proc(std::string_view{reinterpret_cast<const_pointer>(o), n}) != 0) {
+            return;
+        }
+    }
+}
+
+auto view::decode_base64(std::string_view s) -> std::string {
+    std::string result;
+    view::decode_base64(s, [&result](std::string_view item) -> int {
+        result.append(item);
+        return 0;
+    });
+    return result;
+}
+
+auto view::encode_base16(std::string_view s, view_consumer_proc proc) -> void {
+    if (s.empty()) {
+        proc({});
+        return;
+    }
+
+    static const value_type table[16] = {
+        '0',
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+        'A',
+        'B',
+        'C',
+        'D',
+        'E',
+        'F',
+    };
+
+    auto src = reinterpret_cast<const uint8_t*>(s.data());
+    auto end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
+
+    value_type o[2] = {};
+    while (src < end) {
+        o[0] = table[(*src & 0xF0) >> 4];
+        o[1] = table[*src & 0x0F];
+        if (proc(std::string_view{reinterpret_cast<const_pointer>(o), 2}) != 0) {
+            break;
+        }
+    }
+}
+
+auto view::encode_base16(std::string_view s) -> std::string {
+    std::string result;
+    view::encode_base16(s, [&result](std::string_view item) -> int {
+        result.append(item);
+        return 0;
+    });
+    return result;
+}
+
+auto view::decode_base16(std::string_view s, view_consumer_proc proc) -> void {
+    assert((s.size() % 2) == 0);
+
+    if (s.empty()) {
+        proc({});
+        return;
+    }
+
+    auto src = reinterpret_cast<const uint8_t*>(s.data());
+    auto end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
+    value_type o[2]{};
+    while (src < end) {
+        switch (src[0]) {
+            case '0' ... '9':
+                o[1] = static_cast<value_type>(src[0] - '0');
+                break;
+            case 'A' ... 'F':
+                o[1] = static_cast<value_type>(src[0] - '0' + 10);
+                break;
+            case 'a' ... 'f':
+                o[1] = static_cast<value_type>(src[0] - 'a' + 10);
+                break;
+            default:
+                assert(false);
+                break;
+        }
+        switch (*(src + 1)) {
+            case '0' ... '9':
+                o[0] = static_cast<value_type>((o[0] << 4) | (src[1] - '0'));
+                break;
+            case 'A' ... 'F':
+                o[0] = static_cast<value_type>((o[0] << 4) | (src[1] - '0' + 10));
+                break;
+            case 'a' ... 'f':
+                o[0] = static_cast<value_type>((o[0] << 4) | (src[1] - 'a' + 10));
+                break;
+            default:
+                assert(false);
+                break;
+        }
+
+        if (proc(std::string{o, 1}) != 0) {
+            return;
+        }
+
+        src += 2;
+    }
+}
+
+auto view::decode_base16(std::string_view s) -> std::string {
+    std::string result;
+    view::decode_base16(s, [&result](std::string_view item) -> int {
+        result.append(item);
+        return 0;
+    });
+    return result;
+}
+
+auto view::chars(std::string_view s) -> charset_type {
+    return charset_type{s};
+}
+
+auto view::chars(std::string_view s, charset_type& charset) -> charset_type& {
+    charset.set(s);
+    return charset;
+}
+
+auto view::is_all(std::string_view s, mapping_proc<bool> proc) -> bool {
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (!proc(*ptr)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+auto view::is_all(std::string_view s, charset_type set) -> bool {
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (!set.get(*ptr)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+auto view::has_any(std::string_view s, mapping_proc<bool> proc) -> bool {
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (proc(*ptr)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+auto view::has_any(std::string_view s, charset_type set) -> bool {
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (set.get(*ptr)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+auto view::grouped(std::string_view s, mapping_proc<bool> proc) -> std::tuple<std::string, std::string> {
+    std::string matched;
+    std::string unmatched;
+
+    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
+        if (proc(*ptr)) {
+            matched.append(1, *ptr);
+        } else {
+            unmatched.append(1, *ptr);
+        }
+    }
+
+    return {matched, unmatched};
+}
+
+auto view::chunked_view(std::string_view s, size_type size) -> std::vector<std::string_view> {
+    if (size == 0) {
+        return {s};
+    }
+
+    std::vector<std::string_view> result;
+
+    size_type pos = 0;
+    while ((pos + size) <= s.size()) {
+        result.emplace_back(s.substr(pos, size));
+    }
+
+    if (pos < s.size()) {
+        result.emplace_back(s.substr(pos));
+    }
+
+    return result;
+}
+
+auto view::chunked(std::string_view s, size_type size) -> std::vector<std::string> {
+    if (size == 0) {
+        return {std::string{s}};
+    }
+
+    std::vector<std::string> result;
+
+    size_type pos = 0;
+    while ((pos + size) <= s.size()) {
+        result.emplace_back(s.substr(pos, size));
+    }
+
+    if (pos < s.size()) {
+        result.emplace_back(s.substr(pos));
+    }
+
+    return result;
 }

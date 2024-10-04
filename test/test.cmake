@@ -52,6 +52,7 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_space.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_iter_next_string.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_capitalize.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_title.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_view_base64.cpp)
 
 
 

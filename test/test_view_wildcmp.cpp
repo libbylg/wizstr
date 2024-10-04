@@ -8,5 +8,8 @@ TEST_CASE("view::wildcmp") {
         REQUIRE(view::wildcmp("3*", "3bc12def33"));
         REQUIRE(view::wildcmp("3bc12def33", "3bc12def33"));
         REQUIRE(view::wildcmp("3*de?33", "3bc12def33"));
+        REQUIRE(view::wildcmp("*", "3bc12def33"));
+        REQUIRE(view::wildcmp("*", ""));
+        REQUIRE(view::wildcmp("3bc12def33", "abc") == false);
     }
 }

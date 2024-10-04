@@ -34,7 +34,84 @@ public:
 
     static inline constexpr size_type npos = std::string::npos;
 
-    using charset_type = std::bitset<256>;
+    class charset_type {
+    public:
+        explicit charset_type() {
+        }
+
+        explicit charset_type(std::string_view s)
+            : charset_type() {
+            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+                set(*ptr);
+            }
+        }
+
+        inline auto set(std::string_view s, bool val = true) -> void {
+            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+                set(*ptr, val);
+            }
+        }
+
+        inline auto set(value_type c, bool val = true) -> void {
+            uint8_t ch = static_cast<value_type>(c);
+            size_type index = ch / 64;
+            size_type mask = uint64_t{1} << (ch % 64);
+            if (val) {
+                bits[index] |= mask;
+            } else {
+                bits[index] ^= ~mask;
+            }
+        }
+
+        inline auto clr(std::string_view s) -> void {
+            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+                clr(*ptr);
+            }
+        }
+
+        inline auto clr(value_type c) -> void {
+            uint8_t ch = static_cast<value_type>(c);
+            size_type index = ch / 64;
+            size_type mask = uint64_t{1} << (ch % 64);
+            bits[index] ^= ~mask;
+        }
+
+        inline auto clr() -> void {
+            bits[0] = 0;
+            bits[1] = 0;
+            bits[2] = 0;
+            bits[3] = 0;
+        }
+
+        inline auto get(value_type c) const -> bool {
+            uint8_t ch = static_cast<value_type>(c);
+            size_type index = ch / 64;
+            size_type mask = uint64_t{1} << (ch % 64);
+            return !!(bits[index] & mask);
+        }
+
+        inline auto invert() {
+            bits[0] = ~bits[0];
+            bits[1] = ~bits[1];
+            bits[2] = ~bits[2];
+            bits[3] = ~bits[3];
+        }
+
+        inline auto operator[](value_type c) const -> bool {
+            return get(c);
+        }
+
+        inline auto data() const -> const uint64_t* {
+            return bits;
+        }
+
+        inline auto data() -> uint64_t* {
+            return bits;
+        }
+
+    private:
+        uint64_t bits[4]{0, 0, 0, 0};
+    };
 
     // 生产器
     using view_provider_proc = std::function<std::optional<std::string_view>()>;
@@ -83,12 +160,9 @@ public:
     static auto iequals(std::string_view s, std::string_view other) -> bool;
     static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
 
-    //  匹配
-    static auto wildcmp(const char * pattern, const char *string) -> bool;
+    // 匹配
+    static auto wildcmp(const_pointer s, const_pointer pattern) -> bool;
     static auto wildcmp(std::string_view s, std::string_view pattern) -> bool;
-    // static auto is_match_charset(std::string_view s, charset_type set) -> bool;
-    // static auto is_match_regex(std::string_view s, std::string_view pattern) -> bool;
-    // static auto is_match_regex(std::string_view s, const std::regex& pattern) -> bool;
 
     // 是否包含子串
     static auto contains(std::string_view s, std::string_view other) -> bool;
@@ -300,6 +374,10 @@ public:
     // 拆分 csv 数据
     static auto split_csv(std::string_view s) -> std::vector<std::string>;
 
+    // 按 properties 格式拼接
+    static auto join_properties(std::string& s) -> std::string&;
+    static auto split_properties(std::string& s) -> std::string&;
+
     // 大小写转换
     static auto to_lower(std::string_view s) -> std::string;
     static auto to_upper(std::string_view s) -> std::string;
@@ -382,41 +460,53 @@ public:
     static auto decode_cstr(std::string& s) -> std::string&;
     static auto encode_xml(std::string& s) -> std::string&;
     static auto decode_xml(std::string& s) -> std::string&;
-    static auto encode_hex(std::string& s) -> std::string&;
-    static auto decode_hex(std::string& s) -> std::string&;
-    static auto encode_base64(std::string& s) -> std::string&;
-    static auto decode_base64(std::string& s) -> std::string&;
     static auto encode_url(std::string& s) -> std::string&;
     static auto decode_url(std::string& s) -> std::string&;
 
-    // 按 properties 格式拼接
-    static auto join_properties(std::string& s) -> std::string&;
-    static auto split_properties(std::string& s) -> std::string&;
+    // base64 编解码
+    static auto encode_base64(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_base64(std::string_view s) -> std::string;
+    static auto decode_base64(std::string_view s, view_consumer_proc proc) -> void;
+    static auto decode_base64(std::string_view s) -> std::string;
+
+    // base16  编解码
+    static auto encode_base16(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_base16(std::string_view s) -> std::string;
+    static auto decode_base16(std::string_view s, view_consumer_proc proc) -> void;
+    static auto decode_base16(std::string_view s) -> std::string;
 
     // 求和
     template <typename MappedType>
-    using mapper_proc = std::function<auto(value_type)->MappedType>;
-    template <typename MapperProc>
-    static auto sum(std::string_view s, MapperProc mapper);
+    using mapping_proc = std::function<auto(value_type)->MappedType>;
+    template <typename T>
+    static auto sum(std::string_view s, mapping_proc<T> proc) -> T {
+        T result = 0;
+        for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+            result += proc(*ptr);
+        }
+        return result;
+    }
 
     // 自动统计本字符所属的字符集
     static auto chars(std::string_view s) -> charset_type;
+    static auto chars(std::string_view s, charset_type& set) -> charset_type&;
 
     // 是否全都满足proc或者在set范围内
-    static auto is_all(std::string_view s, mapper_proc<bool> proc);
-    static auto is_all(std::string_view s, charset_type set);
+    static auto is_all(std::string_view s, mapping_proc<bool> proc) -> bool;
+    static auto is_all(std::string_view s, charset_type set) -> bool;
 
     // 是否至少有一个满足proc或者在set范围内
-    static auto has_any(std::string_view s, mapper_proc<bool> proc);
-    static auto has_any(std::string_view s, charset_type set);
+    static auto has_any(std::string_view s, mapping_proc<bool> proc) -> bool;
+    static auto has_any(std::string_view s, charset_type set) -> bool;
 
     // 按 proc 将字符序列分成两组，左边的满足proc，右边不满足proc
-    static auto grouped(std::string_view s, mapper_proc<bool> proc) -> std::tuple<std::string, std::string>;
+    static auto grouped(std::string_view s, mapping_proc<bool> proc) -> std::tuple<std::string, std::string>;
 
     // 按块切分
     static auto chunked_view(std::string_view s, size_type size) -> std::vector<std::string_view>;
     static auto chunked(std::string_view s, size_type size) -> std::vector<std::string>;
 };
+
 //
 // template <typename T>
 // static auto to(const std::string& s, std::tuple<int> base) -> std::optional<T> {
