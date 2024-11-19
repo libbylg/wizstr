@@ -470,8 +470,8 @@ public:
     static auto decode_base64(std::string_view s) -> std::string;
 
     // base16  编解码
-    static auto encode_base16(std::string_view s, view_consumer_proc proc) -> void;
-    static auto encode_base16(std::string_view s) -> std::string;
+    static auto encode_base16(std::string_view s, bool upper, view_consumer_proc proc) -> void;
+    static auto encode_base16(std::string_view s, bool upper = false) -> std::string;
     static auto decode_base16(std::string_view s, view_consumer_proc proc) -> void;
     static auto decode_base16(std::string_view s) -> std::string;
 

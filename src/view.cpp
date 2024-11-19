@@ -2175,73 +2175,75 @@ auto view::encode_base64(std::string_view s) -> std::string {
 }
 
 auto view::decode_base64(std::string_view s, view_consumer_proc proc) -> void {
-    static const uint8_t table[256] = {
-        ['+'] = 62,
-        ['/'] = 63,
-        ['0'] = 52,
-        ['1'] = 53,
-        ['2'] = 54,
-        ['3'] = 55,
-        ['4'] = 56,
-        ['5'] = 57,
-        ['6'] = 58,
-        ['7'] = 59,
-        ['8'] = 60,
-        ['9'] = 61,
-        ['='] = 0,
-        ['A'] = 0,
-        ['B'] = 1,
-        ['C'] = 2,
-        ['D'] = 3,
-        ['E'] = 4,
-        ['F'] = 5,
-        ['G'] = 6,
-        ['H'] = 7,
-        ['I'] = 8,
-        ['J'] = 9,
-        ['K'] = 10,
-        ['L'] = 11,
-        ['M'] = 12,
-        ['N'] = 13,
-        ['O'] = 14,
-        ['P'] = 15,
-        ['Q'] = 16,
-        ['R'] = 17,
-        ['S'] = 18,
-        ['T'] = 19,
-        ['U'] = 20,
-        ['V'] = 21,
-        ['W'] = 22,
-        ['X'] = 23,
-        ['Y'] = 24,
-        ['Z'] = 25,
-        ['a'] = 26,
-        ['b'] = 27,
-        ['c'] = 28,
-        ['d'] = 29,
-        ['e'] = 30,
-        ['f'] = 31,
-        ['g'] = 32,
-        ['h'] = 33,
-        ['i'] = 34,
-        ['j'] = 35,
-        ['k'] = 36,
-        ['l'] = 37,
-        ['m'] = 38,
-        ['n'] = 39,
-        ['o'] = 40,
-        ['p'] = 41,
-        ['q'] = 42,
-        ['r'] = 43,
-        ['s'] = 44,
-        ['t'] = 45,
-        ['u'] = 46,
-        ['v'] = 47,
-        ['w'] = 48,
-        ['x'] = 49,
-        ['y'] = 50,
-        ['z'] = 51,
-    };
+    static uint8_t table[256]{};
+    if (table['+'] == 0) {
+        table['+'] = 62;
+        table['/'] = 63;
+
+        table['0'] = 52;
+        table['1'] = 53;
+        table['2'] = 54;
+        table['3'] = 55;
+        table['4'] = 56;
+        table['5'] = 57;
+        table['6'] = 58;
+        table['7'] = 59;
+        table['8'] = 60;
+        table['9'] = 61;
+        table['='] = 0;
+        table['A'] = 0;
+        table['B'] = 1;
+        table['C'] = 2;
+        table['D'] = 3;
+        table['E'] = 4;
+        table['F'] = 5;
+        table['G'] = 6;
+        table['H'] = 7;
+        table['I'] = 8;
+        table['J'] = 9;
+        table['K'] = 10;
+        table['L'] = 11;
+        table['M'] = 12;
+        table['N'] = 13;
+        table['O'] = 14;
+        table['P'] = 15;
+        table['Q'] = 16;
+        table['R'] = 17;
+        table['S'] = 18;
+        table['T'] = 19;
+        table['U'] = 20;
+        table['V'] = 21;
+        table['W'] = 22;
+        table['X'] = 23;
+        table['Y'] = 24;
+        table['Z'] = 25;
+        table['a'] = 26;
+        table['b'] = 27;
+        table['c'] = 28;
+        table['d'] = 29;
+        table['e'] = 30;
+        table['f'] = 31;
+        table['g'] = 32;
+        table['h'] = 33;
+        table['i'] = 34;
+        table['j'] = 35;
+        table['k'] = 36;
+        table['l'] = 37;
+        table['m'] = 38;
+        table['n'] = 39;
+        table['o'] = 40;
+        table['p'] = 41;
+        table['q'] = 42;
+        table['r'] = 43;
+        table['s'] = 44;
+        table['t'] = 45;
+        table['u'] = 46;
+        table['v'] = 47;
+        table['w'] = 48;
+        table['x'] = 49;
+        table['y'] = 50;
+        table['z'] = 51;
+    }
 
     if (s.empty()) {
         proc(std::string_view{});
@@ -2288,30 +2290,15 @@ auto view::decode_base64(std::string_view s) -> std::string {
     return result;
 }
 
-auto view::encode_base16(std::string_view s, view_consumer_proc proc) -> void {
+auto view::encode_base16(std::string_view s, bool upper, view_consumer_proc proc) -> void {
     if (s.empty()) {
         proc({});
         return;
     }
 
-    static const value_type table[16] = {
-        '0',
-        '1',
-        '2',
-        '3',
-        '4',
-        '5',
-        '6',
-        '7',
-        '8',
-        '9',
-        'A',
-        'B',
-        'C',
-        'D',
-        'E',
-        'F',
-    };
+    static const value_type table_lower[] = "0123456789abcdef";
+    static const value_type table_upper[] = "0123456789ABCDEF";
+    const value_type* table = upper ? table_upper : table_lower;
 
     auto src = reinterpret_cast<const uint8_t*>(s.data());
     auto end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
@@ -2323,12 +2310,13 @@ auto view::encode_base16(std::string_view s, view_consumer_proc proc) -> void {
         if (proc(std::string_view{reinterpret_cast<const_pointer>(o), 2}) != 0) {
             break;
         }
+        src++;
     }
 }
 
-auto view::encode_base16(std::string_view s) -> std::string {
+auto view::encode_base16(std::string_view s, bool upper) -> std::string {
     std::string result;
-    view::encode_base16(s, [&result](std::string_view item) -> int {
+    view::encode_base16(s, upper, [&result](std::string_view item) -> int {
         result.append(item);
         return 0;
     });
@@ -2352,7 +2340,7 @@ auto view::decode_base16(std::string_view s, view_consumer_proc proc) -> void {
                 o[1] = static_cast<value_type>(src[0] - '0');
                 break;
             case 'A' ... 'F':
-                o[1] = static_cast<value_type>(src[0] - '0' + 10);
+                o[1] = static_cast<value_type>(src[0] - 'A' + 10);
                 break;
             case 'a' ... 'f':
                 o[1] = static_cast<value_type>(src[0] - 'a' + 10);

@@ -5,10 +5,10 @@
 
 TEST_CASE("view::encode_base16") {
     REQUIRE(view::encode_base16("") == "");
-    REQUIRE(view::encode_base16("a") == "YQ==");
-    REQUIRE(view::encode_base16("ab") == "YWI=");
-    REQUIRE(view::encode_base16("abc") == "YWJj");
-    REQUIRE(view::encode_base16("abcdef") == "YWJjZGVm");
+    REQUIRE(view::encode_base16("a") == "61");
+    REQUIRE(view::encode_base16("ab") == "6162");
+    REQUIRE(view::encode_base16("abc") == "616263");
+    REQUIRE(view::encode_base16("abcXYZ") == "61626358595A");
 }
 
 
