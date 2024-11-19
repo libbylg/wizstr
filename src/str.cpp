@@ -897,7 +897,7 @@ auto str::read_all(const std::string& filename) -> std::string {
     return result;
 }
 
-auto str::read_line(FILE* file, bool keeo_ends) -> std::string {
+auto str::read_line(FILE* file, bool keep_ends) -> std::string {
     assert(file != nullptr);
 
     std::string result;
