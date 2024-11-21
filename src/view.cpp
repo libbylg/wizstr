@@ -174,7 +174,7 @@ auto view::iequals(std::string_view s, std::string_view other, size_type max_n) 
     return view::iequals(s, other);
 }
 
-auto view::wildcmp(const_pointer s, const_pointer pattern) -> bool {
+auto view::wildcmp(const_pointer pattern, const_pointer s) -> bool {
     const_pointer cp = nullptr;
     const_pointer mp = nullptr;
 
