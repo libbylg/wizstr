@@ -2108,6 +2108,79 @@ auto view::split_extname(std::string_view s) -> std::tuple<std::string_view, std
     return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
 }
 
+auto view::encode_cstr(std::string_view s, view_consumer_proc proc) -> void {
+    // \'
+    // \"
+    // \?
+    // \\
+    // \a
+    // \b
+    // \f
+    // \n
+    // \r
+    // \t
+    // \v
+    // \nnn
+    // \o{n...}
+    // \xn...
+    // \x{n...}
+    if (s.empty()) {
+        return;
+    }
+
+    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(s.data());
+    const uint8_t* end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
+    while (ptr < end) {
+        switch (*ptr) {
+            case '\'':
+                break;
+            case '\"':
+                break;
+            case '?':
+                break;
+            case '\\':
+                break;
+            case '\a':
+                break;
+            case '\b':
+                break;
+            case '\f':
+                break;
+            case '\n':
+                break;
+            case '\r':
+                break;
+            case '\t':
+                break;
+            case '\v':
+                break;
+        }
+    }
+}
+
+auto view::encode_cstr(std::string_view s) -> std::string {
+    std::string result;
+    result.reserve(result.size() * 4 / 3);
+    view::encode_cstr(s, [&result](std::string_view item) -> int {
+        result.append(item);
+        return 0;
+    });
+    return result;
+}
+
+auto view::decode_cstr(std::string_view s, view_consumer_proc proc) -> void {
+}
+
+auto view::decode_cstr(std::string_view s) -> std::string {
+    std::string result;
+    result.reserve(result.size() * 4 / 3);
+    view::decode_cstr(s, [&result](std::string_view item) -> int {
+        result.append(item);
+        return 0;
+    });
+    return result;
+}
+
 auto view::encode_base64(std::string_view s, view_consumer_proc proc) -> void {
     if (s.empty()) {
         proc({});

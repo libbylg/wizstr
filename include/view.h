@@ -456,12 +456,16 @@ public:
     static auto md5(void* data, size_type n) -> std::string;
 
     // 转义
-    static auto encode_cstr(std::string& s) -> std::string&;
-    static auto decode_cstr(std::string& s) -> std::string&;
     static auto encode_xml(std::string& s) -> std::string&;
     static auto decode_xml(std::string& s) -> std::string&;
     static auto encode_url(std::string& s) -> std::string&;
     static auto decode_url(std::string& s) -> std::string&;
+
+    // C语言字符串编解码
+    static auto encode_cstr(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_cstr(std::string_view s) -> std::string;
+    static auto decode_cstr(std::string_view s, view_consumer_proc proc) -> void;
+    static auto decode_cstr(std::string_view s) -> std::string;
 
     // base64 编解码
     static auto encode_base64(std::string_view s, view_consumer_proc proc) -> void;
