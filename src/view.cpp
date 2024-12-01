@@ -2334,6 +2334,35 @@ auto view::decode_cstr(std::string_view s, view_consumer_proc proc) -> void {
 
                     w = c;
                 }
+                ptr++;
+                if (ptr > end) {
+                    return;
+                }
+
+                uint8_t ch = 0;
+                switch (*ptr) {
+                    case '\'': ch = '\''; break;
+                    case '\"': ch = '\"'; break;
+                    case '?': ch = '?'; break;
+                    case 'a': ch = '\a'; break;
+                    case 'b': ch = '\b'; break;
+                    case 'f': ch = '\f'; break;
+                    case 'n': ch = '\n'; break;
+                    case 'r': ch = '\r'; break;
+                    case 't': ch = '\t'; break;
+                    case 'v': ch = '\v'; break;
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                        break;
+                    case 'x':
+                        break;
+                }
 
                 break;
         }
