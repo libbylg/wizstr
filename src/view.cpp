@@ -2109,52 +2109,162 @@ auto view::split_extname(std::string_view s) -> std::tuple<std::string_view, std
 }
 
 auto view::encode_cstr(std::string_view s, view_consumer_proc proc) -> void {
-    // \'
-    // \"
-    // \?
-    // \\
-    // \a
-    // \b
-    // \f
-    // \n
-    // \r
-    // \t
-    // \v
-    // \nnn
-    // \o{n...}
-    // \xn...
-    // \x{n...}
+    static std::string_view map[256]{
+        "\\x00", // 0	0	00	NUL (null)
+        "\\x01", // 1	1	01	SOH (start of header)
+        "\\x02", // 2	2	02	STX (start of text)
+        "\\x03", // 3	3	03	ETX (end of text)
+        "\\x04", // 4	4	04	EOT (end of transmission)
+        "\\x05", // 5	5	05	ENQ (enquiry)
+        "\\x06", // 6	6	06	ACK (acknowledge)
+        "\\a",   // 7	7	07	BEL (bell)
+        "\\b",   // 8	10	08	BS (backspace)
+        "\\t",   // 9	11	09	HT (horizontal tab)
+        "\\n",   // 10	12	0a	LF (line feed - new line)
+        "\\b",   // 11	13	0b	VT (vertical tab)
+        "\\f",   // 12	14	0c	FF (form feed - new page)
+        "\\r",   // 13	15	0d	CR (carriage return)
+        "\\x0e", // 14	16	0e	SO (shift out)
+        "\\x0f", // 15	17	0f	SI (shift in)
+        "\\x10", // 16	20	10	DLE (data link escape)
+        "\\x11", // 17	21	11	DC1 (device control 1)
+        "\\x12", // 18	22	12	DC2 (device control 2)
+        "\\x13", // 19	23	13	DC3 (device control 3)
+        "\\x14", // 20	24	14	DC4 (device control 4)
+        "\\x15", // 21	25	15	NAK (negative acknowledge)
+        "\\x16", // 22	26	16	SYN (synchronous idle)
+        "\\x17", // 23	27	17	ETB (end of transmission block)
+        "\\x18", // 24	30	18	CAN (cancel)
+        "\\x19", // 25	31	19	EM (end of medium)
+        "\\x1a", // 26	32	1a	SUB (substitute)
+        "\\x1b", // 27	33	1b	ESC (escape)
+        "\\x1c", // 28	34	1c	FS (file separator)
+        "\\x1d", // 29	35	1d	GS (group separator)
+        "\\x1e", // 30	36	1e	RS (record separator)
+        "\\x1f", // 31	37	1f	US (unit separator)
+        " ",     // 32	40	20	(space)
+        "!",     // 33	41	21	!
+        "\\\"",  // 34	42	22	"
+        "#",     // 35	43	23	#
+        "$",     // 36	44	24	$
+        "%",     // 37	45	25	%
+        "&",     // 38	46	26	&
+        "\\'",   // 39	47	27	'
+        "(",     // 40	50	28	(
+        ")",     // 41	51	29	)
+        "*",     // 42	52	2a	*
+        "+",     // 43	53	2b	+
+        ",",     // 44	54	2c	,
+        "-",     // 45	55	2d	-
+        ".",     // 46	56	2e	.
+        "/",     // 47	57	2f	/
+        "0",     // 48	60	30	0
+        "1",     // 49	61	31	1
+        "2",     // 50	62	32	2
+        "3",     // 51	63	33	3
+        "4",     // 52	64	34	4
+        "5",     // 53	65	35	5
+        "6",     // 54	66	36	6
+        "7",     // 55	67	37	7
+        "8",     // 56	70	38	8
+        "9",     // 57	71	39	9
+        ":",     // 58	72	3a	:
+        ";",     // 59	73	3b	;
+        "<",     // 60	74	3c	<
+        "=",     // 61	75	3d	=
+        ">",     // 62	76	3e	>
+        "?",     // 63	77	3f	?
+        "@",     // 64	100	40	@
+        "A",     // 65	101	41	A
+        "B",     // 66	102	42	B
+        "C",     // 67	103	43	C
+        "D",     // 68	104	44	D
+        "E",     // 69	105	45	E
+        "F",     // 70	106	46	F
+        "G",     // 71	107	47	G
+        "H",     // 72	110	48	H
+        "I",     // 73	111	49	I
+        "J",     // 74	112	4a	J
+        "K",     // 75	113	4b	K
+        "L",     // 76	114	4c	L
+        "M",     // 77	115	4d	M
+        "N",     // 78	116	4e	N
+        "O",     // 79	117	4f	O
+        "P",     // 80	120	50	P
+        "Q",     // 81	121	51	Q
+        "R",     // 82	122	52	R
+        "S",     // 83	123	53	S
+        "T",     // 84	124	54	T
+        "U",     // 85	125	55	U
+        "V",     // 86	126	56	V
+        "W",     // 87	127	57	W
+        "X",     // 88	130	58	X
+        "Y",     // 89	131	59	Y
+        "Z",     // 90	132	5a	Z
+        "[",     // 91	133	5b	[
+        "\\\\",  // 92	134	5c	\ <---
+        "]",     // 93	135	5d	]
+        "^",     // 94	136	5e	^
+        "_",     // 95	137	5f	_
+        "`",     // 96	140	60	`
+        "a",     // 97	141	61	a
+        "b",     // 98	142	62	b
+        "c",     // 99	143	63	c
+        "d",     // 100	144	64	d
+        "e",     // 101	145	65	e
+        "f",     // 102	146	66	f
+        "g",     // 103	147	67	g
+        "h",     // 104	150	68	h
+        "i",     // 105	151	69	i
+        "j",     // 106	152	6a	j
+        "k",     // 107	153	6b	k
+        "l",     // 108	154	6c	l
+        "m",     // 109	155	6d	m
+        "n",     // 110	156	6e	n
+        "o",     // 111	157	6f	o
+        "p",     // 112	160	70	p
+        "q",     // 113	161	71	q
+        "r",     // 114	162	72	r
+        "s",     // 115	163	73	s
+        "t",     // 116	164	74	t
+        "u",     // 117	165	75	u
+        "v",     // 118	166	76	v
+        "w",     // 119	167	77	w
+        "x",     // 120	170	78	x
+        "y",     // 121	171	79	y
+        "z",     // 122	172	7a	z
+        "{",     // 123	173	7b	{
+        "|",     // 124	174	7c	|
+        "}",     // 125	175	7d	}
+        "~",     // 126	176	7e	~
+        "\\x7f", // 127	177	7f	DEL (delete)
+    };
+
     if (s.empty()) {
         return;
     }
 
+    char buf[5]{};
+
     const uint8_t* ptr = reinterpret_cast<const uint8_t*>(s.data());
     const uint8_t* end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
     while (ptr < end) {
-        switch (*ptr) {
-            case '\'':
-                break;
-            case '\"':
-                break;
-            case '?':
-                break;
-            case '\\':
-                break;
-            case '\a':
-                break;
-            case '\b':
-                break;
-            case '\f':
-                break;
-            case '\n':
-                break;
-            case '\r':
-                break;
-            case '\t':
-                break;
-            case '\v':
-                break;
+        if (*ptr <= 0x7f) [[likely]] {
+            if (proc(map[*ptr]) != 0) {
+                return;
+            }
+        } else {
+            static char hexmap[]{"0123456789abcdef"};
+            buf[0] = '\\';
+            buf[1] = 'x';
+            buf[2] = hexmap[(*ptr & 0xF0) >> 4];
+            buf[3] = hexmap[(*ptr & 0x0F) >> 0];
+            if (proc(std::string_view{buf, 4}) != 0) {
+                return;
+            }
         }
+
+        ptr++;
     }
 }
 
@@ -2169,6 +2279,66 @@ auto view::encode_cstr(std::string_view s) -> std::string {
 }
 
 auto view::decode_cstr(std::string_view s, view_consumer_proc proc) -> void {
+    if (s.empty()) {
+        return;
+    }
+
+    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(s.data());
+    const uint8_t* end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
+
+    const char* w = s.data();
+    const char* c = s.data();
+    for (; ptr < end; ptr++) {
+        // clang-format off
+        switch (*ptr) {
+            case 'A'...'Z':  [[fallthrough]];
+            case 'a'...'z':  [[fallthrough]];
+            case '0'...'9':  [[fallthrough]];
+            case ' ':  [[fallthrough]];
+            case '!':  [[fallthrough]];
+            case '#':  [[fallthrough]];
+            case '$':  [[fallthrough]];
+            case '%':  [[fallthrough]];
+            case '&':  [[fallthrough]];
+            case '(':  [[fallthrough]];
+            case ')':  [[fallthrough]];
+            case '*':  [[fallthrough]];
+            case '+':  [[fallthrough]];
+            case ',':  [[fallthrough]];
+            case '-':  [[fallthrough]];
+            case '.':  [[fallthrough]];
+            case '/':  [[fallthrough]];
+            case ':':  [[fallthrough]];
+            case ';':  [[fallthrough]];
+            case '<':  [[fallthrough]];
+            case '=':  [[fallthrough]];
+            case '>':  [[fallthrough]];
+            case '?':  [[fallthrough]];
+            case '@':  [[fallthrough]];
+            case '[':  [[fallthrough]];
+            case ']':  [[fallthrough]];
+            case '^':  [[fallthrough]];
+            case '_':  [[fallthrough]];
+            case '`':  [[fallthrough]];
+            case '{':  [[fallthrough]];
+            case '|':  [[fallthrough]];
+            case '}':  [[fallthrough]];
+            case '~':  [[fallthrough]];
+                c++;
+                break;
+            case '\\':
+                if (w != c) {
+                    if (proc({w, static_cast<size_t>(c - w)}) != 0) {
+                        return;
+                    }
+
+                    w = c;
+                }
+
+                break;
+        }
+        // clang-format on
+    }
 }
 
 auto view::decode_cstr(std::string_view s) -> std::string {
