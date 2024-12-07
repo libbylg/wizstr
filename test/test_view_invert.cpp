@@ -1,7 +1,7 @@
-#include "catch2/catch_all.hpp"
+#include "tester.hpp"
 
-#include "str.h"
-#include "view.h"
+#include "str.hpp"
+#include "view.hpp"
 
 TEST_CASE("view::invert:all") {
     SECTION("反转偶数长度的字符串") {

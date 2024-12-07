@@ -49,7 +49,9 @@ function cmd_clean()
 
     if [[ "${range}" == "all" || "${range}" == "compile" || "${range}" == "debug" || "${range}" == "release" ]]; then
         echo   "Clean: ${PROJECT_ROOT}/output-compile"
+        echo   "Clean: ${PROJECT_ROOT}/build"
         rm -rf "${PROJECT_ROOT}/output-compile"
+        rm -rf "${PROJECT_ROOT}/build"
     fi
     
     if [[ "${range}" == "all" || "${range}" == "cdb" || "${range}" == "debug" ]]; then

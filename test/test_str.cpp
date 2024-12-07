@@ -1,7 +1,7 @@
-#include "catch2/catch_all.hpp"
+#include "tester.h"
 
-#include "str.h"
-#include "view.h"
+#include "str.hpp"
+#include "view.hpp"
 
 #include <fstream>
 

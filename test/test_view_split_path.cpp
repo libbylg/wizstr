@@ -1,8 +1,8 @@
-#include "catch2/catch_all.hpp"
+#include "tester.hpp"
 
-#include "str.h"
+#include "str.hpp"
 #include "test-compares.h"
-#include "view.h"
+#include "view.hpp"
 
 TEST_CASE("view::split_path") {
     SECTION("绝对路径") {

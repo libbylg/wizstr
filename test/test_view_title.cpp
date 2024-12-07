@@ -1,7 +1,7 @@
-#include "catch2/catch_all.hpp"
+#include "tester.hpp"
 
-#include "str.h"
-#include "view.h"
+#include "str.hpp"
+#include "view.hpp"
 
 TEST_CASE("view::title") {
     REQUIRE(view::title("abc def") == "Abc Def");

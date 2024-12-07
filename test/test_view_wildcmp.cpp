@@ -1,7 +1,7 @@
-#include "catch2/catch_all.hpp"
+#include "tester.h"
 
-#include "str.h"
-#include "view.h"
+#include "str.hpp"
+#include "view.hpp"
 
 TEST_CASE("view::wildcmp") {
     SECTION("检查是否匹配某个正则表达式") {
