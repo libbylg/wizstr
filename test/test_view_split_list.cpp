@@ -4,50 +4,50 @@
 #include "test-compares.h"
 #include "view.hpp"
 
-TEST_CASE("view::split_list:vector") {
+TEST(test_view, split_list_vector) {
     SECTION("一般情况") {
-        REQUIRE(view::split_list("a,b,c", ",") == std::vector<std::string_view>{"a", "b", "c"});
+        ASSERT_EQ(view::split_list("a,b,c", ","), (std::vector<std::string_view>{"a", "b", "c"}));
     }
     SECTION("被拆分字符串全部是分隔符") {
-        REQUIRE(view::split_list(",,", ",") == std::vector<std::string_view>{"", "", ""});
+        ASSERT_EQ(view::split_list(",,", ","), (std::vector<std::string_view>{"", "", ""}));
     }
     SECTION("没有替换分个符") {
-        REQUIRE(view::split_list("abc", ",") == std::vector<std::string_view>{"abc"});
+        ASSERT_EQ(view::split_list("abc", ","), (std::vector<std::string_view>{"abc"}));
     }
     SECTION("分隔符号在开头") {
-        REQUIRE(view::split_list(",abc", ",") == std::vector<std::string_view>{"", "abc"});
+        ASSERT_EQ(view::split_list(",abc", ","), (std::vector<std::string_view>{"", "abc"}));
     }
     SECTION("分隔符号在结尾") {
-        REQUIRE(view::split_list("abc,", ",") == std::vector<std::string_view>{"abc", ""});
+        ASSERT_EQ(view::split_list("abc,", ","), (std::vector<std::string_view>{"abc", ""}));
     }
     SECTION("拆分空串") {
-        REQUIRE(view::split_list("", ",") == std::vector<std::string_view>{""});
+        ASSERT_EQ(view::split_list("", ","), (std::vector<std::string_view>{""}));
     }
     SECTION("被拆分字符串无对应分隔符") {
-        REQUIRE(view::split_list("abcdef#@#$", ",") == std::vector<std::string_view>{"abcdef#@#$"});
+        ASSERT_EQ(view::split_list("abcdef#@#$", ","), (std::vector<std::string_view>{"abcdef#@#$"}));
     }
     SECTION("空串作为分隔符") {
-        REQUIRE(view::split_list("ab,cdef", "") == std::vector<std::string_view>{"ab", "cdef"});
+        ASSERT_EQ(view::split_list("ab,cdef", ""), (std::vector<std::string_view>{"ab", "cdef"}));
     }
     SECTION("限制值为0") {
-        REQUIRE(view::split_list(":aa::bb:cc:", ":", 0) == std::vector<std::string_view>{":aa::bb:cc:"});
+        ASSERT_EQ(view::split_list(":aa::bb:cc:", ":", 0), (std::vector<std::string_view>{":aa::bb:cc:"}));
     }
     SECTION("限制值合适") {
-        REQUIRE(view::split_list(":aa::bb:cc:", ":", 4) == std::vector<std::string_view>{"", "aa", "", "bb", "cc:"});
+        ASSERT_EQ(view::split_list(":aa::bb:cc:", ":", 4), (std::vector<std::string_view>{"", "aa", "", "bb", "cc:"}));
     }
     SECTION("限制值超过总段数") {
-        REQUIRE(view::split_list(":aa::bb:cc:", ":", 100) == std::vector<std::string_view>{"", "aa", "", "bb", "cc", ""});
+        ASSERT_EQ(view::split_list(":aa::bb:cc:", ":", 100), (std::vector<std::string_view>{"", "aa", "", "bb", "cc", ""}));
     }
 }
 
-TEST_CASE("view::split_list:proc") {
+TEST(test_view, split_list_proc) {
     SECTION("简单场景1") {
         std::vector<std::string_view> result;
         view::split_list("HelloWorld-HelloWorld", "-", [&result](std::string_view item) -> int {
             result.emplace_back(item);
             return 0;
         });
-        REQUIRE(result == std::vector<std::string_view>{"HelloWorld", "HelloWorld"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"HelloWorld", "HelloWorld"}));
     }
     SECTION("简单场景2") {
         std::vector<std::string_view> result;
@@ -56,7 +56,7 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{"a", "d", "ee", ""});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"a", "d", "ee", ""}));
     }
 
     SECTION("刚好匹配一个") {
@@ -65,7 +65,7 @@ TEST_CASE("view::split_list:proc") {
             result.emplace_back(item);
             return 0;
         });
-        REQUIRE(result == std::vector<std::string_view>{"", ""});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"", ""}));
     }
 
     SECTION("前面字段") {
@@ -75,7 +75,7 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{"AAA", ""});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"AAA", ""}));
     }
 
     SECTION("后面字段") {
@@ -85,7 +85,7 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{"", "AAA"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"", "AAA"}));
     }
 
     SECTION("拆分空串") {
@@ -95,7 +95,7 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{""});
+        ASSERT_EQ(result, (std::vector<std::string_view>{""}));
     }
 
     SECTION("连续匹配") {
@@ -105,7 +105,7 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{"AA", "", "BB"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"AA", "", "BB"}));
     }
 
     SECTION("连续匹配2") {
@@ -115,7 +115,7 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{"", "", ""});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"", "", ""}));
     }
 
     SECTION("无法匹配") {
@@ -125,7 +125,7 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{"defgui"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"defgui"}));
     }
 
     SECTION("提前结束:一般场景") {
@@ -138,26 +138,26 @@ TEST_CASE("view::split_list:proc") {
             return 0;
         });
 
-        REQUIRE(result == std::vector<std::string_view>{"", "123", "456", ""});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"", "123", "456", ""}));
     }
 }
 
-TEST_CASE("view::split_list:regex") {
+TEST(test_view, split_list_regex) {
     SECTION("一般场景") {
         std::regex sep("[ \t]*(:|,|;)[ \t]*");
-        REQUIRE(view::split_list("aaa, bbb:ccc ;ddd ", sep) == std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "});
-        REQUIRE(view::split_list("aaa, bbb:ccc ;ddd ", sep, 0) == std::vector<std::string_view>{"aaa, bbb:ccc ;ddd "});
-        REQUIRE(view::split_list("aaa, bbb:ccc ;ddd ", sep, 1) == std::vector<std::string_view>{"aaa", "bbb:ccc ;ddd "});
-        REQUIRE(view::split_list("aaa, bbb:ccc ;ddd ", sep, 2) == std::vector<std::string_view>{"aaa", "bbb", "ccc ;ddd "});
-        REQUIRE(view::split_list("aaa, bbb:ccc ;ddd ", sep, 3) == std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "});
-        REQUIRE(view::split_list("aaa, bbb:ccc ;ddd ", sep, 4) == std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "});
-        REQUIRE(view::split_list("aaa, bbb:ccc ;ddd ", sep, view::npos) == std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "});
+        ASSERT_EQ(view::split_list("aaa, bbb:ccc ;ddd ", sep), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
+        ASSERT_EQ(view::split_list("aaa, bbb:ccc ;ddd ", sep, 0), (std::vector<std::string_view>{"aaa, bbb:ccc ;ddd "}));
+        ASSERT_EQ(view::split_list("aaa, bbb:ccc ;ddd ", sep, 1), (std::vector<std::string_view>{"aaa", "bbb:ccc ;ddd "}));
+        ASSERT_EQ(view::split_list("aaa, bbb:ccc ;ddd ", sep, 2), (std::vector<std::string_view>{"aaa", "bbb", "ccc ;ddd "}));
+        ASSERT_EQ(view::split_list("aaa, bbb:ccc ;ddd ", sep, 3), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
+        ASSERT_EQ(view::split_list("aaa, bbb:ccc ;ddd ", sep, 4), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
+        ASSERT_EQ(view::split_list("aaa, bbb:ccc ;ddd ", sep, view::npos), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
     }
     SECTION("空串") {
         std::regex sep(":|,|;");
-        REQUIRE(view::split_list("", sep) == std::vector<std::string_view>{""});
-        REQUIRE(view::split_list("", sep, 0) == std::vector<std::string_view>{""});
-        REQUIRE(view::split_list("", sep, 3) == std::vector<std::string_view>{""});
+        ASSERT_EQ(view::split_list("", sep), (std::vector<std::string_view>{""}));
+        ASSERT_EQ(view::split_list("", sep, 0), (std::vector<std::string_view>{""}));
+        ASSERT_EQ(view::split_list("", sep, 3), (std::vector<std::string_view>{""}));
     }
     SECTION("proc:不限拆分次数") {
         std::regex sep("[ \t]*(:|,|;)[ \t]*");
@@ -166,7 +166,7 @@ TEST_CASE("view::split_list:regex") {
             result.emplace_back(item);
             return 0;
         });
-        REQUIRE(result == std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
     }
     SECTION("proc:限制拆分次数+提前返回") {
         std::regex sep("[ \t]*(:|,|;)[ \t]*");
@@ -178,7 +178,7 @@ TEST_CASE("view::split_list:regex") {
             }
             return 0;
         });
-        REQUIRE(result == std::vector<std::string_view>{"aaa", "bbb"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"aaa", "bbb"}));
     }
     SECTION("proc:限制拆分次数+提前返回+限制次数较小") {
         std::regex sep("[ \t]*(:|,|;)[ \t]*");
@@ -190,18 +190,18 @@ TEST_CASE("view::split_list:regex") {
             }
             return 0;
         });
-        REQUIRE(result == std::vector<std::string_view>{"aaa", "bbb", "ccc ;ddd,MNP"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"aaa", "bbb", "ccc ;ddd,MNP"}));
     }
     SECTION("全都是分隔符") {
         std::regex sep(":|,|;");
-        REQUIRE(view::split_list("::,,;;", sep) == std::vector<std::string_view>{"", "", "", "", "", "", ""});
+        ASSERT_EQ(view::split_list("::,,;;", sep), (std::vector<std::string_view>{"", "", "", "", "", "", ""}));
     }
     SECTION("分隔符刚好在尾部") {
         std::regex sep(":|,|;");
-        REQUIRE(view::split_list("aaa:bbb,ccc;", sep) == std::vector<std::string_view>{"aaa", "bbb", "ccc", ""});
+        ASSERT_EQ(view::split_list("aaa:bbb,ccc;", sep), (std::vector<std::string_view>{"aaa", "bbb", "ccc", ""}));
     }
     SECTION("分隔符刚好在头部") {
         std::regex sep(":|,|;");
-        REQUIRE(view::split_list(":aaa:bbb,ccc", sep) == std::vector<std::string_view>{"", "aaa", "bbb", "ccc"});
+        ASSERT_EQ(view::split_list(":aaa:bbb,ccc", sep), (std::vector<std::string_view>{"", "aaa", "bbb", "ccc"}));
     }
 }

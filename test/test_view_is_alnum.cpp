@@ -3,8 +3,8 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::is_alnum") {
-    REQUIRE(view::is_alnum("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") == true);
-    REQUIRE(view::is_alnum("!@#$%^&*({[<>]})~`_-+=") == false);
-    REQUIRE(view::is_alnum("") == false);
+TEST(test_view, is_alnum) {
+    ASSERT_EQ(view::is_alnum("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), true);
+    ASSERT_EQ(view::is_alnum("!@#$%^&*({[<>]})~`_-+="), false);
+    ASSERT_EQ(view::is_alnum(""), false);
 }

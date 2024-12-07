@@ -4,20 +4,20 @@
 #include "test-compares.h"
 #include "view.hpp"
 
-TEST_CASE("view::split_path") {
+TEST(test_view, split_path) {
     SECTION("绝对路径") {
-        REQUIRE(view::split_path("/") == std::vector<std::string_view>{"/"});
-        REQUIRE(view::split_path("///") == std::vector<std::string_view>{"/"});
-        REQUIRE(view::split_path("//abc/def") == std::vector<std::string_view>{"/", "abc", "def"});
-        REQUIRE(view::split_path("//abc/def/") == std::vector<std::string_view>{"/", "abc", "def"});
+        ASSERT_EQ(view::split_path("/"), (std::vector<std::string_view>{"/"}));
+        ASSERT_EQ(view::split_path("///"), (std::vector<std::string_view>{"/"}));
+        ASSERT_EQ(view::split_path("//abc/def"), (std::vector<std::string_view>{"/", "abc", "def"}));
+        ASSERT_EQ(view::split_path("//abc/def/"), (std::vector<std::string_view>{"/", "abc", "def"}));
     }
     SECTION("空串路径") {
-        REQUIRE(view::split_path("") == std::vector<std::string_view>{});
+        ASSERT_EQ(view::split_path(""), (std::vector<std::string_view>{}));
     }
     SECTION("相对路径") {
-        REQUIRE(view::split_path("abc/mpq/def.txt") == std::vector<std::string_view>{"abc", "mpq", "def.txt"});
-        REQUIRE(view::split_path("abc/mpq/def.txt/") == std::vector<std::string_view>{"abc", "mpq", "def.txt"});
-        REQUIRE(view::split_path("abc//mpq//def.txt//") == std::vector<std::string_view>{"abc", "mpq", "def.txt"});
+        ASSERT_EQ(view::split_path("abc/mpq/def.txt"), (std::vector<std::string_view>{"abc", "mpq", "def.txt"}));
+        ASSERT_EQ(view::split_path("abc/mpq/def.txt/"), (std::vector<std::string_view>{"abc", "mpq", "def.txt"}));
+        ASSERT_EQ(view::split_path("abc//mpq//def.txt//"), (std::vector<std::string_view>{"abc", "mpq", "def.txt"}));
     }
     SECTION("proc:1") {
         std::vector<std::string_view> result;
@@ -29,7 +29,7 @@ TEST_CASE("view::split_path") {
 
             return 0;
         });
-        REQUIRE(result == std::vector<std::string_view>{"abc", "def", "ghi"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"abc", "def", "ghi"}));
     }
     SECTION("proc:2") {
         std::vector<std::string_view> result;
@@ -41,6 +41,6 @@ TEST_CASE("view::split_path") {
 
             return 0;
         });
-        REQUIRE(result == std::vector<std::string_view>{"/"});
+        ASSERT_EQ(result, (std::vector<std::string_view>{"/"}));
     }
 }

@@ -3,12 +3,12 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::encode_base64") {
-    REQUIRE(view::encode_base64("") == "");
-    REQUIRE(view::encode_base64("a") == "YQ==");
-    REQUIRE(view::encode_base64("ab") == "YWI=");
-    REQUIRE(view::encode_base64("abc") == "YWJj");
-    REQUIRE(view::encode_base64("abcdef") == "YWJjZGVm");
+TEST(test_view, encode_base64) {
+    ASSERT_EQ(view::encode_base64(""), "");
+    ASSERT_EQ(view::encode_base64("a"), "YQ==");
+    ASSERT_EQ(view::encode_base64("ab"), "YWI=");
+    ASSERT_EQ(view::encode_base64("abc"), "YWJj");
+    ASSERT_EQ(view::encode_base64("abcdef"), "YWJjZGVm");
 }
 
 

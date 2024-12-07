@@ -1,4 +1,4 @@
-#include "tester.h"
+#include "tester.hpp"
 
 #include "str.hpp"
 #include "view.hpp"
@@ -7,38 +7,38 @@
 
 
 
- TEST_CASE("split_list", "as vector") {
+ TEST(test_split_list, as_vector) {
  //TEST_CASE(split_list, as_vector) {
      SECTION("一般情况") {
          auto items = view::split_list("a,b,c", ',');
-         REQUIRE(items.size() == 3u);
-         REQUIRE(items[0] == "a");
-         REQUIRE(items[1] == "b");
-         REQUIRE(items[2] == "c");
+         ASSERT_EQ(items.size(), 3u);
+         ASSERT_EQ(items[0], "a");
+         ASSERT_EQ(items[1], "b");
+         ASSERT_EQ(items[2], "c");
      }
      SECTION("全空情况") {
          auto items = view::split_list(",,", ',');
-         REQUIRE(items.size() == 3u);
-         REQUIRE(items[0] == "");
-         REQUIRE(items[1] == "");
-         REQUIRE(items[2] == "");
+         ASSERT_EQ(items.size(), 3u);
+         ASSERT_EQ(items[0], "");
+         ASSERT_EQ(items[1], "");
+         ASSERT_EQ(items[2], "");
      }
      SECTION("没有替换分个符") {
          auto items = view::split_list("abc", ',');
-         REQUIRE(items.size() == 1u);
-         REQUIRE(items[0] == "abc");
+         ASSERT_EQ(items.size(), 1u);
+         ASSERT_EQ(items[0], "abc");
      }
      SECTION("分隔符号在开头") {
          auto items = view::split_list(",abc", ',');
-         REQUIRE(items.size() == 2u);
-         REQUIRE(items[0] == "");
-         REQUIRE(items[1] == "abc");
+         ASSERT_EQ(items.size(), 2u);
+         ASSERT_EQ(items[0], "");
+         ASSERT_EQ(items[1], "abc");
      }
      SECTION("分隔符号在结尾") {
          auto items = view::split_list("abc,", ',');
-         REQUIRE(items.size() == 2u);
-         REQUIRE(items[0] == "abc");
-         REQUIRE(items[1] == "");
+         ASSERT_EQ(items.size(), 2u);
+         ASSERT_EQ(items[0], "abc");
+         ASSERT_EQ(items[1], "");
      }
  }
 
@@ -47,64 +47,64 @@
          //view::dirname()
          std::ifstream stream("/mnt/e/gitee.com/libbylg/str/test/test-gernial.txt");
          auto result = str::read_lines(stream);
-         REQUIRE(result.size() == 0);
+         ASSERT_EQ(result.size(), 0);
     }
  }
 
 // TEST_CASE(last_extname_ptr, last_extname_ptr) {
 //     SECTION("简单裸名字") {
-//         REQUIRE(str::last_extname("abc") == std::string(""));
+//         ASSERT_EQ(str::last_extname("abc"), std::string(""));
 //     }
 //     SECTION("简单裸名字带扩展名") {
-//         REQUIRE(str::last_extname("abc.ext") == std::string(".ext"));
+//         ASSERT_EQ(str::last_extname("abc.ext"), std::string(".ext"));
 //     }
 //     SECTION("裸名字带路径") {
-//         REQUIRE(str::last_extname("abc/def") == std::string(""));
+//         ASSERT_EQ(str::last_extname("abc/def"), std::string(""));
 //     }
 //     SECTION("只有路径无basename") {
-//         REQUIRE(str::last_extname("abc/") == std::string(""));
+//         ASSERT_EQ(str::last_extname("abc/"), std::string(""));
 //     }
 //     SECTION("裸名字带路径路径中有点") {
-//         REQUIRE(str::last_extname("/abc.def/basename.ext") == std::string(".ext"));
+//         ASSERT_EQ(str::last_extname("/abc.def/basename.ext"), std::string(".ext"));
 //     }
 //     SECTION("裸名字带路径路径中有点+") {
-//         REQUIRE(str::last_extname("/abc.def/") == std::string(""));
+//         ASSERT_EQ(str::last_extname("/abc.def/"), std::string(""));
 //     }
 //     SECTION("basename为隐藏文件，隐藏文件点开头不是只有扩展名") {
-//         REQUIRE(str::last_extname("abc/.hidefile") == std::string(""));
+//         ASSERT_EQ(str::last_extname("abc/.hidefile"), std::string(""));
 //     }
 //     SECTION("basename为隐藏文件，隐藏文件点开头，但是还有额外扩展名") {
-//         REQUIRE(str::last_extname("abc/.hidefile.ext") == std::string(".ext"));
+//         ASSERT_EQ(str::last_extname("abc/.hidefile.ext"), std::string(".ext"));
 //     }
 //     SECTION("basename带多个点") {
-//         REQUIRE(str::last_extname("abc/normal-file.xxx.ext") == std::string(".ext"));
+//         ASSERT_EQ(str::last_extname("abc/normal-file.xxx.ext"), std::string(".ext"));
 //     }
 //     SECTION("basename位置只有点1") {
-//         REQUIRE(str::last_extname("abc/.") == std::string(""));
+//         ASSERT_EQ(str::last_extname("abc/."), std::string(""));
 //     }
 //     SECTION("basename位置只有点2") {
-//         REQUIRE(str::last_extname("abc/..") == std::string(""));
+//         ASSERT_EQ(str::last_extname("abc/.."), std::string(""));
 //     }
 //     SECTION("basename位置只有点3") {
-//         REQUIRE(str::last_extname("...") == std::string(""));
+//         ASSERT_EQ(str::last_extname("..."), std::string(""));
 //     }
 //     SECTION("basename位置,点在最后1") {
-//         REQUIRE(str::last_extname(".abc.") == std::string("."));
+//         ASSERT_EQ(str::last_extname(".abc."), std::string("."));
 //     }
 //     SECTION("basename位置,点在最后2") {
-//         REQUIRE(str::last_extname(".abc..") == std::string("."));
+//         ASSERT_EQ(str::last_extname(".abc.."), std::string("."));
 //     }
 //     SECTION("basename位置,多点前缀1") {
-//         REQUIRE(str::last_extname("..abc") == std::string(""));
+//         ASSERT_EQ(str::last_extname("..abc"), std::string(""));
 //     }
 //     SECTION("basename位置,多点前缀1") {
-//         REQUIRE(str::last_extname("...abc") == std::string(""));
+//         ASSERT_EQ(str::last_extname("...abc"), std::string(""));
 //     }
 //     SECTION("空串") {
-//         REQUIRE(str::last_extname("") == std::string(""));
+//         ASSERT_EQ(str::last_extname(""), std::string(""));
 //     }
 //     SECTION("全空白字符") {
-//         REQUIRE(str::last_extname(" \t ") == std::string(""));
+//         ASSERT_EQ(str::last_extname(" \t "), std::string(""));
 //     }
 // }
 //
@@ -240,98 +240,98 @@
 //    SECTION("简单测试") {
 //        std::string a("\t  A abbCC中华人   民共  和 \t国   ");
 //        str::simplified(a);
-//        REQUIRE(a == "A abbCC中华人 民共 和 国");
+//        ASSERT_EQ(a, "A abbCC中华人 民共 和 国");
 //    }
 //
 //    SECTION("没什么可以替代的") {
 //        std::string a("AabbCC中华人民共和国");
-//        REQUIRE(str::simplified(a) == "AabbCC中华人民共和国");
+//        ASSERT_EQ(str::simplified(a), "AabbCC中华人民共和国");
 //    }
 //
 //    SECTION("空串") {
 //        std::string a("");
-//        REQUIRE(str::simplified(a) == "");
+//        ASSERT_EQ(str::simplified(a), "");
 //    }
 //
 //    SECTION("全空白") {
 //        std::string a("   \t  \n \r \v");
-//        REQUIRE(str::simplified(a) == "");
+//        ASSERT_EQ(str::simplified(a), "");
 //    }
 //}
 //
 // TEST_CASE("simplified-copy", "") {
 //    SECTION("简单测试") {
-//        REQUIRE(str::simplified("\t  A abbCC中华人   民共  和 \t国   ") == "A abbCC中华人 民共 和 国");
+//        ASSERT_EQ(str::simplified("\t  A abbCC中华人   民共  和 \t国   "), "A abbCC中华人 民共 和 国");
 //    }
 //
 //    SECTION("没什么可以替代的") {
-//        REQUIRE(str::simplified("AabbCC中华人民共和国") == "AabbCC中华人民共和国");
+//        ASSERT_EQ(str::simplified("AabbCC中华人民共和国"), "AabbCC中华人民共和国");
 //    }
 //
 //    SECTION("空串") {
-//        REQUIRE(str::simplified("") == "");
+//        ASSERT_EQ(str::simplified(""), "");
 //    }
 //
 //    SECTION("全空白") {
-//        REQUIRE(str::simplified("   \t  \n \r \v") == "");
+//        ASSERT_EQ(str::simplified("   \t  \n \r \v"), "");
 //    }
 //}
 //
 // TEST_CASE("dirname") {
 //    SECTION("全路径") {
-//        REQUIRE(str::dirname("/aaa/bbb/ccc") == "/aaa/bbb");
+//        ASSERT_EQ(str::dirname("/aaa/bbb/ccc"), "/aaa/bbb");
 //    }
 //    SECTION("相对路径") {
-//        REQUIRE(str::dirname("aaa/bbb/ccc") == "aaa/bbb");
-//        REQUIRE(str::dirname("../bbb/ccc") == "../bbb");
-//        REQUIRE(str::dirname("../ccc") == "..");
-//        REQUIRE(str::dirname("./ccc") == ".");
+//        ASSERT_EQ(str::dirname("aaa/bbb/ccc"), "aaa/bbb");
+//        ASSERT_EQ(str::dirname("../bbb/ccc"), "../bbb");
+//        ASSERT_EQ(str::dirname("../ccc"), "..");
+//        ASSERT_EQ(str::dirname("./ccc"), ".");
 //    }
 //    SECTION(".和..") {
-//        REQUIRE(str::dirname(".") == ".");
-//        REQUIRE(str::dirname("..") == ".");
+//        ASSERT_EQ(str::dirname("."), ".");
+//        ASSERT_EQ(str::dirname(".."), ".");
 //    }
 //    SECTION("无路径分隔符") {
-//        REQUIRE(str::dirname("abc") == ".");
+//        ASSERT_EQ(str::dirname("abc"), ".");
 //    }
 //    SECTION("./和../") {
-//        REQUIRE(str::dirname("./") == ".");
-//        REQUIRE(str::dirname("../") == ".");
-//        REQUIRE(str::dirname("./aa") == ".");
-//        REQUIRE(str::dirname("../aa") == "..");
+//        ASSERT_EQ(str::dirname("./"), ".");
+//        ASSERT_EQ(str::dirname("../"), ".");
+//        ASSERT_EQ(str::dirname("./aa"), ".");
+//        ASSERT_EQ(str::dirname("../aa"), "..");
 //    }
 //    SECTION("绝对路径 /") {
-//        REQUIRE(str::dirname("/") == "/");
+//        ASSERT_EQ(str::dirname("/"), "/");
 //    }
 //    SECTION("空串") {
-//        REQUIRE(str::dirname("") == ".");
+//        ASSERT_EQ(str::dirname(""), ".");
 //    }
 //    SECTION("多余的路径元素") {
-//        REQUIRE(str::dirname("///ccc") == "/");
-//        REQUIRE(str::dirname(".///ccc") == ".");
+//        ASSERT_EQ(str::dirname("///ccc"), "/");
+//        ASSERT_EQ(str::dirname(".///ccc"), ".");
 //    }
 //}
 //
 // TEST_CASE("has_prefix") {
 //
 //    SECTION("一般情况") {
-//        REQUIRE(str::has_prefix("aaa", "aa") == true);
+//        ASSERT_EQ(str::has_prefix("aaa", "aa"), true);
 //    }
 //    SECTION("无共同前缀") {
-//        REQUIRE(str::has_prefix("aaa", "bb") == false);
+//        ASSERT_EQ(str::has_prefix("aaa", "bb"), false);
 //    }
 //    SECTION("完全相同") {
-//        REQUIRE(str::has_prefix("aaa", "aaa") == true);
+//        ASSERT_EQ(str::has_prefix("aaa", "aaa"), true);
 //    }
 //    SECTION("部分为空") {
-//        REQUIRE(str::has_prefix("", "aaa") == false);
-//        REQUIRE(str::has_prefix("aaa", "") == true);
+//        ASSERT_EQ(str::has_prefix("", "aaa"), false);
+//        ASSERT_EQ(str::has_prefix("aaa", ""), true);
 //    }
 //    SECTION("空对空") {
-//        REQUIRE(str::has_prefix("", "") == true);
+//        ASSERT_EQ(str::has_prefix("", ""), true);
 //    }
 //    SECTION("包含关系") {
-//        REQUIRE(str::has_prefix("aaa", "aa") == true);
+//        ASSERT_EQ(str::has_prefix("aaa", "aa"), true);
 //    }
 //
 //    SECTION("简单测试") {
@@ -346,16 +346,16 @@
 //
 //    SECTION("空字符串找前缀") {
 //        std::string s("");
-//        REQUIRE(str::has_prefix(s, "Hello") == false);
-//        REQUIRE(str::has_prefix(s, std::string("Hello")) == false);
-//        REQUIRE(str::has_prefix(s, 'H') == false);
-//        REQUIRE(str::has_prefix(s, { "HelloXYZ", 5 }) == false);
-//        REQUIRE(str::has_prefix(s, { "", 0 }) == true);
-//        REQUIRE(str::has_prefix(s, "") == true);
+//        ASSERT_EQ(str::has_prefix(s, "Hello"), false);
+//        ASSERT_EQ(str::has_prefix(s, std::string("Hello")), false);
+//        ASSERT_EQ(str::has_prefix(s, 'H'), false);
+//        ASSERT_EQ(str::has_prefix(s, { "HelloXYZ", 5 }), false);
+//        ASSERT_EQ(str::has_prefix(s, { "", 0 }), true);
+//        ASSERT_EQ(str::has_prefix(s, ""), true);
 //    }
 //}
 //
-// TEST_CASE("str::has_suffix") {
+// TEST(test_str, has_suffix) {
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
 //        REQUIRE(str::has_suffix(s, "World"));
@@ -367,97 +367,97 @@
 //    }
 //}
 //
-// TEST_CASE("str::ljust") {
+// TEST(test_str, ljust) {
 //    SECTION("一般情况：字符串左对齐，右边填充") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::ljust(s, 13, '*') == "HelloWorld***");
+//        ASSERT_EQ(str::ljust(s, 13, '*'), "HelloWorld***");
 //    }
 //
 //    SECTION("宽度和原字符串相同：字符串不变") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::ljust(s, 10, '*') == "HelloWorld");
+//        ASSERT_EQ(str::ljust(s, 10, '*'), "HelloWorld");
 //    }
 //
 //    SECTION("宽度太窄时保持原样") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::ljust(s, 9, '*') == "HelloWorld");
+//        ASSERT_EQ(str::ljust(s, 9, '*'), "HelloWorld");
 //    }
 //}
 //
-// TEST_CASE("str::rjust") {
+// TEST(test_str, rjust) {
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::rjust(s, 13, '*') == "***HelloWorld");
+//        ASSERT_EQ(str::rjust(s, 13, '*'), "***HelloWorld");
 //    }
 //
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::rjust(s, 10, '*') == "HelloWorld");
+//        ASSERT_EQ(str::rjust(s, 10, '*'), "HelloWorld");
 //    }
 //
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::rjust(s, 9, '*') == "HelloWorld");
+//        ASSERT_EQ(str::rjust(s, 9, '*'), "HelloWorld");
 //    }
 //
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::rjust(s, 9, '*') == "HelloWorld");
+//        ASSERT_EQ(str::rjust(s, 9, '*'), "HelloWorld");
 //    }
 //}
 //
-// TEST_CASE("str::center") {
+// TEST(test_str, center) {
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::center(s, 13, '*') == "*HelloWorld**");
+//        ASSERT_EQ(str::center(s, 13, '*'), "*HelloWorld**");
 //    }
 //
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::center(s, 10, '*') == "HelloWorld");
+//        ASSERT_EQ(str::center(s, 10, '*'), "HelloWorld");
 //    }
 //
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::center(s, 9, '*') == "HelloWorld");
+//        ASSERT_EQ(str::center(s, 9, '*'), "HelloWorld");
 //    }
 //
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::center(s, 9, '*') == "HelloWorld");
+//        ASSERT_EQ(str::center(s, 9, '*'), "HelloWorld");
 //    }
 //}
 //
-// TEST_CASE("str::fill") {
+// TEST(test_str, fill) {
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::fill(s, '*') == "**********");
+//        ASSERT_EQ(str::fill(s, '*'), "**********");
 //    }
 //    SECTION("简单测试") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::fill(s, '*', 1, 3) == "H***oWorld");
-//        REQUIRE(str::fill(s, '-', 0, 3) == "---*oWorld");
-//        REQUIRE(str::fill(s, 'A', 5, 5) == "---*oAAAAA");
-//        REQUIRE(str::fill(s, 'B', 5, 6) == "---*oBBBBB");
+//        ASSERT_EQ(str::fill(s, '*', 1, 3), "H***oWorld");
+//        ASSERT_EQ(str::fill(s, '-', 0, 3), "---*oWorld");
+//        ASSERT_EQ(str::fill(s, 'A', 5, 5), "---*oAAAAA");
+//        ASSERT_EQ(str::fill(s, 'B', 5, 6), "---*oBBBBB");
 //    }
 //}
 //
-// TEST_CASE("str::invert") {
+// TEST(test_str, invert) {
 //    SECTION("全部颠倒") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::invert(s) == "dlroWolleH");
+//        ASSERT_EQ(str::invert(s), "dlroWolleH");
 //    }
 //    SECTION("部分颠倒") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::invert(s, 2, 3) == "HeollWorld");
+//        ASSERT_EQ(str::invert(s, 2, 3), "HeollWorld");
 //    }
 //    SECTION("指定位置之后的颠倒") {
 //        std::string s("HelloWorld");
-//        REQUIRE(str::invert(s, 5) == "HellodlroW");
+//        ASSERT_EQ(str::invert(s, 5), "HellodlroW");
 //    }
 //}
 //
-// TEST_CASE("str::is_bool") {
+// TEST(test_str, is_bool) {
 //    SECTION("简单场景") {
 //        REQUIRE(str::is_bool("1"));
 //        REQUIRE(str::is_bool("0"));

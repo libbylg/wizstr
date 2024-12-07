@@ -3,11 +3,11 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::is_digit") {
-    REQUIRE(view::is_digit("0123456789") == true);
-    REQUIRE(view::is_digit("") == false);
-    REQUIRE(view::is_digit("123DEF") == false);
-    REQUIRE(view::is_digit("123 ") == false);
-    REQUIRE(view::is_digit("  123") == false);
-    REQUIRE(view::is_digit("ABCDEF") == false);
+TEST(test_view, is_digit) {
+    ASSERT_EQ(view::is_digit("0123456789"), true);
+    ASSERT_EQ(view::is_digit(""), false);
+    ASSERT_EQ(view::is_digit("123DEF"), false);
+    ASSERT_EQ(view::is_digit("123 "), false);
+    ASSERT_EQ(view::is_digit("  123"), false);
+    ASSERT_EQ(view::is_digit("ABCDEF"), false);
 }

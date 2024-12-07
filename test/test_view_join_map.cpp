@@ -6,15 +6,15 @@
 #include <array>
 #include <list>
 
-TEST_CASE("view::join_map") {
+TEST(test_view, join_map) {
     SECTION("一般情况") {
         std::map<std::string_view, std::string_view> items = {
             {"A", "a"},
             {"B", "b"},
             {"C", "c"},
         };
-        REQUIRE(view::join_map(items) == "A=a,B=b,C=c");
-        REQUIRE(view::join_map(":", ";", items) == "A:a;B:b;C:c");
+        ASSERT_EQ(view::join_map(items), "A=a,B=b,C=c");
+        ASSERT_EQ(view::join_map(":", ";", items), "A:a;B:b;C:c");
     }
     // SECTION("非map:STL容器") {
     //     std::vector<std::tuple<std::string, std::string>> items = {
@@ -22,8 +22,8 @@ TEST_CASE("view::join_map") {
     //         {"B", "b"},
     //         {"C", "c"},
     //     };
-    //     REQUIRE(view::join_map(items) == "A=a,B=b,C=c");
-    //     REQUIRE(view::join_map(":", ";", items) == "A:a;B:b;C:c");
+    //     ASSERT_EQ(view::join_map(items), "A=a,B=b,C=c");
+    //     ASSERT_EQ(view::join_map(":", ";", items), "A:a;B:b;C:c");
     // }
     // SECTION("非map:普通struct") {
     //     struct KY {
@@ -35,11 +35,11 @@ TEST_CASE("view::join_map") {
     //         {"B", "b"},
     //         {"C", "c"},
     //     };
-    //     REQUIRE(view::join_map(items) == "A=a,B=b,C=c");
-    //     REQUIRE(view::join_map(":", ";", items) == "A:a;B:b;C:c");
+    //     ASSERT_EQ(view::join_map(items), "A=a,B=b,C=c");
+    //     ASSERT_EQ(view::join_map(":", ";", items), "A:a;B:b;C:c");
     // }
     SECTION("空映射") {
-        REQUIRE(view::join_map([]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
+        ASSERT_TRUE(view::join_map([]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
             return std::nullopt;
         }) == "");
     }
@@ -51,7 +51,7 @@ TEST_CASE("view::join_map") {
             {"C", "c"},
         };
         auto itr = items.cbegin();
-        REQUIRE(view::join_map([&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
+        ASSERT_TRUE(view::join_map([&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
             if (itr == end) {
                 return std::nullopt;
             }

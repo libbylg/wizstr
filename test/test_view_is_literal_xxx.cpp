@@ -3,110 +3,110 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::is_literal_bool") {
+TEST(test_view, is_literal_bool) {
     SECTION("标准值") {
-        REQUIRE(view::is_literal_bool("1"));
-        REQUIRE(view::is_literal_bool("0"));
-        REQUIRE(view::is_literal_bool("on"));
-        REQUIRE(view::is_literal_bool("off"));
-        REQUIRE(view::is_literal_bool("ON"));
-        REQUIRE(view::is_literal_bool("OFF"));
-        REQUIRE(view::is_literal_bool("On"));
-        REQUIRE(view::is_literal_bool("Off"));
-        REQUIRE(view::is_literal_bool("Yes"));
-        REQUIRE(view::is_literal_bool("No"));
-        REQUIRE(view::is_literal_bool("yes"));
-        REQUIRE(view::is_literal_bool("no"));
-        REQUIRE(view::is_literal_bool("YES"));
-        REQUIRE(view::is_literal_bool("NO"));
-        REQUIRE(view::is_literal_bool("True"));
-        REQUIRE(view::is_literal_bool("False"));
-        REQUIRE(view::is_literal_bool("true"));
-        REQUIRE(view::is_literal_bool("false"));
-        REQUIRE(view::is_literal_bool("TRUE"));
-        REQUIRE(view::is_literal_bool("FALSE"));
+        ASSERT_TRUE(view::is_literal_bool("1"));
+        ASSERT_TRUE(view::is_literal_bool("0"));
+        ASSERT_TRUE(view::is_literal_bool("on"));
+        ASSERT_TRUE(view::is_literal_bool("off"));
+        ASSERT_TRUE(view::is_literal_bool("ON"));
+        ASSERT_TRUE(view::is_literal_bool("OFF"));
+        ASSERT_TRUE(view::is_literal_bool("On"));
+        ASSERT_TRUE(view::is_literal_bool("Off"));
+        ASSERT_TRUE(view::is_literal_bool("Yes"));
+        ASSERT_TRUE(view::is_literal_bool("No"));
+        ASSERT_TRUE(view::is_literal_bool("yes"));
+        ASSERT_TRUE(view::is_literal_bool("no"));
+        ASSERT_TRUE(view::is_literal_bool("YES"));
+        ASSERT_TRUE(view::is_literal_bool("NO"));
+        ASSERT_TRUE(view::is_literal_bool("True"));
+        ASSERT_TRUE(view::is_literal_bool("False"));
+        ASSERT_TRUE(view::is_literal_bool("true"));
+        ASSERT_TRUE(view::is_literal_bool("false"));
+        ASSERT_TRUE(view::is_literal_bool("TRUE"));
+        ASSERT_TRUE(view::is_literal_bool("FALSE"));
     }
     SECTION("空串") {
-        REQUIRE(view::is_literal_bool("") == false);
+        ASSERT_EQ(view::is_literal_bool(""), false);
     }
     SECTION("非标值") {
-        REQUIRE(view::is_literal_bool("FalsE") == false);
-        REQUIRE(view::is_literal_bool("tRUe") == false);
-        REQUIRE(view::is_literal_bool("true ") == false);
+        ASSERT_EQ(view::is_literal_bool("FalsE"), false);
+        ASSERT_EQ(view::is_literal_bool("tRUe"), false);
+        ASSERT_EQ(view::is_literal_bool("true "), false);
     }
     SECTION("超长值") {
-        REQUIRE(view::is_literal_bool("hello-workd") == false);
+        ASSERT_EQ(view::is_literal_bool("hello-workd"), false);
     }
 }
 
-TEST_CASE("view::is_literal_true") {
+TEST(test_view, is_literal_true) {
     SECTION("标准值") {
-        REQUIRE(view::is_literal_true("1") == true);
-        REQUIRE(view::is_literal_true("0") == false);
-        REQUIRE(view::is_literal_true("on") == true);
-        REQUIRE(view::is_literal_true("off") == false);
-        REQUIRE(view::is_literal_true("ON") == true);
-        REQUIRE(view::is_literal_true("OFF") == false);
-        REQUIRE(view::is_literal_true("On") == true);
-        REQUIRE(view::is_literal_true("Off") == false);
-        REQUIRE(view::is_literal_true("Yes") == true);
-        REQUIRE(view::is_literal_true("No") == false);
-        REQUIRE(view::is_literal_true("yes") == true);
-        REQUIRE(view::is_literal_true("no") == false);
-        REQUIRE(view::is_literal_true("YES") == true);
-        REQUIRE(view::is_literal_true("NO") == false);
-        REQUIRE(view::is_literal_true("True") == true);
-        REQUIRE(view::is_literal_true("False") == false);
-        REQUIRE(view::is_literal_true("true") == true);
-        REQUIRE(view::is_literal_true("false") == false);
-        REQUIRE(view::is_literal_true("TRUE") == true);
-        REQUIRE(view::is_literal_true("FALSE") == false);
+        ASSERT_EQ(view::is_literal_true("1"), true);
+        ASSERT_EQ(view::is_literal_true("0"), false);
+        ASSERT_EQ(view::is_literal_true("on"), true);
+        ASSERT_EQ(view::is_literal_true("off"), false);
+        ASSERT_EQ(view::is_literal_true("ON"), true);
+        ASSERT_EQ(view::is_literal_true("OFF"), false);
+        ASSERT_EQ(view::is_literal_true("On"), true);
+        ASSERT_EQ(view::is_literal_true("Off"), false);
+        ASSERT_EQ(view::is_literal_true("Yes"), true);
+        ASSERT_EQ(view::is_literal_true("No"), false);
+        ASSERT_EQ(view::is_literal_true("yes"), true);
+        ASSERT_EQ(view::is_literal_true("no"), false);
+        ASSERT_EQ(view::is_literal_true("YES"), true);
+        ASSERT_EQ(view::is_literal_true("NO"), false);
+        ASSERT_EQ(view::is_literal_true("True"), true);
+        ASSERT_EQ(view::is_literal_true("False"), false);
+        ASSERT_EQ(view::is_literal_true("true"), true);
+        ASSERT_EQ(view::is_literal_true("false"), false);
+        ASSERT_EQ(view::is_literal_true("TRUE"), true);
+        ASSERT_EQ(view::is_literal_true("FALSE"), false);
     }
     SECTION("空串") {
-        REQUIRE(view::is_literal_true("") == false);
+        ASSERT_EQ(view::is_literal_true(""), false);
     }
     SECTION("非标值") {
-        REQUIRE(view::is_literal_true("FalsE") == false);
-        REQUIRE(view::is_literal_true("tRUe") == false);
-        REQUIRE(view::is_literal_true("true ") == false);
+        ASSERT_EQ(view::is_literal_true("FalsE"), false);
+        ASSERT_EQ(view::is_literal_true("tRUe"), false);
+        ASSERT_EQ(view::is_literal_true("true "), false);
     }
     SECTION("超长值") {
-        REQUIRE(view::is_literal_true("hello-workd") == false);
+        ASSERT_EQ(view::is_literal_true("hello-workd"), false);
     }
 }
 
-TEST_CASE("view::is_literal_false") {
+TEST(test_view, is_literal_false) {
     SECTION("标准值") {
-        REQUIRE(view::is_literal_false("1") == false);
-        REQUIRE(view::is_literal_false("0") == true);
-        REQUIRE(view::is_literal_false("on") == false);
-        REQUIRE(view::is_literal_false("off") == true);
-        REQUIRE(view::is_literal_false("ON") == false);
-        REQUIRE(view::is_literal_false("OFF") == true);
-        REQUIRE(view::is_literal_false("On") == false);
-        REQUIRE(view::is_literal_false("Off") == true);
-        REQUIRE(view::is_literal_false("Yes") == false);
-        REQUIRE(view::is_literal_false("No") == true);
-        REQUIRE(view::is_literal_false("yes") == false);
-        REQUIRE(view::is_literal_false("no") == true);
-        REQUIRE(view::is_literal_false("YES") == false);
-        REQUIRE(view::is_literal_false("NO") == true);
-        REQUIRE(view::is_literal_false("True") == false);
-        REQUIRE(view::is_literal_false("False") == true);
-        REQUIRE(view::is_literal_false("true") == false);
-        REQUIRE(view::is_literal_false("false") == true);
-        REQUIRE(view::is_literal_false("TRUE") == false);
-        REQUIRE(view::is_literal_false("FALSE") == true);
+        ASSERT_EQ(view::is_literal_false("1"), false);
+        ASSERT_EQ(view::is_literal_false("0"), true);
+        ASSERT_EQ(view::is_literal_false("on"), false);
+        ASSERT_EQ(view::is_literal_false("off"), true);
+        ASSERT_EQ(view::is_literal_false("ON"), false);
+        ASSERT_EQ(view::is_literal_false("OFF"), true);
+        ASSERT_EQ(view::is_literal_false("On"), false);
+        ASSERT_EQ(view::is_literal_false("Off"), true);
+        ASSERT_EQ(view::is_literal_false("Yes"), false);
+        ASSERT_EQ(view::is_literal_false("No"), true);
+        ASSERT_EQ(view::is_literal_false("yes"), false);
+        ASSERT_EQ(view::is_literal_false("no"), true);
+        ASSERT_EQ(view::is_literal_false("YES"), false);
+        ASSERT_EQ(view::is_literal_false("NO"), true);
+        ASSERT_EQ(view::is_literal_false("True"), false);
+        ASSERT_EQ(view::is_literal_false("False"), true);
+        ASSERT_EQ(view::is_literal_false("true"), false);
+        ASSERT_EQ(view::is_literal_false("false"), true);
+        ASSERT_EQ(view::is_literal_false("TRUE"), false);
+        ASSERT_EQ(view::is_literal_false("FALSE"), true);
     }
     SECTION("空串") {
-        REQUIRE(view::is_literal_false("") == false);
+        ASSERT_EQ(view::is_literal_false(""), false);
     }
     SECTION("非标值") {
-        REQUIRE(view::is_literal_false("FalsE") == false);
-        REQUIRE(view::is_literal_false("tRUe") == false);
-        REQUIRE(view::is_literal_false("true ") == false);
+        ASSERT_EQ(view::is_literal_false("FalsE"), false);
+        ASSERT_EQ(view::is_literal_false("tRUe"), false);
+        ASSERT_EQ(view::is_literal_false("true "), false);
     }
     SECTION("超长值") {
-        REQUIRE(view::is_literal_false("hello-workd") == false);
+        ASSERT_EQ(view::is_literal_false("hello-workd"), false);
     }
 }

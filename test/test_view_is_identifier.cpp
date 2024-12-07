@@ -3,15 +3,15 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::is_identifier") {
-    REQUIRE(view::is_identifier("0123456789") == false);
-    REQUIRE(view::is_identifier("") == false);
-    REQUIRE(view::is_identifier("123DEF") == false);
-    REQUIRE(view::is_identifier("ABC ") == false);
-    REQUIRE(view::is_identifier("  ABC") == false);
-    REQUIRE(view::is_identifier("ABCDEF") == true);
-    REQUIRE(view::is_identifier("_") == true);
-    REQUIRE(view::is_identifier("_123") == true);
-    REQUIRE(view::is_identifier("_ABC") == true);
-    REQUIRE(view::is_identifier("XXX_HOME") == true);
+TEST(test_view, is_identifier) {
+    ASSERT_EQ(view::is_identifier("0123456789"), false);
+    ASSERT_EQ(view::is_identifier(""), false);
+    ASSERT_EQ(view::is_identifier("123DEF"), false);
+    ASSERT_EQ(view::is_identifier("ABC "), false);
+    ASSERT_EQ(view::is_identifier("  ABC"), false);
+    ASSERT_EQ(view::is_identifier("ABCDEF"), true);
+    ASSERT_EQ(view::is_identifier("_"), true);
+    ASSERT_EQ(view::is_identifier("_123"), true);
+    ASSERT_EQ(view::is_identifier("_ABC"), true);
+    ASSERT_EQ(view::is_identifier("XXX_HOME"), true);
 }

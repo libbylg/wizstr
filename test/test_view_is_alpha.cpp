@@ -3,8 +3,8 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::is_alpha") {
-    REQUIRE(view::is_alpha("ABCDEFGHIUKLMNOPQRSTUVWXYZabcdefghiuklmnopqrstuvwxyz") == true);
-    REQUIRE(view::is_alpha("!@#$%^&*({[<>]})~`_-+=") == false);
-    REQUIRE(view::is_alpha("") == false);
+TEST(test_view, is_alpha) {
+    ASSERT_EQ(view::is_alpha("ABCDEFGHIUKLMNOPQRSTUVWXYZabcdefghiuklmnopqrstuvwxyz"), true);
+    ASSERT_EQ(view::is_alpha("!@#$%^&*({[<>]})~`_-+="), false);
+    ASSERT_EQ(view::is_alpha(""), false);
 }

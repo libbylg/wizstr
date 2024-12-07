@@ -5,14 +5,14 @@
 
 #include <array>
 
-TEST_CASE("view::foreach_word") {
+TEST(test_view, foreach_word) {
     SECTION("一般场景:1") {
         std::string result;
         view::foreach_word("\r\n\t A\r\n\t B\r\n\t C\r\n\t ", [&result](std::string_view word) -> int {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "ABC");
+        ASSERT_EQ(result, "ABC");
     }
     SECTION("一般场景:2") {
         std::string result;
@@ -20,7 +20,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "DEF");
+        ASSERT_EQ(result, "DEF");
     }
     SECTION("就只有一个单词") {
         std::string result;
@@ -28,7 +28,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "DEF");
+        ASSERT_EQ(result, "DEF");
     }
     SECTION("空串:1") {
         std::string result;
@@ -36,7 +36,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "");
+        ASSERT_EQ(result, "");
     }
     SECTION("空串:2") {
         std::string result;
@@ -44,7 +44,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "");
+        ASSERT_EQ(result, "");
     }
     SECTION("全空白") {
         std::string result;
@@ -52,7 +52,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "");
+        ASSERT_EQ(result, "");
     }
     SECTION("使用pos:正常情况") {
         std::string result;
@@ -60,7 +60,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "DEFGHI");
+        ASSERT_EQ(result, "DEFGHI");
     }
     SECTION("使用pos:指定pos超出范围") {
         std::string result;
@@ -68,7 +68,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "");
+        ASSERT_EQ(result, "");
     }
     SECTION("使用pos:npos") {
         std::string result;
@@ -76,7 +76,7 @@ TEST_CASE("view::foreach_word") {
             result.append(word);
             return 0;
         });
-        REQUIRE(result == "");
+        ASSERT_EQ(result, "");
     }
     SECTION("返回pos和n:1") {
         using elem_type = std::tuple<view::size_type, view::size_type>;
@@ -85,10 +85,10 @@ TEST_CASE("view::foreach_word") {
             result.emplace_back(pos, n);
             return 0;
         });
-        REQUIRE(result.size() == 3);
-        REQUIRE(result[0] == elem_type{3, 3});
-        REQUIRE(result[1] == elem_type{9, 3});
-        REQUIRE(result[2] == elem_type{13, 6});
+        ASSERT_EQ(result.size(), 3);
+        ASSERT_EQ(result[0], (elem_type{3, 3}));
+        ASSERT_EQ(result[1], (elem_type{9, 3}));
+        ASSERT_EQ(result[2], (elem_type{13, 6}));
     }
     SECTION("返回pos和n:2") {
         using elem_type = std::tuple<view::size_type, view::size_type>;
@@ -97,10 +97,10 @@ TEST_CASE("view::foreach_word") {
             result.emplace_back(pos, n);
             return 0;
         });
-        REQUIRE(result.size() == 3);
-        REQUIRE(result[0] == elem_type{4, 2});
-        REQUIRE(result[1] == elem_type{9, 3});
-        REQUIRE(result[2] == elem_type{13, 6});
+        ASSERT_EQ(result.size(), 3);
+        ASSERT_EQ(result[0], (elem_type{4, 2}));
+        ASSERT_EQ(result[1], (elem_type{9, 3}));
+        ASSERT_EQ(result[2], (elem_type{13, 6}));
     }
     SECTION("返回提前结束") {
         using elem_type = std::tuple<view::size_type, view::size_type>;
@@ -112,8 +112,8 @@ TEST_CASE("view::foreach_word") {
             }
             return 0;
         });
-        REQUIRE(result.size() == 2);
-        REQUIRE(result[0] == elem_type{4, 2});
-        REQUIRE(result[1] == elem_type{9, 3});
+        ASSERT_EQ(result.size(), 2);
+        ASSERT_EQ(result[0], (elem_type{4, 2}));
+        ASSERT_EQ(result[1], (elem_type{9, 3}));
     }
 }

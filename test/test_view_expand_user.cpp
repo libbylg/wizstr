@@ -3,17 +3,17 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::expand_user") {
+TEST(test_view, expand_user) {
     SECTION("简单场景") {
-        REQUIRE(view::expand_user("~") == std::string{getenv("HOME")});
-        REQUIRE(view::expand_user("~/") == std::string{getenv("HOME")} + "/");
-        REQUIRE(view::expand_user("~/abc") == std::string{getenv("HOME")} + "/abc");
+        ASSERT_EQ(view::expand_user("~"), std::string{getenv("HOME")});
+        ASSERT_EQ(view::expand_user("~/"), std::string{getenv("HOME")} + "/");
+        ASSERT_EQ(view::expand_user("~/abc"), std::string{getenv("HOME")} + "/abc");
     }
     SECTION("空串") {
-        REQUIRE(view::expand_user("") == "");
+        ASSERT_EQ(view::expand_user(""), "");
     }
     SECTION("起始点不匹配") {
-        REQUIRE(view::expand_user("~ ") == "~ ");
-        REQUIRE(view::expand_user(" ~/abc") == " ~/abc");
+        ASSERT_EQ(view::expand_user("~ "), "~ ");
+        ASSERT_EQ(view::expand_user(" ~/abc"), " ~/abc");
     }
 }

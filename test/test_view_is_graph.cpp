@@ -3,10 +3,10 @@
 #include "str.hpp"
 #include "view.hpp"
 
-TEST_CASE("view::is_graph") {
-    REQUIRE(view::is_graph("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") == true);
-    REQUIRE(view::is_graph("!@#$%^&*({[<>]})~`_-+=") == true);
-    REQUIRE(view::is_graph("0123\x7F") == false);
-    REQUIRE(view::is_graph("0123 ") == false); // 空格比较特殊
-    REQUIRE(view::is_graph("") == false);
+TEST(test_view, is_graph) {
+    ASSERT_EQ(view::is_graph("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), true);
+    ASSERT_EQ(view::is_graph("!@#$%^&*({[<>]})~`_-+="), true);
+    ASSERT_EQ(view::is_graph("0123\x7F"), false);
+    ASSERT_EQ(view::is_graph("0123 "), false); // 空格比较特殊
+    ASSERT_EQ(view::is_graph(""), false);
 }
