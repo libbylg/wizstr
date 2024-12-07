@@ -33,8 +33,11 @@
 .idea/
 cmake-build-*/
 
-output-*/'build/' 
 'y' 
 'yy' 
 't' 
 'tt' 
+
+build/
+.idea/
+output-*/
