@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(str LANGUAGES CXX)
 
+set(TEST_FRAMEWORK "gtest")
+#set(TEST_FRAMEWORK "catch2")
 
 #   Setup the global settings
 set(CMAKE_CXX_STANDARD 17)
@@ -9,12 +11,11 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_LIST_DIR}/depends)
 
-#find_package(Catch2 3 REQUIRED)
-find_package(GTest REQUIRED)
-
-#   Import external packages
-#find_package(PCRE2 REQUIRED COMPONENTS "8BIT")
-#find_package(GTest REQUIRED COMPONENTS)
+if ("${TEST_FRAMEWORK}" STREQUAL "catch2")
+    find_package(Catch2 3 REQUIRED)
+else ()
+    find_package(GTest REQUIRED)
+endif ()
 
 
 #   Import sub-modules
@@ -30,9 +31,17 @@ list(APPEND QUALITY_OPTIONS -Werror=return-type)
 add_executable(str_test ${SOURCES})
 target_include_directories(str_test PRIVATE include ${INCLUDEPATH})
 target_compile_options(str_test PRIVATE ${QUALITY_OPTIONS})
-#target_link_libraries(str_test PRIVATE Catch2::Catch2WithMain Catch2::Catch2WithMain -static-libgcc -static-libstdc++)
+if ("${TEST_FRAMEWORK}" STREQUAL "catch2")
+    target_link_libraries(str_test PRIVATE Catch2::Catch2WithMain Catch2::Catch2WithMain -static-libgcc -static-libstdc++)
+else ()
+    target_link_libraries(str_test PRIVATE GTest::gtest GTest::gtest_main)
+endif ()
 
-target_link_libraries(str_test PRIVATE GTest::gtest GTest::gtest_main)
+if ("${TEST_FRAMEWORK}" STREQUAL "catch2")
+    target_compile_definitions(str_test PRIVATE TEST_FRAMEWORK=UT_WITH_CATCH2)
+else ()
+    target_compile_definitions(str_test PRIVATE TEST_FRAMEWORK=UT_WITH_GTEST)
+endif ()
 
 #target_link_libraries(str_test PRIVATE PCRE2::8BIT GTest::gtest GTest::gtest_main)
 #target_compile_options(str_test PRIVATE -Wall -Wextra -I${CMAKE_CURRENT_LIST_DIR}/catch2/include)
