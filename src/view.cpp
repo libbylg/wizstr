@@ -473,7 +473,7 @@ auto view::iter_next_eol(std::string_view s, size_type& pos) -> std::string_view
     return eol;
 }
 
-// auto view::iter_prev_eol(std::string_view s, size_type& pos) -> size_type {
+// auto view::iter_prev_eol(std::string_view s, size_type& rpos) -> size_type {
 // }
 
 auto view::iter_next_word(std::string_view s, size_type& pos) -> std::string_view {
@@ -487,7 +487,7 @@ auto view::iter_next_word(std::string_view s, size_type& pos) -> std::string_vie
     return word;
 }
 
-// auto view::iter_prev_word(std::string_view s, size_type& pos) -> std::string_view {
+// auto view::iter_prev_word(std::string_view s, size_type& rpos) -> std::string_view {
 // }
 
 auto view::foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void {
@@ -867,13 +867,122 @@ auto view::is_literal_false(std::string_view s) -> bool {
     return false;
 }
 
-// auto view::is_literal_real(std::string_view s) -> bool {
-// }
+auto view::is_literal_real(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
 
-// auto view::is_literal_integer(std::string_view s) -> bool {
-// }
+    const_pointer p = s.data();
+    const_pointer end = s.data() + s.size();
 
-///////////////////11111111111111111111
+    // 前缀加减号
+    const_pointer sign = nullptr;
+    if ((*p == '+') || (*p == '-')) {
+        sign = p;
+        p++;
+    }
+
+    // 数字部分
+    const_pointer int_start = nullptr;
+    while (p < end) {
+        if (!std::isdigit(*p)) {
+            break;
+        }
+
+        if (int_start == nullptr) [[unlikely]] {
+            int_start = p;
+        }
+
+        p++;
+    };
+
+    if (p >= end) {
+        return (int_start != nullptr);
+    }
+
+    const_pointer decimal_start = nullptr;
+    if (*p == '.') {
+        p++;
+
+        while (p < end) {
+            if (!std::isdigit(*p)) {
+                break;
+            }
+
+            if (decimal_start == nullptr) [[unlikely]] {
+                decimal_start = p;
+            }
+
+            p++;
+        }
+
+        if (p >= end) {
+            return (int_start != nullptr) || (decimal_start != nullptr);
+        }
+    }
+
+    if ((int_start == nullptr) && (decimal_start == nullptr)) {
+        return false;
+    }
+
+    const_pointer pow_sign = nullptr;
+    const_pointer pow_start = nullptr;
+    if ((*p == 'e') || (*p == 'E')) {
+        p++;
+
+        if (p >= end) {
+            return false;
+        }
+
+        if ((*p == '+') || (*p == '-')) {
+            pow_sign = p;
+            p++;
+        }
+
+        while (p < end) {
+            if (!std::isdigit(*p)) {
+                break;
+            }
+
+            if (pow_start == nullptr) [[unlikely]] {
+                pow_start = p;
+            }
+
+            p++;
+        }
+
+        if (p >= end) {
+            return (pow_start != nullptr);
+        }
+    }
+
+    return (p >= end);
+}
+
+auto view::is_literal_integer(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    const_pointer p = s.data();
+    if ((*p == '+') || (*p == '-')) {
+        p++;
+    }
+
+    if (p >= (s.data() + s.size())) {
+        return false;
+    }
+
+    while (p < (s.data() + s.size())) {
+        if (!std::isdigit(*p)) {
+            return false;
+        }
+
+        p++;
+    }
+
+    return true;
+}
 
 auto view::take_left(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
@@ -915,6 +1024,10 @@ auto view::take_mid(std::string_view s, size_type pos, size_type n) -> std::stri
     return {s.data() + pos, n};
 }
 
+auto view::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
+    return view::take_mid(s, begin_pos, begin_pos + end_pos);
+}
+
 auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
     if (s.empty() || (offset == 0)) {
         return {};
@@ -931,7 +1044,7 @@ auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::st
     assert(offset < 0);
     size_type n = -offset;
 
-    // 如果 pos 太大
+    // 如果 rpos 太大
     if (pos >= s.size()) {
         pos = s.size() - 1;
     }
@@ -943,6 +1056,9 @@ auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::st
 
     // 如果n较小
     return s.substr(((pos + 1) - n), n);
+}
+
+auto view::take(std::string_view s, size_type pos) -> std::string_view {
 }
 
 auto view::drop_left(std::string_view s, size_type n) -> std::string_view {
@@ -979,6 +1095,10 @@ auto view::drop_mid(std::string_view s, size_type pos, size_type n) -> std::stri
     result.append(s.data(), pos);
     result.append(s.data() + pos + n, (s.size() - pos - n));
     return result;
+}
+
+auto view::drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
+    return view::drop_mid(s, begin_pos, begin_pos + end_pos);
 }
 
 auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string {
@@ -1021,6 +1141,10 @@ auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::st
     }
 
     return std::string{s};
+}
+
+auto view::drop(std::string_view s, size_type pos) -> std::string {
+    return view::drop(s, pos, view::npos);
 }
 
 // auto view::drop(std::string_view s, char_checker_proc proc) {
@@ -1776,7 +1900,7 @@ auto view::expand_envs(std::string_view s, bool keep_unexpanded, const expand_va
             break;
         }
 
-        // 将 start 到 pos 之间的部分原样保存起来
+        // 将 start 到 rpos 之间的部分原样保存起来
         if (pos > start) {
             result.append(s.substr(start, pos - start));
             start = pos;

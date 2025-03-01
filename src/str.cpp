@@ -224,13 +224,13 @@ auto str::pop_front_char(std::string& s) -> value_type {
 // auto str::remove_front_word(std::string& s) -> std::string& {
 // }
 
-// auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
+// auto str::flex_move(std::string& s, size_type rpos, size_type n, ssize_type offset) -> std::string& {
 // }
 
-// auto str::flex_move(std::string& s, size_type pos, size_type n, ssize_type offset, value_type ch) -> std::string& {
+// auto str::flex_move(std::string& s, size_type rpos, size_type n, ssize_type offset, value_type ch) -> std::string& {
 // }
 
-// auto str::clip_move(std::string& s, size_type pos, size_type n, ssize_type offset) -> std::string& {
+// auto str::clip_move(std::string& s, size_type rpos, size_type n, ssize_type offset) -> std::string& {
 // }
 
 auto str::remove(std::string& s, size_type pos) -> std::string& {

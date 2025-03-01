@@ -232,20 +232,24 @@ public:
     static auto is_literal_bool(std::string_view s) -> bool;
     static auto is_literal_true(std::string_view s) -> bool;
     static auto is_literal_false(std::string_view s) -> bool;
-    // static auto is_literal_real(std::string_view s) -> bool;
-    // static auto is_literal_integer(std::string_view s) -> bool;
+    static auto is_literal_real(std::string_view s) -> bool;
+    static auto is_literal_integer(std::string_view s) -> bool;
 
     // 提取子串
     static auto take_left(std::string_view s, size_type n) -> std::string_view;
     static auto take_right(std::string_view s, size_type n) -> std::string_view;
     static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string_view;
+    static auto take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view;
     static auto take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
+    static auto take(std::string_view s, size_type pos) -> std::string_view;
     static auto take(std::string_view s, char_checker_proc proc);
     static auto take(std::string_view s, charset_type set);
     static auto drop_left(std::string_view s, size_type n) -> std::string_view;
     static auto drop_right(std::string_view s, size_type n) -> std::string_view;
     static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
+    static auto drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
     static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string;
+    static auto drop(std::string_view s, size_type pos) -> std::string;
     static auto drop(std::string_view s, char_checker_proc proc);
     static auto drop(std::string_view s, charset_type set);
 

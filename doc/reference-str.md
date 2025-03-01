@@ -35,7 +35,7 @@ tiny 库实现了一个简单、好用、高效的字符串处理基础设施。
 | bytes::reverse_iterator         | rend()            |
 | bytes::const_reverse_iterator   | rbegin() const    |
 | bytes::const_reverse_iterator   | rend() const      |
-| value_type                     | at(pos_type pos) const       |
+| value_type                     | at(pos_type rpos) const       |
 | value_type                     | back() const      |
 | value_type&                    | back()        |
 | value_type                     | front() const     |
@@ -82,24 +82,24 @@ void clear();
 
 | 返回值 | 函数签名|
 |---    |---     |
-| bytes&   | insert(pos_type pos, const bytes& bytes)                    |
-| bytes&   | insert(pos_type pos, value_type ch)                      |
-| bytes&   | insert(pos_type pos, const_pointer s, size_type n)   |
-| bytes&   | insert(pos_type pos, const_pointer s)                |
+| bytes&   | insert(pos_type rpos, const bytes& bytes)                    |
+| bytes&   | insert(pos_type rpos, value_type ch)                      |
+| bytes&   | insert(pos_type rpos, const_pointer s, size_type n)   |
+| bytes&   | insert(pos_type rpos, const_pointer s)                |
 
 
 #### 删除数据
 
 | 返回值 | 函数签名|
 |---    |---     |
-| bytes&      | remove(pos_type pos)                                      |
-| bytes&      | remove(pos_type pos, size_type n)                         |
+| bytes&      | remove(pos_type rpos)                                      |
+| bytes&      | remove(pos_type rpos, size_type n)                         |
 | bytes&      | remove(value_type ch)                                      |
 | bytes&      | remove(const_pointer bytes)                              |
 | bytes&      | remove(const bytes& bytes)                                    |
 | bytes&      | remove(const re& rx)                                      |
 | bytes&      | remove(std::function<int(value_type c, bool& match)> func) |
-| bytes&      | erase(pos_type pos = 0, pos_type len = npos)              |
+| bytes&      | erase(pos_type rpos = 0, pos_type len = npos)              |
 | iterator  | erase(const_iterator p)                                   |
 | iterator  | erase(const_iterator first, const_iterator last)          |
 
@@ -107,10 +107,10 @@ void clear();
 
 | 返回值 | 函数签名|
 |---    |---     |
-| bytes&  | flex_move(pos_type pos, size_type n, int offset)                      |
-| bytes&  | flex_move(pos_type pos, size_type n, int offset, value_type fill_ch)   |
-| bytes&  | clip_move(pos_type pos, size_type n, int offset)                      |
-| bytes&  | clip_move(pos_type pos, size_type n, int offset, value_type fill_ch)   |
+| bytes&  | flex_move(pos_type rpos, size_type n, int offset)                      |
+| bytes&  | flex_move(pos_type rpos, size_type n, int offset, value_type fill_ch)   |
+| bytes&  | clip_move(pos_type rpos, size_type n, int offset)                      |
+| bytes&  | clip_move(pos_type rpos, size_type n, int offset, value_type fill_ch)   |
 
 
 #### 简单字符串比较
@@ -163,7 +163,7 @@ void clear();
 | 返回值 | 函数签名|
 |---    |---     |
 | bytes&  | fill(value_type ch)                                |
-| bytes&  | fill(pos_type pos, value_type ch, size_type n)     |
+| bytes&  | fill(pos_type rpos, value_type ch, size_type n)     |
 
 #### 查找
 
@@ -216,7 +216,7 @@ void clear();
 |---    |---     |
 | bytes   | left(size_type n) const                       |
 | bytes   | right(size_type n) const                      |
-| bytes   | cutstr(pos_type pos, int offset_n = -1) const |
+| bytes   | cutstr(pos_type rpos, int offset_n = -1) const |
 
 #### 限宽对齐
 
@@ -231,9 +231,9 @@ void clear();
 
 | 返回值 | 函数签名|
 |---    |---     |
-| bytes&  | replace(pos_type pos, size_type n, const bytes& after)                               |
-| bytes&  | replace(pos_type pos, size_type n, value_type after)                               |
-| bytes&  | replace(pos_type pos, size_type n, const_pointer unicode, size_type size)          |
+| bytes&  | replace(pos_type rpos, size_type n, const bytes& after)                               |
+| bytes&  | replace(pos_type rpos, size_type n, value_type after)                               |
+| bytes&  | replace(pos_type rpos, size_type n, const_pointer unicode, size_type size)          |
 | bytes&  | replace(value_type before, value_type after)                                       |
 | bytes&  | replace(const_pointer before, size_type blen, const_pointer after, size_type alen) |
 | bytes&  | replace(const bytes& before, const bytes& after)                                       |
@@ -354,7 +354,7 @@ void clear();
 
 | 返回值 | 函数签名|
 |---    |---     |
-| size_type  | copy(pointer dest, size_type n, pos_type pos = 0) const |
+| size_type  | copy(pointer dest, size_type n, pos_type rpos = 0) const |
 | void       | swap(bytes& other)       |
 
 #### 新串生成
@@ -396,8 +396,8 @@ void clear();
 | bool | operator==(const_pointer other) const          |
 | bool | operator>(const_pointer other) const           |
 | bool | operator>=(const_pointer other) const          |
-| bytes::value_type&       | operator[](pos_type pos)         |
-| const bytes::value_type& | operator[](pos_type pos) const   |
+| bytes::value_type&       | operator[](pos_type rpos)         |
+| const bytes::value_type& | operator[](pos_type rpos) const   |
 
 
 
