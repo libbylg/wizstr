@@ -376,12 +376,16 @@ public:
     static auto split_search_path(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
     static auto split_search_path(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string_view>;
 
-    // 拆分 csv 数据
-    static auto split_csv(std::string_view s) -> std::vector<std::string>;
-
-    // 按 properties 格式拼接
-    static auto join_properties(std::string& s) -> std::string&;
-    static auto split_properties(std::string& s) -> std::string&;
+    // // 拆分 csv 数据
+    // static auto split_csv(std::string_view s) -> std::vector<std::string>;
+    // static auto join_csv(view_provider_proc proc) -> std::string;
+    // template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    // static auto join_csv(const Sequence& items) -> std::string {
+    // }
+    //
+    // // 按 properties 格式拼接
+    // static auto join_properties(std::string& s, std::string_view sep) -> std::string&;
+    // static auto split_properties(std::string& s, std::string_view sep) -> std::string&;
 
     // 大小写转换
     static auto to_lower(std::string_view s) -> std::string;
