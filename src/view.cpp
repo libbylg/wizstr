@@ -1084,10 +1084,29 @@ auto view::take(std::string_view s, char_checker_proc proc) -> std::string {
         return {};
     }
 
+    std::string result;
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (proc(*ptr)) {
+            result.append(ptr, 1);
+        }
+    }
 
+    return result;
 }
 
-auto view::take(std::string_view s, charset_type set) -> std::string {
+auto view::take(std::string_view s, charset_type charset) -> std::string {
+    if (s.empty()) {
+        return {};
+    }
+
+    std::string result;
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (charset.get(*ptr)) {
+            result.append(ptr, 1);
+        }
+    }
+
+    return result;
 }
 
 auto view::drop_left(std::string_view s, size_type n) -> std::string_view {
@@ -1198,13 +1217,35 @@ auto view::drop(std::string_view s, size_type pos) -> std::string {
     return view::drop(s, pos, view::npos);
 }
 
-// auto view::drop(std::string_view s, char_checker_proc proc) {
-//
-// }
-//
-// auto view::drop(std::string_view s, charset_type set) {
-//
-// }
+auto view::drop(std::string_view s, char_checker_proc proc) -> std::string {
+    if (s.empty()) {
+        return {};
+    }
+
+    std::string result;
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (!proc(*ptr)) {
+            result.append(ptr, 1);
+        }
+    }
+
+    return result;
+}
+
+auto view::drop(std::string_view s, charset_type charset) -> std::string {
+    if (s.empty()) {
+        return {};
+    }
+
+    std::string result;
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (!charset.get(*ptr)) {
+            result.append(ptr, 1);
+        }
+    }
+
+    return result;
+}
 
 auto view::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
