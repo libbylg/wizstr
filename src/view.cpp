@@ -654,6 +654,19 @@ auto view::is_alnum(std::string_view s) -> bool {
     return true;
 }
 
+auto view::is_alnumul(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
+        if (!std::isalnum(*ptr) || (*ptr == '_')) {
+            return false;
+        }
+    }
+    return true;
+}
+
 auto view::is_space(std::string_view s) -> bool {
     if (s.empty()) {
         return false;
@@ -1059,6 +1072,22 @@ auto view::take(std::string_view s, size_type pos, ssize_type offset) -> std::st
 }
 
 auto view::take(std::string_view s, size_type pos) -> std::string_view {
+    if (pos >= s.size()) {
+        return {};
+    }
+
+    return s.substr(pos);
+}
+
+auto view::take(std::string_view s, char_checker_proc proc) -> std::string {
+    if (s.empty()) {
+        return {};
+    }
+
+
+}
+
+auto view::take(std::string_view s, charset_type set) -> std::string {
 }
 
 auto view::drop_left(std::string_view s, size_type n) -> std::string_view {
@@ -1098,7 +1127,29 @@ auto view::drop_mid(std::string_view s, size_type pos, size_type n) -> std::stri
 }
 
 auto view::drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
-    return view::drop_mid(s, begin_pos, begin_pos + end_pos);
+    if (end_pos <= begin_pos) {
+        return {};
+    }
+
+    if (end_pos > s.size()) {
+        end_pos = s.size();
+    }
+
+    if (begin_pos >= s.size()) {
+        return {};
+    }
+
+    std::string result;
+    result.reserve(s.size() - (end_pos - begin_pos));
+
+    if (begin_pos > 0) {
+        result.append(s.data(), begin_pos);
+    }
+
+    if ((s.size() - end_pos) > 0) {
+        result.append(s.data() + end_pos, (s.size() - end_pos));
+    }
+    return result;
 }
 
 auto view::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string {
