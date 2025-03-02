@@ -206,6 +206,9 @@ public:
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string_view;
     static auto remove_prefix(std::string_view s, value_type prefix) -> std::string_view;
 
+    static auto remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string&;
+    static auto remove_prefix_inplace(std::string& s, value_type prefix) -> std::string&;
+
     // 后缀操作
     static auto has_suffix(std::string_view s, value_type suffix) -> bool;
     static auto has_suffix(std::string_view s, std::string_view suffix) -> bool;
@@ -213,6 +216,9 @@ public:
     static auto ends_with(std::string_view s, std::string_view suffix) -> bool;
     static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string_view;
     static auto remove_suffix(std::string_view s, value_type suffix) -> std::string_view;
+
+    static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
+    static auto remove_suffix_inplace(std::string& s, value_type suffix) -> std::string&;
 
     // 一次性查找
     static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
@@ -275,6 +281,23 @@ public:
     static auto drop(std::string_view s, char_checker_proc proc) -> std::string;
     static auto drop(std::string_view s, charset_type charset) -> std::string;
 
+    static auto take_left_inplace(std::string& s, size_type n) -> std::string&;
+    static auto take_right_inplace(std::string& s, size_type n) -> std::string&;
+    static auto take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
+    static auto take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
+    static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
+    static auto take_inplace(std::string& s, size_type pos) -> std::string&;
+    static auto take_inplace(std::string& s, char_checker_proc proc) -> std::string&;
+    static auto take_inplace(std::string& s, charset_type charset) -> std::string&;
+    static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
+    static auto drop_right_inplace(std::string& s, size_type n) -> std::string&;
+    static auto drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
+    static auto drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
+    static auto drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
+    static auto drop_inplace(std::string& s, size_type pos) -> std::string&;
+    static auto drop_inplace(std::string& s, char_checker_proc proc) -> std::string&;
+    static auto drop_inplace(std::string& s, charset_type charset) -> std::string&;
+
     // 对齐
     static auto align_left(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
@@ -289,11 +312,13 @@ public:
     // Title 化：首字母大写
     static auto capitalize(std::string_view s) -> std::string;
     static auto title(std::string_view s) -> std::string;
+
     static auto capitalize_inplace(std::string& s) -> std::string&;
     static auto title_inplace(std::string& s) -> std::string&;
 
     // 反转：字符串逆序
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
+
     static auto invert_inplace(std::string& s, size_type pos, size_type max_n) -> std::string&;
 
     // 生成字符串 s 或者 字符 ch 的内容重复出现 times 次后的新字符串
@@ -304,6 +329,7 @@ public:
     static auto spaces(size_type width) -> std::string;
     static auto skip_space_remain(std::string_view s, size_type pos = 0) -> std::string_view;
     static auto skip_space(std::string_view s, size_type pos) -> size_type;
+    static auto skip_space_inplace(std::string& s, size_type pos) -> size_type;
 
     // 用指定的分隔符,拼接一个字符串序列
     static auto join_list(std::string_view s, const view_provider_proc& proc) -> std::string;
