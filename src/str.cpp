@@ -44,6 +44,54 @@ auto str::append(std::string_view s, const view_provider_proc& proc) -> std::str
     return result;
 }
 
+auto str::append_inplace(std::string& s, std::string_view other) -> std::string& {
+    return s.append(other);
+}
+
+auto str::append_inplace(std::string& s, std::string_view other, size_type n) -> std::string& {
+    s.reserve(s.size() + other.size() * n);
+    for (size_type i = 0; i < n; i++) {
+        s.append(other);
+    }
+    return s;
+}
+
+auto str::append_inplace(std::string& s, str::value_type ch) -> std::string& {
+    return s.append(&ch, 1);
+}
+
+auto str::append_inplace(std::string& s, value_type ch, size_type n) -> std::string& {
+    s.resize(s.size() + n, ch);
+    return s;
+}
+
+auto str::append_inplace(std::string& s, const view_provider_proc& proc) -> std::string& {
+    const auto item = proc();
+    while (item) {
+        s.append(item.value());
+    }
+
+    return s;
+}
+
+auto str::append_inplace(std::string& s, std::initializer_list<std::string_view> others) -> std::string& {
+    // 先计算出需要追加的数据的总长度
+    size_t append_size = 0;
+    for (auto itr = others.begin(); itr != others.end(); itr++) {
+        append_size += itr->size();
+    }
+
+    // 做一个一次性扩容
+    s.reserve(s.size() + append_size);
+
+    // 再逐个添加
+    for (auto itr = others.begin(); itr != others.end(); itr++) {
+        s.append(*itr);
+    }
+
+    return s;
+}
+
 auto str::prepend(std::string_view s, std::string_view other) -> std::string {
     std::string result;
     result.reserve(s.size() + other.size());
@@ -73,6 +121,76 @@ auto str::prepend(std::string_view s, const view_provider_proc& proc) -> std::st
     }
     result.append(s);
     return result;
+}
+
+auto str::prepend_inplace(std::string& s, std::string_view other) -> std::string& {
+    if (s.capacity() < (s.size() + other.size() + 1)) {
+        std::string result;
+        result.append(other).append(s);
+        s = std::move(result);
+        return s;
+    }
+
+    s.resize(s.size() + other.size());
+    std::memmove(s.data() + other.size(), s.c_str(), s.size() * sizeof(value_type));
+    std::memcpy(s.data(), other.data(), other.size());
+    return s;
+}
+
+auto str::prepend_inplace(std::string& s, std::string_view other, size_type n) -> std::string& {
+    size_type require_size = s.size() + other.size() * n;
+    if (s.capacity() >= require_size) {
+        size_type origin_size = s.size();
+        s.resize(require_size);
+        std::memmove(s.data() + (other.size() * n), s.data(), origin_size);
+        for (size_type i = 0; i < n; i++) {
+            std::memcpy(s.data() + (other.size() * i), other.data(), other.size());
+        }
+
+        return s;
+    }
+
+    // 反正要分配新内存，还不如创建新对象
+    std::string result;
+    result.resize(require_size);
+    for (size_type i = 0; i < n; i++) {
+        std::memcpy(result.data() + (other.size() * i), other.data(), other.size());
+    }
+    std::memcpy(result.data() + (other.size() * n), s.data(), s.size());
+
+    // result 赋值给 s
+    s = std::move(result);
+
+    return s;
+}
+
+auto str::prepend_inplace(std::string& s, value_type ch) -> std::string& {
+    return prepend_inplace(s, std::string_view{&ch, 1});
+}
+
+auto str::prepend_inplace(std::string& s, value_type ch, size_type n) -> std::string& {
+    if (s.capacity() < (s.size() + n + 1)) {
+        std::string result;
+        result.reserve(s.size() + n);
+        result.resize(n, ch);
+        result.append(s);
+        s = std::move(result);
+        return s;
+    }
+
+    s.resize(s.size() + n);
+    std::memmove(s.data() + n, s.c_str(), s.size() * sizeof(value_type));
+    s[0] = ch;
+    return s;
+}
+
+auto str::prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string& {
+    const auto item = proc();
+    while (item) {
+        prepend(s, item.value());
+    }
+
+    return s;
 }
 
 auto str::insert(std::string_view s, size_type pos, std::string_view other) -> std::string {
@@ -129,6 +247,73 @@ auto str::insert(std::string_view s, size_type pos, const view_provider_proc& pr
 
     result.append(std::string_view{s.data() + pos, s.size() - pos});
     return result;
+}
+
+auto str::insert_inplace(std::string& s, size_type pos, std::string_view other) -> std::string& {
+    if (s.capacity() < (s.size() + other.size() + 1)) {
+        std::string result;
+        result.resize(other.size() + s.size());
+        std::memcpy(result.data(), s.c_str(), pos);
+        std::memcpy(result.data() + pos, other.data(), other.size());
+        std::memcpy(result.data() + pos + other.size(), s.c_str() + pos, s.size() - pos);
+        s = std::move(result);
+        return s;
+    }
+
+    s.resize(other.size() + s.size());
+    std::memmove(s.data() + pos + other.size(), s.c_str() + pos, s.size() - pos);
+    std::memcpy(s.data() + pos, other.data(), other.size());
+    return s;
+}
+
+auto str::insert_inplace(std::string& s, size_type pos, std::string_view other, size_type n) -> std::string& {
+    // TODO 性能不是最优的，主要是会导致多次扩容
+    size_type count = 0;
+    str::insert(s, pos, [n, &count, &other]() -> std::optional<std::string_view> {
+        if (count >= n) {
+            return {};
+        }
+
+        count++;
+        return other;
+    });
+
+    return s;
+}
+
+auto str::insert_inplace(std::string& s, size_type pos, value_type ch) -> std::string& {
+    return insert_inplace(s, pos, std::string_view{&ch, 1});
+}
+
+auto str::insert_inplace(std::string& s, size_type pos, value_type ch, size_type n) -> std::string& {
+    if (pos >= s.size()) {
+        s.append(ch, n);
+        return s;
+    }
+
+    if (s.capacity() > (s.size() + n)) {
+        s.resize(s.size() + n);
+        std::memmove(s.data() + pos + n, s.data() + pos, (s.size() - pos));
+        std::fill(s.data() + pos, s.data() + pos + n, ch);
+        return s;
+    }
+
+    std::string result;
+    result.reserve(s.size() + n);
+    result.append(s.data(), pos);
+    result.append(ch, n);
+    result.append(s.data() + pos, s.size() - pos);
+    s = std::move(result);
+    return s;
+}
+
+auto str::insert_inplace(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string& {
+    auto item = proc();
+    while (item) {
+        str::insert(s, pos, item.value()); // TODO 不是最优的，会导致多次扩容
+    }
+
+    return s;
 }
 
 auto str::icmp(std::string_view s, std::string_view other) -> int {
@@ -1327,14 +1512,58 @@ auto str::capitalize(std::string_view s) -> std::string {
     return result;
 }
 
+auto str::capitalize_inplace(std::string& s) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    s[0] = static_cast<value_type>(std::toupper(s[0]));
+    return s;
+}
+
 auto str::title(std::string_view s) -> std::string {
     std::string result{s};
-    return str::title(result);
+    return str::title_inplace(result);
+}
+
+auto str::title_inplace(std::string& s) -> std::string& {
+    str::foreach_word(s, [&s](size_type pos, size_type n) -> int {
+        pointer ptr = s.data() + pos;
+        while (ptr < (s.data() + pos + n)) {
+            if (std::isalpha(*ptr)) {
+                *ptr = static_cast<value_type>(std::toupper(*ptr));
+                break;
+            }
+            ptr++;
+        }
+        return 0;
+    });
+
+    return s;
+}
+auto str::invert_inplace(std::string& s, size_type pos, size_type max_n) -> std::string& {
+    if ((s.size() < 2) || (pos >= s.size()) || (max_n < 2)) {
+        return s;
+    }
+
+    max_n = std::min(max_n, (s.size() - pos));
+    pointer left = s.data() + pos;
+    pointer right = s.data() + pos + max_n - 1;
+
+    while (left < right) {
+        value_type ch = *left;
+        *left = *right;
+        *right = ch;
+        left++;
+        right--;
+    }
+
+    return s;
 }
 
 auto str::invert(std::string_view s, size_type pos, size_type max_n) -> std::string {
     std::string result{s};
-    return str::invert(result, pos, max_n);
+    return str::invert_inplace(result, pos, max_n);
 }
 
 auto str::repeat(std::string_view s, size_type times) -> std::string {
@@ -1791,9 +2020,25 @@ auto str::to_lower(std::string_view s) -> std::string {
     return str::to_lower(result);
 }
 
+auto str::to_lower_inplace(std::string& s) -> std::string& {
+    for (value_type& ch : s) {
+        ch = static_cast<value_type>(std::tolower(ch));
+    }
+
+    return s;
+}
+
 auto str::to_upper(std::string_view s) -> std::string {
     std::string result{s};
     return str::to_upper(result);
+}
+
+auto str::to_upper_inplace(std::string& s) -> std::string& {
+    for (value_type& ch : s) {
+        ch = static_cast<value_type>(std::toupper(ch));
+    }
+
+    return s;
 }
 
 auto str::swap_case(std::string_view s) -> std::string {
@@ -1801,6 +2046,21 @@ auto str::swap_case(std::string_view s) -> std::string {
     return str::swap_case(result);
 }
 
+auto str::swap_case_inplace(std::string& s) -> std::string& {
+    for (value_type& ch : s) {
+        if (std::islower(ch)) {
+            ch = static_cast<value_type>(std::toupper(ch));
+            continue;
+        }
+
+        if (std::isupper(ch)) {
+            ch = static_cast<value_type>(std::tolower(ch));
+            continue;
+        }
+    }
+
+    return s;
+}
 // auto str::case_fold(std::string_view s) -> std::string {
 // }
 
@@ -3008,10 +3268,17 @@ auto str::chunked(std::string_view s, size_type size) -> std::vector<std::string
     return result;
 }
 
+
 auto str::read_all(const std::string& filename) -> std::string {
+    return read_all(filename.c_str());
+}
+
+auto str::read_all(const char* filename) -> std::string {
+    assert(filename != nullptr);
+
     std::string result;
 
-    FILE* file = fopen(filename.c_str(), "r");
+    FILE* file = fopen(filename, "r");
     if (file == nullptr) {
         return result;
     }
@@ -3072,7 +3339,7 @@ auto str::read_line(std::istream& file) -> std::string {
     return line_text;
 }
 
-auto str::read_lines(FILE* file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {
+auto str::read_lines(FILE* file, const line_consumer_proc& proc) -> void {
     assert(file != nullptr);
 
     size_type line_index = 0;
@@ -3127,7 +3394,7 @@ auto str::read_lines(FILE* file, size_type max_n) -> std::vector<std::string> {
     return result;
 }
 
-auto str::read_lines(std::istream& file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {
+auto str::read_lines(std::istream& file, const line_consumer_proc& proc) -> void {
     size_type line_index = 0;
     std::string line_text;
     while (!file.bad() && !file.eof()) {
@@ -3158,12 +3425,23 @@ auto str::read_lines(std::istream& file, size_type max_n) -> std::vector<std::st
     return result;
 }
 
-auto str::read_lines(const std::string& filename, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void {
+auto str::read_lines(const std::string& filename, const line_consumer_proc& proc) -> void {
+    read_lines(filename.c_str(), proc);
+}
+
+auto str::read_lines(const char* filename, const line_consumer_proc& proc) -> void {
+    assert(filename != nullptr);
+
     std::ifstream file{filename};
     str::read_lines(file, proc);
 }
 
 auto str::read_lines(const std::string& filename, size_type max_n) -> std::vector<std::string> {
+    return read_lines(filename.c_str(), max_n);
+}
+
+auto str::read_lines(const char* filename, size_type max_n) -> std::vector<std::string> {
+    assert(filename != nullptr);
     std::ifstream file{filename};
     return str::read_lines(file, max_n);
 }

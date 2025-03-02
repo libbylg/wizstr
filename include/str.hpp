@@ -133,24 +133,45 @@ public:
     using char_match_proc = std::function<bool(value_type ch)>;
     using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
 
+    // 行消费
+    using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
+
     //! 在尾部追加
     static auto append(std::string_view s, std::string_view other) -> std::string;
     static auto append(std::string_view s, value_type ch) -> std::string;
     static auto append(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
 
+    static auto append_inplace(std::string& s, std::string_view other) -> std::string&;
+    static auto append_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
+    static auto append_inplace(std::string& s, value_type ch) -> std::string&;
+    static auto append_inplace(std::string& s, value_type ch, size_type n) -> std::string&;
+    static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
+    static auto append_inplace(std::string& s, std::initializer_list<std::string_view> others) -> std::string&;
+
     //! 在头部追加
     static auto prepend(std::string_view s, std::string_view other) -> std::string;
-    // static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, value_type ch) -> std::string;
     static auto prepend(std::string_view s, value_type ch, size_type n) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
+
+    static auto prepend_inplace(std::string& s, std::string_view other) -> std::string&;
+    static auto prepend_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
+    static auto prepend_inplace(std::string& s, value_type ch) -> std::string&;
+    static auto prepend_inplace(std::string& s, value_type ch, size_type n) -> std::string&;
+    static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
 
     // 修改字符串：中间插入、首尾插入、任意位置删除
     static auto insert(std::string_view s, size_type pos, std::string_view other) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
+
+    static auto insert_inplace(std::string& s, size_type pos, std::string_view other) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, std::string_view other, size_type n) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, value_type ch) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, value_type ch, size_type n) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string&;
 
     // 不区分大小写的比较
     static auto icmp(std::string_view s, std::string_view other) -> int;
@@ -260,12 +281,20 @@ public:
     static auto align_center(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_zfill(std::string_view s, size_type width) -> std::string;
 
+    static auto align_left_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
+    static auto align_right_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
+    static auto align_center_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
+    static auto align_zfill_inplace(std::string& s, size_type width) -> std::string&;
+
     // Title 化：首字母大写
     static auto capitalize(std::string_view s) -> std::string;
     static auto title(std::string_view s) -> std::string;
+    static auto capitalize_inplace(std::string& s) -> std::string&;
+    static auto title_inplace(std::string& s) -> std::string&;
 
     // 反转：字符串逆序
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
+    static auto invert_inplace(std::string& s, size_type pos, size_type max_n) -> std::string&;
 
     // 生成字符串 s 或者 字符 ch 的内容重复出现 times 次后的新字符串
     static auto repeat(std::string_view s, size_type times) -> std::string;
@@ -392,9 +421,16 @@ public:
     static auto to_upper(std::string_view s) -> std::string;
     static auto swap_case(std::string_view s) -> std::string;
 
+    static auto to_lower_inplace(std::string& s) -> std::string&;
+    static auto to_upper_inplace(std::string& s) -> std::string&;
+    static auto swap_case_inplace(std::string& s) -> std::string&;
+
     // 字符串化简，将字符串中的多个空白压缩成一个空格
     static auto simplified(std::string_view s, std::string_view sep, const char_checker_proc& proc) -> std::string;
     static auto simplified(std::string_view s) -> std::string;
+
+    static auto simplified_inplace(std::string& s, std::string_view sep, const char_checker_proc& proc) -> std::string&;
+    static auto simplified_inplace(std::string& s) -> std::string&;
 
     // 去掉字符串左侧的空白
     static auto trim_left(std::string_view s, const char_checker_proc& proc) -> std::string_view;
@@ -404,9 +440,19 @@ public:
     static auto trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string_view;
     static auto trim_surrounding(std::string_view s) -> std::string_view;
 
+    static auto trim_left_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_left_inplace(std::string& s) -> std::string&;
+    static auto trim_right_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_right_inplace(std::string& s) -> std::string&;
+    static auto trim_surrounding_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_surrounding_inplace(std::string& s) -> std::string&;
+
     // 去掉字符串中任何位置的空白
     static auto trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string;
     static auto trim_anywhere(std::string_view s) -> std::string;
+
+    static auto trim_anywhere_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_anywhere_inplace(std::string& s) -> std::string&;
 
     // 拷贝
     static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;
@@ -419,14 +465,23 @@ public:
     static auto expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string;
     static auto expand_envs(std::string_view s, std::string_view key, std::string_view val) -> std::string;
 
+    static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string&;
+    static auto expand_envs_inplace(std::string& s, bool keep_unexpanded = false) -> std::string&;
+    static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string&;
+    static auto expand_envs_inplace(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string&;
+    static auto expand_envs_inplace(std::string& s, std::string_view key, std::string_view val) -> std::string&;
+
     // 将字符串中的 tab 符号(\t)按照 tab 宽度替换成空白
     static auto expand_tabs(std::string_view s, size_type tab_size = 8) -> std::string;
+    static auto expand_tabs_inplace(std::string& s, size_type tab_size = 8) -> std::string&;
 
     // 扩展字符串中的 ~ 前缀
     static auto expand_user(std::string_view s) -> std::string;
+    static auto expand_user_inplace(std::string& s) -> std::string&;
 
     // 路径正常化
     static auto normpath(std::string_view s) -> std::string;
+    static auto normpath_inplace(std::string& s) -> std::string&;
 
     // 路径处理
     static auto is_absolute(std::string_view s) -> bool;
@@ -444,12 +499,20 @@ public:
     static auto replace_dirname(std::string_view s, std::string_view newname) -> std::string;
     static auto split_dirname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
 
+    static auto dirname_inplace(std::string& s) -> std::string&;
+    static auto remove_dirname_inplace(std::string& s) -> std::string&;
+    static auto replace_dirname_inplace(std::string& s, std::string_view newname) -> std::string&;
+
     // 处理路径中文件名的部分
     static auto basename_view(std::string_view s) -> std::string_view;
     static auto basename(std::string_view s) -> std::string;
     static auto remove_basename(std::string_view s) -> std::string;
     static auto replace_basename(std::string_view s, std::string_view name) -> std::string;
     static auto split_basename(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
+
+    static auto basename_inplace(std::string& s) -> std::string&;
+    static auto remove_basename_inplace(std::string& s) -> std::string&;
+    static auto replace_basename_inplace(std::string& s, std::string_view name) -> std::string&;
 
     // 扩展名相关操作
     static auto extname_view(std::string_view s) -> std::string_view;
@@ -458,6 +521,10 @@ public:
     static auto replace_extname(std::string_view s, std::string_view name) -> std::string;
     static auto split_extname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
 
+    static auto extname_inplace(std::string& s) -> std::string&;
+    static auto remove_extname_inplace(std::string& s) -> std::string&;
+    static auto replace_extname_inplace(std::string& s, std::string_view name) -> std::string&;
+
     // 转换为 hash 值
     static auto hash(std::string_view s, uint32_t mod) -> uint32_t;
     static auto hash(std::string_view s, uint64_t mod) -> uint64_t;
@@ -465,28 +532,42 @@ public:
     static auto md5(void* data, size_type n) -> std::string;
 
     // 转义
-    static auto encode_xml(std::string& s) -> std::string&;
-    static auto decode_xml(std::string& s) -> std::string&;
-    static auto encode_url(std::string& s) -> std::string&;
-    static auto decode_url(std::string& s) -> std::string&;
+    static auto encode_xml(std::string_view s) -> std::string;
+    static auto decode_xml(std::string_view s) -> std::string;
+    static auto encode_url(std::string_view s) -> std::string;
+    static auto decode_url(std::string_view s) -> std::string;
+
+    static auto encode_xml_inplace(std::string& s) -> std::string&;
+    static auto decode_xml_inplace(std::string& s) -> std::string&;
+    static auto encode_url_inplace(std::string& s) -> std::string&;
+    static auto decode_url_inplace(std::string& s) -> std::string&;
 
     // C语言字符串编解码
     static auto encode_cstr(std::string_view s, view_consumer_proc proc) -> void;
-    static auto encode_cstr(std::string_view s) -> std::string;
     static auto decode_cstr(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_cstr(std::string_view s) -> std::string;
     static auto decode_cstr(std::string_view s) -> std::string;
+
+    static auto encode_cstr_inplace(std::string& s) -> std::string;
+    static auto decode_cstr_inplace(std::string& s) -> std::string;
 
     // base64 编解码
     static auto encode_base64(std::string_view s, view_consumer_proc proc) -> void;
-    static auto encode_base64(std::string_view s) -> std::string;
     static auto decode_base64(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_base64(std::string_view s) -> std::string;
     static auto decode_base64(std::string_view s) -> std::string;
+
+    static auto encode_base64_inplace(std::string& s) -> std::string&;
+    static auto decode_base64_inplace(std::string& s) -> std::string&;
 
     // base16  编解码
     static auto encode_base16(std::string_view s, bool upper, view_consumer_proc proc) -> void;
-    static auto encode_base16(std::string_view s, bool upper = false) -> std::string;
     static auto decode_base16(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_base16(std::string_view s, bool upper = false) -> std::string;
     static auto decode_base16(std::string_view s) -> std::string;
+
+    static auto encode_base16_inplace(std::string& s, bool upper = false) -> std::string&;
+    static auto decode_base16_inplace(std::string& s) -> std::string&;
 
     // 求和
     template <typename MappedType>
@@ -521,307 +602,21 @@ public:
 
     // 读取文件内容
     static auto read_all(const std::string& filename) -> std::string;
+    static auto read_all(const char* filename) -> std::string;
+
     static auto read_line(FILE* file, bool keeo_ends = false) -> std::string;
     static auto read_line(std::istream& file) -> std::string;
-    static auto read_lines(FILE* file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void;
+
+    static auto read_lines(FILE* file, const line_consumer_proc& proc) -> void;
     static auto read_lines(FILE* file, size_type max_n = npos) -> std::vector<std::string>;
-    static auto read_lines(std::istream& file, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void;
+    static auto read_lines(std::istream& file, const line_consumer_proc& proc) -> void;
     static auto read_lines(std::istream& file, size_type max_n = npos) -> std::vector<std::string>;
-    static auto read_lines(const std::string& filename, std::function<int(size_type line_index, std::string_view line_text)> proc) -> void;
+
+    static auto read_lines(const std::string& filename, const line_consumer_proc& proc) -> void;
+    static auto read_lines(const char* filename, const line_consumer_proc& proc) -> void;
     static auto read_lines(const std::string& filename, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(const char* filename, size_type max_n = npos) -> std::vector<std::string>;
 };
 
-//
-// template <typename T>
-// static auto to(const std::string& s, std::tuple<int> base) -> std::optional<T> {
-//     return {};
-// }
-//
-// template <typename T>
-// static auto to(const std::string& s) -> std::optional<T> {
-//     return {};
-// }
-//
-// template <typename T>
-// static auto to(const std::string& s, T def, std::tuple<int> base) -> T {
-//     auto result = to<T>(s, base);
-//     return result ? result.value() : def;
-// }
-//
-// template <typename T>
-// static auto to(const std::string& s, T def) -> T {
-//     auto result = to<T>(s);
-//     return result ? result.value() : def;
-// }
-//
-// template <>
-// inline auto to<bool>(const std::string& s [[maybe_unused]]) -> std::optional<bool> {
-//     return {};
-// }
-//
-// template <>
-// inline auto to<float>(const std::string& s) -> std::optional<float> {
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtof(s.c_str(), &endptr);
-//     static_assert(sizeof(result) >= sizeof(float));
-//     if (result <= std::numeric_limits<float>::epsilon()) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<double>(const std::string& s) -> std::optional<double> {
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtod(s.c_str(), &endptr);
-//     static_assert(sizeof(result) >= sizeof(double));
-//     if (result <= std::numeric_limits<double>::epsilon()) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// static constexpr auto correct_base(int base) -> int {
-//     if (base != 0) {
-//         if (base < 2) {
-//             return 2;
-//         }
-//         if (base > 36) {
-//             return 36;
-//         }
-//     }
-//
-//     return base;
-// }
-//
-// template <>
-// inline auto to<int8_t>(const std::string& s, std::tuple<int> base) -> std::optional<int8_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int8_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int8_t>::max()) || (result < std::numeric_limits<int8_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int16_t>(const std::string& s, std::tuple<int> base) -> std::optional<int16_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int16_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int16_t>::max()) || (result < std::numeric_limits<int16_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int32_t>(const std::string& s, std::tuple<int> base) -> std::optional<int32_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(int32_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int32_t>::max()) || (result < std::numeric_limits<int32_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<int64_t>(const std::string& s, std::tuple<int> base) -> std::optional<int64_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-// #if defined __LP64__
-//     auto result = std::strtol(s.c_str(), &endptr, nbase);
-// #else
-//     auto result = std::strtoll(s.c_str(), &endptr, nbase);
-// #endif
-//     static_assert(sizeof(result) >= sizeof(int64_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<int64_t>::max()) || (result < std::numeric_limits<int64_t>::min())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint8_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint8_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint8_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint8_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint16_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint16_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint16_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint16_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint32_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint32_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-//     static_assert(sizeof(result) >= sizeof(uint32_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     if ((result > std::numeric_limits<uint32_t>::max())) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// template <>
-// inline auto to<uint64_t>(const std::string& s, std::tuple<int> base) -> std::optional<uint64_t> {
-//     int nbase = correct_base(std::get<0>(base));
-//
-//     errno = 0;
-//     char* endptr = nullptr;
-// #if defined __LP64__
-//     auto result = std::strtoul(s.c_str(), &endptr, nbase);
-// #else
-//     auto result = std::strtoull(s.c_str(), &endptr, nbase);
-// #endif
-//     static_assert(sizeof(result) >= sizeof(int64_t));
-//     if (result == 0) {
-//         if (endptr == s.c_str()) {
-//             return {};
-//         }
-//     }
-//
-//     if (errno == ERANGE) {
-//         return {};
-//     }
-//
-//     return result;
-// }
-//
-// static auto from(double n, value_type format = 'g', int precision = 6) -> std::string;
-// static auto from(float n, value_type format = 'g', int precision = 6) -> std::string;
-// static auto from(int8_t n, int base = 10) -> std::string;
-// inline auto from(int16_t n, int base = 10) -> std::string;
-// inline auto from(int32_t n, int base = 10) -> std::string;
-// inline auto from(int64_t n, int base = 10) -> std::string;
-// inline auto from(uint8_t n, int base = 10) -> std::string;
-// inline auto from(uint16_t n, int base = 10) -> std::string;
-// inline auto from(uint32_t n, int base = 10) -> std::string;
-// inline auto from(uint64_t n, int base = 10) -> std::string;
 
 #endif // TINY_STR_H
