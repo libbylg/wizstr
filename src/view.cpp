@@ -2156,6 +2156,42 @@ auto view::expand_user(std::string_view s) -> std::string {
     return std::string{s};
 }
 
+auto view::normpath(std::string_view s) -> std::string {
+    auto components = view::split_path(s);
+    if (components.size() < 2) {
+        return std::string{components[0]};
+    }
+
+    size_type fixlen = 0;
+    std::vector<std::string_view> result{components[0]};
+    for (ssize_type rpos = 1; rpos < static_cast<ssize_type>(components.size()); rpos++) {
+        if (components[rpos] == ".") {
+            continue;
+        }
+
+        if (components[rpos] == "..") {
+            if (result.size() == fixlen) {
+                result.emplace_back(components[rpos]);
+                fixlen++;
+                continue;
+            }
+
+            result.resize(result.size() - 1);
+            continue;
+        }
+
+        if (result.size() > fixlen) {
+            if (result.back() == ".") [[unlikely]] {
+                result.pop_back();
+            }
+        }
+
+        result.emplace_back(components[rpos]);
+    }
+
+    return view::join_path(result);
+}
+
 // 处理路径中文件名的部分
 auto view::basename_ptr(std::string_view s) -> std::string::const_pointer {
     // if (s.empty() || (s == ".") || (s == "..")) [[unlikely]] {
@@ -2567,13 +2603,13 @@ auto view::decode_cstr(std::string_view s, view_consumer_proc proc) -> void {
                     case 'r': ch = '\r'; break;
                     case 't': ch = '\t'; break;
                     case 'v': ch = '\v'; break;
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
+                    case '0': [[fallthrough]];
+                    case '1': [[fallthrough]];
+                    case '2': [[fallthrough]];
+                    case '3': [[fallthrough]];
+                    case '4': [[fallthrough]];
+                    case '5': [[fallthrough]];
+                    case '6': [[fallthrough]];
                     case '7':
                         break;
                     case 'x':

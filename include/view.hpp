@@ -384,8 +384,8 @@ public:
     // }
     //
     // // 按 properties 格式拼接
-    // static auto join_properties(std::string& s, std::string_view sep) -> std::string&;
-    // static auto split_properties(std::string& s, std::string_view sep) -> std::string&;
+    // static auto split_properties(std::string_view s) -> std::string_view ;
+    // static auto join_properties(std::string& s, properties_sep sep) -> std::string&;
 
     // 大小写转换
     static auto to_lower(std::string_view s) -> std::string;

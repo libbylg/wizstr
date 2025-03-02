@@ -7,7 +7,9 @@
 
 TEST(test_view, join_path) {
     SECTION("一般场景") {
-        ASSERT_EQ(view::join_path(std::vector{"A", "B", "C"}), "A/B/C");
+        ASSERT_EQ(view::join_path(std::vector{"A"}), "A");
+        ASSERT_EQ(view::join_path(std::array{"."}), ".");
+        ASSERT_EQ(view::join_path(std::list{"A", "B", "C"}), "A/B/C");
     }
     SECTION("空") {
         ASSERT_EQ(view::join_path(std::vector<std::string_view>{}), "");
