@@ -304,7 +304,7 @@ public:
     template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
         auto itr = items.cbegin();
-        return view::join_map(sep_pair, sep_list, [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
+        return str::join_map(sep_pair, sep_list, [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
             if (itr == end) {
                 return std::nullopt;
             }
@@ -316,7 +316,7 @@ public:
 
     template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(const Map& items) -> std::string {
-        return view::join_map("=", ",", items);
+        return str::join_map("=", ",", items);
     }
 
     // 文件路径拼接
@@ -324,7 +324,7 @@ public:
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_path(const Sequence& items) -> std::string {
         auto itr = items.begin();
-        return view::join_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
+        return str::join_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
             if (itr == end) {
                 return std::nullopt;
             }
@@ -338,7 +338,7 @@ public:
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_search_path(const Sequence& items) -> std::string {
         auto itr = items.begin();
-        return view::join_search_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
+        return str::join_search_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
             if (itr == end) {
                 return std::nullopt;
             }
@@ -357,7 +357,7 @@ public:
 
     // 按空格拆分，多个空格会作为一个分隔符
     static auto split_words(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto split_words(std::string_view s, size_type max_n = view::npos) -> std::vector<std::string_view>;
+    static auto split_words(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
 
     static auto split_pair(std::string_view sm, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view>;
 

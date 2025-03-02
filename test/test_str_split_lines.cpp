@@ -1,9 +1,9 @@
 #include "tester.hpp"
 
 #include "str.hpp"
-#include "view.hpp"
 
-TEST(test_view, split_lines_keep_ends_false) {
+
+TEST(test_str, split_lines_keep_ends_false) {
     SECTION("一般情况:\\n") {
         std::string_view s{"a\nb\nc"};
         std::vector<std::string_view> expect{
@@ -11,7 +11,7 @@ TEST(test_view, split_lines_keep_ends_false) {
             "b",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("一般情况:\\r\\n") {
         std::string_view s{"a\r\nb\r\nc"};
@@ -20,7 +20,7 @@ TEST(test_view, split_lines_keep_ends_false) {
             "b",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("一般情况:\\r") {
         std::string_view s{"a\rb\rc"};
@@ -29,7 +29,7 @@ TEST(test_view, split_lines_keep_ends_false) {
             "b",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("一般情况:\\r收尾") {
         std::string_view s{"a\nb\nc\r"};
@@ -38,7 +38,7 @@ TEST(test_view, split_lines_keep_ends_false) {
             "b",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("一般情况:\\n收尾") {
         std::string_view s{"a\nb\nc\n"};
@@ -47,7 +47,7 @@ TEST(test_view, split_lines_keep_ends_false) {
             "b",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("一般情况:\\r\\n收尾") {
         std::string_view s{"a\rb\rc\r\n"};
@@ -56,7 +56,7 @@ TEST(test_view, split_lines_keep_ends_false) {
             "b",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("连续:\\r") {
         std::string_view s{"a\r\rb\r\rc"};
@@ -67,7 +67,7 @@ TEST(test_view, split_lines_keep_ends_false) {
             "",
             "c",
         };
-        std::vector<std::string_view> actual = view::split_lines(s);
+        std::vector<std::string_view> actual = str::split_lines(s);
         ASSERT_EQ(actual, expect);
     }
     SECTION("连续:\\n") {
@@ -79,37 +79,37 @@ TEST(test_view, split_lines_keep_ends_false) {
             "",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("单一:\\r") {
         std::string_view s{"\r"};
         std::vector<std::string_view> expect{
             "",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("单一:\\n") {
         std::string_view s{"\n"};
         std::vector<std::string_view> expect{
             "",
         };
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("空串") {
         std::string_view s{""};
         std::vector<std::string_view> expect{};
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("无任何换行符号") {
         std::string_view s{"abcdef"};
         std::vector<std::string_view> expect{"abcdef"};
-        ASSERT_EQ(view::split_lines(s), expect);
+        ASSERT_EQ(str::split_lines(s), expect);
     }
     SECTION("proc:提前结束") {
         std::string_view s{"a\nb\nc\nd\ne\nf"};
         std::vector<std::string_view> expect{"a\n", "b\n"};
         std::vector<std::string_view> result;
-        view::split_lines(s, true, [&result](std::string_view item) -> int {
+        str::split_lines(s, true, [&result](std::string_view item) -> int {
             result.emplace_back(item);
             if (result.size() >= 2) {
                 return -1;
@@ -120,7 +120,7 @@ TEST(test_view, split_lines_keep_ends_false) {
     }
 }
 
-TEST(test_view, split_lines_keep_ends_true) {
+TEST(test_str, split_lines_keep_ends_true) {
     SECTION("一般情况:\\n") {
         std::string_view s{"a\nb\nc"};
         std::vector<std::string_view> expect{
@@ -128,7 +128,7 @@ TEST(test_view, split_lines_keep_ends_true) {
             "b\n",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("一般情况:\\r\\n") {
         std::string_view s{"a\r\nb\r\nc"};
@@ -137,7 +137,7 @@ TEST(test_view, split_lines_keep_ends_true) {
             "b\r\n",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("一般情况:\\r") {
         std::string_view s{"a\rb\rc"};
@@ -146,7 +146,7 @@ TEST(test_view, split_lines_keep_ends_true) {
             "b\r",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("一般情况:\\r收尾") {
         std::string_view s{"a\nb\nc\r"};
@@ -155,7 +155,7 @@ TEST(test_view, split_lines_keep_ends_true) {
             "b\n",
             "c\r",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("一般情况:\\n收尾") {
         std::string_view s{"a\nb\nc\n"};
@@ -164,7 +164,7 @@ TEST(test_view, split_lines_keep_ends_true) {
             "b\n",
             "c\n",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("一般情况:\\r\\n收尾") {
         std::string_view s{"a\rb\rc\r\n"};
@@ -173,7 +173,7 @@ TEST(test_view, split_lines_keep_ends_true) {
             "b\r",
             "c\r\n",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("连续:\\r") {
         std::string_view s{"a\r\rb\r\rc"};
@@ -184,7 +184,7 @@ TEST(test_view, split_lines_keep_ends_true) {
             "\r",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("连续:\\n") {
         std::string_view s{"a\n\nb\n\nc"};
@@ -195,30 +195,30 @@ TEST(test_view, split_lines_keep_ends_true) {
             "\n",
             "c",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("单一:\\r") {
         std::string_view s{"\r"};
         std::vector<std::string_view> expect{
             "\r",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("单一:\\n") {
         std::string_view s{"\n"};
         std::vector<std::string_view> expect{
             "\n",
         };
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("空串") {
         std::string_view s{""};
         std::vector<std::string_view> expect{};
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
     SECTION("无任何换行符号") {
         std::string_view s{"abcdef"};
         std::vector<std::string_view> expect{"abcdef"};
-        ASSERT_EQ(view::split_lines(s, true), expect);
+        ASSERT_EQ(str::split_lines(s, true), expect);
     }
 }

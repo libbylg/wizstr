@@ -1,7 +1,7 @@
 #include "tester.hpp"
 
 #include "str.hpp"
-#include "view.hpp"
+
 
 #include <fstream>
 
@@ -10,32 +10,32 @@
  TEST(test_split_list, as_vector) {
  //TEST_CASE(split_list, as_vector) {
      SECTION("一般情况") {
-         auto items = view::split_list("a,b,c", ',');
+         auto items = str::split_list("a,b,c", ',');
          ASSERT_EQ(items.size(), 3u);
          ASSERT_EQ(items[0], "a");
          ASSERT_EQ(items[1], "b");
          ASSERT_EQ(items[2], "c");
      }
      SECTION("全空情况") {
-         auto items = view::split_list(",,", ',');
+         auto items = str::split_list(",,", ',');
          ASSERT_EQ(items.size(), 3u);
          ASSERT_EQ(items[0], "");
          ASSERT_EQ(items[1], "");
          ASSERT_EQ(items[2], "");
      }
      SECTION("没有替换分个符") {
-         auto items = view::split_list("abc", ',');
+         auto items = str::split_list("abc", ',');
          ASSERT_EQ(items.size(), 1u);
          ASSERT_EQ(items[0], "abc");
      }
      SECTION("分隔符号在开头") {
-         auto items = view::split_list(",abc", ',');
+         auto items = str::split_list(",abc", ',');
          ASSERT_EQ(items.size(), 2u);
          ASSERT_EQ(items[0], "");
          ASSERT_EQ(items[1], "abc");
      }
      SECTION("分隔符号在结尾") {
-         auto items = view::split_list("abc,", ',');
+         auto items = str::split_list("abc,", ',');
          ASSERT_EQ(items.size(), 2u);
          ASSERT_EQ(items[0], "abc");
          ASSERT_EQ(items[1], "");
@@ -44,7 +44,7 @@
 
  TEST_CASE("read_line", "read_lines_name_vector") {
     SECTION("") {
-         //view::dirname()
+         //str::dirname()
          std::ifstream stream("/mnt/e/gitee.com/libbylg/str/test/test-gernial.txt");
          auto result = str::read_lines(stream);
          ASSERT_EQ(result.size(), 0);

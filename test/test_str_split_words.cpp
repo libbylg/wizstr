@@ -2,7 +2,7 @@
 
 #include "str.hpp"
 
-TEST(test_view, split_words) {
+TEST(test_str, split_words) {
     SECTION("一般情况") {
         ASSERT_EQ(str::split_words("Hello World patppy boy"), (std::vector<std::string_view>{"Hello", "World", "patppy", "boy"}));
         ASSERT_EQ(str::split_words("Hello\r World\v patppy \t \n boy"), (std::vector<std::string_view>{"Hello", "World", "patppy", "boy"}));

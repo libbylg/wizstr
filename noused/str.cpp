@@ -2,7 +2,7 @@
 // Created by libbylg on 2023/6/1.
 //
 #include "str.hpp"
-#include "view.hpp"
+
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -273,7 +273,7 @@ auto str::remove(std::string& s, scope_t scope) -> std::string& {
 // }
 
 auto str::remove_prefix(std::string& s, std::string_view prefix) -> std::string& {
-    if (!view::has_prefix(s, prefix)) {
+    if (!str::has_prefix(s, prefix)) {
         return s;
     }
 
@@ -298,7 +298,7 @@ auto str::remove_prefix(std::string& s, size_type n) -> std::string& {
 }
 
 auto str::remove_suffix(std::string& s, std::string_view suffix) -> std::string& {
-    if (!view::has_prefix(s, suffix)) {
+    if (!str::has_prefix(s, suffix)) {
         return s;
     }
 
@@ -494,7 +494,7 @@ auto str::capitalize(std::string& s) -> std::string& {
 }
 
 auto str::title(std::string& s) -> std::string& {
-    view::foreach_word(s, [&s](size_type pos, size_type n) -> int {
+    str::foreach_word(s, [&s](size_type pos, size_type n) -> int {
         pointer ptr = s.data() + pos;
         while (ptr < (s.data() + pos + n)) {
             if (std::isalpha(*ptr)) {
@@ -758,13 +758,13 @@ auto str::trim_surrounding(std::string& s) -> std::string& {
 // }
 
 auto str::dirname(std::string& s) -> std::string& {
-    auto ptr = view::dirname_ptr(s);
+    auto ptr = str::dirname_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
 auto str::remove_dirname(std::string& s) -> std::string& {
-    auto ptr = view::dirname_ptr(s);
+    auto ptr = str::dirname_ptr(s);
     size_type shift = s.size() - (ptr - s.data());
     if (shift > 0) {
         std::memmove(s.data(), ptr, shift);
@@ -775,7 +775,7 @@ auto str::remove_dirname(std::string& s) -> std::string& {
 }
 
 auto str::replace_dirname(std::string& s, std::string_view newdir) -> std::string& {
-    auto ptr = view::dirname_ptr(s);
+    auto ptr = str::dirname_ptr(s);
     size_type remain_len = s.data() + s.size() - ptr;
     size_type result_len = newdir.size() + remain_len;
     if (result_len < s.capacity()) {
@@ -796,7 +796,7 @@ auto str::replace_dirname(std::string& s, std::string_view newdir) -> std::strin
 }
 
 auto str::basename(std::string& s) -> std::string& {
-    auto ptr = view::basename_ptr(s);
+    auto ptr = str::basename_ptr(s);
     auto len = s.size() - (ptr - s.c_str());
     std::memmove(s.data(), ptr, len);
     s.resize(len);
@@ -804,13 +804,13 @@ auto str::basename(std::string& s) -> std::string& {
 }
 
 auto str::remove_basename(std::string& s) -> std::string& {
-    auto ptr = view::basename_ptr(s);
+    auto ptr = str::basename_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
 auto str::replace_basename(std::string& s, std::string_view name) -> std::string& {
-    const_pointer ptr = view::basename_ptr(s);
+    const_pointer ptr = str::basename_ptr(s);
     size_type dir_len = (ptr - s.c_str());
     s.reserve(dir_len + name.size());
     s.resize(dir_len);
@@ -819,7 +819,7 @@ auto str::replace_basename(std::string& s, std::string_view name) -> std::string
 }
 
 auto str::extname(std::string& s) -> std::string& {
-    auto ptr = view::extname_ptr(s);
+    auto ptr = str::extname_ptr(s);
     size_type extname_len = s.data() + s.size() - ptr;
     std::memmove(s.data(), ptr, extname_len);
     s.resize(extname_len);
@@ -827,13 +827,13 @@ auto str::extname(std::string& s) -> std::string& {
 }
 
 auto str::remove_extname(std::string& s) -> std::string& {
-    auto ptr = view::extname_ptr(s);
+    auto ptr = str::extname_ptr(s);
     s.resize(ptr - s.c_str());
     return s;
 }
 
 auto str::replace_extname(std::string& s, std::string_view name) -> std::string& {
-    auto ptr = const_cast<pointer>(view::extname_ptr(s));
+    auto ptr = const_cast<pointer>(str::extname_ptr(s));
     s.resize((ptr - s.c_str()) + name.size());
     std::memcpy(ptr, name.data(), name.size());
     return s;
