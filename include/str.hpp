@@ -461,23 +461,43 @@ public:
     // 去掉字符串左侧的空白
     static auto trim_left(std::string_view s, const char_checker_proc& proc) -> std::string_view;
     static auto trim_left(std::string_view s) -> std::string_view;
+    static auto trim_left(std::string_view s, charset_type charset) -> std::string_view;
+    static auto trim_left(std::string_view s, std::string_view charset) -> std::string_view;
     static auto trim_right(std::string_view s, const char_checker_proc& proc) -> std::string_view;
+    static auto trim_right(std::string_view s, charset_type charset) -> std::string_view;
+    static auto trim_right(std::string_view s, std::string_view charset) -> std::string_view;
     static auto trim_right(std::string_view s) -> std::string_view;
     static auto trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string_view;
+    static auto trim_surrounding(std::string_view s, charset_type charset) -> std::string_view;
+    static auto trim_surrounding(std::string_view s, std::string_view charset) -> std::string_view;
     static auto trim_surrounding(std::string_view s) -> std::string_view;
+    static auto trim_left_margin(std::string_view s) -> std::string_view;
+    static auto trim_left_margin(std::string_view s, value_type ch) -> std::string_view;
 
     static auto trim_left_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_left_inplace(std::string& s, charset_type charset) -> std::string&;
+    static auto trim_left_inplace(std::string& s, std::string_view charset) -> std::string&;
     static auto trim_left_inplace(std::string& s) -> std::string&;
     static auto trim_right_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_right_inplace(std::string& s, charset_type charset) -> std::string&;
+    static auto trim_right_inplace(std::string& s, std::string_view charset) -> std::string&;
     static auto trim_right_inplace(std::string& s) -> std::string&;
     static auto trim_surrounding_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_surrounding_inplace(std::string& s, charset_type charset) -> std::string&;
+    static auto trim_surrounding_inplace(std::string& s, std::string_view charset) -> std::string&;
     static auto trim_surrounding_inplace(std::string& s) -> std::string&;
+    static auto trim_left_margin(std::string& s) -> std::string&;
+    static auto trim_left_margin(std::string& s, value_type ch) -> std::string&;
 
     // 去掉字符串中任何位置的空白
     static auto trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string;
+    static auto trim_anywhere(std::string_view s, charset_type charset) -> std::string;
+    static auto trim_anywhere(std::string_view s, std::string_view charset) -> std::string;
     static auto trim_anywhere(std::string_view s) -> std::string;
 
     static auto trim_anywhere_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto trim_anywhere_inplace(std::string& s, charset_type charset) -> std::string&;
+    static auto trim_anywhere_inplace(std::string& s, std::string_view charset) -> std::string&;
     static auto trim_anywhere_inplace(std::string& s) -> std::string&;
 
     // 拷贝
@@ -643,6 +663,5 @@ public:
     static auto read_lines(const std::string& filename, size_type max_n = npos) -> std::vector<std::string>;
     static auto read_lines(const char* filename, size_type max_n = npos) -> std::vector<std::string>;
 };
-
 
 #endif // TINY_STR_H
