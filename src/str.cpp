@@ -1,6 +1,14 @@
-//
-// Created by libbylg on 2023/6/1.
-//
+/**
+ * Copyright (c) 2021-2024 libbylg@126.com
+ * tiny is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 #include "str.hpp"
 
 #include <fcntl.h>
@@ -399,15 +407,23 @@ auto str::wildcmp(const_pointer pattern, const_pointer s) -> bool {
 // auto str::wildcmp(std::string_view s, std::string_view pattern) -> bool {
 // }
 
-auto str::contains(std::string_view s, std::string_view other) -> bool {
-    return s.find(other) != std::string_view::npos;
+auto str::contains(std::string_view s, std::string_view other, bool ignore_case) -> bool {
+    if (ignore_case) {
+        std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
+            return std::tolower(a) == std::tolower(b);
+        });
+    } else {
+        std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
+            return a == b;
+        });
+    }
 }
 
-auto str::contains(std::string_view s, value_type ch) -> bool {
-    return s.find(ch) != std::string_view::npos;
+auto str::contains(std::string_view s, value_type ch, bool ignore_case) -> bool {
+    return contains(s, std::string_view{&ch, 1}, ignore_case);
 }
 
-auto str::count(std::string_view s, std::string_view other) -> str::size_type {
+auto str::count(std::string_view s, std::string_view other, bool ignore_case) -> str::size_type {
     if (other.empty()) {
         return s.size() + 1;
     }
@@ -428,7 +444,7 @@ auto str::count(std::string_view s, std::string_view other) -> str::size_type {
     return count;
 }
 
-auto str::count(std::string_view s, value_type ch) -> str::size_type {
+auto str::count(std::string_view s, value_type ch, bool ignore_case) -> str::size_type {
     size_type count = 0;
     for (auto elem_ch : s) {
         count += ((elem_ch == ch) ? 1 : 0);
@@ -3170,13 +3186,13 @@ auto str::decode_base16(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::chars(std::string_view s) -> charset_type {
+auto str::charset(std::string_view s) -> charset_type {
     return charset_type{s};
 }
 
-auto str::chars(std::string_view s, charset_type& charset) -> charset_type& {
-    charset.set(s);
-    return charset;
+auto str::charset(std::string_view s, charset_type& set) -> charset_type& {
+    set.set(s);
+    return set;
 }
 
 auto str::is_all(std::string_view s, mapping_proc<bool> proc) -> bool {
@@ -3267,7 +3283,6 @@ auto str::chunked(std::string_view s, size_type size) -> std::vector<std::string
 
     return result;
 }
-
 
 auto str::read_all(const std::string& filename) -> std::string {
     return read_all(filename.c_str());

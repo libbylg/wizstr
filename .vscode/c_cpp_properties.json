@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "Linux", //配置名称，默认为系统名，可以自行更改
+            "includePath": [ //（常用）运行项目包含.h头文件的目录，
+                "${workspaceFolder}/**" //此处会匹配工作文件下的所有文件
+            ], //添加"compilerPath"后,系统include路径可不写明
+            "defines": [], //（常用）定义一些需要的变量，等价于在编译时写"-D变量" 
+            "compilerPath": "/usr/bin/gcc", //编译器的路径
+            "cStandard": "gnu17", //C标准的版本
+            "cppStandard": "gnu++17", //C++标准的版本
+            "intelliSenseMode": "gcc-x64" //IntelliSense的一些配置，默认即可
+        }
+    ],
+    "version": 4
+}

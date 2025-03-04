@@ -1,6 +1,14 @@
-//
-// Created by libbylg on 2023/6/1.
-//
+/**
+ * Copyright (c) 2021-2024 libbylg@126.com
+ * tiny is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 #ifndef TINY_STR_H
 #define TINY_STR_H
 
@@ -186,13 +194,20 @@ public:
     static auto wildcmp(std::string_view s, std::string_view pattern) -> bool;
 
     // 是否包含子串
-    static auto contains(std::string_view s, std::string_view other) -> bool;
-    static auto contains(std::string_view s, value_type ch) -> bool;
+    static auto contains(std::string_view s, std::string_view other, bool ignore_case = false) -> bool;
+    static auto contains(std::string_view s, value_type ch, bool ignore_case = false) -> bool;
+    static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
+    static auto contains(std::string_view s, const charset_type& charset) -> bool;
+    static auto contains(std::string_view s, const std::regex& pattern) -> bool;
+    static auto contains(std::string_view s, const range_search_proc& proc) -> bool;
 
     // 子串统计
-    static auto count(std::string_view s, std::string_view other) -> size_type;
-    static auto count(std::string_view s, value_type ch) -> size_type;
+    static auto count(std::string_view s, std::string_view other, bool ignore_case = false) -> size_type;
+    static auto count(std::string_view s, value_type ch, bool ignore_case = false) -> size_type;
     static auto count(std::string_view s, const char_match_proc& proc) -> size_type;
+    static auto count(std::string_view s, const charset_type& charset) -> size_type;
+    static auto count(std::string_view s, const std::regex& pattern) -> size_type;
+    static auto count(std::string_view s, const range_search_proc& proc) -> size_type;
 
     // 计算公共前后缀的长度
     static auto prefix(std::string_view s, std::string_view other) -> size_type;
@@ -263,7 +278,7 @@ public:
     static auto is_literal_real(std::string_view s) -> bool;
     static auto is_literal_integer(std::string_view s) -> bool;
 
-    // 提取子串
+    // 提取子串    
     static auto take_left(std::string_view s, size_type n) -> std::string_view;
     static auto take_right(std::string_view s, size_type n) -> std::string_view;
     static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string_view;
@@ -272,14 +287,6 @@ public:
     static auto take(std::string_view s, size_type pos) -> std::string_view;
     static auto take(std::string_view s, char_checker_proc proc) -> std::string;
     static auto take(std::string_view s, charset_type charset) -> std::string;
-    static auto drop_left(std::string_view s, size_type n) -> std::string_view;
-    static auto drop_right(std::string_view s, size_type n) -> std::string_view;
-    static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
-    static auto drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
-    static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string;
-    static auto drop(std::string_view s, size_type pos) -> std::string;
-    static auto drop(std::string_view s, char_checker_proc proc) -> std::string;
-    static auto drop(std::string_view s, charset_type charset) -> std::string;
 
     static auto take_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto take_right_inplace(std::string& s, size_type n) -> std::string&;
@@ -289,6 +296,17 @@ public:
     static auto take_inplace(std::string& s, size_type pos) -> std::string&;
     static auto take_inplace(std::string& s, char_checker_proc proc) -> std::string&;
     static auto take_inplace(std::string& s, charset_type charset) -> std::string&;
+
+    // 删除串中的子串
+    static auto drop_left(std::string_view s, size_type n) -> std::string_view;
+    static auto drop_right(std::string_view s, size_type n) -> std::string_view;
+    static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
+    static auto drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
+    static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string;
+    static auto drop(std::string_view s, size_type pos) -> std::string;
+    static auto drop(std::string_view s, char_checker_proc proc) -> std::string;
+    static auto drop(std::string_view s, charset_type charset) -> std::string;
+
     static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_right_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
@@ -297,6 +315,26 @@ public:
     static auto drop_inplace(std::string& s, size_type pos) -> std::string&;
     static auto drop_inplace(std::string& s, char_checker_proc proc) -> std::string&;
     static auto drop_inplace(std::string& s, charset_type charset) -> std::string&;
+
+    // 按字符位置定位并提取
+    static auto take_after_first(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto take_before_first(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto take_after_last(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto take_before_last(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto take_after_first(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
+    static auto take_before_first(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
+    static auto take_after_last(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
+    static auto take_before_last(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
+
+    // 按字符位置定位并丢弃
+    static auto drop_after_first(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto drop_before_first(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto drop_after_last(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto drop_before_last(std::string_view s, value_type ch) -> std::optional<std::string_view>;
+    static auto drop_after_first(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
+    static auto drop_before_first(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
+    static auto drop_after_last(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
+    static auto drop_before_last(std::string_view s, std::string_view other) -> std::optional<std::string_view>;
 
     // 对齐
     static auto align_left(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
@@ -308,6 +346,10 @@ public:
     static auto align_right_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_center_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_zfill_inplace(std::string& s, size_type width) -> std::string&;
+
+    // 单字符串多行处理
+    static auto count_lines(std::string_view s) -> size_type;
+    static auto count_lines(std::string_view s) -> size_type;
 
     // Title 化：首字母大写
     static auto capitalize(std::string_view s) -> std::string;
@@ -628,8 +670,8 @@ public:
     }
 
     // 自动统计本字符所属的字符集
-    static auto chars(std::string_view s) -> charset_type;
-    static auto chars(std::string_view s, charset_type& set) -> charset_type&;
+    static auto charset(std::string_view s) -> charset_type;
+    static auto charset(std::string_view s, charset_type& set) -> charset_type&;
 
     // 是否全都满足proc或者在set范围内
     static auto is_all(std::string_view s, mapping_proc<bool> proc) -> bool;

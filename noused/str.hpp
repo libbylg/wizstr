@@ -224,7 +224,7 @@ public:
     static auto sum(std::string_view s, MapperProc mapper);
 
     //  自动统计本字符所属的字符集
-    static auto chars(std::string_view s) -> charset_type;
+    static auto charset(std::string_view s) -> charset_type;
 
     // 是否全都满足proc或者在set范围内
     static auto is_all(std::string_view s, mapper_proc<bool> proc);
