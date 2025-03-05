@@ -276,7 +276,7 @@ public:
     static auto is_literal_real(std::string_view s) -> bool;
     static auto is_literal_integer(std::string_view s) -> bool;
 
-    // 提取子串    
+    // 提取子串
     static auto take_left(std::string_view s, size_type n) -> std::string_view;
     static auto take_right(std::string_view s, size_type n) -> std::string_view;
     static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string_view;
@@ -348,6 +348,12 @@ public:
     // 单字符串多行处理
     static auto count_lines(std::string_view s) -> size_type;
 
+    // 统计单词数量
+    static auto count_words(std::string_view s, const char_match_proc& proc) -> size_type;
+    static auto count_words(std::string_view s, charset_type sepset) -> size_type;
+    static auto count_words(std::string_view s, value_type sepch) -> size_type;
+    static auto count_words(std::string_view s) -> size_type;
+
     // Title 化：首字母大写
     static auto capitalize(std::string_view s) -> std::string;
     static auto title(std::string_view s) -> std::string;
@@ -370,14 +376,33 @@ public:
     static auto skip_space(std::string_view s, size_type pos) -> size_type;
     static auto skip_space_inplace(std::string& s, size_type pos) -> size_type;
 
+    // 遮罩
+    static auto cover_left(std::string_view s, std::string_view mask = "***", size_type show_size = 3) -> std::string;
+    static auto cover_right(std::string_view s, std::string_view mask = "***", size_type show_size = 3) -> std::string;
+    static auto cover_surrounding(std::string_view s, std::string_view mask = "***", size_type show_size = 3) -> std::string;
+    static auto cover_auto(std::string_view s, std::string_view mask = "***", size_type show_size = 3) -> std::string;
+    static auto cover_left(std::string_view s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string;
+    static auto cover_right(std::string_view s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string;
+    static auto cover_surrounding(std::string_view s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string;
+    static auto cover_auto(std::string_view s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string;
+
+
+    static auto cover_left_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3) -> std::string&;
+    static auto cover_right_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3) -> std::string&;
+    static auto cover_surrounding_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3) -> std::string&;
+    static auto cover_auto_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3) -> std::string&;
+    static auto cover_left_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string&;
+    static auto cover_right_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string&;
+    static auto cover_surrounding_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string&;
+    static auto cover_auto_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string&;
+
     // 用指定的分隔符,拼接一个字符串序列
-    static auto join_list(std::string_view s, const view_provider_proc& proc) -> std::string;
-    static auto join_list(const view_provider_proc& proc) -> std::string;
+    static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_list(std::string_view s, const Sequence& items) -> std::string {
+    static auto join(std::string_view s, const Sequence& items) -> std::string {
         std::string result;
         auto itr = items.begin();
-        return join_list(s, [&items, &itr]() -> std::optional<std::string_view> {
+        return join(s, [&items, &itr]() -> std::optional<std::string_view> {
             if (itr == items.end()) {
                 return std::nullopt;
             }
@@ -386,9 +411,10 @@ public:
         });
     }
 
+    static auto join_list(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_list(const Sequence& items) -> std::string {
-        return join_list(",", items);
+        return join(",", items);
     }
 
     // 使用逗号和冒号拼接 map
@@ -411,6 +437,33 @@ public:
     template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(const Map& items) -> std::string {
         return str::join_map("=", ",", items);
+    }
+
+    // 按行拼接
+    static auto join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string;
+    static auto join_lines(const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto join_lines(const Sequence& items) -> std::string {
+        auto itr = items.cbegin();
+        return join_lines([&itr, &items]() -> std::optional<std::string_view> {
+            if (itr == items.cend()) {
+                return std::nullopt;
+            }
+
+            return *(itr++);
+        });
+    }
+
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto join_lines(std::string_view line_ends, const Sequence& items) -> std::string {
+        auto itr = items.cbegin();
+        return join_lines(line_ends, [&itr, &items]() -> std::optional<std::string_view> {
+            if (itr == items.cend()) {
+                return std::nullopt;
+            }
+
+            return *(itr++);
+        });
     }
 
     // 文件路径拼接
@@ -442,16 +495,26 @@ public:
     }
 
     // 拆分字符串
+    static auto split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const charset_type& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const charset_type& sepset, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, value_type sepch, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
+
+    // 拆分字符串
     static auto split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, std::string_view sep = ",", size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, const std::regex& sep, size_type max_n = npos) -> std::vector<std::string_view>;
-
-    // 按空格拆分，多个空格会作为一个分隔符
-    static auto split_words(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto split_words(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
 
     static auto split_pair(std::string_view sm, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view>;
 
@@ -538,6 +601,12 @@ public:
     static auto trim_anywhere_inplace(std::string& s, charset_type charset) -> std::string&;
     static auto trim_anywhere_inplace(std::string& s, std::string_view charset) -> std::string&;
     static auto trim_anywhere_inplace(std::string& s) -> std::string&;
+
+    // 清除多余的0
+    static auto trim_zeros_left(std::string_view s) -> std::string_view;
+    static auto trim_zeros_right(std::string_view s) -> std::string_view;
+    static auto trim_zeros_surrounding(std::string_view s) -> std::string_view;
+    static auto trim_zeros_decimal(std::string_view s) -> std::string_view;
 
     // 拷贝
     static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;

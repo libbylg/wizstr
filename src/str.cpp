@@ -519,7 +519,7 @@ auto str::count(std::string_view s, const charset_type& charset) -> size_type {
 
 auto str::count(std::string_view s, const std::regex& pattern) -> size_type {
     size_type matched_count = 0;
-    std::smatch matched;
+    std::match_results<std::string_view::const_iterator> matched;
     while (std::regex_search(s.begin(), s.end(), matched, pattern)) {
         matched_count++;
         s = std::string_view{s.data() + matched.position(0), static_cast<size_type>(matched.length(0))};
@@ -597,6 +597,16 @@ auto str::remove_prefix(std::string_view s, value_type prefix) -> std::string_vi
     return remove_prefix(s, {&prefix, 1});
 }
 
+auto str::remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string& {
+    s = remove_prefix(s, prefix);
+    return s;
+}
+
+auto str::remove_prefix_inplace(std::string& s, value_type prefix) -> std::string& {
+    s = remove_prefix(s, prefix);
+    return s;
+}
+
 auto str::has_suffix(std::string_view s, value_type suffix) -> bool {
     if (s.empty()) {
         return false;
@@ -627,6 +637,16 @@ auto str::remove_suffix(std::string_view s, std::string_view suffix) -> std::str
 
 auto str::remove_suffix(std::string_view s, value_type suffix) -> std::string_view {
     return remove_suffix(s, {&suffix, 1});
+}
+
+auto str::remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string& {
+    s = remove_suffix(s, suffix);
+    return s;
+}
+
+auto str::remove_suffix_inplace(std::string& s, value_type suffix) -> std::string& {
+    s = remove_suffix(s, suffix);
+    return s;
 }
 
 auto str::find_next_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
@@ -1707,7 +1727,7 @@ auto str::skip_space(std::string_view s, size_type pos) -> size_type {
     return ptr - s.data();
 }
 
-auto str::join_list(std::string_view s, const view_provider_proc& proc) -> std::string {
+auto str::join(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
     bool suffix = false;
     for (auto item = proc(); item; item = proc()) {
@@ -1742,6 +1762,26 @@ auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const v
 
 auto str::join_map(const view_pair_provider_proc& proc) -> std::string {
     return str::join_map("=", ",", proc);
+}
+
+auto str::join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string {
+    assert(!line_ends.empty());
+
+    std::string result;
+    auto item = proc();
+    while (!item) {
+        result.append(item.value());
+        if (!ends_with(item.value(), line_ends)) {
+            result.append(line_ends);
+        }
+    }
+
+    return result;
+}
+
+
+auto str::join_lines(const view_provider_proc& proc) -> std::string {
+    return join_lines("\n", proc);
 }
 
 auto str::join_path(const view_provider_proc& proc) -> std::string {
@@ -1783,6 +1823,130 @@ auto str::join_search_path(const view_provider_proc& proc) -> std::string {
 
         result.append(*item);
     }
+
+    return result;
+}
+
+auto str::split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void {
+    assert(sepset);
+
+    // 最大拆分次数如果为0，就不需要拆了
+    if (max_n == 0) {
+        proc(s);
+        return;
+    }
+
+    size_type n = 0;
+    size_type pos_start = 0;
+    while (pos_start < s.size()) {
+        // 找到分隔符的位置
+        auto itr_begin = s.begin();
+        std::advance(itr_begin, pos_start);
+        auto itr_pos = std::find_if(
+            itr_begin, s.end(), [&sepset](value_type ch) -> bool {
+                return sepset(ch);
+            });
+        size_type pos_end = std::distance(s.begin(), itr_pos);
+        if (pos_end == std::string::npos) {
+            break;
+        }
+
+        // 执行输出,如果用户希望提前结束就直接结束后续的部分不再理会
+        if (proc(std::string_view{s.data() + pos_start, (pos_end - pos_start)}) != 0) {
+            return;
+        }
+
+        // 准备好下次查找的起点
+        pos_start = pos_end + 1;
+
+        // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
+        n++;
+        if (n >= max_n) {
+            break;
+        }
+    }
+
+    proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
+}
+
+auto str::split(std::string_view s, const charset_type& sepset, size_type max_n, const view_consumer_proc& proc) -> void {
+    split(
+        s, [&sepset](value_type ch) -> bool {
+            return sepset.get(ch);
+        },
+        max_n, proc);
+}
+
+auto str::split(std::string_view s, const charset_type& sepset, const view_consumer_proc& proc) -> void {
+    split(
+        s, [&sepset](value_type ch) -> bool {
+            return sepset.get(ch);
+        },
+        npos, proc);
+}
+
+auto str::split(std::string_view s, const charset_type& sepset, size_type max_n) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    split(s, sepset, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+}
+
+auto str::split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void {
+    split(s, charset_type{sepset}, max_n, proc);
+}
+
+auto str::split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void {
+    split(s, charset_type{sepset}, npos, proc);
+}
+
+auto str::split(std::string_view s, std::string_view sepset, size_type max_n) -> std::vector<std::string_view> {
+    return split(s, charset_type{sepset}, max_n);
+}
+
+auto str::split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void {
+    split(s, std::string_view{&sepch, 1}, max_n, proc);
+}
+
+auto str::split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void {
+    split(s, std::string_view{&sepch, 1}, npos, proc);
+}
+
+auto str::split(std::string_view s, value_type sepch, size_type max_n) -> std::vector<std::string_view> {
+    return split(s, std::string_view{&sepch, 1}, npos);
+}
+
+auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
+    size_type pos = 0;
+    while (pos < s.size()) {
+        std::string_view word = str::iter_next_word(s, pos);
+        if (word.empty()) {
+            assert(pos >= s.size());
+            continue;
+        }
+
+        if (proc(word) != 0) {
+            break;
+        }
+    }
+}
+
+auto str::split(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string_view> result;
+
+    str::split(s, [&result, max_n](std::string_view item) -> int {
+        assert(!item.empty());
+        result.emplace_back(item);
+        if (result.size() >= max_n) {
+            return -1;
+        }
+        return 0;
+    });
 
     return result;
 }
@@ -1893,40 +2057,6 @@ auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n)
 
     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
-        return 0;
-    });
-
-    return result;
-}
-
-auto str::split_words(std::string_view s, const view_consumer_proc& proc) -> void {
-    size_type pos = 0;
-    while (pos < s.size()) {
-        std::string_view word = str::iter_next_word(s, pos);
-        if (word.empty()) {
-            assert(pos >= s.size());
-            continue;
-        }
-
-        if (proc(word) != 0) {
-            break;
-        }
-    }
-}
-
-auto str::split_words(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
-    if (max_n == 0) {
-        return {};
-    }
-
-    std::vector<std::string_view> result;
-
-    str::split_words(s, [&result, max_n](std::string_view item) -> int {
-        assert(!item.empty());
-        result.emplace_back(item);
-        if (result.size() >= max_n) {
-            return -1;
-        }
         return 0;
     });
 
