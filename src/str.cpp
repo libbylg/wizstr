@@ -404,8 +404,43 @@ auto str::wildcmp(const_pointer pattern, const_pointer s) -> bool {
     return !*pattern;
 }
 
-// auto str::wildcmp(std::string_view s, std::string_view pattern) -> bool {
-// }
+auto str::wildcmp(std::string_view s, std::string_view pattern) -> bool {
+    const_pointer cp = nullptr;
+    const_pointer mp = nullptr;
+
+    const_pointer s_ptr = s.data();
+    const_pointer p_ptr = pattern.data();
+    const_pointer s_end = s.data() + s.size();
+    const_pointer p_end = pattern.data() + pattern.size();
+    while ((s_ptr < s_end) && (pattern < p_end) && (*p_ptr != '*')) {
+        if ((*p_ptr != *s_ptr) && (*p_ptr != '?')) {
+            return false;
+        }
+        p_ptr++;
+        s_ptr++;
+    }
+
+    while (s_ptr < s_end) {
+        if (*p_ptr == '*') {
+            if (!*++p_ptr) {
+                return true;
+            }
+            mp = p_ptr;
+            cp = s_ptr + 1;
+        } else if ((*p_ptr == *s_ptr) || (*p_ptr == '?')) {
+            p_ptr++;
+            s_ptr++;
+        } else {
+            p_ptr = mp;
+            s_ptr = cp++;
+        }
+    }
+
+    while (*p_ptr == '*') {
+        p_ptr++;
+    }
+    return !*p_ptr;
+}
 
 auto str::contains(std::string_view s, std::string_view other, bool ignore_case) -> bool {
     if (ignore_case) {
