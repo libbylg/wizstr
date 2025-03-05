@@ -199,7 +199,6 @@ public:
     static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
     static auto contains(std::string_view s, const charset_type& charset) -> bool;
     static auto contains(std::string_view s, const std::regex& pattern) -> bool;
-    static auto contains(std::string_view s, const range_search_proc& proc) -> bool;
 
     // 子串统计
     static auto count(std::string_view s, std::string_view other, bool ignore_case = false) -> size_type;
@@ -207,7 +206,6 @@ public:
     static auto count(std::string_view s, const char_match_proc& proc) -> size_type;
     static auto count(std::string_view s, const charset_type& charset) -> size_type;
     static auto count(std::string_view s, const std::regex& pattern) -> size_type;
-    static auto count(std::string_view s, const range_search_proc& proc) -> size_type;
 
     // 计算公共前后缀的长度
     static auto prefix(std::string_view s, std::string_view other) -> size_type;
@@ -348,7 +346,6 @@ public:
     static auto align_zfill_inplace(std::string& s, size_type width) -> std::string&;
 
     // 单字符串多行处理
-    static auto count_lines(std::string_view s) -> size_type;
     static auto count_lines(std::string_view s) -> size_type;
 
     // Title 化：首字母大写

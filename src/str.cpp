@@ -409,18 +409,32 @@ auto str::wildcmp(const_pointer pattern, const_pointer s) -> bool {
 
 auto str::contains(std::string_view s, std::string_view other, bool ignore_case) -> bool {
     if (ignore_case) {
-        std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
+        return std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
             return std::tolower(a) == std::tolower(b);
-        });
+        }) != s.cend();
     } else {
-        std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
+        return std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
             return a == b;
-        });
+        }) != s.cend();
     }
 }
 
 auto str::contains(std::string_view s, value_type ch, bool ignore_case) -> bool {
     return contains(s, std::string_view{&ch, 1}, ignore_case);
+}
+
+auto str::contains(std::string_view s, const char_match_proc& proc) -> bool {
+    return std::find_if(s.begin(), s.end(), proc) != s.cend();
+}
+
+auto str::contains(std::string_view s, const charset_type& charset) -> bool {
+    return std::find_if(s.begin(), s.end(), [&charset](value_type ch) -> bool {
+        return charset.get(ch);
+    }) != s.cend();
+}
+
+auto str::contains(std::string_view s, const std::regex& pattern) -> bool {
+    return std::regex_search(s.begin(), s.end(), pattern);
 }
 
 auto str::count(std::string_view s, std::string_view other, bool ignore_case) -> str::size_type {
@@ -460,6 +474,23 @@ auto str::count(std::string_view s, const char_match_proc& proc) -> str::size_ty
         }
     }
     return count;
+}
+
+auto str::count(std::string_view s, const charset_type& charset) -> size_type {
+    return count(s, [&charset](value_type ch) -> bool {
+        return charset.get(ch);
+    });
+}
+
+auto str::count(std::string_view s, const std::regex& pattern) -> size_type {
+    size_type matched_count = 0;
+    std::smatch matched;
+    while (std::regex_search(s.begin(), s.end(), matched, pattern)) {
+        matched_count++;
+        s = std::string_view{s.data() + matched.position(0), static_cast<size_type>(matched.length(0))};
+    }
+
+    return matched_count;
 }
 
 auto str::prefix(std::string_view s, std::string_view other) -> str::size_type {
