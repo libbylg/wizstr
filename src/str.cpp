@@ -1601,7 +1601,7 @@ auto str::align_zfill(std::string_view s, size_type width) -> std::string {
     return result;
 }
 
-auto str::capitalize(std::string_view s) -> std::string {
+auto str::to_capitalize(std::string_view s) -> std::string {
     if (s.empty()) {
         return {};
     }
@@ -1614,7 +1614,7 @@ auto str::capitalize(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::capitalize_inplace(std::string& s) -> std::string& {
+auto str::to_capitalize_inplace(std::string& s) -> std::string& {
     if (s.empty()) {
         return s;
     }
@@ -1623,12 +1623,12 @@ auto str::capitalize_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-auto str::title(std::string_view s) -> std::string {
+auto str::to_title(std::string_view s) -> std::string {
     std::string result{s};
-    return str::title_inplace(result);
+    return str::to_title_inplace(result);
 }
 
-auto str::title_inplace(std::string& s) -> std::string& {
+auto str::to_title_inplace(std::string& s) -> std::string& {
     str::foreach_word(s, [&s](size_type pos, size_type n) -> int {
         pointer ptr = s.data() + pos;
         while (ptr < (s.data() + pos + n)) {
@@ -1741,7 +1741,7 @@ auto str::join(std::string_view s, const view_provider_proc& proc) -> std::strin
 }
 
 auto str::join_list(const view_provider_proc& proc) -> std::string {
-    return str::join_list(",", proc);
+    return join(",", proc);
 }
 
 auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string {
