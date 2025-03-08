@@ -1289,7 +1289,7 @@ auto str::is_literal_integer(std::string_view s) -> bool {
 
 auto str::take_left(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
-        return "";
+        return {};
     }
 
     if (n > s.size()) {
@@ -1399,6 +1399,102 @@ auto str::take(std::string_view s, charset_type charset) -> std::string {
     return result;
 }
 
+auto str::take_left_inplace(std::string& s, size_type n) -> std::string& {
+    if (n >= s.size()) {
+        return s;
+    }
+
+    s.resize(n);
+    return s;
+}
+
+auto str::take_right_inplace(std::string& s, size_type n) -> std::string& {
+    if (n == 0) {
+        s.resize(0);
+        return s;
+    }
+
+    if (n >= s.size()) {
+        return s;
+    }
+
+    std::memmove(s.data() + (s.size() - n), s.data(), n);
+    s.resize(n);
+    return s;
+}
+
+auto str::take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
+    if (pos >= s.size()) {
+        s.resize(0);
+        return s;
+    }
+
+    if (n == 0) {
+        s.resize(0);
+        return s;
+    }
+
+    if (n > (s.size() - pos)) {
+        std::memmove(s.data(), (s.data() + pos), (s.size() - pos));
+        s.resize(s.size() - pos);
+        return s;
+    }
+
+    std::memmove(s.data(), (s.data() + pos), n);
+    s.resize(n);
+    return s;
+}
+
+auto str::take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
+    if (begin_pos == end_pos) [[unlikely]] {
+        s.resize(0);
+        return s;
+    }
+
+    if (begin_pos > end_pos) [[unlikely]] {
+        std::swap(begin_pos, end_pos);
+    }
+
+    if (begin_pos >= s.size()) [[unlikely]] {
+        s.resize(0);
+        return s;
+    }
+
+    if (end_pos >= s.size()) {
+        std::memmove(s.data(), (s.data() + begin_pos), (s.size() - begin_pos));
+        s.resize(s.size() - begin_pos);
+        return s;
+    }
+
+    std::memmove(s.data(), (s.data() + begin_pos), (end_pos - begin_pos));
+    s.resize(end_pos - begin_pos);
+    return s;
+}
+
+auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
+    if (offset == 0) {
+        s.resize(0);
+        return s;
+    }
+
+    if (offset > 0) {
+        return take_mid_inplace(s, pos, offset);
+    }
+
+    return take_mid_inplace(s, (pos + offset + 1), offset);
+}
+
+auto str::take_inplace(std::string& s, size_type pos) -> std::string& {
+    if (pos >= s.size()) {
+        s.resize(0);
+        return s;
+    }
+
+    std::memmove(s.data(), s.data() + pos, (s.size() - pos));
+    s.resize(s.size() - pos);
+    return s;
+}
+
 auto str::drop_left(std::string_view s, size_type n) -> std::string_view {
     if (n > s.size()) {
         return {};
@@ -1504,7 +1600,7 @@ auto str::drop(std::string_view s, size_type pos, ssize_type offset) -> std::str
 }
 
 auto str::drop(std::string_view s, size_type pos) -> std::string {
-    return str::drop(s, pos, str::npos);
+    return str::drop(s, pos, s.size());
 }
 
 auto str::drop(std::string_view s, char_checker_proc proc) -> std::string {
@@ -1670,7 +1766,7 @@ auto str::invert(std::string_view s, size_type pos, size_type max_n) -> std::str
 
 auto str::repeat(std::string_view s, size_type times) -> std::string {
     if (s.empty() || (times == 0)) {
-        return "";
+        return {};
     }
 
     std::string result;
@@ -1778,7 +1874,6 @@ auto str::join_lines(std::string_view line_ends, const view_provider_proc& proc)
 
     return result;
 }
-
 
 auto str::join_lines(const view_provider_proc& proc) -> std::string {
     return join_lines("\n", proc);
@@ -1905,17 +2000,17 @@ auto str::split(std::string_view s, std::string_view sepset, size_type max_n) ->
     return split(s, charset_type{sepset}, max_n);
 }
 
-auto str::split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void {
-    split(s, std::string_view{&sepch, 1}, max_n, proc);
-}
-
-auto str::split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void {
-    split(s, std::string_view{&sepch, 1}, npos, proc);
-}
-
-auto str::split(std::string_view s, value_type sepch, size_type max_n) -> std::vector<std::string_view> {
-    return split(s, std::string_view{&sepch, 1}, npos);
-}
+// auto str::split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void {
+//     split(s, std::string_view{&sepch, 1}, max_n, proc);
+// }
+//
+// auto str::split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void {
+//     split(s, std::string_view{&sepch, 1}, npos, proc);
+// }
+//
+// auto str::split(std::string_view s, value_type sepch, size_type max_n) -> std::vector<std::string_view> {
+//     return split(s, std::string_view{&sepch, 1}, npos);
+// }
 
 auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
     size_type pos = 0;
@@ -3427,57 +3522,42 @@ auto str::has_any(std::string_view s, charset_type set) -> bool {
     return false;
 }
 
-auto str::grouped(std::string_view s, mapping_proc<bool> proc) -> std::tuple<std::string, std::string> {
-    std::string matched;
-    std::string unmatched;
-
-    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (proc(*ptr)) {
-            matched.append(1, *ptr);
-        } else {
-            unmatched.append(1, *ptr);
-        }
-    }
-
-    return {matched, unmatched};
-}
-
-auto str::chunked_view(std::string_view s, size_type size) -> std::vector<std::string_view> {
-    if (size == 0) {
-        return {s};
+auto str::chunked(std::string_view s, size_type width, const view_consumer_proc& proc) -> void {
+    if (width == 0) {
+        proc(s);
+        return;
     }
 
     std::vector<std::string_view> result;
 
     size_type pos = 0;
-    while ((pos + size) <= s.size()) {
-        result.emplace_back(s.substr(pos, size));
+    while ((pos + width) <= s.size()) {
+        if (proc(s.substr(pos, width)) != 0) {
+            return;
+        }
     }
 
     if (pos < s.size()) {
-        result.emplace_back(s.substr(pos));
+        proc(s.substr(pos));
     }
-
-    return result;
 }
 
-auto str::chunked(std::string_view s, size_type size) -> std::vector<std::string> {
-    if (size == 0) {
-        return {std::string{s}};
-    }
-
+auto str::chunked(std::string_view s, size_type width) -> std::vector<std::string> {
     std::vector<std::string> result;
 
-    size_type pos = 0;
-    while ((pos + size) <= s.size()) {
-        result.emplace_back(s.substr(pos, size));
-    }
+    chunked(s, width, [&result](std::string_view item) -> int {
+        result.emplace_back(std::move(item));
+        return 0;
+    });
+}
 
-    if (pos < s.size()) {
-        result.emplace_back(s.substr(pos));
-    }
+auto str::chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
 
-    return result;
+    chunked(s, width, [&result](std::string_view item) -> int {
+        result.emplace_back(std::move(item));
+        return 0;
+    });
 }
 
 auto str::read_all(const std::string& filename) -> std::string {
@@ -3655,4 +3735,73 @@ auto str::read_lines(const char* filename, size_type max_n) -> std::vector<std::
     assert(filename != nullptr);
     std::ifstream file{filename};
     return str::read_lines(file, max_n);
+}
+
+auto str::grouping(std::string_view s, const char_checker_proc& proc) -> std::tuple<std::string, std::string> {
+    std::string matched;
+    std::string unmatched;
+
+    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
+        if (proc(*ptr)) {
+            matched.append(1, *ptr);
+        } else {
+            unmatched.append(1, *ptr);
+        }
+    }
+
+    return {matched, unmatched};
+}
+
+auto str::filter(std::string_view s, const char_checker_proc& proc) -> std::string {
+    std::string result;
+    for (const_pointer rptr = s.data(); rptr < (s.data() + s.size()); rptr++) {
+        if (proc(*rptr)) {
+            result.append(1, *rptr);
+        }
+    }
+    return result;
+}
+
+auto str::filter(std::string_view s, const charset_type& charset) -> std::string {
+    std::string result;
+    for (const_pointer rptr = s.data(); rptr < (s.data() + s.size()); rptr++) {
+        if (charset.get(*rptr)) {
+            result.append(1, *rptr);
+        }
+    }
+    return result;
+}
+
+auto str::filter_inplace(std::string& s, const char_checker_proc& proc) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    pointer wptr = s.data();
+
+    for (const_pointer rptr = s.data(); rptr < (s.data() + s.size()); rptr++) {
+        if (proc(*rptr)) {
+            *(wptr++) = *rptr;
+        }
+    }
+
+    s.resize(wptr - s.data());
+    return s;
+}
+
+auto str::filter_inplace(std::string& s, const charset_type& charset) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    pointer wptr = s.data();
+
+    for (const_pointer rptr = s.data(); rptr < (s.data() + s.size()); rptr++) {
+        if (charset.get(*rptr)) {
+            *(wptr++) = *rptr;
+        }
+    }
+
+    s.resize(wptr - s.data());
+    return s;
 }

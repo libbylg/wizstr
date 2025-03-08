@@ -292,8 +292,7 @@ public:
     static auto take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
     static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
     static auto take_inplace(std::string& s, size_type pos) -> std::string&;
-    static auto take_inplace(std::string& s, char_checker_proc proc) -> std::string&;
-    static auto take_inplace(std::string& s, charset_type charset) -> std::string&;
+
 
     // 提取子串（基于分隔符系列）
     static auto take_before_first(std::string_view s, const char_match_proc& proc) -> std::string_view;
@@ -573,9 +572,9 @@ public:
     static auto split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string_view>;
-    static auto split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, value_type sepch, size_type max_n = npos) -> std::vector<std::string_view>;
+    // static auto split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void;
+    // static auto split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void;
+    // static auto split(std::string_view s, value_type sepch, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
 
@@ -642,8 +641,8 @@ public:
 
     // 指定宽度拆分字符串
     static auto chunked(std::string_view s, size_type width, const view_consumer_proc& proc) -> void;
-    static auto chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view>;
     static auto chunked(std::string_view s, size_type width) -> std::vector<std::string>;
+    static auto chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view>;
 
     // 基于窗口拆分字符串
     static auto windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void;
@@ -886,8 +885,12 @@ public:
     static auto read_emain(std::string_view s, size_type& pos) -> std::string_view;
 
     // 按 proc 将字符序列分成两组，左边的满足proc，右边不满足proc
-    static auto grouped(std::string_view s, mapping_proc<bool> proc) -> std::tuple<std::string, std::string>;
-    static auto filter(std::string_view s, mapping_proc<bool> proc) -> std::string;
+    static auto grouping(std::string_view s, const char_checker_proc& proc) -> std::tuple<std::string, std::string>;
+    static auto filter(std::string_view s, const char_checker_proc& proc) -> std::string;
+    static auto filter(std::string_view s, const charset_type& charset) -> std::string;
+    static auto filter_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto filter_inplace(std::string& s, const charset_type& charset) -> std::string&;
+
 };
 
 #endif // TINY_STR_H
