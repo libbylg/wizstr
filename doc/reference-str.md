@@ -159,12 +159,12 @@ void clear();
 | bool  | has_prefix(const bytes& s) const        |
 | bool  | has_prefix(const_pointer s) const     |
 | bool  | has_prefix(value_type c) const        |
-| bool  | remove_prefix(const bytes& s)           |
-| bool  | remove_prefix(const_pointer s)        |
-| bool  | remove_prefix(value_type c)           |
-| bool  | remove_suffix(const bytes& s)           |
-| bool  | remove_suffix(const_pointer s)        |
-| bool  | remove_suffix(value_type c)           |
+| bool  | remove_prefix_view(const bytes& s)           |
+| bool  | remove_prefix_view(const_pointer s)        |
+| bool  | remove_prefix_view(value_type c)           |
+| bool  | remove_suffix_view(const bytes& s)           |
+| bool  | remove_suffix_view(const_pointer s)        |
+| bool  | remove_suffix_view(value_type c)           |
 
 #### 填充
 

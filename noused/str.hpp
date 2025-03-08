@@ -235,8 +235,8 @@ public:
     static auto has_any(std::string_view s, charset_type set);
 
     // 挑出满足条件的字符
-    static auto take(std::string_view s, mapper_proc<bool> proc);
-    static auto take(std::string_view s, charset_type set);
+    static auto take_view(std::string_view s, size_type proc);
+    static auto take_view(std::string_view s, size_type set);
 
     // 按 proc 将字符序列分成两组，左边的满足proc，右边不满足proc
     static auto grouped(std::string_view s, mapper_proc<bool> proc) -> std::tuple<std::string, std::string>;

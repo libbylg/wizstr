@@ -40,7 +40,29 @@ public:
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
 
-    static inline constexpr size_type npos = std::string::npos;
+    // 生产器
+    using view_provider_proc = std::function<std::optional<std::string_view>()>;
+    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
+    using number_provider_proc = std::function<size_type()>;
+
+    // 消费器
+    using split_consumer_proc = std::function<int(size_type pos, size_type n, size_type sep_end)>;
+    using view_consumer_proc = std::function<int(std::string_view item)>;
+    using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
+
+    // path 消费器
+    using path_consumer_proc = std::function<int(int8_t type, std::string_view path_elem)>;
+
+    // 映射和校验
+    using char_mapping_proc = std::function<value_type(value_type)>;
+    using char_checker_proc = std::function<bool(value_type ch)>;
+
+    // 匹配和检索
+    using char_match_proc = std::function<bool(value_type ch)>;
+    using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
+
+    // 行消费
+    using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
 
     class charset_type {
     public:
@@ -56,6 +78,15 @@ public:
             : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 set(*ptr);
+            }
+        }
+
+        explicit charset_type(const char_match_proc& proc)
+            : charset_type() {
+            for (value_type ch = 0; ch < std::numeric_limits<value_type>::max(); ch++) {
+                if (proc(ch)) {
+                    set(ch);
+                }
             }
         }
 
@@ -126,29 +157,7 @@ public:
         uint64_t bits[4]{0, 0, 0, 0};
     };
 
-    // 生产器
-    using view_provider_proc = std::function<std::optional<std::string_view>()>;
-    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
-    using number_provider_proc = std::function<size_type()>;
-
-    // 消费器
-    using split_consumer_proc = std::function<int(size_type pos, size_type n, size_type sep_end)>;
-    using view_consumer_proc = std::function<int(std::string_view item)>;
-    using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
-
-    // path 消费器
-    using path_consumer_proc = std::function<int(int8_t type, std::string_view path_elem)>;
-
-    // 映射和校验
-    using char_mapping_proc = std::function<value_type(value_type)>;
-    using char_checker_proc = std::function<bool(value_type ch)>;
-
-    // 匹配和检索
-    using char_match_proc = std::function<bool(value_type ch)>;
-    using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
-
-    // 行消费
-    using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
+    static inline constexpr size_type npos = std::string::npos;
 
     //! 在尾部追加
     static auto append(std::string_view s, std::string_view other) -> std::string;
@@ -222,8 +231,10 @@ public:
     static auto has_prefix(std::string_view s, std::string_view prefix) -> bool;
     static auto starts_with(std::string_view s, value_type ch) -> bool;
     static auto starts_with(std::string_view s, std::string_view prefix) -> bool;
-    static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string_view;
-    static auto remove_prefix(std::string_view s, value_type prefix) -> std::string_view;
+    static auto remove_prefix_view(std::string_view s, std::string_view prefix) -> std::string_view;
+    static auto remove_prefix_view(std::string_view s, value_type prefix) -> std::string_view;
+    static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string;
+    static auto remove_prefix(std::string_view s, value_type prefix) -> std::string;
 
     static auto remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string&;
     static auto remove_prefix_inplace(std::string& s, value_type prefix) -> std::string&;
@@ -233,8 +244,10 @@ public:
     static auto has_suffix(std::string_view s, std::string_view suffix) -> bool;
     static auto ends_with(std::string_view s, value_type suffix) -> bool;
     static auto ends_with(std::string_view s, std::string_view suffix) -> bool;
-    static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string_view;
-    static auto remove_suffix(std::string_view s, value_type suffix) -> std::string_view;
+    static auto remove_suffix_view(std::string_view s, std::string_view suffix) -> std::string_view;
+    static auto remove_suffix_view(std::string_view s, value_type suffix) -> std::string_view;
+    static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string;
+    static auto remove_suffix(std::string_view s, value_type suffix) -> std::string;
 
     static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
     static auto remove_suffix_inplace(std::string& s, value_type suffix) -> std::string&;
@@ -277,15 +290,20 @@ public:
     static auto is_literal_integer(std::string_view s) -> bool;
 
     // 提取子串（基于位置系列）
-    static auto take_left(std::string_view s, size_type n) -> std::string_view;
-    static auto take_right(std::string_view s, size_type n) -> std::string_view;
-    static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string_view;
-    static auto take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view;
-    static auto take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
-    static auto take(std::string_view s, size_type pos) -> std::string_view;
-    static auto take(std::string_view s, char_checker_proc proc) -> std::string;
-    static auto take(std::string_view s, charset_type charset) -> std::string;
-
+    static auto take_left_view(std::string_view s, size_type n) -> std::string_view;
+    static auto take_right_view(std::string_view s, size_type n) -> std::string_view;
+    static auto take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view;
+    static auto take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view;
+    static auto take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
+    static auto take_view(std::string_view s, size_type pos) -> std::string_view;
+    //
+    static auto take_left(std::string_view s, size_type n) -> std::string;
+    static auto take_right(std::string_view s, size_type n) -> std::string;
+    static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string;
+    static auto take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
+    static auto take(std::string_view s, size_type pos, ssize_type offset) -> std::string;
+    static auto take(std::string_view s, size_type pos) -> std::string;
+    //
     static auto take_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto take_right_inplace(std::string& s, size_type n) -> std::string&;
     static auto take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
@@ -293,42 +311,18 @@ public:
     static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
     static auto take_inplace(std::string& s, size_type pos) -> std::string&;
 
-
-    // 提取子串（基于分隔符系列）
-    static auto take_before_first(std::string_view s, const char_match_proc& proc) -> std::string_view;
-    static auto take_before_first(std::string_view s, const charset_type& sep_charset) -> std::string_view;
-    static auto take_before_first(std::string_view s, value_type sep_ch) -> std::string_view;
-    static auto take_before_first(std::string_view s, const range_search_proc& proc) -> std::string_view;
-    static auto take_before_first(std::string_view s, std::string_view sep_str) -> std::string_view;
-
-    static auto take_after_first(std::string_view s, const char_match_proc& proc) -> std::string_view;
-    static auto take_after_first(std::string_view s, const charset_type& sep_charset) -> std::string_view;
-    static auto take_after_first(std::string_view s, value_type sep_ch) -> std::string_view;
-    static auto take_after_first(std::string_view s, const range_search_proc& proc) -> std::string_view;
-    static auto take_after_first(std::string_view s, std::string_view sep_str) -> std::string_view;
-
-    static auto take_before_last(std::string_view s, const char_match_proc& proc) -> std::string_view;
-    static auto take_before_last(std::string_view s, const charset_type& sep_charset) -> std::string_view;
-    static auto take_before_last(std::string_view s, value_type sep_ch) -> std::string_view;
-    static auto take_before_last(std::string_view s, const range_search_proc& proc) -> std::string_view;
-    static auto take_before_last(std::string_view s, std::string_view sep_str) -> std::string_view;
-
-    static auto take_after_last(std::string_view s, const char_match_proc& proc) -> std::string_view;
-    static auto take_after_last(std::string_view s, const charset_type& sep_charset) -> std::string_view;
-    static auto take_after_last(std::string_view s, value_type sep_ch) -> std::string_view;
-    static auto take_after_last(std::string_view s, const range_search_proc& proc) -> std::string_view;
-    static auto take_after_last(std::string_view s, std::string_view sep_str) -> std::string_view;
-
     // 删除串中的子串
-    static auto drop_left(std::string_view s, size_type n) -> std::string_view;
-    static auto drop_right(std::string_view s, size_type n) -> std::string_view;
+    static auto drop_left_view(std::string_view s, size_type n) -> std::string_view;
+    static auto drop_right_view(std::string_view s, size_type n) -> std::string_view;
+    static auto drop_left(std::string_view s, size_type n) -> std::string;
+    static auto drop_right(std::string_view s, size_type n) -> std::string;
     static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
     static auto drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
     static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string;
     static auto drop(std::string_view s, size_type pos) -> std::string;
     static auto drop(std::string_view s, char_checker_proc proc) -> std::string;
     static auto drop(std::string_view s, charset_type charset) -> std::string;
-
+    //
     static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_right_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
@@ -337,6 +331,31 @@ public:
     static auto drop_inplace(std::string& s, size_type pos) -> std::string&;
     static auto drop_inplace(std::string& s, char_checker_proc proc) -> std::string&;
     static auto drop_inplace(std::string& s, charset_type charset) -> std::string&;
+
+    // 提取子串（基于分隔符系列）
+    static auto take_before_first_view(std::string_view s, bool with_sep, const char_match_proc& proc) -> std::string_view;
+    static auto take_before_first_view(std::string_view s, bool with_sep, const charset_type& sep_charset) -> std::string_view;
+    static auto take_before_first_view(std::string_view s, bool with_sep, value_type sep_ch) -> std::string_view;
+    static auto take_before_first_view(std::string_view s, bool with_sep, const range_search_proc& proc) -> std::string_view;
+    static auto take_before_first_view(std::string_view s, bool with_sep, std::string_view sep_str) -> std::string_view;
+    //
+    static auto take_before_last_view(std::string_view s, bool with_sep, const char_match_proc& proc) -> std::string_view;
+    static auto take_before_last_view(std::string_view s, bool with_sep, const charset_type& sep_charset) -> std::string_view;
+    static auto take_before_last_view(std::string_view s, bool with_sep, value_type sep_ch) -> std::string_view;
+    static auto take_before_last_view(std::string_view s, bool with_sep, const range_search_proc& proc) -> std::string_view;
+    static auto take_before_last_view(std::string_view s, bool with_sep, std::string_view sep_str) -> std::string_view;
+    //
+    static auto take_after_first_view(std::string_view s, bool with_sep, const char_match_proc& proc) -> std::string_view;
+    static auto take_after_first_view(std::string_view s, bool with_sep, const charset_type& sep_charset) -> std::string_view;
+    static auto take_after_first_view(std::string_view s, bool with_sep, value_type sep_ch) -> std::string_view;
+    static auto take_after_first_view(std::string_view s, bool with_sep, const range_search_proc& proc) -> std::string_view;
+    static auto take_after_first_view(std::string_view s, bool with_sep, std::string_view sep_str) -> std::string_view;
+    //
+    static auto take_after_last_view(std::string_view s, bool with_sep, const char_match_proc& proc) -> std::string_view;
+    static auto take_after_last_view(std::string_view s, bool with_sep, const charset_type& sep_charset) -> std::string_view;
+    static auto take_after_last_view(std::string_view s, bool with_sep, value_type sep_ch) -> std::string_view;
+    static auto take_after_last_view(std::string_view s, bool with_sep, const range_search_proc& proc) -> std::string_view;
+    static auto take_after_last_view(std::string_view s, bool with_sep, std::string_view sep_str) -> std::string_view;
 
     // 提取子串（基于分隔符系列）
     static auto drop_before_first(std::string_view s, const char_match_proc& proc) -> std::string_view;
@@ -368,27 +387,32 @@ public:
     static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_center(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_zfill(std::string_view s, size_type width) -> std::string;
-
+    //
     static auto align_left_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_right_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_center_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_zfill_inplace(std::string& s, size_type width) -> std::string&;
 
     // 多行字符串处理
+    static auto foreach_line(std::string_view s, const line_consumer_proc& proc) -> void;
     static auto count_lines(std::string_view s) -> size_type;
     static auto lines_indentation(std::string_view s) -> size_type;
+    //
+    static auto numbering_lines(std::string_view s, size_type from_n, std::string_view num_format = "") -> std::string;
+    static auto unnumbering_lines(std::string_view s, size_type from_n, std::string_view num_format = "") -> std::string;
     static auto indent_lines(std::string_view s, size_type n, std::string_view pad = " ") -> std::string;
     static auto dedent_lines(std::string_view s, size_type n, std::string_view pad = " ") -> std::string;
     static auto unindent_lines(std::string_view s, size_type n, std::string_view pad = " ") -> std::string;
     static auto trim_lines_indent(std::string_view s) -> std::string;
     static auto trim_lines_margin(std::string_view s, std::string_view margin = "") -> std::string;
-    static auto numbering_lines(std::string_view s, size_type from_n, std::string_view num_format = "") -> std::string;
-    static auto unnumbering_lines(std::string_view s, size_type from_n, std::string_view num_format = "") -> std::string;
-    static auto foreach_line(std::string_view s, const line_consumer_proc& proc) -> void;
-
-    static auto indent_inplace(std::string& s, size_type n, std::string_view pad = " ") -> std::string&;
-    static auto dedent_inplace(std::string& s, size_type n, std::string_view pad = " ") -> std::string&;
-    static auto uninden_inplacet(std::string& s, size_type n, std::string_view pad = " ") -> std::string&;
+    //
+    static auto numbering_lines_inplace(std::string& s, size_type from_n, std::string_view num_format = "") -> std::string&;
+    static auto unnumbering_lines_inplace(std::string& s, size_type from_n, std::string_view num_format = "") -> std::string&;
+    static auto indent_lines_inplace(std::string& s, size_type n, std::string_view pad = " ") -> std::string&;
+    static auto dedent_lines_inplace(std::string& s, size_type n, std::string_view pad = " ") -> std::string&;
+    static auto unindent_lines_nplacet(std::string& s, size_type n, std::string_view pad = " ") -> std::string&;
+    static auto trim_lines_indent_inplace(std::string& s) -> std::string&;
+    static auto trim_lines_margin_inplace(std::string& s, std::string_view margin = "") -> std::string&;
 
     // 按单词统计
     static auto foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void;
@@ -417,28 +441,30 @@ public:
     static auto repeat(value_type ch, size_type times) -> std::string;
 
     // 随机生成字符串
-    static auto random(size_type max_len, size_type min_len, const number_provider_proc& proc) -> std::string; 
-    static auto random(size_type max_len, size_type min_len, value_type ch, const number_provider_proc& proc) -> std::string; 
-    static auto random(size_type max_len, size_type min_len, std::string_view charset, const number_provider_proc& proc) -> std::string; 
-    static auto random(size_type max_len, size_type min_len, charset_type charset, const number_provider_proc& proc) -> std::string; 
-    static auto random(size_type max_len, const number_provider_proc& proc) -> std::string; 
-    static auto random(size_type max_len, value_type ch, const number_provider_proc& proc) -> std::string; 
-    static auto random(size_type max_len, std::string_view charset, const number_provider_proc& proc) -> std::string; 
-    static auto random(size_type max_len, charset_type charset, const number_provider_proc& proc) -> std::string; 
+    static auto random(size_type max_len, size_type min_len, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type max_len, size_type min_len, value_type ch, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type max_len, size_type min_len, std::string_view charset, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type max_len, size_type min_len, charset_type charset, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type max_len, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type max_len, value_type ch, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type max_len, std::string_view charset, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type max_len, charset_type charset, const number_provider_proc& proc) -> std::string;
 
     // 随机填充指定的字符串（不改变大小）
-    static auto random_fill(std::string& s, std::string_view charset, const number_provider_proc& proc) -> std::string&; 
-    static auto random_fill(std::string& s, charset_type charset, const number_provider_proc& proc) -> std::string&; 
-    static auto random_fill(std::string& s, const number_provider_proc& proc) -> std::string&; 
+    static auto random_fill(std::string& s, std::string_view charset, const number_provider_proc& proc) -> std::string&;
+    static auto random_fill(std::string& s, charset_type charset, const number_provider_proc& proc) -> std::string&;
+    static auto random_fill(std::string& s, const number_provider_proc& proc) -> std::string&;
 
     // 现有字符串随机重排（不改变大小）
-    static auto random_reorder(std::string& s, const number_provider_proc& proc) -> std::string&; 
+    static auto random_reorder(std::string& s, const number_provider_proc& proc) -> std::string&;
 
     // 生成由 width 个空格组成的新字符串
     static auto spaces(size_type width) -> std::string;
-    static auto skip_space_remain(std::string_view s, size_type pos = 0) -> std::string_view;
-    static auto skip_space(std::string_view s, size_type pos) -> size_type;
-    static auto skip_space_inplace(std::string& s, size_type pos) -> size_type;
+    static auto skip_space_view(std::string_view s) -> std::string_view;
+    static auto skip_space(std::string_view s) -> std::string;
+    static auto skip_space_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto skip_space(std::string_view s, size_type& pos) -> std::string;
+    static auto skip_space_inplace(std::string& s, size_type pos) -> std::string&;
 
     // 遮罩
     static auto cover_left(std::string_view s, std::string_view mask = "***", size_type show_size = 3) -> std::string;
@@ -449,7 +475,6 @@ public:
     static auto cover_right(std::string_view s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string;
     static auto cover_surrounding(std::string_view s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string;
     static auto cover_auto(std::string_view s, std::string_view mask = "***", size_type show_size = 3, size_type fixed_size = 10) -> std::string;
-
 
     static auto cover_left_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3) -> std::string&;
     static auto cover_right_inplace(std::string& s, std::string_view mask = "***", size_type show_size = 3) -> std::string&;
@@ -479,7 +504,6 @@ public:
     static auto join(const Sequence& items) -> std::string {
         return join("", items);
     }
-
 
     static auto join_list(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
@@ -670,21 +694,32 @@ public:
     static auto simplified_inplace(std::string& s) -> std::string&;
 
     // 去掉字符串左侧的空白
-    static auto trim_left(std::string_view s, const char_checker_proc& proc) -> std::string_view;
-    static auto trim_left(std::string_view s) -> std::string_view;
-    static auto trim_left(std::string_view s, charset_type charset) -> std::string_view;
-    static auto trim_left(std::string_view s, std::string_view charset) -> std::string_view;
-    static auto trim_right(std::string_view s, const char_checker_proc& proc) -> std::string_view;
-    static auto trim_right(std::string_view s, charset_type charset) -> std::string_view;
-    static auto trim_right(std::string_view s, std::string_view charset) -> std::string_view;
-    static auto trim_right(std::string_view s) -> std::string_view;
-    static auto trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string_view;
-    static auto trim_surrounding(std::string_view s, charset_type charset) -> std::string_view;
-    static auto trim_surrounding(std::string_view s, std::string_view charset) -> std::string_view;
-    static auto trim_surrounding(std::string_view s) -> std::string_view;
-    static auto trim_left_margin(std::string_view s) -> std::string_view;
-    static auto trim_left_margin(std::string_view s, value_type ch) -> std::string_view;
-
+    static auto trim_left_view(std::string_view s, const char_checker_proc& proc) -> std::string_view;
+    static auto trim_left_view(std::string_view s) -> std::string_view;
+    static auto trim_left_view(std::string_view s, const charset_type& charset) -> std::string_view;
+    static auto trim_left_view(std::string_view s, std::string_view charset) -> std::string_view;
+    static auto trim_right_view(std::string_view s, const char_checker_proc& proc) -> std::string_view;
+    static auto trim_right_view(std::string_view s, const charset_type& charset) -> std::string_view;
+    static auto trim_right_view(std::string_view s, std::string_view charset) -> std::string_view;
+    static auto trim_right_view(std::string_view s) -> std::string_view;
+    static auto trim_surrounding_view(std::string_view s, const char_checker_proc& proc) -> std::string_view;
+    static auto trim_surrounding_view(std::string_view s, const charset_type& charset) -> std::string_view;
+    static auto trim_surrounding_view(std::string_view s, std::string_view charset) -> std::string_view;
+    static auto trim_surrounding_view(std::string_view s) -> std::string_view;
+    //
+    static auto trim_left(std::string_view s, const char_checker_proc& proc) -> std::string;
+    static auto trim_left(std::string_view s) -> std::string;
+    static auto trim_left(std::string_view s, charset_type charset) -> std::string;
+    static auto trim_left(std::string_view s, std::string_view charset) -> std::string;
+    static auto trim_right(std::string_view s, const char_checker_proc& proc) -> std::string;
+    static auto trim_right(std::string_view s, charset_type charset) -> std::string;
+    static auto trim_right(std::string_view s, std::string_view charset) -> std::string;
+    static auto trim_right(std::string_view s) -> std::string;
+    static auto trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string;
+    static auto trim_surrounding(std::string_view s, charset_type charset) -> std::string;
+    static auto trim_surrounding(std::string_view s, std::string_view charset) -> std::string;
+    static auto trim_surrounding(std::string_view s) -> std::string;
+    //
     static auto trim_left_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
     static auto trim_left_inplace(std::string& s, charset_type charset) -> std::string&;
     static auto trim_left_inplace(std::string& s, std::string_view charset) -> std::string&;
@@ -890,7 +925,6 @@ public:
     static auto filter(std::string_view s, const charset_type& charset) -> std::string;
     static auto filter_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
     static auto filter_inplace(std::string& s, const charset_type& charset) -> std::string&;
-
 };
 
 #endif // TINY_STR_H

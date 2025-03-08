@@ -2,7 +2,6 @@
 
 #include "str.hpp"
 
-
 TEST(test_str, space) {
     SECTION("简单字符串重复多次") {
         ASSERT_EQ(str::spaces(5), "     ");
@@ -10,24 +9,33 @@ TEST(test_str, space) {
     }
 }
 
-TEST(test_str, skip_space_remain) {
-    ASSERT_EQ(str::skip_space_remain("abc"), "abc");
-    ASSERT_EQ(str::skip_space_remain("   abc  "), "abc  ");
-    ASSERT_EQ(str::skip_space_remain("   abc  ", 1), "abc  ");
-    ASSERT_EQ(str::skip_space_remain("   abc  ", 2), "abc  ");
-    ASSERT_EQ(str::skip_space_remain("   abc  ", 3), "abc  ");
-    ASSERT_EQ(str::skip_space_remain("   abc  ", 10), "");
-    ASSERT_EQ(str::skip_space_remain(" \r\t\n ", 0), "");
-    ASSERT_EQ(str::skip_space_remain(""), "");
-    ASSERT_EQ(str::skip_space_remain("abc  def"), "abc  def");
+TEST(test_str, skip_space_view) {
+    size_t pos{0};
+    ASSERT_EQ(str::skip_space_view("abc"), "abc");
+    ASSERT_EQ(str::skip_space_view("   abc  "), "abc  ");
+    ASSERT_EQ(str::skip_space_view("   abc  ", pos = 1), "abc  ");
+    ASSERT_EQ(str::skip_space_view("   abc  ", pos = 2), "abc  ");
+    ASSERT_EQ(str::skip_space_view("   abc  ", pos = 3), "abc  ");
+    ASSERT_EQ(str::skip_space_view("   abc  ", pos = 10), "");
+    ASSERT_EQ(str::skip_space_view(" \r\t\n ", pos = 0), "");
+    ASSERT_EQ(str::skip_space_view(""), "");
+    ASSERT_EQ(str::skip_space_view("abc  def"), "abc  def");
 }
 
 TEST(test_str, skip_space) {
-    ASSERT_EQ(str::skip_space("abc", 0), 0);
-    ASSERT_EQ(str::skip_space("   abc  ", 0), 3);
-    ASSERT_EQ(str::skip_space(" \r\t\n ", 0), 5);
-    ASSERT_EQ(str::skip_space("", 0), 0);
-    ASSERT_EQ(str::skip_space("abc  def", 7), 7);
-    ASSERT_EQ(str::skip_space("abc  def", 8), 8);
-    ASSERT_EQ(str::skip_space("abc  def", str::npos), 8);
+    size_t pos{0};
+    ASSERT_EQ(str::skip_space("abc", pos = 0), "abc");
+    ASSERT_EQ(pos, 0);
+    ASSERT_EQ(str::skip_space("   abc  ", pos = 0), "abc  ");
+    ASSERT_EQ(pos, 3);
+    ASSERT_EQ(str::skip_space(" \r\t\n ", pos = 0), "");
+    ASSERT_EQ(pos, 5);
+    ASSERT_EQ(str::skip_space("", pos = 0), "");
+    ASSERT_EQ(pos, 0);
+    ASSERT_EQ(str::skip_space("abc  def", pos = 7), "");
+    ASSERT_EQ(pos, 7);
+    ASSERT_EQ(str::skip_space("abc  def", pos = 8), "");
+    ASSERT_EQ(pos, 8);
+    ASSERT_EQ(str::skip_space("abc  def", pos = str::npos), "");
+    ASSERT_EQ(pos, 8);
 }

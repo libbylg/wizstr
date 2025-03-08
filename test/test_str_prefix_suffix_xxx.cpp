@@ -96,42 +96,42 @@ TEST(test_str, starts_with) {
 
 TEST(test_str, remove_prefix) {
     SECTION("一般情况") {
-        ASSERT_EQ(str::remove_prefix("aac", "aa"), "c");
-        ASSERT_EQ(str::remove_prefix("aaa", "aab"), "aaa");
+        ASSERT_EQ(str::remove_prefix_view("aac", "aa"), "c");
+        ASSERT_EQ(str::remove_prefix_view("aaa", "aab"), "aaa");
     }
     SECTION("无共同前缀") {
-        ASSERT_EQ(str::remove_prefix("aaa", "bb"), "aaa");
+        ASSERT_EQ(str::remove_prefix_view("aaa", "bb"), "aaa");
     }
     SECTION("完全相同") {
-        ASSERT_EQ(str::remove_prefix("aaa", "aaa"), "");
+        ASSERT_EQ(str::remove_prefix_view("aaa", "aaa"), "");
     }
     SECTION("部分为空") {
-        ASSERT_EQ(str::remove_prefix("", "aaa"), "");
-        ASSERT_EQ(str::remove_prefix("aaa", ""), "aaa");
+        ASSERT_EQ(str::remove_prefix_view("", "aaa"), "");
+        ASSERT_EQ(str::remove_prefix_view("aaa", ""), "aaa");
     }
     SECTION("空对空") {
-        ASSERT_EQ(str::remove_prefix("", ""), "");
+        ASSERT_EQ(str::remove_prefix_view("", ""), "");
     }
     SECTION("包含关系") {
-        ASSERT_EQ(str::remove_prefix("aac", "aa"), "c");
+        ASSERT_EQ(str::remove_prefix_view("aac", "aa"), "c");
     }
     SECTION("空字符串找前缀") {
-        ASSERT_EQ(str::remove_prefix("", "Hello"), "");
-        ASSERT_EQ(str::remove_prefix("Hello", ""), "Hello");
-        ASSERT_EQ(str::remove_prefix("", ""), "");
+        ASSERT_EQ(str::remove_prefix_view("", "Hello"), "");
+        ASSERT_EQ(str::remove_prefix_view("Hello", ""), "Hello");
+        ASSERT_EQ(str::remove_prefix_view("", ""), "");
     }
     SECTION("字符前缀") {
-        ASSERT_EQ(str::remove_prefix("HelloWorld", 'H'), "elloWorld");
-        ASSERT_EQ(str::remove_prefix("HelloWorld", 'W'), "HelloWorld");
-        ASSERT_EQ(str::remove_prefix("", 'H'), "");
-        ASSERT_EQ(str::remove_prefix("", '\0'), "");
+        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 'H'), "elloWorld");
+        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 'W'), "HelloWorld");
+        ASSERT_EQ(str::remove_prefix_view("", 'H'), "");
+        ASSERT_EQ(str::remove_prefix_view("", '\0'), "");
     }
 //    SECTION("删除指定长度的前缀") {
-//        ASSERT_EQ(str::remove_prefix("HelloWorld", 0u), "HelloWorld");
-//        ASSERT_EQ(str::remove_prefix("HelloWorld", 5u), "World");
-//        ASSERT_EQ(str::remove_prefix("HelloWorld", 10u), "");
-//        ASSERT_EQ(str::remove_prefix("HelloWorld", 11u), "");
-//        ASSERT_EQ(str::remove_prefix("HelloWorld", std::string_view::npos), "");
+//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 0u), "HelloWorld");
+//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 5u), "World");
+//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 10u), "");
+//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 11u), "");
+//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", std::string_view::npos), "");
 //    }
 }
 
@@ -221,30 +221,30 @@ TEST(test_str, ends_with) {
 
 TEST(test_str, remove_suffix) {
     SECTION("一般情况") {
-        ASSERT_EQ(str::remove_suffix("aaa", "baa"), "aaa");
+        ASSERT_EQ(str::remove_suffix_view("aaa", "baa"), "aaa");
     }
     SECTION("无共同后缀") {
-        ASSERT_EQ(str::remove_suffix("aaa", "bbb"), "aaa");
+        ASSERT_EQ(str::remove_suffix_view("aaa", "bbb"), "aaa");
     }
     SECTION("完全相同") {
-        ASSERT_EQ(str::remove_suffix("aaa", "aaa"), "");
+        ASSERT_EQ(str::remove_suffix_view("aaa", "aaa"), "");
     }
     SECTION("部分为空") {
-        ASSERT_EQ(str::remove_suffix("", "aaa"), "");
-        ASSERT_EQ(str::remove_suffix("aaa", ""), "aaa");
+        ASSERT_EQ(str::remove_suffix_view("", "aaa"), "");
+        ASSERT_EQ(str::remove_suffix_view("aaa", ""), "aaa");
     }
     SECTION("空对空") {
-        ASSERT_EQ(str::remove_suffix("", ""), "");
+        ASSERT_EQ(str::remove_suffix_view("", ""), "");
     }
     SECTION("包含关系") {
-        ASSERT_EQ(str::remove_suffix("abc", "bc"), "a");
-        ASSERT_EQ(str::remove_suffix("bc", "abc"), "bc");
+        ASSERT_EQ(str::remove_suffix_view("abc", "bc"), "a");
+        ASSERT_EQ(str::remove_suffix_view("bc", "abc"), "bc");
     }
     SECTION("字符后缀") {
-        ASSERT_EQ(str::remove_suffix("HelloWorld", 'd'), "HelloWorl");
-        ASSERT_EQ(str::remove_suffix("HelloWorld", 'K'), "HelloWorld");
-        ASSERT_EQ(str::remove_suffix("", 'H'), "");
-        ASSERT_EQ(str::remove_suffix("", '\0'), "");
+        ASSERT_EQ(str::remove_suffix_view("HelloWorld", 'd'), "HelloWorl");
+        ASSERT_EQ(str::remove_suffix_view("HelloWorld", 'K'), "HelloWorld");
+        ASSERT_EQ(str::remove_suffix_view("", 'H'), "");
+        ASSERT_EQ(str::remove_suffix_view("", '\0'), "");
     }
 }
 

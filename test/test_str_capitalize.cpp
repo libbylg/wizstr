@@ -4,14 +4,14 @@
 
 
 TEST(test_str, capitalize) {
-    ASSERT_EQ(str::capitalize("abc def"), "Abc def");
-    ASSERT_EQ(str::capitalize("Abc def"), "Abc def");
-    ASSERT_EQ(str::capitalize("   abc def"), "   abc def");
-    ASSERT_EQ(str::capitalize("   Abc def"), "   Abc def");
-    ASSERT_EQ(str::capitalize(""), "");
-    ASSERT_EQ(str::capitalize("z"), "Z");
-    ASSERT_EQ(str::capitalize("Q"), "Q");
-    ASSERT_EQ(str::capitalize("123456"), "123456");
+    ASSERT_EQ(str::to_capitalize("abc def"), "Abc def");
+    ASSERT_EQ(str::to_capitalize("Abc def"), "Abc def");
+    ASSERT_EQ(str::to_capitalize("   abc def"), "   abc def");
+    ASSERT_EQ(str::to_capitalize("   Abc def"), "   Abc def");
+    ASSERT_EQ(str::to_capitalize(""), "");
+    ASSERT_EQ(str::to_capitalize("z"), "Z");
+    ASSERT_EQ(str::to_capitalize("Q"), "Q");
+    ASSERT_EQ(str::to_capitalize("123456"), "123456");
 }
 
 TEST(test_str, is_capitalize) {

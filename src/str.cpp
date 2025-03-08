@@ -585,7 +585,7 @@ auto str::starts_with(std::string_view s, std::string_view prefix) -> bool {
     return has_prefix(s, prefix);
 }
 
-auto str::remove_prefix(std::string_view s, std::string_view prefix) -> std::string_view {
+auto str::remove_prefix_view(std::string_view s, std::string_view prefix) -> std::string_view {
     if (!has_prefix(s, prefix)) {
         return s;
     }
@@ -593,17 +593,25 @@ auto str::remove_prefix(std::string_view s, std::string_view prefix) -> std::str
     return std::string_view{s.data() + prefix.size(), s.size() - prefix.size()};
 }
 
-auto str::remove_prefix(std::string_view s, value_type prefix) -> std::string_view {
-    return remove_prefix(s, {&prefix, 1});
+auto str::remove_prefix_view(std::string_view s, value_type prefix) -> std::string_view {
+    return remove_prefix_view(s, {&prefix, 1});
+}
+
+auto str::remove_prefix(std::string_view s, std::string_view prefix) -> std::string {
+    return std::string{remove_prefix_view(s, prefix)};
+}
+
+auto str::remove_prefix(std::string_view s, value_type prefix) -> std::string {
+    return std::string{remove_prefix_view(s, prefix)};
 }
 
 auto str::remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string& {
-    s = remove_prefix(s, prefix);
+    s = remove_prefix_view(s, prefix);
     return s;
 }
 
 auto str::remove_prefix_inplace(std::string& s, value_type prefix) -> std::string& {
-    s = remove_prefix(s, prefix);
+    s = remove_prefix_view(s, prefix);
     return s;
 }
 
@@ -627,7 +635,7 @@ auto str::ends_with(std::string_view s, std::string_view suffix) -> bool {
     return has_suffix(s, suffix);
 }
 
-auto str::remove_suffix(std::string_view s, std::string_view suffix) -> std::string_view {
+auto str::remove_suffix_view(std::string_view s, std::string_view suffix) -> std::string_view {
     if (!has_suffix(s, suffix)) {
         return s;
     }
@@ -635,17 +643,25 @@ auto str::remove_suffix(std::string_view s, std::string_view suffix) -> std::str
     return std::string_view{s.data(), s.size() - suffix.size()};
 }
 
-auto str::remove_suffix(std::string_view s, value_type suffix) -> std::string_view {
-    return remove_suffix(s, {&suffix, 1});
+auto str::remove_suffix_view(std::string_view s, value_type suffix) -> std::string_view {
+    return remove_suffix_view(s, {&suffix, 1});
+}
+
+auto str::remove_suffix(std::string_view s, std::string_view suffix) -> std::string {
+    return std::string{remove_suffix_view(s, suffix)};
+}
+
+auto str::remove_suffix(std::string_view s, value_type suffix) -> std::string {
+    return std::string{remove_suffix_view(s, suffix)};
 }
 
 auto str::remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string& {
-    s = remove_suffix(s, suffix);
+    s = remove_suffix_view(s, suffix);
     return s;
 }
 
 auto str::remove_suffix_inplace(std::string& s, value_type suffix) -> std::string& {
-    s = remove_suffix(s, suffix);
+    s = remove_suffix_view(s, suffix);
     return s;
 }
 
@@ -1179,9 +1195,7 @@ auto str::is_literal_real(std::string_view s) -> bool {
     const_pointer end = s.data() + s.size();
 
     // 前缀加减号
-    const_pointer sign = nullptr;
     if ((*p == '+') || (*p == '-')) {
-        sign = p;
         p++;
     }
 
@@ -1228,7 +1242,6 @@ auto str::is_literal_real(std::string_view s) -> bool {
         return false;
     }
 
-    const_pointer pow_sign = nullptr;
     const_pointer pow_start = nullptr;
     if ((*p == 'e') || (*p == 'E')) {
         p++;
@@ -1238,7 +1251,6 @@ auto str::is_literal_real(std::string_view s) -> bool {
         }
 
         if ((*p == '+') || (*p == '-')) {
-            pow_sign = p;
             p++;
         }
 
@@ -1287,7 +1299,7 @@ auto str::is_literal_integer(std::string_view s) -> bool {
     return true;
 }
 
-auto str::take_left(std::string_view s, size_type n) -> std::string_view {
+auto str::take_left_view(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
         return {};
     }
@@ -1299,7 +1311,7 @@ auto str::take_left(std::string_view s, size_type n) -> std::string_view {
     return std::string_view{s.substr(0, n)};
 }
 
-auto str::take_right(std::string_view s, size_type n) -> std::string_view {
+auto str::take_right_view(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
         return {};
     }
@@ -1311,7 +1323,7 @@ auto str::take_right(std::string_view s, size_type n) -> std::string_view {
     return std::string_view{s.substr(s.size() - n, n)};
 }
 
-auto str::take_mid(std::string_view s, size_type pos, size_type n) -> std::string_view {
+auto str::take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view {
     if (s.empty()) {
         return s;
     }
@@ -1327,11 +1339,11 @@ auto str::take_mid(std::string_view s, size_type pos, size_type n) -> std::strin
     return {s.data() + pos, n};
 }
 
-auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
-    return str::take_mid(s, begin_pos, begin_pos + end_pos);
+auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
+    return str::take_mid_view(s, begin_pos, begin_pos + end_pos);
 }
 
-auto str::take(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
+auto str::take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
     if (s.empty() || (offset == 0)) {
         return {};
     }
@@ -1361,7 +1373,7 @@ auto str::take(std::string_view s, size_type pos, ssize_type offset) -> std::str
     return s.substr(((pos + 1) - n), n);
 }
 
-auto str::take(std::string_view s, size_type pos) -> std::string_view {
+auto str::take_view(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         return {};
     }
@@ -1369,34 +1381,58 @@ auto str::take(std::string_view s, size_type pos) -> std::string_view {
     return s.substr(pos);
 }
 
-auto str::take(std::string_view s, char_checker_proc proc) -> std::string {
-    if (s.empty()) {
-        return {};
-    }
+// auto str::take_view(std::string_view s, size_type proc) -> std::string {
+//     if (s.empty()) {
+//         return {};
+//     }
+//
+//     std::string result;
+//     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+//         if (proc(*ptr)) {
+//             result.append(ptr, 1);
+//         }
+//     }
+//
+//     return result;
+// }
+//
+// auto str::take_view(std::string_view s, size_type charset) -> std::string {
+//     if (s.empty()) {
+//         return {};
+//     }
+//
+//     std::string result;
+//     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+//         if (charset.get(*ptr)) {
+//             result.append(ptr, 1);
+//         }
+//     }
+//
+//     return result;
+// }
 
-    std::string result;
-    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-        if (proc(*ptr)) {
-            result.append(ptr, 1);
-        }
-    }
-
-    return result;
+auto str::take_left(std::string_view s, size_type n) -> std::string {
+    return std::string{take_left_view(s, n)};
 }
 
-auto str::take(std::string_view s, charset_type charset) -> std::string {
-    if (s.empty()) {
-        return {};
-    }
+auto str::take_right(std::string_view s, size_type n) -> std::string {
+    return std::string{take_right_view(s, n)};
+}
 
-    std::string result;
-    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-        if (charset.get(*ptr)) {
-            result.append(ptr, 1);
-        }
-    }
+auto str::take_mid(std::string_view s, size_type pos, size_type n) -> std::string {
+    return std::string{take_mid_view(s, pos, n)};
+}
 
-    return result;
+auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
+    return std::string{take_range_view(s, begin_pos, end_pos)};
+}
+
+auto str::take(std::string_view s, size_type pos, ssize_type offset) -> std::string {
+    return std::string{take_view(s, pos, offset)};
+}
+
+auto str::take(std::string_view s, size_type pos) -> std::string {
+    return std::string{take_view(s, pos)};
 }
 
 auto str::take_left_inplace(std::string& s, size_type n) -> std::string& {
@@ -1495,7 +1531,7 @@ auto str::take_inplace(std::string& s, size_type pos) -> std::string& {
     return s;
 }
 
-auto str::drop_left(std::string_view s, size_type n) -> std::string_view {
+auto str::drop_left_view(std::string_view s, size_type n) -> std::string_view {
     if (n > s.size()) {
         return {};
     }
@@ -1503,12 +1539,20 @@ auto str::drop_left(std::string_view s, size_type n) -> std::string_view {
     return s.substr(n);
 }
 
-auto str::drop_right(std::string_view s, size_type n) -> std::string_view {
+auto str::drop_right_view(std::string_view s, size_type n) -> std::string_view {
     if (n > s.size()) {
         return {};
     }
 
     return s.substr(0, s.size() - n);
+}
+
+auto str::drop_left(std::string_view s, size_type n) -> std::string {
+    return std::string{drop_left_view(s, n)};
+}
+
+auto str::drop_right(std::string_view s, size_type n) -> std::string {
+    return std::string{drop_right_view(s, n)};
 }
 
 auto str::drop_mid(std::string_view s, size_type pos, size_type n) -> std::string {
@@ -1633,6 +1677,48 @@ auto str::drop(std::string_view s, charset_type charset) -> std::string {
     return result;
 }
 
+auto str::drop_left_inplace(std::string& s, size_type n) -> std::string& {
+    std::string_view range = drop_left_view(s, n);
+    if (range.empty()) {
+        s.resize(0);
+        return s;
+    }
+
+    std::memmove(s.data(), range.data(), range.size());
+    s.resize(range.size());
+    return s;
+}
+
+auto str::drop_right_inplace(std::string& s, size_type n) -> std::string& {
+    std::string_view range = drop_right_view(s, n);
+    if (range.empty()) {
+        s.resize(0);
+        return s;
+    }
+
+    assert(s.data() == range.data());
+    s.resize(range.size());
+    return s;
+}
+
+// auto str::drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
+// }
+//
+// auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
+// }
+//
+// auto str::drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
+// }
+//
+// auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
+// }
+//
+// auto str::drop_inplace(std::string& s, char_checker_proc proc) -> std::string& {
+// }
+//
+// auto str::drop_inplace(std::string& s, charset_type charset) -> std::string& {
+// }
+
 auto str::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
         return std::string{s};
@@ -1695,6 +1781,26 @@ auto str::align_zfill(std::string_view s, size_type width) -> std::string {
     result.append(s.data() + 1, static_cast<size_type>(s.size() - 1));
 
     return result;
+}
+
+auto str::align_left_inplace(std::string& s, size_type width, value_type ch) -> std::string& {
+    s = align_left(s, width, ch);
+    return s;
+}
+
+auto str::align_right_inplace(std::string& s, size_type width, value_type ch) -> std::string& {
+    s = align_right(s, width, ch);
+    return s;
+}
+
+auto str::align_center_inplace(std::string& s, size_type width, value_type ch) -> std::string& {
+    s = align_center(s, width, ch);
+    return s;
+}
+
+auto str::align_zfill_inplace(std::string& s, size_type width) -> std::string& {
+    s = align_zfill(s, width);
+    return s;
 }
 
 auto str::to_capitalize(std::string_view s) -> std::string {
@@ -1789,7 +1895,17 @@ auto str::spaces(size_type width) -> std::string {
     return repeat(' ', width);
 }
 
-auto str::skip_space_remain(std::string_view s, size_type pos) -> std::string_view {
+auto str::skip_space_view(std::string_view s) -> std::string_view {
+    size_type pos = 0;
+    return skip_space_view(s, pos);
+}
+
+auto str::skip_space(std::string_view s) -> std::string {
+    size_type pos = 0;
+    return std::string{skip_space_view(s, pos)};
+}
+
+auto str::skip_space_view(std::string_view s, size_type& pos) -> std::string_view {
     if (pos >= s.size()) {
         pos = s.size();
         return {};
@@ -1807,9 +1923,10 @@ auto str::skip_space_remain(std::string_view s, size_type pos) -> std::string_vi
     return s.substr(pos);
 }
 
-auto str::skip_space(std::string_view s, size_type pos) -> size_type {
+auto str::skip_space(std::string_view s, size_type& pos) -> std::string {
     if (pos >= s.size()) {
-        return s.size();
+        pos = s.size();
+        return {};
     }
 
     const_pointer ptr = s.data() + pos;
@@ -1820,8 +1937,15 @@ auto str::skip_space(std::string_view s, size_type pos) -> size_type {
         ptr++;
     }
 
-    return ptr - s.data();
+    pos = ptr - s.data();
+    return std::string{s.data() + pos, s.size() - pos};
 }
+
+auto str::skip_space_inplace(std::string& s, size_type pos) -> std::string& {
+    s = skip_space_view(s, pos);
+    return s;
+}
+
 
 auto str::join(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
@@ -1986,6 +2110,7 @@ auto str::split(std::string_view s, const charset_type& sepset, size_type max_n)
         result.emplace_back(item);
         return 0;
     });
+    return result;
 }
 
 auto str::split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void {
@@ -2324,7 +2449,7 @@ auto str::split_search_path(std::string_view s, bool keep_empty, value_type sep)
 
 auto str::to_lower(std::string_view s) -> std::string {
     std::string result{s};
-    return str::to_lower(result);
+    return str::to_lower_inplace(result);
 }
 
 auto str::to_lower_inplace(std::string& s) -> std::string& {
@@ -2337,7 +2462,7 @@ auto str::to_lower_inplace(std::string& s) -> std::string& {
 
 auto str::to_upper(std::string_view s) -> std::string {
     std::string result{s};
-    return str::to_upper(result);
+    return str::to_upper_inplace(result);
 }
 
 auto str::to_upper_inplace(std::string& s) -> std::string& {
@@ -2350,7 +2475,7 @@ auto str::to_upper_inplace(std::string& s) -> std::string& {
 
 auto str::swap_case(std::string_view s) -> std::string {
     std::string result{s};
-    return str::swap_case(result);
+    return str::swap_case_inplace(result);
 }
 
 auto str::swap_case_inplace(std::string& s) -> std::string& {
@@ -2443,7 +2568,17 @@ auto str::simplified(std::string_view s) -> std::string {
     });
 }
 
-auto str::trim_left(std::string_view s, const char_checker_proc& proc) -> std::string_view {
+auto str::simplified_inplace(std::string& s, std::string_view sep, const char_checker_proc& proc) -> std::string& {
+    s = simplified(s, sep, proc);
+    return s;
+}
+
+auto str::simplified_inplace(std::string& s) -> std::string& {
+    s = simplified(s);
+    return s;
+}
+
+auto str::trim_left_view(std::string_view s, const char_checker_proc& proc) -> std::string_view {
     if (s.empty()) [[unlikely]] {
         return s;
     }
@@ -2460,13 +2595,23 @@ auto str::trim_left(std::string_view s, const char_checker_proc& proc) -> std::s
     return std::string_view{left_ptr, s.size() - (left_ptr - s.data())};
 }
 
-auto str::trim_left(std::string_view s) -> std::string_view {
-    return str::trim_left(s, [](value_type ch) -> bool {
+auto str::trim_left_view(std::string_view s) -> std::string_view {
+    return str::trim_left_view(s, [](value_type ch) -> bool {
         return std::isspace(ch);
     });
 }
 
-auto str::trim_right(std::string_view s, const char_checker_proc& proc) -> std::string_view {
+auto str::trim_left_view(std::string_view s, const charset_type& charset) -> std::string_view {
+    return trim_left_view(s, [&charset](value_type ch) -> bool {
+        return charset.get(ch);
+    });
+}
+
+auto str::trim_left_view(std::string_view s, std::string_view charset) -> std::string_view {
+    return trim_left_view(s, charset_type{charset});
+}
+
+auto str::trim_right_view(std::string_view s, const char_checker_proc& proc) -> std::string_view {
     if (s.empty()) [[unlikely]] {
         return s;
     }
@@ -2482,13 +2627,23 @@ auto str::trim_right(std::string_view s, const char_checker_proc& proc) -> std::
     return {s.data(), static_cast<size_type>(right_ptr - s.data())};
 }
 
-auto str::trim_right(std::string_view s) -> std::string_view {
-    return str::trim_right(s, [](value_type ch) -> bool {
+auto str::trim_right_view(std::string_view s, const charset_type& charset) -> std::string_view {
+    return trim_right_view(s, [charset](value_type ch) -> bool {
+        return charset.get(ch);
+    });
+}
+
+auto str::trim_right_view(std::string_view s, std::string_view charset) -> std::string_view {
+    return trim_right_view(s, charset_type{charset});
+}
+
+auto str::trim_right_view(std::string_view s) -> std::string_view {
+    return str::trim_right_view(s, [](value_type ch) -> bool {
         return std::isspace(ch);
     });
 }
 
-auto str::trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string_view {
+auto str::trim_surrounding_view(std::string_view s, const char_checker_proc& proc) -> std::string_view {
     if (s.empty()) {
         return s;
     }
@@ -2513,10 +2668,68 @@ auto str::trim_surrounding(std::string_view s, const char_checker_proc& proc) ->
     return std::string_view{left_ptr, static_cast<size_type>(right_ptr - left_ptr)};
 }
 
-auto str::trim_surrounding(std::string_view s) -> std::string_view {
-    return str::trim_surrounding(s, [](value_type ch) -> bool {
+auto str::trim_surrounding_view(std::string_view s, const charset_type& charset) -> std::string_view {
+    return trim_surrounding_view(s, [charset](value_type ch) -> bool {
+        return charset.get(ch);
+    });
+}
+
+auto str::trim_surrounding_view(std::string_view s, std::string_view charset) -> std::string_view {
+    return trim_surrounding_view(s, charset_type{charset});
+}
+
+auto str::trim_surrounding_view(std::string_view s) -> std::string_view {
+    return str::trim_surrounding_view(s, [](value_type ch) -> bool {
         return std::isspace(ch);
     });
+}
+
+auto str::trim_left(std::string_view s, const char_checker_proc& proc) -> std::string {
+    return std::string{trim_left_view(s, proc)};
+}
+
+auto str::trim_left(std::string_view s) -> std::string {
+    return std::string{trim_left_view(s)};
+}
+
+auto str::trim_left(std::string_view s, charset_type charset) -> std::string {
+    return std::string{trim_left_view(s, charset)};
+}
+
+auto str::trim_left(std::string_view s, std::string_view charset) -> std::string {
+    return std::string{trim_left_view(s, charset)};
+}
+
+auto str::trim_right(std::string_view s, const char_checker_proc& proc) -> std::string {
+    return std::string{trim_right_view(s, proc)};
+}
+
+auto str::trim_right(std::string_view s, charset_type charset) -> std::string {
+    return std::string{trim_right_view(s, charset)};
+}
+
+auto str::trim_right(std::string_view s, std::string_view charset) -> std::string {
+    return std::string{trim_right_view(s, charset)};
+}
+
+auto str::trim_right(std::string_view s) -> std::string {
+    return std::string{trim_right_view(s)};
+}
+
+auto str::trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string {
+    return std::string{trim_surrounding_view(s, proc)};
+}
+
+auto str::trim_surrounding(std::string_view s, charset_type charset) -> std::string {
+    return std::string{trim_surrounding_view(s, charset)};
+}
+
+auto str::trim_surrounding(std::string_view s, std::string_view charset) -> std::string {
+    return std::string{trim_surrounding_view(s, charset)};
+}
+
+auto str::trim_surrounding(std::string_view s) -> std::string {
+    return std::string{trim_surrounding_view(s)};
 }
 
 auto str::trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string {
@@ -3544,20 +3757,20 @@ auto str::chunked(std::string_view s, size_type width, const view_consumer_proc&
 
 auto str::chunked(std::string_view s, size_type width) -> std::vector<std::string> {
     std::vector<std::string> result;
-
     chunked(s, width, [&result](std::string_view item) -> int {
         result.emplace_back(std::move(item));
         return 0;
     });
+    return result;
 }
 
 auto str::chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
-
     chunked(s, width, [&result](std::string_view item) -> int {
         result.emplace_back(std::move(item));
         return 0;
     });
+    return result;
 }
 
 auto str::read_all(const std::string& filename) -> std::string {
