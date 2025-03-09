@@ -579,6 +579,7 @@ public:
     }
 
     //! 以单个字符作为分隔符拆分字符串
+    ///
     /// @param s 被拆分的字符串。
     /// @param sepset 分隔符集合，可以有多种形式组成。
     /// @param max_n 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
@@ -599,6 +600,7 @@ public:
     //$
 
     //! 以字符串为分隔符拆分字符串
+    ///
     /// @param s 被拆分的字符串。
     /// @param sepstr 用作分隔符的字符串，可以有多种形式组成。如果为 std::string_view 类型时，如果 sepstr 为空，自动采用默认值 ","。
     /// @param max_n 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
@@ -614,16 +616,37 @@ public:
     static auto split_list_view(std::string_view s, std::string_view sepstr = ",", size_type max_n = npos) -> std::vector<std::string_view>;
 
     //! 以指定的字符串为分隔符将字符串拆分为两个部分
+    ///
+    /// split_list 在 max_n 等于 1 时的功能。
+    ///
     /// @param s 被拆分的字符串。
-    /// @param sepstr 
-    static auto split_pair(std::string_view sm, std::string_view sepstr = ":") -> std::tuple<std::string, std::string>;
-    static auto split_pair_view(std::string_view sm, std::string_view sepstr = ":") -> std::tuple<std::string_view, std::string_view>;
+    /// @param sepstr 用作分隔符的字符串。
+    /// @return 返回被拆分处理的字符串。如果字符串中未找到分隔符，整个字符串作为返回值的第一个字符串，而第二个字符串为空。
+    static auto split_pair(std::string_view s, std::string_view sepstr = ":") -> std::tuple<std::string, std::string>;
+    static auto split_pair_view(std::string_view s, std::string_view sepstr = ":") -> std::tuple<std::string_view, std::string_view>;
 
-    // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
+    //! 将字符串 s，按照逗号和冒号拆分成一个 map 对象
+    ///  
+    /// split_map 会对字符串做两轮拆分，第一轮先以 sep_list 为分隔符，将字符串拆分成一组字串。第二轮再以 sep_pair 为分隔符
+    /// 将前一轮拆分出来的每个字串拆分成键值对，并将该该键值对存入 map 或者通过 proc 输出。
+    /// 总之，split_map 是拆分的是类型下面的数据格式（以sep_list和sep_pair为缺省值时为例）：
+    ///     
+    ///     item1:value1,item2:value2,item3:value3 ...
+    ///     
+    /// @param s 被拆分的字符串。
+    /// @param sep_list 用作第一轮拆分的分隔符
+    /// @param sep_pair 用作第二轮拆分的分隔符
+    /// @param max_n 最多拆分多少次。max_n 主要用于控制第一轮拆分的次数，如果指定为 0 将返回空 map 或者不触发 proc。
+    ///              当次数达到后，后续的数据会被舍弃，且不会被放入 map 中，也不会再触发 proc。
+    ///              由于调用方无法感知是否有剩余数据未拆分完，因此，max_n 通常只用在舍弃剩余字符串是无关紧要的情况下。
+    /// @param proc 输出拆分出来的每个键值对
+    /// @return 返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
     static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
     static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":", size_type max_n = npos) -> std::map<std::string, std::string>;
 
-    // 按照换行符将字符串 s，拆分长多行
+    //! 按照换行符将字符串 s，拆分成多行
+    /// @param keep_ends 是否保留行尾分隔符
+    /// 
     static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void;
     static auto split_lines(std::string_view s, bool keep_ends = false) -> std::vector<std::string_view>;
 

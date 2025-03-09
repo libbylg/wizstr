@@ -2237,6 +2237,40 @@ auto str::split(std::string_view s, std::string_view sepset, const view_consumer
     split(s, charset_type{sepset}, npos, proc);
 }
 
+auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
+    size_type pos = 0;
+    while (pos < s.size()) {
+        std::string_view word = str::iter_next_word(s, pos);
+        if (word.empty()) {
+            assert(pos >= s.size());
+            continue;
+        }
+
+        if (proc(word) != 0) {
+            break;
+        }
+    }
+}
+
+auto str::split(std::string_view s, size_type max_n) -> std::vector<std::string> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string> result;
+
+    str::split(s, [&result, max_n](std::string_view item) -> int {
+        assert(!item.empty());
+        result.emplace_back(item);
+        if (result.size() >= max_n) {
+            return -1;
+        }
+        return 0;
+    });
+
+    return result;
+}
+
 auto str::split_view(std::string_view s, const charset_type& sepset, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
     split(s, sepset, max_n, [&result](std::string_view item) -> int {
@@ -2269,40 +2303,6 @@ auto str::split_view(std::string_view s, size_type max_n) -> std::vector<std::st
         });
     return result;
 }
-
-auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
-    size_type pos = 0;
-    while (pos < s.size()) {
-        std::string_view word = str::iter_next_word(s, pos);
-        if (word.empty()) {
-            assert(pos >= s.size());
-            continue;
-        }
-
-        if (proc(word) != 0) {
-            break;
-        }
-    }
-}
-
-//auto str::split(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
-//    if (max_n == 0) {
-//        return {};
-//    }
-//
-//    std::vector<std::string_view> result;
-//
-//    str::split(s, [&result, max_n](std::string_view item) -> int {
-//        assert(!item.empty());
-//        result.emplace_back(item);
-//        if (result.size() >= max_n) {
-//            return -1;
-//        }
-//        return 0;
-//    });
-//
-//    return result;
-//}
 
 auto str::split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void {
     if (sep.empty()) {
