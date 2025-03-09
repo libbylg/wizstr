@@ -1747,7 +1747,7 @@ auto str::take_before_view(std::string_view s, range_type sep_range, bool with_s
     if (with_sep) {
         return {s.data(), sep_range.end_pos()};
     }
-    
+
     return {s.data(), sep_range.begin_pos()};
 }
 
@@ -1767,7 +1767,7 @@ auto str::take_after_view(std::string_view s, range_type sep_range, bool with_se
     if (with_sep) {
         return {s.data() + sep_range.begin_pos(), s.size() - sep_range.begin_pos()};
     }
-    
+
     return {s.data() + sep_range.end_pos(), s.size() - sep_range.end_pos()};
 }
 
@@ -1812,19 +1812,19 @@ auto str::drop_after_view(std::string_view s, range_type sep_range, bool with_se
 }
 
 auto str::take_before(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
-    return {take_before_view(s, sep_range, with_sep)};
+    return std::string{take_before_view(s, sep_range, with_sep)};
 }
 
 auto str::take_after(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
-    return {take_after_view(s, sep_range, with_sep)};
+    return std::string{take_after_view(s, sep_range, with_sep)};
 }
 
 auto str::drop_before(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
-    return {drop_before_view(s, sep_range, with_sep)};
+    return std::string{drop_before_view(s, sep_range, with_sep)};
 }
 
 auto str::drop_after(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
-    return {drop_after_view(s, sep_range, with_sep)};
+    return std::string{drop_after_view(s, sep_range, with_sep)};
 }
 
 auto str::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
@@ -2211,8 +2211,8 @@ auto str::split(std::string_view s, const charset_type& sepset, const view_consu
         npos, proc);
 }
 
-auto str::split(std::string_view s, const charset_type& sepset, size_type max_n) -> std::vector<std::string_view> {
-    std::vector<std::string_view> result;
+auto str::split(std::string_view s, const charset_type& sepset, size_type max_n) -> std::vector<std::string> {
+    std::vector<std::string> result;
     split(s, sepset, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
@@ -2224,25 +2224,51 @@ auto str::split(std::string_view s, std::string_view sepset, size_type max_n, co
     split(s, charset_type{sepset}, max_n, proc);
 }
 
+auto str::split(std::string_view s, std::string_view sepset, size_type max_n) -> std::vector<std::string> {
+    std::vector<std::string> result;
+    split(s, sepset, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
+}
+
 auto str::split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void {
     split(s, charset_type{sepset}, npos, proc);
 }
 
-auto str::split(std::string_view s, std::string_view sepset, size_type max_n) -> std::vector<std::string_view> {
-    return split(s, charset_type{sepset}, max_n);
+auto str::split_view(std::string_view s, const charset_type& sepset, size_type max_n) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    split(s, sepset, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
 }
 
-// auto str::split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void {
-//     split(s, std::string_view{&sepch, 1}, max_n, proc);
-// }
-//
-// auto str::split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void {
-//     split(s, std::string_view{&sepch, 1}, npos, proc);
-// }
-//
-// auto str::split(std::string_view s, value_type sepch, size_type max_n) -> std::vector<std::string_view> {
-//     return split(s, std::string_view{&sepch, 1}, npos);
-// }
+auto str::split_view(std::string_view s, std::string_view sepset, size_type max_n) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    split(s, charset_type{sepset}, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
+}
+
+auto str::split_view(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    split(
+        s,
+        [](value_type ch) -> bool {
+            return std::isspace(ch);
+        },
+        max_n,
+        [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            return 0;
+        });
+    return result;
+}
 
 auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
     size_type pos = 0;
@@ -2259,24 +2285,24 @@ auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
     }
 }
 
-auto str::split(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
-    if (max_n == 0) {
-        return {};
-    }
-
-    std::vector<std::string_view> result;
-
-    str::split(s, [&result, max_n](std::string_view item) -> int {
-        assert(!item.empty());
-        result.emplace_back(item);
-        if (result.size() >= max_n) {
-            return -1;
-        }
-        return 0;
-    });
-
-    return result;
-}
+//auto str::split(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
+//    if (max_n == 0) {
+//        return {};
+//    }
+//
+//    std::vector<std::string_view> result;
+//
+//    str::split(s, [&result, max_n](std::string_view item) -> int {
+//        assert(!item.empty());
+//        result.emplace_back(item);
+//        if (result.size() >= max_n) {
+//            return -1;
+//        }
+//        return 0;
+//    });
+//
+//    return result;
+//}
 
 auto str::split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void {
     if (sep.empty()) {
@@ -2322,8 +2348,8 @@ auto str::split_list(std::string_view s, std::string_view sep, const view_consum
     });
 }
 
-auto str::split_list(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
-    std::vector<std::string_view> result;
+auto str::split_list(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string> {
+    std::vector<std::string> result;
 
     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
@@ -2379,7 +2405,21 @@ auto str::split_list(std::string_view s, const std::regex& sep, const view_consu
     str::split_list(s, sep, str::npos, proc);
 }
 
-auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
+
+auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string> {
+    std::vector<std::string> result;
+
+    str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+
+    return result;
+}
+
+
+
+auto str::split_list_view(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
 
     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
@@ -2390,7 +2430,31 @@ auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n)
     return result;
 }
 
-auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view> {
+auto str::split_list_view(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+
+    str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+
+    return result;
+}
+
+
+auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string> {
+    std::array<std::string, 2> pair;
+    size_t n = 0;
+    str::split_list(s, sep, 1, [&n, &pair](std::string_view item) -> int {
+        pair[n++] = item;
+        return 0;
+    });
+
+    return {pair[0], pair[1]};
+}
+
+
+auto str::split_pair_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view> {
     std::array<std::string_view, 2> pair;
     size_t n = 0;
     str::split_list(s, sep, 1, [&n, &pair](std::string_view item) -> int {
@@ -2875,7 +2939,6 @@ auto str::trim_anywhere(std::string_view s) -> std::string {
     });
 }
 
-
 auto str::trim_anywhere_inplace(std::string& s, const char_checker_proc& proc) -> std::string& {
     s = trim_anywhere(s, proc);
     return s;
@@ -2891,7 +2954,7 @@ auto str::trim_anywhere_inplace(std::string& s, std::string_view charset) -> std
     return s;
 }
 
-auto str::trim_anywhere_inplace(std::string& s, value_type charset) -> std::string&{
+auto str::trim_anywhere_inplace(std::string& s, value_type charset) -> std::string& {
     s = trim_anywhere(s, charset);
     return s;
 }
@@ -2907,7 +2970,7 @@ auto str::simplified_integer_view(std::string_view s) -> std::string_view {
     }
 
     const_pointer ptr = s.data();
-    
+
     // 如果是前导加号
     if (*ptr == '+') {
         ptr++;
@@ -2925,11 +2988,11 @@ auto str::simplified_integer_view(std::string_view s) -> std::string_view {
         ptr--;
     }
 
-    return {ptr, ((s.data() + s.size()) - ptr)};
+    return std::string_view{ptr, static_cast<size_type>((s.data() + s.size()) - ptr)};
 }
 
 auto str::simplified_integer(std::string_view s) -> std::string {
-    return {simplified_integer_view(s)};
+    return std::string{simplified_integer_view(s)};
 }
 
 auto str::simplified_integer_inplace(std::string& s) -> std::string& {

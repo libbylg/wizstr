@@ -163,13 +163,13 @@ public:
         size_type pos;
         size_type len;
 
-        inline auto begin_pos()const -> size_type {
+        inline auto begin_pos() const -> size_type {
             return pos;
-        } 
+        }
 
-        inline auto end_pos()const -> size_type {
+        inline auto end_pos() const -> size_type {
             return pos;
-        } 
+        }
 
         inline aitp
     };
@@ -578,29 +578,46 @@ public:
         });
     }
 
-    // 拆分字符串
+    //! 以单个字符作为分隔符拆分字符串
+    /// @param s 被拆分的字符串。
+    /// @param sepset 分隔符集合，可以有多种形式组成。
+    /// @param max_n 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
+    /// @param proc 指定如何接受拆分出来的字符串。
+    /// @return 当未指定 proc 参数时，会返回字符串列表。
     static auto split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sepset, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string>;
     static auto split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string_view>;
-    // static auto split(std::string_view s, value_type sepch, size_type max_n, const view_consumer_proc& proc) -> void;
-    // static auto split(std::string_view s, value_type sepch, const view_consumer_proc& proc) -> void;
-    // static auto split(std::string_view s, value_type sepch, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string>;
     static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
+    static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string>;
+    static auto split_view(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_view(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_view(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
+    //$
 
-    // 拆分字符串
-    static auto split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, std::string_view sep = ",", size_type max_n = npos) -> std::vector<std::string_view>;
-    static auto split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, const std::regex& sep, size_type max_n = npos) -> std::vector<std::string_view>;
+    //! 以字符串为分隔符拆分字符串
+    /// @param s 被拆分的字符串。
+    /// @param sepstr 用作分隔符的字符串，可以有多种形式组成。如果为 std::string_view 类型时，如果 sepstr 为空，自动采用默认值 ","。
+    /// @param max_n 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
+    /// @param proc 指定如何接受拆分出来的字符串。
+    /// @return 当未指定 proc 参数时，会返回字符串列表。
+    static auto split_list(std::string_view s, std::string_view sepstr, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, std::string_view sepstr, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, std::string_view sepstr = ",", size_type max_n = npos) -> std::vector<std::string>;
+    static auto split_list(std::string_view s, const std::regex& sepstr, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, const std::regex& sepstr, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, const std::regex& sepstr, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split_list_view(std::string_view s, const std::regex& sepstr, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_list_view(std::string_view s, std::string_view sepstr = ",", size_type max_n = npos) -> std::vector<std::string_view>;
 
-    static auto split_pair(std::string_view sm, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view>;
+    //! 以指定的字符串为分隔符将字符串拆分为两个部分
+    /// @param s 被拆分的字符串。
+    /// @param sepstr 
+    static auto split_pair(std::string_view sm, std::string_view sepstr = ":") -> std::tuple<std::string, std::string>;
+    static auto split_pair_view(std::string_view sm, std::string_view sepstr = ":") -> std::tuple<std::string_view, std::string_view>;
 
     // 将字符串 s，按照逗号和冒号拆分成一个 map 对象
     static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
@@ -738,15 +755,16 @@ public:
     static auto trim_anywhere_inplace(std::string& s, value_type charset) -> std::string&;
     static auto trim_anywhere_inplace(std::string& s) -> std::string&;
 
-    // 数字化简
+    //! 数字化简
     static auto simplified_integer_view(std::string_view s) -> std::string_view;
     static auto simplified_decimal_view(std::string_view s) -> std::string_view;
     //
     static auto simplified_integer(std::string_view s) -> std::string;
     static auto simplified_decimal(std::string_view s) -> std::string;
     //
-    static auto simplified_integer_inplace(std::string_view s);
-    static auto simplified_decimal_inplace(std::string_view s) -> std::string_view;
+    static auto simplified_integer_inplace(std::string& s) -> std::string&;
+    static auto simplified_decimal_inplace(std::string& s) -> std::string&;
+    //$
 
     // 拷贝
     static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;
