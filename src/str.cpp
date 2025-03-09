@@ -1701,23 +1701,131 @@ auto str::drop_right_inplace(std::string& s, size_type n) -> std::string& {
     return s;
 }
 
-// auto str::drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
-// }
-//
-// auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
-// }
-//
-// auto str::drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
-// }
-//
-// auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
-// }
-//
-// auto str::drop_inplace(std::string& s, char_checker_proc proc) -> std::string& {
-// }
-//
-// auto str::drop_inplace(std::string& s, charset_type charset) -> std::string& {
-// }
+auto str::drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
+    s = drop_mid(s, pos, n);
+    return s;
+}
+
+auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
+    s = drop_range(s, begin_pos, end_pos);
+    return s;
+}
+
+auto str::drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
+    s = drop(s, pos, offset);
+    return s;
+}
+
+auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
+    s = drop(s, pos);
+    return s;
+}
+
+auto str::drop_inplace(std::string& s, char_checker_proc proc) -> std::string& {
+    s = drop(s, proc);
+    return s;
+}
+
+auto str::drop_inplace(std::string& s, charset_type charset) -> std::string& {
+    s = drop(s, charset);
+    return s;
+}
+
+auto str::take_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (sep_range.pos >= s.size()) {
+        return s;
+    }
+
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
+    }
+
+    if (with_sep) {
+        return {s.data(), sep_range.end_pos()};
+    }
+    
+    return {s.data(), sep_range.begin_pos()};
+}
+
+auto str::take_after_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (sep_range.pos >= s.size()) {
+        return s;
+    }
+
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
+    }
+
+    if (with_sep) {
+        return {s.data() + sep_range.begin_pos(), s.size() - sep_range.begin_pos()};
+    }
+    
+    return {s.data() + sep_range.end_pos(), s.size() - sep_range.end_pos()};
+}
+
+auto str::drop_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (sep_range.pos >= s.size()) {
+        return s;
+    }
+
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
+    }
+
+    if (with_sep) {
+        return {s.data() + sep_range.end_pos(), s.size() - sep_range.end_pos()};
+    }
+
+    return {s.data() + sep_range.begin_pos(), s.size() - sep_range.begin_pos()};
+}
+
+auto str::drop_after_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (sep_range.pos >= s.size()) {
+        return s;
+    }
+
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
+    }
+
+    if (with_sep) {
+        return {s.data(), sep_range.begin_pos()};
+    }
+
+    return {s.data(), sep_range.end_pos()};
+}
+
+auto str::take_before(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
+    return {take_before_view(s, sep_range, with_sep)};
+}
+
+auto str::take_after(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
+    return {take_after_view(s, sep_range, with_sep)};
+}
+
+auto str::drop_before(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
+    return {drop_before_view(s, sep_range, with_sep)};
+}
+
+auto str::drop_after(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
+    return {drop_after_view(s, sep_range, with_sep)};
+}
 
 auto str::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
@@ -1945,7 +2053,6 @@ auto str::skip_space_inplace(std::string& s, size_type pos) -> std::string& {
     s = skip_space_view(s, pos);
     return s;
 }
-
 
 auto str::join(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
@@ -2746,10 +2853,88 @@ auto str::trim_anywhere(std::string_view s, const char_checker_proc& proc) -> st
     return result;
 }
 
+auto str::trim_anywhere(std::string_view s, const charset_type& charset) -> std::string {
+    return trim_anywhere(s, [&charset](value_type ch) -> bool {
+        return charset.get(ch);
+    });
+}
+
+auto str::trim_anywhere(std::string_view s, std::string_view charset) -> std::string {
+    return trim_anywhere(s, charset_type{charset});
+}
+
+auto str::trim_anywhere(std::string_view s, value_type charset) -> std::string {
+    return trim_anywhere(s, [charset](value_type ch) -> bool {
+        return charset == ch;
+    });
+}
+
 auto str::trim_anywhere(std::string_view s) -> std::string {
     return str::trim_anywhere(s, [](value_type ch) -> bool {
         return std::isspace(ch);
     });
+}
+
+
+auto str::trim_anywhere_inplace(std::string& s, const char_checker_proc& proc) -> std::string& {
+    s = trim_anywhere(s, proc);
+    return s;
+}
+
+auto str::trim_anywhere_inplace(std::string& s, const charset_type& charset) -> std::string& {
+    s = trim_anywhere(s, charset);
+    return s;
+}
+
+auto str::trim_anywhere_inplace(std::string& s, std::string_view charset) -> std::string& {
+    s = trim_anywhere(s, charset);
+    return s;
+}
+
+auto str::trim_anywhere_inplace(std::string& s, value_type charset) -> std::string&{
+    s = trim_anywhere(s, charset);
+    return s;
+}
+
+auto str::trim_anywhere_inplace(std::string& s) -> std::string& {
+    s = trim_anywhere(s);
+    return s;
+}
+
+auto str::simplified_integer_view(std::string_view s) -> std::string_view {
+    if (s.empty()) {
+        return s;
+    }
+
+    const_pointer ptr = s.data();
+    
+    // 如果是前导加号
+    if (*ptr == '+') {
+        ptr++;
+    }
+
+    while (ptr < (s.data() + s.size())) {
+        if (*ptr != '0') {
+            break;
+        }
+        ptr++;
+    }
+
+    // 如果遇到全0场景
+    if (ptr >= (s.data() + s.size())) {
+        ptr--;
+    }
+
+    return {ptr, ((s.data() + s.size()) - ptr)};
+}
+
+auto str::simplified_integer(std::string_view s) -> std::string {
+    return {simplified_integer_view(s)};
+}
+
+auto str::simplified_integer_inplace(std::string& s) -> std::string& {
+    s = simplified_integer_view(s);
+    return s;
 }
 
 auto str::copy(pointer dest, size_type size, std::string_view s) -> size_type {
@@ -2890,6 +3075,31 @@ auto str::expand_envs(std::string_view s, std::string_view key, std::string_view
     });
 }
 
+auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string& {
+    s = expand_envs(s, keep_unexpanded, proc);
+    return s;
+}
+
+auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded = false) -> std::string& {
+    s = expand_envs(s, keep_unexpanded);
+    return s;
+}
+
+auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string& {
+    s = expand_envs(s, keep_unexpanded, kvs);
+    return s;
+}
+
+auto str::expand_envs_inplace(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string& {
+    s = expand_envs(s, kvs);
+    return s;
+}
+
+auto str::expand_envs_inplace(std::string& s, std::string_view key, std::string_view val) -> std::string& {
+    s = expand_envs(s, key, val);
+    return s;
+}
+
 auto str::expand_tabs(std::string_view s, size_type tab_size) -> std::string {
     if (tab_size == 0) {
         tab_size = 8;
@@ -2920,6 +3130,11 @@ auto str::expand_tabs(std::string_view s, size_type tab_size) -> std::string {
     return result;
 }
 
+auto str::expand_tabs_inplace(std::string& s, size_type tab_size = 8) -> std::string& {
+    s = expand_tabs(s, tab_size);
+    return s;
+}
+
 auto str::expand_user(std::string_view s) -> std::string {
     if (((s.size() == 1) && (s[0] == '~')) || ((s.size() >= 2) && (s[0] == '~') && (s[1] == '/'))) {
         const char* ptr_home = getenv("HOME");
@@ -2937,6 +3152,11 @@ auto str::expand_user(std::string_view s) -> std::string {
     }
 
     return std::string{s};
+}
+
+auto str::expand_user_inplace(std::string& s) -> std::string& {
+    s = expand_user(s);
+    return s;
 }
 
 auto str::normpath(std::string_view s) -> std::string {
@@ -2975,6 +3195,11 @@ auto str::normpath(std::string_view s) -> std::string {
     }
 
     return str::join_path(result);
+}
+
+auto str::normpath_inplace(std::string& s) -> std::string& {
+    s = normpath(s);
+    return s;
 }
 
 // 处理路径中文件名的部分
