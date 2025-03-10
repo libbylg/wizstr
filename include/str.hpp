@@ -830,10 +830,11 @@ public:
     // 将 s 视作为文件路径，获取其目录名
     static auto dirname_view(std::string_view s) -> std::string_view;
     static auto dirname(std::string_view s) -> std::string;
+    static auto remove_dirname_view(std::string_view s) -> std::string_view;
     static auto remove_dirname(std::string_view s) -> std::string;
     static auto replace_dirname(std::string_view s, std::string_view newname) -> std::string;
     static auto split_dirname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
-
+    //
     static auto dirname_inplace(std::string& s) -> std::string&;
     static auto remove_dirname_inplace(std::string& s) -> std::string&;
     static auto replace_dirname_inplace(std::string& s, std::string_view newname) -> std::string&;
@@ -841,6 +842,7 @@ public:
     // 处理路径中文件名的部分
     static auto basename_view(std::string_view s) -> std::string_view;
     static auto basename(std::string_view s) -> std::string;
+    static auto remove_basename_view(std::string_view s) -> std::string_view;
     static auto remove_basename(std::string_view s) -> std::string;
     static auto replace_basename(std::string_view s, std::string_view name) -> std::string;
     static auto split_basename(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
@@ -852,13 +854,25 @@ public:
     // 扩展名相关操作
     static auto extname_view(std::string_view s) -> std::string_view;
     static auto extname(std::string_view s) -> std::string;
+    static auto remove_extname_view(std::string_view s) -> std::string_view;
     static auto remove_extname(std::string_view s) -> std::string;
     static auto replace_extname(std::string_view s, std::string_view name) -> std::string;
     static auto split_extname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
-
+    //
     static auto extname_inplace(std::string& s) -> std::string&;
     static auto remove_extname_inplace(std::string& s) -> std::string&;
     static auto replace_extname_inplace(std::string& s, std::string_view name) -> std::string&;
+
+    // 扩展名相关操作
+    static auto rawname_view(std::string_view s) -> std::string_view;
+    static auto rawname(std::string_view s) -> std::string;
+    static auto remove_rawname(std::string_view s) -> std::string;
+    static auto replace_rawname(std::string_view s, std::string_view name) -> std::string;
+    static auto split_rawname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
+    //
+    static auto rawname_inplace(std::string& s) -> std::string&;
+    static auto remove_rawname_inplace(std::string& s) -> std::string&;
+    static auto replace_rawname_inplace(std::string& s, std::string_view name) -> std::string&;
 
     // 转换为 hash 值
     static auto hash(std::string_view s, uint32_t mod) -> uint32_t;

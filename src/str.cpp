@@ -3341,9 +3341,13 @@ auto str::dirname(std::string_view s) -> std::string {
     return std::string{dir_view};
 }
 
-auto str::remove_dirname(std::string_view s) -> std::string {
+auto str::remove_dirname_view(std::string_view s) -> std::string_view {
     auto ptr = str::dirname_ptr(s);
-    return std::string{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
+    return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
+}
+
+auto str::remove_dirname(std::string_view s) -> std::string {
+    return std::string{remove_dirname_view(s)};
 }
 
 auto str::replace_dirname(std::string_view s, std::string_view newdir) -> std::string {
@@ -3385,9 +3389,13 @@ auto str::basename(std::string_view s) -> std::string {
     return std::string{str::basename_view(s)};
 }
 
-auto str::remove_basename(std::string_view s) -> std::string {
+auto str::remove_basename_view(std::string_view s) -> std::string_view {
     auto ptr = str::basename_ptr(s);
-    return std::string{s.data(), static_cast<size_type>(ptr - s.data())};
+    return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
+}
+
+auto str::remove_basename(std::string_view s) -> std::string {
+    return std::string{remove_basename_view(s)};
 }
 
 auto str::replace_basename(std::string_view s, std::string_view newname) -> std::string {
@@ -3414,9 +3422,13 @@ auto str::extname(std::string_view s) -> std::string {
     return std::string{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
 }
 
-auto str::remove_extname(std::string_view s) -> std::string {
+auto str::remove_extname_view(std::string_view s) -> std::string_view {
     auto ptr = str::extname_ptr(s);
-    return std::string{s.data(), static_cast<size_type>(ptr - s.data())};
+    return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
+}
+
+auto str::remove_extname(std::string_view s) -> std::string {
+    return std::string{remove_extname_view(s)};
 }
 
 auto str::replace_extname(std::string_view s, std::string_view newname) -> std::string {
@@ -3431,6 +3443,14 @@ auto str::replace_extname(std::string_view s, std::string_view newname) -> std::
 auto str::split_extname(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
     auto ptr = str::extname_ptr(s);
     return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+}
+
+auto str::rawname_view(std::string_view s) -> std::string_view {
+    return remove_extname_view(basename_view(s));
+}
+
+auto str::rawname(std::string_view s) -> std::string {
+    return std::string{rawname_view(s)};
 }
 
 auto str::encode_cstr(std::string_view s, view_consumer_proc proc) -> void {
