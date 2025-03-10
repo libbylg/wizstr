@@ -792,33 +792,33 @@ public:
     // 拷贝
     static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;
 
-    // 变量展开
+    //! 变量展开
     using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
     static auto expand_envs(std::string_view s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string;
     static auto expand_envs(std::string_view s, bool keep_unexpanded = false) -> std::string;
     static auto expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string;
     static auto expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string;
     static auto expand_envs(std::string_view s, std::string_view key, std::string_view val) -> std::string;
-
+    //
     static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string&;
     static auto expand_envs_inplace(std::string& s, bool keep_unexpanded = false) -> std::string&;
     static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, std::string_view key, std::string_view val) -> std::string&;
 
-    // 将字符串中的 tab 符号(\t)按照 tab 宽度替换成空白
+    //! 将字符串中的 tab 符号(\t)按照 tab 宽度替换成空白
     static auto expand_tabs(std::string_view s, size_type tab_size = 8) -> std::string;
     static auto expand_tabs_inplace(std::string& s, size_type tab_size = 8) -> std::string&;
 
-    // 扩展字符串中的 ~ 前缀
+    //! 扩展字符串中的 ~ 前缀
     static auto expand_user(std::string_view s) -> std::string;
     static auto expand_user_inplace(std::string& s) -> std::string&;
 
-    // 路径正常化
+    //! 路径正常化
     static auto normpath(std::string_view s) -> std::string;
     static auto normpath_inplace(std::string& s) -> std::string&;
 
-    // 路径处理
+    //! 路径处理
     static auto is_absolute(std::string_view s) -> bool;
     static auto is_relative(std::string_view s) -> bool;
 
@@ -827,7 +827,7 @@ public:
     static auto extname_ptr(std::string_view s) -> std::string::const_pointer;
     static auto dirname_ptr(std::string_view s) -> std::string::const_pointer;
 
-    // 将 s 视作为文件路径，获取其目录名
+    //! 将 s 视作为文件路径，获取其目录名
     static auto dirname_view(std::string_view s) -> std::string_view;
     static auto dirname(std::string_view s) -> std::string;
     static auto remove_dirname_view(std::string_view s) -> std::string_view;
@@ -839,7 +839,7 @@ public:
     static auto remove_dirname_inplace(std::string& s) -> std::string&;
     static auto replace_dirname_inplace(std::string& s, std::string_view newname) -> std::string&;
 
-    // 处理路径中文件名的部分
+    //! 处理路径中文件名的部分
     static auto basename_view(std::string_view s) -> std::string_view;
     static auto basename(std::string_view s) -> std::string;
     static auto remove_basename_view(std::string_view s) -> std::string_view;
@@ -851,7 +851,7 @@ public:
     static auto remove_basename_inplace(std::string& s) -> std::string&;
     static auto replace_basename_inplace(std::string& s, std::string_view name) -> std::string&;
 
-    // 扩展名相关操作
+    //! 扩展名相关操作
     static auto extname_view(std::string_view s) -> std::string_view;
     static auto extname(std::string_view s) -> std::string;
     static auto remove_extname_view(std::string_view s) -> std::string_view;
@@ -863,18 +863,16 @@ public:
     static auto remove_extname_inplace(std::string& s) -> std::string&;
     static auto replace_extname_inplace(std::string& s, std::string_view name) -> std::string&;
 
-    // 扩展名相关操作
+    //! 扩展名相关操作
     static auto rawname_view(std::string_view s) -> std::string_view;
     static auto rawname(std::string_view s) -> std::string;
-    static auto remove_rawname(std::string_view s) -> std::string;
     static auto replace_rawname(std::string_view s, std::string_view name) -> std::string;
-    static auto split_rawname(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
+    static auto split_rawname(std::string_view s) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     //
     static auto rawname_inplace(std::string& s) -> std::string&;
-    static auto remove_rawname_inplace(std::string& s) -> std::string&;
     static auto replace_rawname_inplace(std::string& s, std::string_view name) -> std::string&;
 
-    // 转换为 hash 值
+    //! 转换为 hash 值
     static auto hash(std::string_view s, uint32_t mod) -> uint32_t;
     static auto hash(std::string_view s, uint64_t mod) -> uint64_t;
     static auto md5(std::string_view s) -> std::string;

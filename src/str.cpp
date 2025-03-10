@@ -2405,7 +2405,6 @@ auto str::split_list(std::string_view s, const std::regex& sep, const view_consu
     str::split_list(s, sep, str::npos, proc);
 }
 
-
 auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string> {
     std::vector<std::string> result;
 
@@ -2416,8 +2415,6 @@ auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n)
 
     return result;
 }
-
-
 
 auto str::split_list_view(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
@@ -2441,7 +2438,6 @@ auto str::split_list_view(std::string_view s, std::string_view sep, size_type ma
     return result;
 }
 
-
 auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string> {
     std::array<std::string, 2> pair;
     size_t n = 0;
@@ -2452,7 +2448,6 @@ auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std
 
     return {pair[0], pair[1]};
 }
-
 
 auto str::split_pair_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view> {
     std::array<std::string_view, 2> pair;
@@ -3143,7 +3138,7 @@ auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded, const expand
     return s;
 }
 
-auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded = false) -> std::string& {
+auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded) -> std::string& {
     s = expand_envs(s, keep_unexpanded);
     return s;
 }
@@ -3193,7 +3188,7 @@ auto str::expand_tabs(std::string_view s, size_type tab_size) -> std::string {
     return result;
 }
 
-auto str::expand_tabs_inplace(std::string& s, size_type tab_size = 8) -> std::string& {
+auto str::expand_tabs_inplace(std::string& s, size_type tab_size) -> std::string& {
     s = expand_tabs(s, tab_size);
     return s;
 }
@@ -3451,6 +3446,32 @@ auto str::rawname_view(std::string_view s) -> std::string_view {
 
 auto str::rawname(std::string_view s) -> std::string {
     return std::string{rawname_view(s)};
+}
+
+auto str::replace_rawname(std::string_view s, std::string_view name) -> std::string {
+    std::string result;
+    result.append(remove_basename_view(s)).append(name).append(extname_view(s));
+    return result;
+}
+
+auto str::split_rawname(std::string_view s) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+    auto [dirname, basename] = split_basename(s);
+    auto [rawname, extname] = split_extname(basename);
+    return std::tuple{dirname, rawname, extname};
+}
+
+auto str::rawname_inplace(std::string& s) -> std::string& {
+    s = rawname(s);
+    return s;
+}
+
+auto str::replace_rawname_inplace(std::string& s, std::string_view name) -> std::string& {
+    std::string_view rawname = rawname_view(s);
+    assert((rawname.data() >= s.data()) && (rawname.data() < (s.data() + s.size())));
+    size_type extlen = (s.data() + s.size()) - (rawname.data() + rawname.size());
+    std::memmove((s.data() + (rawname.data() - s.data())), (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
+    s.resize(s.size() - rawname.size());
+    return s;
 }
 
 auto str::encode_cstr(std::string_view s, view_consumer_proc proc) -> void {
