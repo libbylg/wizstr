@@ -2110,6 +2110,10 @@ auto str::join_lines(const view_provider_proc& proc) -> std::string {
     return join_lines("\n", proc);
 }
 
+auto str::join_path(std::string_view sep, const view_provider_proc& proc) -> std::string {
+
+}
+
 auto str::join_path(const view_provider_proc& proc) -> std::string {
     std::string result;
     for (auto item = proc(); item; item = proc()) {

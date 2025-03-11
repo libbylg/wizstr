@@ -170,11 +170,25 @@ public:
         inline auto end_pos() const -> size_type {
             return pos;
         }
-
-        inline aitp
     };
 
     static inline constexpr size_type npos = std::string::npos;
+
+#if defined(_WIN32)
+    static constexpr std::string_view sep_search_path = ";";
+    static constexpr value_type sep_search_path_char = ';';
+    static constexpr std::string_view sep_path = "\\";
+    static constexpr value_type sep_path_char = '\\';
+    //
+    static constexpr std::string_view sep_line_ends = "\r\n";
+#else
+    static constexpr std::string_view sep_search_path = ":";
+    static constexpr value_type sep_search_path_char = ':';
+    static constexpr std::string_view sep_path = "/";
+    static constexpr value_type sep_path_char = '/';
+    //
+    static constexpr std::string_view sep_line_ends = "\n";
+#endif
 
     //! 在尾部追加
     static auto append(std::string_view s, std::string_view other) -> std::string;
@@ -523,11 +537,15 @@ public:
         return str::join_map("=", ",", items);
     }
 
-    // 按行拼接
-    static auto join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string;
+    //! 按行拼接
+    /// @param sep 
+    /// @param proc 
+    /// @param items 
+    static auto join_lines(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_lines(const view_provider_proc& proc) -> std::string;
+    //
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_lines(const Sequence& items) -> std::string {
+    static auto join_lines(std::string_view sep, const Sequence& items) -> std::string {
         auto itr = items.cbegin();
         return join_lines([&itr, &items]() -> std::optional<std::string_view> {
             if (itr == items.cend()) {
@@ -537,25 +555,51 @@ public:
             return *(itr++);
         });
     }
-
+    //
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_lines(std::string_view line_ends, const Sequence& items) -> std::string {
-        auto itr = items.cbegin();
-        return join_lines(line_ends, [&itr, &items]() -> std::optional<std::string_view> {
-            if (itr == items.cend()) {
+    static auto join_lines(const Sequence& items) -> std::string {
+        return join_lines(sep_line_ends, items);
+    }
+
+    //! 拼接文件路径
+    static auto join_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
+    static auto join_path(const view_provider_proc& proc) -> std::string;
+    //
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_path(std::string_view sep, const Sequence& items) -> std::string {
+        auto itr = items.begin();
+        return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
+            if (itr == end) {
                 return std::nullopt;
             }
 
             return *(itr++);
         });
     }
-
-    // 文件路径拼接
-    static auto join_path(const view_provider_proc& proc) -> std::string;
+    //
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_path(const Sequence& items) -> std::string {
+        return str::join_path(sep_path, items);
+    }
+
+    //! 拼接搜索路径
+    ///
+    /// 使用搜索路径分隔符拼接由 proc 或者 items 供给的字符串，并返回拼接后的结果。
+    /// 路径分隔符可以由 sep 手工指定，当调用没有该参数的形式的函数时，自动使用系统默认的分隔符（参见 @ref sep_search_path）
+    /// 对于提供 proc 参数的接口，proc 会持续调用该哈数获得数据直到该函数返回 std::optnull。如果 proc 在第一次调用时就返回 
+    /// std::optnull，返回的搜索路径为空串。
+    /// 
+    /// @param sep 搜索路径分隔符，需要注意在不同操作系统下，搜索路径的分隔符是不同的。
+    /// @param proc 提供搜素路径片段的函数。
+    /// @param items 存放路径片段的容器。
+    /// @return 返回以当前系统的搜索路径分隔符拼接好的字符串。
+    static auto join_search_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
+    static auto join_search_path(const view_provider_proc& proc) -> std::string;
+
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_search_path(std::string_view sep, const Sequence& items) -> std::string {
         auto itr = items.begin();
-        return str::join_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
+        return str::join_search_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
             if (itr == end) {
                 return std::nullopt;
             }
@@ -564,18 +608,9 @@ public:
         });
     }
 
-    // 拼接成搜索路径
-    static auto join_search_path(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_search_path(const Sequence& items) -> std::string {
-        auto itr = items.begin();
-        return str::join_search_path([end = items.end(), &itr]() -> std::optional<std::string_view> {
-            if (itr == end) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
+        return join_search_path(sep, items);
     }
 
     //! 以单个字符作为分隔符拆分字符串
@@ -626,13 +661,13 @@ public:
     static auto split_pair_view(std::string_view s, std::string_view sepstr = ":") -> std::tuple<std::string_view, std::string_view>;
 
     //! 将字符串 s，按照逗号和冒号拆分成一个 map 对象
-    ///  
+    ///
     /// split_map 会对字符串做两轮拆分，第一轮先以 sep_list 为分隔符，将字符串拆分成一组字串。第二轮再以 sep_pair 为分隔符
     /// 将前一轮拆分出来的每个字串拆分成键值对，并将该该键值对存入 map 或者通过 proc 输出。
     /// 总之，split_map 是拆分的是类型下面的数据格式（以sep_list和sep_pair为缺省值时为例）：
-    ///     
+    ///
     ///     item1:value1,item2:value2,item3:value3 ...
-    ///     
+    ///
     /// @param s 被拆分的字符串。
     /// @param sep_list 用作第一轮拆分的分隔符
     /// @param sep_pair 用作第二轮拆分的分隔符
@@ -646,7 +681,7 @@ public:
 
     //! 按照换行符将字符串 s，拆分成多行
     /// @param keep_ends 是否保留行尾分隔符
-    /// 
+    ///
     static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void;
     static auto split_lines(std::string_view s, bool keep_ends = false) -> std::vector<std::string_view>;
 
