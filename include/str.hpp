@@ -191,73 +191,170 @@ public:
 #endif
 
     //! 在尾部追加
-    static auto append(std::string_view s, std::string_view other) -> std::string;
-    static auto append(std::string_view s, value_type ch) -> std::string;
-    static auto append(std::string_view s, value_type ch, size_type n) -> std::string;
+    ///
+    /// 提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的字符串，这里针对
+    /// 大量字符串拼接提供了相对简便的方法。
+    ///
+    /// @param s 指定向哪个字符串后添加新串。
+    /// @param other 被追加的字符串。
+    /// @param n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
+    /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
+    /// @param items 从容器 items 中获取被凭借的字符串。 
+    static auto append(std::string_view s, std::string_view other, size_type n = 1) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto append(std::string_view s, const Sequence& items) -> std::string {
+        auto itr = items.begin();
+        return append(s, [&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
 
-    static auto append_inplace(std::string& s, std::string_view other) -> std::string&;
+            return *(itr++);
+        });
+    }
+    
     static auto append_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
-    static auto append_inplace(std::string& s, value_type ch) -> std::string&;
-    static auto append_inplace(std::string& s, value_type ch, size_type n) -> std::string&;
     static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
-    static auto append_inplace(std::string& s, std::initializer_list<std::string_view> others) -> std::string&;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto append_inplace(std::string& s, const Sequence& items) -> std::string& {
+        auto itr = items.begin();
+        return append(s, [&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
 
-    //! 在头部追加
-    static auto prepend(std::string_view s, std::string_view other) -> std::string;
-    static auto prepend(std::string_view s, value_type ch) -> std::string;
-    static auto prepend(std::string_view s, value_type ch, size_type n) -> std::string;
+            return *(itr++);
+        });
+    }
+    //$
+
+    //! 头部追加
+    static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto prepend(std::string_view s, const Sequence& items) -> std::string {
+        auto itr = items.begin();
+        return prepend(s, [&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
 
-    static auto prepend_inplace(std::string& s, std::string_view other) -> std::string&;
+            return *(itr++);
+        });
+    }
+    
     static auto prepend_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
-    static auto prepend_inplace(std::string& s, value_type ch) -> std::string&;
-    static auto prepend_inplace(std::string& s, value_type ch, size_type n) -> std::string&;
     static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
+        auto itr = items.begin();
+        return prepend_inplace(s, [&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
 
-    // 修改字符串：中间插入、首尾插入、任意位置删除
+            return *(itr++);
+        });
+    }
+    //$
+
+    //! 修改字符串：中间插入、首尾插入、任意位置删除
+    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
     static auto insert(std::string_view s, size_type pos, std::string_view other) -> std::string;
-    static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
+    static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
 
-    static auto insert_inplace(std::string& s, size_type pos, std::string_view other) -> std::string&;
     static auto insert_inplace(std::string& s, size_type pos, std::string_view other, size_type n) -> std::string&;
-    static auto insert_inplace(std::string& s, size_type pos, value_type ch) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, std::string_view other) -> std::string&;
     static auto insert_inplace(std::string& s, size_type pos, value_type ch, size_type n) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, value_type ch) -> std::string&;
     static auto insert_inplace(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string&;
+    //$
 
-    // 不区分大小写的比较
-    static auto icmp(std::string_view s, std::string_view other) -> int;
-    static auto icmp(std::string_view s, std::string_view other, size_type max_n) -> int;
+    //! 不区分大小写的比较
+    ///
+    /// icompare 提供了不区分大小写比较的能力，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，icompare 总是
+    /// 返回 0；
+    ///
+    /// @param s 参与比较的字符串
+    /// @param other 另一个参与比较的字符串
+    /// @param max_n 表示最多比较前 max_n 个字符
+    /// @return 返回正数，表示 s 大于 other；返回负值，表示 s 小于 other；返回 0，表示 s 和 other 相等。
+    static auto icompare(std::string_view s, std::string_view other) -> int;
+    static auto icompare(std::string_view s, std::string_view other, size_type max_n) -> int;
+    //$
 
-    // 不区分大小写，判断是否相等
+    //! 不区分大小写的相等測試
+    ///
+    /// iequals 提供了不区分大小写的相等比较，，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，icompare 总是
+    /// 返回 true；
+    ///
+    /// @param s 参与比较的字符串
+    /// @param other 另一个参与比较的字符串
+    /// @param max_n 表示最多比较前 max_n 个字符
+    /// @return 如果相等，返回 true，否则返回 false 
     static auto iequals(std::string_view s, std::string_view other) -> bool;
     static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
+    //$
 
-    // 匹配
+    //! 基于通配符的匹配检测
+    ///
+    /// 测试字符串 s 是否匹配通配符 pattern。
+    /// 
+    /// @param s 被测试的字符串
+    /// @param pattern 通配串
+    /// @return 如果 s 字符串匹配 pattern，返回 true，否则返回 false。
     static auto wildcmp(const_pointer s, const_pointer pattern) -> bool;
     static auto wildcmp(std::string_view s, std::string_view pattern) -> bool;
+    //$
 
-    // 是否包含子串
+    //! 判断两个字符串的包含关系
+    ///
+    /// 等价于在字符串 s 中查找是否存在指定的字符或者字符串。
+    ///
+    /// @param s 在该字符串查找目标子串
+    /// @param other 被查找的目标子串
+    /// @param ch 在 s 中查找是否存在指定的字符
+    /// @param proc s 中的每个字符都会触发 proc 函数，proc 返回 true，表示当前字符是正在被查找的字符；
+    /// @param ignore_case 指定是否采用不区分大小写的方式来查找子串
+    /// @param charset 指定一个字符集，s 中只要有任意一个字符在 charset 中就表示 s 中包含 charset
+    /// @param pattern 指定一个正则表达式，只要 s 中有任意子串匹配 pattern，表示 s 中包含 pattern
+    /// @return 如果 s 包含指定的字符或者字符串或者某种模式，返回 true，否则返回 false。
     static auto contains(std::string_view s, std::string_view other, bool ignore_case = false) -> bool;
     static auto contains(std::string_view s, value_type ch, bool ignore_case = false) -> bool;
     static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
     static auto contains(std::string_view s, const charset_type& charset) -> bool;
     static auto contains(std::string_view s, const std::regex& pattern) -> bool;
 
-    // 子串统计
+    //! 子串统计
+    /// 
+    /// 本函数用于统计 s 串中是否包含特定模式的子串的数量。需要注意，count 函数统计的子串是不重叠的子串。
+    ///
+    /// @param s 
     static auto count(std::string_view s, std::string_view other, bool ignore_case = false) -> size_type;
     static auto count(std::string_view s, value_type ch, bool ignore_case = false) -> size_type;
     static auto count(std::string_view s, const char_match_proc& proc) -> size_type;
     static auto count(std::string_view s, const charset_type& charset) -> size_type;
     static auto count(std::string_view s, const std::regex& pattern) -> size_type;
 
-    // 计算公共前后缀的长度
+    //! 计算公共前缀和后缀的长度
+    ///
+    /// @param s 参与计算的字符串
+    /// @param other 参与计算的另一个字符串
+    /// @return 如果 s 与 other 有共同前缀，返回共同前缀的长度，否则返回 0
     static auto prefix(std::string_view s, std::string_view other) -> size_type;
     static auto suffix(std::string_view s, std::string_view other) -> size_type;
 
-    // 前缀操作
+    //! 前缀操作
+    ///
+    /// 本组函数提供了常见的前缀操作。has_prefix 和 starts_with 功能一致，都用于测试字符串 s 是否有指定的前缀。
+    /// remove_prefix_view，remove_prefix，remove_prefix_inplace 会返回从字符串 s 中去除两个字符串的共同前缀后剩余的部分。
+    /// 
+    /// @param s 目标字符串
+    /// @param ch 在 has_prefix 和 starts_with 中表示用于判断 s 的首字母是否为 ch。
+    /// @param prefix 前缀串
     static auto has_prefix(std::string_view s, value_type ch) -> bool;
     static auto has_prefix(std::string_view s, std::string_view prefix) -> bool;
     static auto starts_with(std::string_view s, value_type ch) -> bool;
@@ -515,7 +612,7 @@ public:
         return join(",", items);
     }
 
-    // 使用逗号和冒号拼接 map
+    //! 使用逗号和冒号拼接 map
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string;
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
 
