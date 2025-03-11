@@ -17,27 +17,15 @@
 #include <cassert>
 #include <fstream>
 
-auto str::append(std::string_view s, std::string_view other) -> std::string {
+auto str::append(std::string_view s, std::string_view other, size_type n) -> std::string {
     std::string result;
-    result.reserve(s.size() + other.size());
+    result.reserve(s.size() + (other.size() * n));
     result.append(s);
-    result.append(other);
-    return result;
-}
 
-auto str::append(std::string_view s, value_type ch) -> std::string {
-    std::string result;
-    result.reserve(s.size() + 1);
-    result.append(s);
-    result.push_back(ch);
-    return result;
-}
+    for (size_type index = 0; index < n; index++) {
+        result.append(other);
+    }
 
-auto str::append(std::string_view s, value_type ch, size_type n) -> std::string {
-    std::string result;
-    result.reserve(s.size() + n);
-    result.append(s);
-    result.resize(s.size() + n, ch);
     return result;
 }
 
@@ -52,24 +40,11 @@ auto str::append(std::string_view s, const view_provider_proc& proc) -> std::str
     return result;
 }
 
-auto str::append_inplace(std::string& s, std::string_view other) -> std::string& {
-    return s.append(other);
-}
-
 auto str::append_inplace(std::string& s, std::string_view other, size_type n) -> std::string& {
     s.reserve(s.size() + other.size() * n);
     for (size_type i = 0; i < n; i++) {
         s.append(other);
     }
-    return s;
-}
-
-auto str::append_inplace(std::string& s, str::value_type ch) -> std::string& {
-    return s.append(&ch, 1);
-}
-
-auto str::append_inplace(std::string& s, value_type ch, size_type n) -> std::string& {
-    s.resize(s.size() + n, ch);
     return s;
 }
 
@@ -82,40 +57,12 @@ auto str::append_inplace(std::string& s, const view_provider_proc& proc) -> std:
     return s;
 }
 
-auto str::append_inplace(std::string& s, std::initializer_list<std::string_view> others) -> std::string& {
-    // 先计算出需要追加的数据的总长度
-    size_t append_size = 0;
-    for (auto itr = others.begin(); itr != others.end(); itr++) {
-        append_size += itr->size();
-    }
-
-    // 做一个一次性扩容
-    s.reserve(s.size() + append_size);
-
-    // 再逐个添加
-    for (auto itr = others.begin(); itr != others.end(); itr++) {
-        s.append(*itr);
-    }
-
-    return s;
-}
-
-auto str::prepend(std::string_view s, std::string_view other) -> std::string {
+auto str::prepend(std::string_view s, std::string_view other, size_type n) -> std::string {
     std::string result;
-    result.reserve(s.size() + other.size());
-    result.append(other);
-    result.append(s);
-    return result;
-}
-
-auto str::prepend(std::string_view s, value_type ch) -> std::string {
-    return prepend(s, std::string_view{&ch, 1});
-}
-
-auto str::prepend(std::string_view s, value_type ch, size_type n) -> std::string {
-    std::string result;
-    result.reserve(s.size() + n);
-    result.resize(n, ch);
+    result.reserve(s.size() + other.size() * n);
+    for (size_type index = 0; index < n; index++) {
+        result.append(other);
+    }
     result.append(s);
     return result;
 }
@@ -129,20 +76,6 @@ auto str::prepend(std::string_view s, const view_provider_proc& proc) -> std::st
     }
     result.append(s);
     return result;
-}
-
-auto str::prepend_inplace(std::string& s, std::string_view other) -> std::string& {
-    if (s.capacity() < (s.size() + other.size() + 1)) {
-        std::string result;
-        result.append(other).append(s);
-        s = std::move(result);
-        return s;
-    }
-
-    s.resize(s.size() + other.size());
-    std::memmove(s.data() + other.size(), s.c_str(), s.size() * sizeof(value_type));
-    std::memcpy(s.data(), other.data(), other.size());
-    return s;
 }
 
 auto str::prepend_inplace(std::string& s, std::string_view other, size_type n) -> std::string& {
@@ -172,36 +105,16 @@ auto str::prepend_inplace(std::string& s, std::string_view other, size_type n) -
     return s;
 }
 
-auto str::prepend_inplace(std::string& s, value_type ch) -> std::string& {
-    return prepend_inplace(s, std::string_view{&ch, 1});
-}
-
-auto str::prepend_inplace(std::string& s, value_type ch, size_type n) -> std::string& {
-    if (s.capacity() < (s.size() + n + 1)) {
-        std::string result;
-        result.reserve(s.size() + n);
-        result.resize(n, ch);
-        result.append(s);
-        s = std::move(result);
-        return s;
-    }
-
-    s.resize(s.size() + n);
-    std::memmove(s.data() + n, s.c_str(), s.size() * sizeof(value_type));
-    s[0] = ch;
-    return s;
-}
-
 auto str::prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string& {
     const auto item = proc();
     while (item) {
-        prepend(s, item.value());
+        prepend_inplace(s, item.value(), 1);
     }
 
     return s;
 }
 
-auto str::insert(std::string_view s, size_type pos, std::string_view other) -> std::string {
+auto str::insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string {
     if (other.empty()) {
         return std::string{s};
     }
@@ -211,15 +124,13 @@ auto str::insert(std::string_view s, size_type pos, std::string_view other) -> s
     }
 
     std::string result;
-    result.reserve(other.size() + s.size());
+    result.reserve(other.size() + (s.size() * n));
     result.append(std::string_view{s.data(), pos});
-    result.append(other);
+    for (size_type index = 0; index < n; index++) {
+        result.append(other);
+    }
     result.append(std::string_view{s.data() + pos, s.size() - pos});
     return result;
-}
-
-auto str::insert(std::string_view s, size_type pos, value_type ch) -> std::string {
-    return str::insert(s, pos, std::string_view{&ch, 1});
 }
 
 auto str::insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string {
@@ -257,23 +168,6 @@ auto str::insert(std::string_view s, size_type pos, const view_provider_proc& pr
     return result;
 }
 
-auto str::insert_inplace(std::string& s, size_type pos, std::string_view other) -> std::string& {
-    if (s.capacity() < (s.size() + other.size() + 1)) {
-        std::string result;
-        result.resize(other.size() + s.size());
-        std::memcpy(result.data(), s.c_str(), pos);
-        std::memcpy(result.data() + pos, other.data(), other.size());
-        std::memcpy(result.data() + pos + other.size(), s.c_str() + pos, s.size() - pos);
-        s = std::move(result);
-        return s;
-    }
-
-    s.resize(other.size() + s.size());
-    std::memmove(s.data() + pos + other.size(), s.c_str() + pos, s.size() - pos);
-    std::memcpy(s.data() + pos, other.data(), other.size());
-    return s;
-}
-
 auto str::insert_inplace(std::string& s, size_type pos, std::string_view other, size_type n) -> std::string& {
     // TODO 性能不是最优的，主要是会导致多次扩容
     size_type count = 0;
@@ -287,10 +181,6 @@ auto str::insert_inplace(std::string& s, size_type pos, std::string_view other, 
     });
 
     return s;
-}
-
-auto str::insert_inplace(std::string& s, size_type pos, value_type ch) -> std::string& {
-    return insert_inplace(s, pos, std::string_view{&ch, 1});
 }
 
 auto str::insert_inplace(std::string& s, size_type pos, value_type ch, size_type n) -> std::string& {
@@ -318,13 +208,13 @@ auto str::insert_inplace(std::string& s, size_type pos, value_type ch, size_type
 auto str::insert_inplace(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string& {
     auto item = proc();
     while (item) {
-        str::insert(s, pos, item.value()); // TODO 不是最优的，会导致多次扩容
+        str::insert_inplace(s, pos, item.value(), 1); // TODO 不是最优的，会导致多次扩容
     }
 
     return s;
 }
 
-auto str::icmp(std::string_view s, std::string_view other) -> int {
+auto str::icompare(std::string_view s, std::string_view other) -> int {
     if (s.size() < other.size()) {
         int ret = strncasecmp(s.data(), other.data(), s.size());
         return (ret == 0) ? -other[s.size()] : ret;
@@ -338,7 +228,7 @@ auto str::icmp(std::string_view s, std::string_view other) -> int {
     return strncasecmp(s.data(), other.data(), other.size());
 }
 
-auto str::icmp(std::string_view s, std::string_view other, size_type max_n) -> int {
+auto str::icompare(std::string_view s, std::string_view other, size_type max_n) -> int {
     if (max_n < s.size()) {
         s = s.substr(0, max_n);
     }
@@ -347,7 +237,7 @@ auto str::icmp(std::string_view s, std::string_view other, size_type max_n) -> i
         other = other.substr(0, max_n);
     }
 
-    return str::icmp(s, other);
+    return str::icompare(s, other);
 }
 
 auto str::iequals(std::string_view s, std::string_view other) -> bool {

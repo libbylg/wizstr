@@ -192,14 +192,15 @@ public:
 
     //! 在尾部追加
     ///
-    /// 提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的字符串，这里针对
+    /// 提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的追加字符串，这里针对
     /// 大量字符串拼接提供了相对简便的方法。
+    /// 对于 append_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
     ///
     /// @param s 指定向哪个字符串后添加新串。
     /// @param other 被追加的字符串。
     /// @param n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
     /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
-    /// @param items 从容器 items 中获取被凭借的字符串。 
+    /// @param items 从容器 items 中获取被追加的字符串。 
     static auto append(std::string_view s, std::string_view other, size_type n = 1) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
@@ -213,7 +214,7 @@ public:
             return *(itr++);
         });
     }
-    
+    //
     static auto append_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
     static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
@@ -229,7 +230,18 @@ public:
     }
     //$
 
-    //! 头部追加
+    //! 向头部追加
+    ///
+    /// 將一个或者多个字符串追加到指定字符串的前面。实际上，STL 中已经提供了比较丰富的字符串插入函数，这里针对
+    /// 大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒序的方式被追加。
+    /// 比如，`str::prepend("abc", {"123", "456", "789"})` 返回的结果是 "789456123abc"。
+    /// 对于 prepend_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
+    ///
+    /// @param s 所有字符串都追加到该字符串之前
+    /// @param other 被追加的字符串
+    /// @param n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
+    /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
+    /// @param items 从容器 items 中获取被追加的字符串。
     static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
@@ -243,7 +255,7 @@ public:
             return *(itr++);
         });
     }
-    
+    //
     static auto prepend_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
     static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
@@ -259,18 +271,47 @@ public:
     }
     //$
 
-    //! 修改字符串：中间插入、首尾插入、任意位置删除
-    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n) -> std::string;
-    static auto insert(std::string_view s, size_type pos, std::string_view other) -> std::string;
-    static auto insert(std::string_view s, size_type pos, value_type ch, size_type n) -> std::string;
-    static auto insert(std::string_view s, size_type pos, value_type ch) -> std::string;
+    //! 向字符串中间插入
+    ///
+    /// 向字符串指定的位置插入新的字符串或者字符。
+    /// 对于 insert_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
+    ///
+    /// @param s 向该字符串查询新串
+    /// @param pos 指定插入的起始位置，如果 pos 大于或者等于 s 的长度，等价于 append。
+    /// @param other 被插入的字符串，如果 other 与 s 存在重叠，可能会导致插入的数据达不到预期。 
+    /// @param ch 被插入的字符
+    /// @param n 重复插入次数
+    /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
+    /// @param items 从容器 items 中获取被插入的字符串。
+    static auto insert(std::string_view s, size_type pos, std::string_view other, size_type n = 1) -> std::string;
+    static auto insert(std::string_view s, size_type pos, value_type ch, size_type n = 1) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto insert(std::string& s, size_type pos, const Sequence& items) -> std::string& {
+        auto itr = items.begin();
+        return insert(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
 
-    static auto insert_inplace(std::string& s, size_type pos, std::string_view other, size_type n) -> std::string&;
-    static auto insert_inplace(std::string& s, size_type pos, std::string_view other) -> std::string&;
-    static auto insert_inplace(std::string& s, size_type pos, value_type ch, size_type n) -> std::string&;
-    static auto insert_inplace(std::string& s, size_type pos, value_type ch) -> std::string&;
+            return *(itr++);
+        });
+    }
+    //
+    static auto insert_inplace(std::string& s, size_type pos, std::string_view other, size_type n = 1) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, value_type ch, size_type n = 1) -> std::string&;
     static auto insert_inplace(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string&;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string& {
+        auto itr = items.begin();
+        return insert_inplace(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
+            if (itr == items.end()) {
+                return std::nullopt;
+            }
+
+            return *(itr++);
+        });
+    }
     //$
 
     //! 不区分大小写的比较
@@ -707,8 +748,9 @@ public:
 
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_search_path(const Sequence& items) -> std::string {
-        return join_search_path(sep, items);
+        return join_search_path(":", items);
     }
+    //$
 
     //! 以单个字符作为分隔符拆分字符串
     ///
@@ -746,6 +788,7 @@ public:
     static auto split_list(std::string_view s, const std::regex& sepstr, size_type max_n = npos) -> std::vector<std::string>;
     static auto split_list_view(std::string_view s, const std::regex& sepstr, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_list_view(std::string_view s, std::string_view sepstr = ",", size_type max_n = npos) -> std::vector<std::string_view>;
+    //$
 
     //! 以指定的字符串为分隔符将字符串拆分为两个部分
     ///
