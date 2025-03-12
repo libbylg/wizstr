@@ -368,12 +368,18 @@ public:
     static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
     static auto contains(std::string_view s, const charset_type& charset) -> bool;
     static auto contains(std::string_view s, const std::regex& pattern) -> bool;
+    //$
 
     //! 子串统计
     /// 
     /// 本函数用于统计 s 串中是否包含特定模式的子串的数量。需要注意，count 函数统计的子串是不重叠的子串。
     ///
-    /// @param s 
+    /// @param s 在该字符串中查找
+    /// @param other, ch, charset 被统计的子串或者字符或者字符集
+    /// @param proc 用于表示满足特定条件字符
+    /// @param pattern 用于统计满足表达式的子串的数量
+    /// @param ignore_case 如果为 true，表示忽略大小写差异，否则，表示采用大小写敏感的方式查找。
+    /// @return 返回满足条件的子串或者字符的数量。特别的，当 s 或者 other 为空时，总是返回 0
     static auto count(std::string_view s, std::string_view other, bool ignore_case = false) -> size_type;
     static auto count(std::string_view s, value_type ch, bool ignore_case = false) -> size_type;
     static auto count(std::string_view s, const char_match_proc& proc) -> size_type;
@@ -394,8 +400,7 @@ public:
     /// remove_prefix_view，remove_prefix，remove_prefix_inplace 会返回从字符串 s 中去除两个字符串的共同前缀后剩余的部分。
     /// 
     /// @param s 目标字符串
-    /// @param ch 在 has_prefix 和 starts_with 中表示用于判断 s 的首字母是否为 ch。
-    /// @param prefix 前缀串
+    /// @param prefix, ch 前缀字符串或者字符
     static auto has_prefix(std::string_view s, value_type ch) -> bool;
     static auto has_prefix(std::string_view s, std::string_view prefix) -> bool;
     static auto starts_with(std::string_view s, value_type ch) -> bool;
@@ -408,33 +413,43 @@ public:
     static auto remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string&;
     static auto remove_prefix_inplace(std::string& s, value_type prefix) -> std::string&;
 
-    // 后缀操作
-    static auto has_suffix(std::string_view s, value_type suffix) -> bool;
+    //! 后缀操作
+    ///
+    /// 本组函数提供了常见的前缀操作。has_suffix 和 ends_with 功能一致，都用于测试字符串 s 是否有指定的后缀。
+    /// remove_suffix_view，remove_suffix，remove_suffix_inplace 会返回从字符串 s 中去除两个字符串的共同后剩余的部分。
+    /// 
+    /// @param s 目标字符串
+    /// @param prefix, ch 后缀字符串或者字符
+    static auto has_suffix(std::string_view s, value_type ch) -> bool;
     static auto has_suffix(std::string_view s, std::string_view suffix) -> bool;
-    static auto ends_with(std::string_view s, value_type suffix) -> bool;
+    static auto ends_with(std::string_view s, value_type ch) -> bool;
     static auto ends_with(std::string_view s, std::string_view suffix) -> bool;
     static auto remove_suffix_view(std::string_view s, std::string_view suffix) -> std::string_view;
-    static auto remove_suffix_view(std::string_view s, value_type suffix) -> std::string_view;
+    static auto remove_suffix_view(std::string_view s, value_type ch) -> std::string_view;
     static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string;
-    static auto remove_suffix(std::string_view s, value_type suffix) -> std::string;
+    static auto remove_suffix(std::string_view s, value_type ch) -> std::string;
     //
     static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
     static auto remove_suffix_inplace(std::string& s, value_type suffix) -> std::string&;
 
-    // 一次性查找
+    //! 一次性查找
     static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
     static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
     static auto find_next_eol(std::string_view s, size_type pos = 0) -> std::string_view;
     static auto find_next_word(std::string_view s, size_type pos = 0) -> std::string_view;
 
-    // 迭代找下一个
+    //! 迭代找下一个
     static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
     static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
     static auto iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
     static auto iter_next_eol(std::string_view s, size_type& pos) -> std::string_view;
     static auto iter_next_word(std::string_view s, size_type& pos) -> std::string_view;
 
-    // 字符串特征
+    //! 字符串特征测试
+    /// is_lower, is_upper : 检测字符串 s 中的所有字母都是小写或者大写字母
+    /// is_ascii ：检测字符串 s 中的所有字母 ASCII 字母
+    /// is_title, is_capitalize ：
+    /// is_digit, is_xdigit L是否所有的字符都是数字或者十六进制字符
     static auto is_lower(std::string_view s) -> bool;
     static auto is_upper(std::string_view s) -> bool;
     static auto is_title(std::string_view s) -> bool;
@@ -449,6 +464,7 @@ public:
     static auto is_blank(std::string_view s) -> bool;
     static auto is_print(std::string_view s) -> bool;
     static auto is_graph(std::string_view s) -> bool;
+    //$
 
     // 是否一个标识符
     static auto is_identifier(std::string_view s) -> bool;
