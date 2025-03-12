@@ -446,10 +446,19 @@ public:
     static auto iter_next_word(std::string_view s, size_type& pos) -> std::string_view;
 
     //! 字符串特征测试
-    /// is_lower, is_upper : 检测字符串 s 中的所有字母都是小写或者大写字母
-    /// is_ascii ：检测字符串 s 中的所有字母 ASCII 字母
-    /// is_title, is_capitalize ：
-    /// is_digit, is_xdigit L是否所有的字符都是数字或者十六进制字符
+    ///
+    /// is_lower 检测字符串 s 中的所有字母都是小写（参考 std::islower）
+    /// is_upper 检测字符串 s 中的所有字母都是大写字母（参考 std::isupper）
+    /// is_capitalize 检测给定的字符串 s 的首个字符是否为大写字母
+    /// is_title  对于给定的字符串 s 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回 true
+    /// is_digit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
+    /// is_xdigit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
+    /// is_ascii 检测字符串 s 中的所有字符是否都在 ASCII 范围内
+    /// is_alpha 检测指定的字符串 s 是否全都为字母（参考 std::isalpha）
+    /// is_alnum 检测指定的字符串 s 是否全都为字母或者数字（参考 std::isalnum）
+    /// is_alnumul 检测指定的字符串 s 是否全都为字母或者数字或者下划线
+    /// is_space 检测指定的字符串 s 是否全都为空白字符（参考 std::isspace）
+    /// is_blank 检测指定的字符串 s 是否全都为空格字符（参考 std::isblank）
     static auto is_lower(std::string_view s) -> bool;
     static auto is_upper(std::string_view s) -> bool;
     static auto is_title(std::string_view s) -> bool;
@@ -466,15 +475,31 @@ public:
     static auto is_graph(std::string_view s) -> bool;
     //$
 
-    // 是否一个标识符
+    //! 是否一个标识符
+    /// 
+    /// @func is_identifier 检查字符串 s 是否满足一个标识符的特征，即以大小写字母或者下划线开头且后续字符为字母数字或者下划线。
+    /// @func is_literal_bool 检查字符串 s 是否是 bool 值的特征，等价于 `(is_literal_true(s) || is_literal_false(s))`。
+    /// @func is_literal_true 检查字符串 s 是否可以被视作 true
+    /// @func is_literal_false 检查字符串 s 是否可以被视作 false
+    /// @func is_literal_integer 检查字符串 s 是否可以被视作整数
+    /// @func is_literal_real 检查字符串 s 是否可以被视作浮点数，需要注意整数本身也可以被视作浮点数
+    ///
+    /// * 被视作 true 的字符串包括 "1", "on", "ON", "Yes", "yes", "YES", "True", "true", "TRUE"
+    /// * 被视作 false 的字符串包括 "0", "off", "OFF", "No", "no", "NO", "False", "false", "FALSE"
+    /// * 被视作 real 的字符串，等价于匹配正则表达式 `[+-]?(([0-9]+)|([0-9]+\.)|(\.[0-9]+))([Ee][+-]?[0-9]+)?`
+    /// * 被视作 integer 的字符串，等价于匹配正则表达式 `[+-]?[0-9]+`
+    /// * 被视作 identifier 的字符串，等价于正则表达式 `[A-Za-z_][0-9A-Za-z_]*`
     static auto is_identifier(std::string_view s) -> bool;
     static auto is_literal_bool(std::string_view s) -> bool;
     static auto is_literal_true(std::string_view s) -> bool;
     static auto is_literal_false(std::string_view s) -> bool;
-    static auto is_literal_real(std::string_view s) -> bool;
     static auto is_literal_integer(std::string_view s) -> bool;
+    static auto is_literal_real(std::string_view s) -> bool;
+    //$
 
-    // 提取子串（基于位置系列）
+    //! 基于位置提取子串
+    /// @func take_left_view 返回字符串 s 的最左边前 n 个字符的子串
+    /// @func take_left_view 返回字符串 s 的最右边前 n 个字符的子串  
     static auto take_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto take_right_view(std::string_view s, size_type n) -> std::string_view;
     static auto take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view;
