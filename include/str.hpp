@@ -26,12 +26,38 @@
 #include <vector>
 
 #include <array>
-#include <bitset>
 #include <cstring>
 #include <regex>
 
-class str {
-public:
+/// @brief str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
+/// 
+/// str 提供了下列算法：
+/// 
+/// * 追加（append、prepend 系列）和插入（insert 系列）
+/// * 大小写不敏感的比较（icompare 系列）和相等测试（iequals 系列）
+/// * 基于通配符匹配（wildcmp 系列）
+/// * 两字符串之间的关系（contains 系列）
+/// * 特征字符串统计（count 系列）
+/// * 前后缀操作（prefix 和 suffix 系列）
+/// * 查找（find 和 iter 系列）
+/// * 特征测试（is、has 系列）
+/// * 子串提取（take、drop、range 系列）
+/// * 修剪和整形（align、surround、unsurround、invert、simplified、trim 系列）
+/// * 按多行处理（lines 系列）
+/// * 按单词处理（words 系列）
+/// * 字符串生成（repeat、random 系列）
+/// * 空白串处理（spaces 系列）
+/// * 字符串遮罩（cover 系列）
+/// * 字符串拆分（split、partition、chunked、windowed 系列）
+/// * 字符串拼接（join 系列）
+/// * 大小写转换（to、simplified 系列）
+/// * 变量展开（expand）
+/// * 文件名路径操作（basemame、extname、dirname 系列）
+/// * 字符串哈希算法（hash 系列）
+/// * 字符串转义（encode、decode 系列）
+/// * 文本文件读取（read 系列）
+/// * 字符分组和筛选（grouping 和 filter 系列）
+struct str {
     using size_type = std::string::size_type;
     using ssize_type = ssize_t;
     using value_type = std::string::value_type;
@@ -63,6 +89,10 @@ public:
 
     // 行消费
     using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
+
+    //! 单字符映射
+    template <typename MappedType>
+    using mapping_proc = std::function<auto(value_type)->MappedType>;
 
     class charset_type {
     public:
@@ -445,20 +475,20 @@ public:
     static auto iter_next_eol(std::string_view s, size_type& pos) -> std::string_view;
     static auto iter_next_word(std::string_view s, size_type& pos) -> std::string_view;
 
-    //! 字符串特征测试
+    //! 特征测试
     ///
-    /// is_lower 检测字符串 s 中的所有字母都是小写（参考 std::islower）
-    /// is_upper 检测字符串 s 中的所有字母都是大写字母（参考 std::isupper）
-    /// is_capitalize 检测给定的字符串 s 的首个字符是否为大写字母
-    /// is_title  对于给定的字符串 s 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回 true
-    /// is_digit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
-    /// is_xdigit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
-    /// is_ascii 检测字符串 s 中的所有字符是否都在 ASCII 范围内
-    /// is_alpha 检测指定的字符串 s 是否全都为字母（参考 std::isalpha）
-    /// is_alnum 检测指定的字符串 s 是否全都为字母或者数字（参考 std::isalnum）
-    /// is_alnumul 检测指定的字符串 s 是否全都为字母或者数字或者下划线
-    /// is_space 检测指定的字符串 s 是否全都为空白字符（参考 std::isspace）
-    /// is_blank 检测指定的字符串 s 是否全都为空格字符（参考 std::isblank）
+    /// @func is_lower 检测字符串 s 中的所有字母都是小写（参考 std::islower）
+    /// @func is_upper 检测字符串 s 中的所有字母都是大写字母（参考 std::isupper）
+    /// @func is_capitalize 检测给定的字符串 s 的首个字符是否为大写字母
+    /// @func is_title  对于给定的字符串 s 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回 true
+    /// @func is_digit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
+    /// @func is_xdigit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
+    /// @func is_ascii 检测字符串 s 中的所有字符是否都在 ASCII 范围内
+    /// @func is_alpha 检测指定的字符串 s 是否全都为字母（参考 std::isalpha）
+    /// @func is_alnum 检测指定的字符串 s 是否全都为字母或者数字（参考 std::isalnum）
+    /// @func is_alnumul 检测指定的字符串 s 是否全都为字母或者数字或者下划线
+    /// @func is_space 检测指定的字符串 s 是否全都为空白字符（参考 std::isspace）
+    /// @func is_blank 检测指定的字符串 s 是否全都为空格字符（参考 std::isblank）
     static auto is_lower(std::string_view s) -> bool;
     static auto is_upper(std::string_view s) -> bool;
     static auto is_title(std::string_view s) -> bool;
@@ -497,9 +527,31 @@ public:
     static auto is_literal_real(std::string_view s) -> bool;
     //$
 
+    // 是否全都满足proc或者在set范围内
+    static auto is_all(std::string_view s, mapping_proc<bool> proc) -> bool;
+    static auto is_all(std::string_view s, charset_type charset) -> bool;
+
+    // 是否至少有一个满足proc或者在set范围内
+    static auto has_any(std::string_view s, mapping_proc<bool> proc) -> bool;
+    static auto has_any(std::string_view s, charset_type charset) -> bool;
+
     //! 基于位置提取子串
-    /// @func take_left_view 返回字符串 s 的最左边前 n 个字符的子串
-    /// @func take_left_view 返回字符串 s 的最右边前 n 个字符的子串  
+    ///
+    /// @func take_left_view, take_left, take_left_inplace 返回字符串 s 的最左边前 n 个字符的子串
+    /// @func take_right_view, take_right, take_right_inplace 返回字符串 s 的最右边前 n 个字符的子串  
+    /// @func take_mid_view, take_mid, take_mid_inplace 返回字符串 s 中，从pos 位置开始的 n个字符组成的子串  
+    /// @func take_range_view, take_range, take_range_inplace 返回字符串 s 中，从 begin_pos 开始，到 end_pos 之前的字符所组成的子串。
+    /// @func take_view, take, take_inplace 返回字符串 s 中，从 pos 开始偏移 offset 的字符串。
+    /// 
+    /// @param s 原始字符串
+    /// @param n 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度时，相关函数总是试图返回尽可能多的字符串。
+    /// @param offset 该参数是有符号整数，用于指定提取的字符串的长度和提取的方向。如果为负数，表示向左提取，如果为正表示向右提取。offset 的绝对值表示期望提取的数据的长度。
+    /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 offset 组合起来确定数据的提取范围
+    /// @param begin_pos, end_pos 用于提取字符串的提取范围。
+    /// @return 本系列函数有三种不同的返回值：
+    ///         如果函数的返回值类型是 std::string_view，表示返回的数据直接基于原始的输入的参数 s 的一个视图，此时不会有任何额外的内存分配。
+    ///         如果返回值类型是 std::string，表示该函数会做一个字符串拷贝，此时通常会有额外的内存分配。
+    ///         如果返回值类型是 std::string&，这其实返回的就是输入参数 s 本身。
     static auto take_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto take_right_view(std::string_view s, size_type n) -> std::string_view;
     static auto take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view;
@@ -577,7 +629,7 @@ public:
     static auto align_zfill_inplace(std::string& s, size_type width) -> std::string&;
 
     // 多行字符串处理
-    static auto foreach_line(std::string_view s, const line_consumer_proc& proc) -> void;
+    static auto foreach_lines(std::string_view s, const line_consumer_proc& proc) -> void;
     static auto count_lines(std::string_view s) -> size_type;
     static auto lines_indentation(std::string_view s) -> size_type;
     //
@@ -598,10 +650,10 @@ public:
     static auto trim_lines_margin_inplace(std::string& s, std::string_view margin = "") -> std::string&;
 
     // 按单词统计
-    static auto foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void;
-    static auto foreach_word(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void;
-    static auto foreach_word(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void;
-    static auto foreach_word(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto foreach_words(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void;
+    static auto foreach_words(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void;
+    static auto foreach_words(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void;
+    static auto foreach_words(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto count_words(std::string_view s, const char_match_proc& proc) -> size_type;
     static auto count_words(std::string_view s, charset_type sepset) -> size_type;
     static auto count_words(std::string_view s, value_type sepch) -> size_type;
@@ -643,11 +695,11 @@ public:
 
     // 生成由 width 个空格组成的新字符串
     static auto spaces(size_type width) -> std::string;
-    static auto skip_space_view(std::string_view s) -> std::string_view;
-    static auto skip_space(std::string_view s) -> std::string;
-    static auto skip_space_view(std::string_view s, size_type& pos) -> std::string_view;
-    static auto skip_space(std::string_view s, size_type& pos) -> std::string;
-    static auto skip_space_inplace(std::string& s, size_type pos) -> std::string&;
+    static auto skip_spaces_view(std::string_view s) -> std::string_view;
+    static auto skip_spaces(std::string_view s) -> std::string;
+    static auto skip_spaces_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto skip_spaces(std::string_view s, size_type& pos) -> std::string;
+    static auto skip_spaces_inplace(std::string& s, size_type pos) -> std::string&;
 
     // 遮罩
     static auto cover_left(std::string_view s, std::string_view mask = "***", size_type show_size = 3) -> std::string;
@@ -1088,7 +1140,7 @@ public:
     static auto rawname_inplace(std::string& s) -> std::string&;
     static auto replace_rawname_inplace(std::string& s, std::string_view name) -> std::string&;
 
-    //! 转换为 hash 值
+    //! 哈希算法
     static auto hash(std::string_view s, uint32_t mod) -> uint32_t;
     static auto hash(std::string_view s, uint64_t mod) -> uint64_t;
     static auto md5(std::string_view s) -> std::string;
@@ -1133,8 +1185,6 @@ public:
     static auto decode_base16_inplace(std::string& s) -> std::string&;
 
     // 求和
-    template <typename MappedType>
-    using mapping_proc = std::function<auto(value_type)->MappedType>;
     template <typename T>
     static auto sum(std::string_view s, mapping_proc<T> proc) -> T {
         T result = 0;
@@ -1146,15 +1196,7 @@ public:
 
     // 自动统计本字符所属的字符集
     static auto charset(std::string_view s) -> charset_type;
-    static auto charset(std::string_view s, charset_type& set) -> charset_type&;
-
-    // 是否全都满足proc或者在set范围内
-    static auto is_all(std::string_view s, mapping_proc<bool> proc) -> bool;
-    static auto is_all(std::string_view s, charset_type set) -> bool;
-
-    // 是否至少有一个满足proc或者在set范围内
-    static auto has_any(std::string_view s, mapping_proc<bool> proc) -> bool;
-    static auto has_any(std::string_view s, charset_type set) -> bool;
+    static auto charset(std::string_view s, charset_type& charset) -> charset_type&;
 
     // 读取文件内容
     static auto read_all(const std::string& filename) -> std::string;
