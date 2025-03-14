@@ -686,7 +686,7 @@ auto str::iter_next_word(std::string_view s, size_type& pos) -> std::string_view
 // auto str::iter_prev_word(std::string_view s, size_type& rpos) -> std::string_view {
 // }
 
-auto str::foreach_word(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void {
+auto str::foreach_words(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void {
     while (pos < s.size()) {
         auto r = str::iter_next_word(s, pos);
         if (r.empty()) {
@@ -700,18 +700,18 @@ auto str::foreach_word(std::string_view s, size_type pos, const std::function<in
     }
 }
 
-auto str::foreach_word(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void {
-    str::foreach_word(s, pos, [&s, &proc](size_type pos, size_type n) -> int {
+auto str::foreach_words(std::string_view s, size_type pos, const std::function<int(std::string_view word)>& proc) -> void {
+    str::foreach_words(s, pos, [&s, &proc](size_type pos, size_type n) -> int {
         return proc(std::string_view{s.data() + pos, n});
     });
 }
 
-auto str::foreach_word(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void {
-    str::foreach_word(s, 0, proc);
+auto str::foreach_words(std::string_view s, const std::function<int(size_type pos, size_type n)>& proc) -> void {
+    str::foreach_words(s, 0, proc);
 }
 
-auto str::foreach_word(std::string_view s, const std::function<int(std::string_view word)>& proc) -> void {
-    str::foreach_word(s, 0, [&s, &proc](size_type pos, size_type n) -> int {
+auto str::foreach_words(std::string_view s, const std::function<int(std::string_view word)>& proc) -> void {
+    str::foreach_words(s, 0, [&s, &proc](size_type pos, size_type n) -> int {
         return proc(std::string_view{s.data() + pos, n});
     });
 }
@@ -758,7 +758,7 @@ auto str::is_upper(std::string_view s) -> bool {
 
 auto str::is_title(std::string_view s) -> bool {
     bool result = true;
-    str::foreach_word(s, [&s, &result](size_type pos, size_type n) -> int {
+    str::foreach_words(s, [&s, &result](size_type pos, size_type n) -> int {
         const_pointer ptr = s.data() + pos;
         while (ptr < (s.data() + pos + n)) {
             if (std::isalpha(*ptr)) {
@@ -1829,7 +1829,7 @@ auto str::to_title(std::string_view s) -> std::string {
 }
 
 auto str::to_title_inplace(std::string& s) -> std::string& {
-    str::foreach_word(s, [&s](size_type pos, size_type n) -> int {
+    str::foreach_words(s, [&s](size_type pos, size_type n) -> int {
         pointer ptr = s.data() + pos;
         while (ptr < (s.data() + pos + n)) {
             if (std::isalpha(*ptr)) {
@@ -1893,17 +1893,17 @@ auto str::spaces(size_type width) -> std::string {
     return repeat(' ', width);
 }
 
-auto str::skip_space_view(std::string_view s) -> std::string_view {
+auto str::skip_spaces_view(std::string_view s) -> std::string_view {
     size_type pos = 0;
-    return skip_space_view(s, pos);
+    return skip_spaces_view(s, pos);
 }
 
-auto str::skip_space(std::string_view s) -> std::string {
+auto str::skip_spaces(std::string_view s) -> std::string {
     size_type pos = 0;
-    return std::string{skip_space_view(s, pos)};
+    return std::string{skip_spaces_view(s, pos)};
 }
 
-auto str::skip_space_view(std::string_view s, size_type& pos) -> std::string_view {
+auto str::skip_spaces_view(std::string_view s, size_type& pos) -> std::string_view {
     if (pos >= s.size()) {
         pos = s.size();
         return {};
@@ -1921,7 +1921,7 @@ auto str::skip_space_view(std::string_view s, size_type& pos) -> std::string_vie
     return s.substr(pos);
 }
 
-auto str::skip_space(std::string_view s, size_type& pos) -> std::string {
+auto str::skip_spaces(std::string_view s, size_type& pos) -> std::string {
     if (pos >= s.size()) {
         pos = s.size();
         return {};
@@ -1939,8 +1939,8 @@ auto str::skip_space(std::string_view s, size_type& pos) -> std::string {
     return std::string{s.data() + pos, s.size() - pos};
 }
 
-auto str::skip_space_inplace(std::string& s, size_type pos) -> std::string& {
-    s = skip_space_view(s, pos);
+auto str::skip_spaces_inplace(std::string& s, size_type pos) -> std::string& {
+    s = skip_spaces_view(s, pos);
     return s;
 }
 
