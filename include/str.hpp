@@ -31,7 +31,7 @@
 
 /// @brief str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
 /// 
-/// str 提供了下列算法：
+/// @section 提供了下列算法：
 /// 
 /// * 追加（append、prepend 系列）和插入（insert 系列）
 /// * 大小写不敏感的比较（icompare 系列）和相等测试（iequals 系列）
@@ -57,6 +57,30 @@
 /// * 字符串转义（encode、decode 系列）
 /// * 文本文件读取（read 系列）
 /// * 字符分组和筛选（grouping 和 filter 系列）
+///  
+/// @section 关于函数的返回值及其使用注意事项：
+///
+/// str 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
+///
+/// * `xxx_view` 形式：
+///
+///     通常意味着该函数的返回值是输入参数的一个（或多个）视图，该函数不会发生任何分配行为（返回存放
+///     容器的 `std::string_view`，如 `std::vector<std::string_view>` 类似的除外）。但这种形式的接口是**不安全**的
+///     时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些接口时，需要确保在使用
+///     前其输入参数的地址仍然是有效的。
+///
+/// * `xxx_inplace` 形式：
+///
+///     这类函数通常意味着该函数返回的是输入参数自身，返回值也通常是 `std::string&`。该函数在执行
+///     过程中通常会修改输入参数，并返回。如果使用这类函数，需要确保原始输入串是可以被改写的，否则建议使用 `xxx_view 形式`或
+///     者 `xxx 形式` 的函数代替。
+///
+/// * `xxx` 形式：
+///
+///     与前面几种对应，这类不带 `_view` 或者 `_inplace` 后缀的函数，其返回值不是原始输入的视图，而是一个新的字符串拷贝。
+///     因此，这类函数既没有类似 `_view` 系列函数那样的返回值依赖于输入参数的生存期的问题，也没有类似 `xxx_inplace` 那样会修改
+//      原始输入参数的问题。但这类函数由于总是会拷贝原始输入字符串的，所以如果返回的字符串无法充分利用字符串的 SSO 特性，
+///     那么性能会比 `xxx_view` 和 `xxx_inplace` 系列要低一些。当然这类函数的优点也是显而易见的，就是更`安全`。
 struct str {
     using size_type = std::string::size_type;
     using ssize_type = ssize_t;
@@ -66,46 +90,47 @@ struct str {
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
 
-    // 生产器
+    //! 生产器
     using view_provider_proc = std::function<std::optional<std::string_view>()>;
     using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
     using number_provider_proc = std::function<size_type()>;
 
-    // 消费器
+    //! 消费器
     using split_consumer_proc = std::function<int(size_type pos, size_type n, size_type sep_end)>;
     using view_consumer_proc = std::function<int(std::string_view item)>;
     using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
 
-    // path 消费器
+    //! path 消费器
     using path_consumer_proc = std::function<int(int8_t type, std::string_view path_elem)>;
 
-    // 映射和校验
+    //! 映射和校验
     using char_mapping_proc = std::function<value_type(value_type)>;
     using char_checker_proc = std::function<bool(value_type ch)>;
 
-    // 匹配和检索
+    //! 匹配和检索
     using char_match_proc = std::function<bool(value_type ch)>;
     using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
 
-    // 行消费
+    //! 行消费
     using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
 
     //! 单字符映射
     template <typename MappedType>
     using mapping_proc = std::function<auto(value_type)->MappedType>;
 
+    //! 字符集
     class charset_type {
     public:
         explicit charset_type() {
         }
 
-        // 支持自动转换
+        //! 支持自动转换
         explicit charset_type(value_type ch)
             : charset_type() {
             set(ch);
         }
 
-        // 支持自动转换
+        //! 支持自动转换
         explicit charset_type(std::string_view s)
             : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
@@ -113,6 +138,7 @@ struct str {
             }
         }
 
+        //! 将某个字符串映射函数映射为字符集
         explicit charset_type(const char_match_proc& proc)
             : charset_type() {
             for (value_type ch = 0; ch < std::numeric_limits<value_type>::max(); ch++) {
@@ -189,6 +215,7 @@ struct str {
         uint64_t bits[4]{0, 0, 0, 0};
     };
 
+    //! 基于位置的范围类型
     struct range_type {
         size_type pos;
         size_type len;
@@ -462,20 +489,43 @@ struct str {
     static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
     static auto remove_suffix_inplace(std::string& s, value_type suffix) -> std::string&;
 
-    //! 一次性查找
-    static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
-    static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
+    //! 查找下一个子串
+    ///
+    /// 从指定的 pos 位置开始，查找并返回满足匹配条件的字符串或者位置。需要注意 `find_xxx` 系列函数的 pos 参数是值类型的，
+    /// 而 `iter_xxx` 系列在的 pos 类型是引用类型。所以，`iter_xxx` 系列函数在每次查找之后都会修改 pos，以便再次调用时可以
+    /// 继续查找下一个满足条件的字符串。因此，如果只是简单地查找一次 `find_xxx` 系列函数显然更方便，如果需要在同一输入串中
+    /// 联系多次，查找多个满足匹配条件的子串，用 `iter_xxx` 系列函数会更方便。
+    ///
+    /// @param s 从该字符串中查找子串
+    /// @param pattern 子串需要满足的正则表达式
+    /// @param other 需要匹配的子串
+    /// @param pos 查找字符串的起始位置，对于该参数为引用类型的函数，可以通过测试 `pos == str::npos` 来决定是否已经找到
+    ///            输入串 s 的结尾。通常也用于判断是否找到需要的子串
+    /// @return 不同函数返回值有些差别，其中一个比较重要的场景是“如何判断并未在 s 找到满足条件的子串”，不同函数检测方式如下：
+    ///     * xxx_next_regex 系列：其返回值是一个 optional 对象，可以通过测试返回值是否未负值判确定是否找到满足条件的子串
+    ///     * xxx_string 系列：其返回值是 size_type，如果返回值为 `str::npos`，则表示未找到匹配的串。
+    ///     * next_eol 和 next_word 系列：如果返回值的字符串是空串，即表示未找到匹配串
+    static auto find_next_regex_view(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
+    static auto find_next_regex_view(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
+    static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string>;
+    static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string>;
+    static auto find_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
+    static auto find_next_eol_view(std::string_view s, size_type pos = 0) -> std::string_view;
     static auto find_next_eol(std::string_view s, size_type pos = 0) -> std::string_view;
-    static auto find_next_word(std::string_view s, size_type pos = 0) -> std::string_view;
-
-    //! 迭代找下一个
-    static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
-    static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
+    static auto find_next_words_view(std::string_view s, size_type pos = 0) -> std::string_view;
+    static auto find_next_words(std::string_view s, size_type pos = 0) -> std::string_view;
+    //
+    static auto iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
+    static auto iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
+    static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string>;
+    static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string>;
     static auto iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type;
-    static auto iter_next_eol(std::string_view s, size_type& pos) -> std::string_view;
-    static auto iter_next_word(std::string_view s, size_type& pos) -> std::string_view;
+    static auto iter_next_eol_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto iter_next_eol(std::string_view s, size_type& pos) -> std::string;
+    static auto iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto iter_next_words(std::string_view s, size_type& pos) -> std::string;
 
-    //! 特征测试
+    //! 特征测试：传统类
     ///
     /// @func is_lower 检测字符串 s 中的所有字母都是小写（参考 std::islower）
     /// @func is_upper 检测字符串 s 中的所有字母都是大写字母（参考 std::isupper）
@@ -489,6 +539,9 @@ struct str {
     /// @func is_alnumul 检测指定的字符串 s 是否全都为字母或者数字或者下划线
     /// @func is_space 检测指定的字符串 s 是否全都为空白字符（参考 std::isspace）
     /// @func is_blank 检测指定的字符串 s 是否全都为空格字符（参考 std::isblank）
+    ///
+    /// @param s 被测试的字符串
+    /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
     static auto is_lower(std::string_view s) -> bool;
     static auto is_upper(std::string_view s) -> bool;
     static auto is_title(std::string_view s) -> bool;
@@ -505,7 +558,7 @@ struct str {
     static auto is_graph(std::string_view s) -> bool;
     //$
 
-    //! 是否一个标识符
+    //! 特征测试：常见词法特征类
     /// 
     /// @func is_identifier 检查字符串 s 是否满足一个标识符的特征，即以大小写字母或者下划线开头且后续字符为字母数字或者下划线。
     /// @func is_literal_bool 检查字符串 s 是否是 bool 值的特征，等价于 `(is_literal_true(s) || is_literal_false(s))`。
@@ -519,6 +572,9 @@ struct str {
     /// * 被视作 real 的字符串，等价于匹配正则表达式 `[+-]?(([0-9]+)|([0-9]+\.)|(\.[0-9]+))([Ee][+-]?[0-9]+)?`
     /// * 被视作 integer 的字符串，等价于匹配正则表达式 `[+-]?[0-9]+`
     /// * 被视作 identifier 的字符串，等价于正则表达式 `[A-Za-z_][0-9A-Za-z_]*`
+    ///
+    /// @param s 被测试的字符串
+    /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
     static auto is_identifier(std::string_view s) -> bool;
     static auto is_literal_bool(std::string_view s) -> bool;
     static auto is_literal_true(std::string_view s) -> bool;
@@ -527,15 +583,28 @@ struct str {
     static auto is_literal_real(std::string_view s) -> bool;
     //$
 
-    // 是否全都满足proc或者在set范围内
-    static auto is_all(std::string_view s, mapping_proc<bool> proc) -> bool;
+    //! 特征测试：指定字符集类
+    ///
+    /// @param s 被测试的字符串
+    /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
+    /// @param charset 指定需要满足条件的字符集
+    /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
+    static auto is_all(std::string_view s, char_checker_proc proc) -> bool;
     static auto is_all(std::string_view s, charset_type charset) -> bool;
+    //$
 
-    // 是否至少有一个满足proc或者在set范围内
-    static auto has_any(std::string_view s, mapping_proc<bool> proc) -> bool;
+    //! 特征测试：单一条件类
+    ///
+    /// @param s 被测试的字符串
+    /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
+    /// @param charset 指定需要满足条件的字符集
+    /// @return 与 is_xxx 系列函数需要“所有字符必须全部满足指定特征”不同，has_xxx 系列函数只需要有任意一个字符满足特征，
+    ///         立即返回 true。唯一的特例是空串总是返回 false。
+    static auto has_any(std::string_view s, char_checker_proc proc) -> bool;
     static auto has_any(std::string_view s, charset_type charset) -> bool;
+    //$
 
-    //! 基于位置提取子串
+    //! 提取子串：基于位置
     ///
     /// @func take_left_view, take_left, take_left_inplace 返回字符串 s 的最左边前 n 个字符的子串
     /// @func take_right_view, take_right, take_right_inplace 返回字符串 s 的最右边前 n 个字符的子串  
@@ -573,7 +642,7 @@ struct str {
     static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
     static auto take_inplace(std::string& s, size_type pos) -> std::string&;
 
-    // 删除串中的子串
+    //! 删除串中的子串：基于位置
     static auto drop_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_right_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_left(std::string_view s, size_type n) -> std::string;
@@ -594,7 +663,7 @@ struct str {
     static auto drop_inplace(std::string& s, char_checker_proc proc) -> std::string&;
     static auto drop_inplace(std::string& s, charset_type charset) -> std::string&;
 
-    // 提取子串（基于分隔符系列）
+    //! 定位子串
     static auto range_first(std::string_view s, const char_match_proc& proc) -> range_type;
     static auto range_first(std::string_view s, value_type sep_ch) -> range_type;
     static auto range_first(std::string_view s, const charset_type& sep_charset) -> range_type;
@@ -606,7 +675,8 @@ struct str {
     static auto range_last(std::string_view s, const charset_type& sep_charset) -> range_type;
     static auto range_last(std::string_view s, std::string_view sep_str) -> range_type;
     static auto range_last(std::string_view s, std::regex sep_regex) -> range_type;
-    //
+    
+    //! 
     static auto take_before_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
     static auto take_after_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
     static auto drop_before_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;

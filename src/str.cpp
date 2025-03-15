@@ -555,7 +555,7 @@ auto str::remove_suffix_inplace(std::string& s, value_type suffix) -> std::strin
     return s;
 }
 
-auto str::find_next_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
+auto str::find_next_regex_view(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
     if (pos >= s.size()) {
         s = {};
     } else {
@@ -570,11 +570,11 @@ auto str::find_next_regex(std::string_view s, const std::regex& pattern, size_ty
     return std::string_view{result[0].first, static_cast<size_type>(result[0].second - result[0].first)};
 }
 
-auto str::find_next_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
-    return find_next_regex(s, std::regex{pattern.begin(), pattern.end()}, pos);
+auto str::find_next_regex_view(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
+    return find_next_regex_view(s, std::regex{pattern.begin(), pattern.end()}, pos);
 }
 
-auto str::find_next_eol(std::string_view s, size_type pos) -> std::string_view {
+auto str::find_next_eol_view(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         return {};
     }
@@ -605,7 +605,7 @@ auto str::find_next_eol(std::string_view s, size_type pos) -> std::string_view {
     return {};
 }
 
-auto str::find_next_word(std::string_view s, size_type pos) -> std::string_view {
+auto str::find_next_words_view(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         return {};
     }
@@ -625,8 +625,8 @@ auto str::find_next_word(std::string_view s, size_type pos) -> std::string_view 
     return std::string_view{start, static_cast<size_type>(end - start)};
 }
 
-auto str::iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view> {
-    auto result = str::find_next_regex(s, pattern, pos);
+auto str::iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view> {
+    auto result = str::find_next_regex_view(s, pattern, pos);
     if (!result) {
         pos = s.size();
         return std::nullopt;
@@ -636,8 +636,8 @@ auto str::iter_next_regex(std::string_view s, size_type& pos, const std::regex& 
     return result.value();
 }
 
-auto str::iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view> {
-    return str::iter_next_regex(s, pos, std::regex{pattern.begin(), pattern.end()});
+auto str::iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view> {
+    return str::iter_next_regex_view(s, pos, std::regex{pattern.begin(), pattern.end()});
 }
 
 auto str::iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type {
@@ -658,8 +658,8 @@ auto str::iter_next_string(std::string_view s, size_type& pos, std::string_view 
     return next_pos;
 }
 
-auto str::iter_next_eol(std::string_view s, size_type& pos) -> std::string_view {
-    std::string_view eol = str::find_next_eol(s, pos);
+auto str::iter_next_eol_view(std::string_view s, size_type& pos) -> std::string_view {
+    std::string_view eol = str::find_next_eol_view(s, pos);
     if (eol.empty()) {
         pos = s.size();
         return {};
@@ -672,8 +672,8 @@ auto str::iter_next_eol(std::string_view s, size_type& pos) -> std::string_view 
 // auto str::iter_prev_eol(std::string_view s, size_type& rpos) -> size_type {
 // }
 
-auto str::iter_next_word(std::string_view s, size_type& pos) -> std::string_view {
-    auto word = str::find_next_word(s, pos);
+auto str::iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view {
+    auto word = str::find_next_words_view(s, pos);
     if (word.empty()) {
         pos = s.size();
         return {};
@@ -688,7 +688,7 @@ auto str::iter_next_word(std::string_view s, size_type& pos) -> std::string_view
 
 auto str::foreach_words(std::string_view s, size_type pos, const std::function<int(size_type pos, size_type n)>& proc) -> void {
     while (pos < s.size()) {
-        auto r = str::iter_next_word(s, pos);
+        auto r = str::iter_next_words(s, pos);
         if (r.empty()) {
             assert(pos >= s.size());
             break;
