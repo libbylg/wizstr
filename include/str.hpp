@@ -30,13 +30,13 @@
 #include <regex>
 
 /// * 传统目录    ###
-/// * 小节内层次结构  %## 
+/// * 小节内层次结构  %##
 /// * [xxx](#) 等价于 [xxx](#xxx)
 /// * [xxx](yyy) 定义超链接
 /// * [xxx](#xxx) 引用锚点
 /// * @anchor{xxx} 等价于 定义名字为 xxx 的锚点
 /// * **xxx** 对 xxx 的强调
-/// * `xxx` 行内代码块定义 
+/// * `xxx` 行内代码块定义
 /// * @param name, ... 参数定义表
 /// * @param{name, ...} 参数定义表
 /// * @return 返回值描述
@@ -46,12 +46,11 @@
 /// * @end{xxx} 定义代码片段
 /// * 行间代码块定义
 ///     ```
-///     xxx 
+///     xxx
 ///     ```
 /// * @emdbed{xxx} 引用一个block
-/// * @func 定义一个函数分类说明
+/// * @ref 定义一个函数分类说明
 /// * 块的结束符号 ---
-
 
 //! str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
 ///
@@ -114,37 +113,6 @@ struct str {
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
 
-    //! 生产器
-    using view_provider_proc = std::function<std::optional<std::string_view>()>;
-    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
-    using number_provider_proc = std::function<size_type()>;
-
-    //! 消费器
-    using split_consumer_proc = std::function<int(size_type pos, size_type n, size_type sep_end)>;
-    using view_consumer_proc = std::function<int(std::string_view item)>;
-    using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
-
-    //! path 消费器
-    using path_consumer_proc = std::function<int(int8_t type, std::string_view path_elem)>;
-
-    //! 映射和校验
-    using char_mapping_proc = std::function<value_type(value_type)>;
-    using char_checker_proc = std::function<bool(value_type ch)>;
-
-    //! 匹配和检索
-    using char_match_proc = std::function<bool(value_type ch)>;
-    using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
-
-    //! 行消费
-    using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
-
-    //! 单字符映射
-    template <typename MappedType>
-    using mapping_proc = std::function<auto(value_type)->MappedType>;
-
-    //! 将 key 映射为另一个字符串
-    using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
-
     //! 字符集
     class charset_type {
     public:
@@ -162,16 +130,6 @@ struct str {
             : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 set(*ptr);
-            }
-        }
-
-        //! 将某个字符串映射函数映射为字符集
-        explicit charset_type(const char_match_proc& proc)
-            : charset_type() {
-            for (value_type ch = 0; ch < std::numeric_limits<value_type>::max(); ch++) {
-                if (proc(ch)) {
-                    set(ch);
-                }
             }
         }
 
@@ -244,22 +202,74 @@ struct str {
 
     //! 基于位置的范围类型
     struct range_type {
-        size_type begin;
-        size_type end;
+        size_type pos;
+        size_type len;
 
-        inline auto size() const -> size_type {
-            return end - begin;
+        explicit range_type(size_type tpos, size_type tn)
+            : pos{tpos}
+            , len{tn} {
         }
 
-        // inline auto begin_pos() const -> size_type {
-        //     return pos;
-        // }
-        //
-        // inline auto end_pos() const -> size_type {
-        //     return pos;
-        // }
+        inline auto size() const -> size_type {
+            return len;
+        }
+
+        inline auto empty() const -> bool {
+            return len == 0;
+        }
+
+        inline auto begin() const -> size_type {
+            return pos;
+        }
+
+        inline auto begin_pos() const -> size_type {
+            return pos;
+        }
+
+        inline auto end() const -> size_type {
+            return pos + len;
+        }
+
+        inline auto end_pos() const -> size_type {
+            return pos + len;
+        }
     };
 
+    //! 生产器
+    using view_provider_proc = std::function<std::optional<std::string_view>()>;
+    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
+    using number_provider_proc = std::function<size_type()>;
+
+    //! 消费器
+    using split_consumer_proc = std::function<int(size_type pos, size_type n, size_type sep_end)>;
+    using view_consumer_proc = std::function<int(std::string_view item)>;
+    using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
+
+    //! path 消费器
+    using path_consumer_proc = std::function<int(int8_t type, std::string_view path_elem)>;
+
+    //! range 消费器
+    using range_consumer_proc = std::function<int(range_type range)>;
+
+    //! 映射和校验
+    using char_mapping_proc = std::function<value_type(value_type)>;
+    using char_checker_proc = std::function<bool(value_type ch)>;
+
+    //! 匹配和检索
+    using char_match_proc = std::function<bool(value_type ch)>;
+    using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
+
+    //! 行消费
+    using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
+
+    //! 单字符映射
+    template <typename MappedType>
+    using mapping_proc = std::function<auto(value_type)->MappedType>;
+
+    //! 将 key 映射为另一个字符串
+    using expand_vars_proc = std::function<std::optional<std::string>(const std::string& key)>;
+
+    //! 用于表示代替无效位置的值
     static inline constexpr size_type npos = std::string::npos;
 
 #if defined(_WIN32)
@@ -278,7 +288,17 @@ struct str {
     static constexpr std::string_view sep_line_ends = "\n";
 #endif
 
-    //! 在尾部追加
+    static constexpr std::string_view uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static constexpr std::string_view lowers = "abcdefghijklmnopqrstuvwxyz";
+    static constexpr std::string_view leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    static constexpr std::string_view alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    static constexpr std::string_view digits = "0123456789";
+    static constexpr std::string_view xdigits = "0123456789ABCDEFabcdef";
+    static constexpr std::string_view alnums = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    static constexpr std::string_view alnumuls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+    static constexpr std::string_view aluls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+
+    //! 在尾部追加 @anchor{append}
     ///
     /// 提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的追加字符串，这里针对
     /// 大量字符串拼接提供了相对简便的方法。
@@ -316,8 +336,8 @@ struct str {
             return *(itr++);
         });
     }
-    
-    //! 向头部追加
+
+    //! 向头部追加 @anchor{prepend}
     ///
     /// 將一个或者多个字符串追加到指定字符串的前面。实际上，STL 中已经提供了比较丰富的字符串插入函数，这里针对
     /// 大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒序的方式被追加。
@@ -356,9 +376,8 @@ struct str {
             return *(itr++);
         });
     }
-    
 
-    //! 向字符串中间插入
+    //! 向字符串中间插入 @anchor{insert}
     ///
     /// 向字符串指定的位置插入新的字符串或者字符。
     /// 对于 insert_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
@@ -399,9 +418,8 @@ struct str {
             return *(itr++);
         });
     }
-    
 
-    //! 不区分大小写的比较
+    //! 不区分大小写的比较 @anchor{icompare}
     ///
     /// icompare 提供了不区分大小写比较的能力，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，icompare 总是
     /// 返回 0；
@@ -412,9 +430,8 @@ struct str {
     /// @return 返回正数，表示 s 大于 other；返回负值，表示 s 小于 other；返回 0，表示 s 和 other 相等。
     static auto icompare(std::string_view s, std::string_view other) -> int;
     static auto icompare(std::string_view s, std::string_view other, size_type max_n) -> int;
-    
 
-    //! 不区分大小写的相等測試
+    //! 不区分大小写的相等測試 @anchor{iequals}
     ///
     /// iequals 提供了不区分大小写的相等比较，，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，icompare 总是
     /// 返回 true；
@@ -425,9 +442,8 @@ struct str {
     /// @return 如果相等，返回 true，否则返回 false
     static auto iequals(std::string_view s, std::string_view other) -> bool;
     static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
-    
 
-    //! 基于通配符的匹配检测
+    //! 基于通配符的匹配检测 @anchor{wildcmp}}
     ///
     /// 测试字符串 s 是否匹配通配符 pattern。
     ///
@@ -436,9 +452,8 @@ struct str {
     /// @return 如果 s 字符串匹配 pattern，返回 true，否则返回 false。
     static auto wildcmp(const_pointer s, const_pointer pattern) -> bool;
     static auto wildcmp(std::string_view s, std::string_view pattern) -> bool;
-    
 
-    //! 判断两个字符串的包含关系
+    //! 判断两个字符串的包含关系 @anchor{contains}
     ///
     /// 等价于在字符串 s 中查找是否存在指定的字符或者字符串。
     ///
@@ -455,9 +470,8 @@ struct str {
     static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
     static auto contains(std::string_view s, const charset_type& charset) -> bool;
     static auto contains(std::string_view s, const std::regex& pattern) -> bool;
-    
 
-    //! 子串统计
+    //! 子串统计 @anchor{count}
     ///
     /// 本函数用于统计 s 串中是否包含特定模式的子串的数量。需要注意，count 函数统计的子串是不重叠的子串。
     ///
@@ -478,16 +492,19 @@ struct str {
     /// @param s 参与计算的字符串
     /// @param other 参与计算的另一个字符串
     /// @return 如果 s 与 other 有共同前缀，返回共同前缀的长度，否则返回 0
-    static auto prefix(std::string_view s, std::string_view other) -> size_type;
-    static auto suffix(std::string_view s, std::string_view other) -> size_type;
 
-    //! 前缀操作
+    //! 前缀操作 @anchor{prefix}
     ///
-    /// 本组函数提供了常见的前缀操作。has_prefix 和 starts_with 功能一致，都用于测试字符串 s 是否有指定的前缀。
-    /// remove_prefix_view，remove_prefix，remove_prefix_inplace 会返回从字符串 s 中去除两个字符串的共同前缀后剩余的部分。
+    /// 本组函数提供了常见的前缀操作：
+    ///
+    /// * @ref{prefix} 提供了计算两个字符串的公共前缀的能力；
+    /// * @ref{has_prefix, starts_with} 功能一致，都用于测试字符串 s 是否有指定的前缀。
+    /// * @ref{remove_prefix_view, remove_prefix, remove_prefix_inplace} 会返回从字符串 s 中去除两个字符串的共同前缀后剩余的部分。
     ///
     /// @param s 目标字符串
+    /// @param other 参与公共前缀计算的另一个字符串，用于 @ref{prefix}
     /// @param prefix, ch 前缀字符串或者字符
+    static auto prefix(std::string_view s, std::string_view other) -> size_type;
     static auto has_prefix(std::string_view s, value_type ch) -> bool;
     static auto has_prefix(std::string_view s, std::string_view prefix) -> bool;
     static auto starts_with(std::string_view s, value_type ch) -> bool;
@@ -500,13 +517,17 @@ struct str {
     static auto remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string&;
     static auto remove_prefix_inplace(std::string& s, value_type prefix) -> std::string&;
 
-    //! 后缀操作
+    //! 后缀操作 @anchor{suffix}
     ///
-    /// 本组函数提供了常见的前缀操作。has_suffix 和 ends_with 功能一致，都用于测试字符串 s 是否有指定的后缀。
-    /// remove_suffix_view，remove_suffix，remove_suffix_inplace 会返回从字符串 s 中去除两个字符串的共同后剩余的部分。
+    /// 本组函数提供了常见的前缀操作:
+    ///
+    /// * @ref{suffix} 提供了计算两个字符串的公共前缀的能力；
+    /// * @ref{has_suffix, ends_with} 功能一致，都用于测试字符串 s 是否有指定的后缀。
+    /// * @ref{remove_suffix_view, remove_suffix, remove_suffix_inplace} 会返回从字符串 s 中去除两个字符串的共同后剩余的部分。
     ///
     /// @param s 目标字符串
-    /// @param prefix, ch 后缀字符串或者字符
+    /// @param suffix, ch 后缀字符串或者字符
+    static auto suffix(std::string_view s, std::string_view other) -> size_type;
     static auto has_suffix(std::string_view s, value_type ch) -> bool;
     static auto has_suffix(std::string_view s, std::string_view suffix) -> bool;
     static auto ends_with(std::string_view s, value_type ch) -> bool;
@@ -519,7 +540,7 @@ struct str {
     static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
     static auto remove_suffix_inplace(std::string& s, value_type suffix) -> std::string&;
 
-    //! 查找下一个子串
+    //! 查找下一个子串  @anchor{iter, find}
     ///
     /// 从指定的 pos 位置开始，查找并返回满足匹配条件的字符串或者位置。需要注意 `find_xxx` 系列函数的 pos 参数是值类型的，
     /// 而 `iter_xxx` 系列在的 pos 类型是引用类型。所以，`iter_xxx` 系列函数在每次查找之后都会修改 pos，以便再次调用时可以
@@ -555,20 +576,20 @@ struct str {
     static auto iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto iter_next_words(std::string_view s, size_type& pos) -> std::string;
 
-    //! 特征测试：传统类
+    //! 特征测试：传统类 @anchor{is}
     ///
-    /// @func is_lower 检测字符串 s 中的所有字母都是小写（参考 std::islower）
-    /// @func is_upper 检测字符串 s 中的所有字母都是大写字母（参考 std::isupper）
-    /// @func is_capitalize 检测给定的字符串 s 的首个字符是否为大写字母
-    /// @func is_title  对于给定的字符串 s 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回 true
-    /// @func is_digit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
-    /// @func is_xdigit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
-    /// @func is_ascii 检测字符串 s 中的所有字符是否都在 ASCII 范围内
-    /// @func is_alpha 检测指定的字符串 s 是否全都为字母（参考 std::isalpha）
-    /// @func is_alnum 检测指定的字符串 s 是否全都为字母或者数字（参考 std::isalnum）
-    /// @func is_alnumul 检测指定的字符串 s 是否全都为字母或者数字或者下划线
-    /// @func is_space 检测指定的字符串 s 是否全都为空白字符（参考 std::isspace）
-    /// @func is_blank 检测指定的字符串 s 是否全都为空格字符（参考 std::isblank）
+    /// @ref is_lower 检测字符串 s 中的所有字母都是小写（参考 std::islower）
+    /// @ref is_upper 检测字符串 s 中的所有字母都是大写字母（参考 std::isupper）
+    /// @ref is_capitalize 检测给定的字符串 s 的首个字符是否为大写字母
+    /// @ref is_title  对于给定的字符串 s 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回 true
+    /// @ref is_digit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
+    /// @ref is_xdigit 检测字符串 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
+    /// @ref is_ascii 检测字符串 s 中的所有字符是否都在 ASCII 范围内
+    /// @ref is_alpha 检测指定的字符串 s 是否全都为字母（参考 std::isalpha）
+    /// @ref is_alnum 检测指定的字符串 s 是否全都为字母或者数字（参考 std::isalnum）
+    /// @ref is_alnumul 检测指定的字符串 s 是否全都为字母或者数字或者下划线
+    /// @ref is_space 检测指定的字符串 s 是否全都为空白字符（参考 std::isspace）
+    /// @ref is_blank 检测指定的字符串 s 是否全都为空格字符（参考 std::isblank）
     ///
     /// @param s 被测试的字符串
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
@@ -586,16 +607,15 @@ struct str {
     static auto is_blank(std::string_view s) -> bool;
     static auto is_print(std::string_view s) -> bool;
     static auto is_graph(std::string_view s) -> bool;
-    
 
     //! 特征测试：常见词法特征类
     ///
-    /// @func is_identifier 检查字符串 s 是否满足一个标识符的特征，即以大小写字母或者下划线开头且后续字符为字母数字或者下划线。
-    /// @func is_literal_bool 检查字符串 s 是否是 bool 值的特征，等价于 `(is_literal_true(s) || is_literal_false(s))`。
-    /// @func is_literal_true 检查字符串 s 是否可以被视作 true
-    /// @func is_literal_false 检查字符串 s 是否可以被视作 false
-    /// @func is_literal_integer 检查字符串 s 是否可以被视作整数
-    /// @func is_literal_real 检查字符串 s 是否可以被视作浮点数，需要注意整数本身也可以被视作浮点数
+    /// @ref is_identifier 检查字符串 s 是否满足一个标识符的特征，即以大小写字母或者下划线开头且后续字符为字母数字或者下划线。
+    /// @ref is_literal_bool 检查字符串 s 是否是 bool 值的特征，等价于 `(is_literal_true(s) || is_literal_false(s))`。
+    /// @ref is_literal_true 检查字符串 s 是否可以被视作 true
+    /// @ref is_literal_false 检查字符串 s 是否可以被视作 false
+    /// @ref is_literal_integer 检查字符串 s 是否可以被视作整数
+    /// @ref is_literal_real 检查字符串 s 是否可以被视作浮点数，需要注意整数本身也可以被视作浮点数
     ///
     /// * 被视作 true 的字符串包括 "1", "on", "ON", "Yes", "yes", "YES", "True", "true", "TRUE"
     /// * 被视作 false 的字符串包括 "0", "off", "OFF", "No", "no", "NO", "False", "false", "FALSE"
@@ -611,7 +631,6 @@ struct str {
     static auto is_literal_false(std::string_view s) -> bool;
     static auto is_literal_integer(std::string_view s) -> bool;
     static auto is_literal_real(std::string_view s) -> bool;
-    
 
     //! 特征测试：指定字符集类
     ///
@@ -619,81 +638,79 @@ struct str {
     /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
     /// @param charset 指定需要满足条件的字符集
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
-    static auto is_all(std::string_view s, char_checker_proc proc) -> bool;
-    static auto is_all(std::string_view s, charset_type charset) -> bool;
-    
+    static auto is_all(std::string_view s, const char_checker_proc& proc) -> bool;
+    static auto is_all(std::string_view s, const charset_type& charset) -> bool;
 
-    //! 特征测试：单一条件类
+    //! 特征测试：单一条件类 @anchor{has}
     ///
     /// @param s 被测试的字符串
     /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
     /// @param charset 指定需要满足条件的字符集
     /// @return 与 is_xxx 系列函数需要“所有字符必须全部满足指定特征”不同，has_xxx 系列函数只需要有任意一个字符满足特征，
     ///         立即返回 true。唯一的特例是空串总是返回 false。
-    static auto has_any(std::string_view s, char_checker_proc proc) -> bool;
-    static auto has_any(std::string_view s, charset_type charset) -> bool;
-    
+    static auto has_any(std::string_view s, const char_checker_proc& proc) -> bool;
+    static auto has_any(std::string_view s, const charset_type& charset) -> bool;
 
-    //! 提取子串：基于位置
+    //! 提取子串：基于位置 @anchor{take}
     ///
-    /// @func take_left_view, take_left, take_left_inplace 返回字符串 s 的最左边前 n 个字符的子串
-    /// @func take_right_view, take_right, take_right_inplace 返回字符串 s 的最右边前 n 个字符的子串
-    /// @func take_mid_view, take_mid, take_mid_inplace 返回字符串 s 中，从pos 位置开始的 n个字符组成的子串
-    /// @func take_range_view, take_range, take_range_inplace 返回字符串 s 中，range 范围的子串。
-    /// @func take_view, take, take_inplace 返回字符串 s 中，从 pos 开始偏移 offset 的字符串。
+    /// * @ref take_left_view, take_left, take_left_inplace: 返回字符串 s 的最左边前 n 个字符的子串
+    /// * @ref take_right_view, take_right, take_right_inplace: 返回字符串 s 的最右边前 n 个字符的子串
+    /// * @ref take_mid_view, take_mid, take_mid_inplace: 返回字符串 s 中，从pos 位置开始的 n个字符组成的子串
+    /// * @ref take_range_view, take_range, take_range_inplace: 返回字符串 s 中，range 范围的子串。
+    /// * @ref take_view, take, take_inplace: 返回字符串 s 中，从 pos 开始偏移 offset 的字符串。
     ///
     /// @param s 原始字符串
     /// @param n 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度时，相关函数总是试图返回尽可能多的字符串。
     /// @param offset 该参数是有符号整数，用于指定提取的字符串的长度和提取的方向。如果为负数，表示向左提取，如果为正表示向右提取。offset 的绝对值表示期望提取的数据的长度。
     /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 offset 组合起来确定数据的提取范围
-    /// @param range 用于提取字符串的提取范围。
+    /// @param begin_pos, end_pos  用于提取字符串的提取范围。
     static auto take_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto take_right_view(std::string_view s, size_type n) -> std::string_view;
     static auto take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view;
-    static auto take_range_view(std::string_view s, range_type range) -> std::string_view;
+    static auto take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view;
     static auto take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
     static auto take_view(std::string_view s, size_type pos) -> std::string_view;
     //
     static auto take_left(std::string_view s, size_type n) -> std::string;
     static auto take_right(std::string_view s, size_type n) -> std::string;
     static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string;
-    static auto take_range(std::string_view s, range_type range) -> std::string;
+    static auto take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
     static auto take(std::string_view s, size_type pos, ssize_type offset) -> std::string;
     static auto take(std::string_view s, size_type pos) -> std::string;
     //
     static auto take_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto take_right_inplace(std::string& s, size_type n) -> std::string&;
     static auto take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
-    static auto take_range_inplace(std::string& s, range_type range) -> std::string&;
+    static auto take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
     static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
     static auto take_inplace(std::string& s, size_type pos) -> std::string&;
 
     //! 删除子串：基于位置
     ///
-    /// @func drop_left_view, drop_left, drop_left_inplace 返回去掉字符串 s 的最左边前 n 个字符后的子串
-    /// @func drop_right_view, drop_right, drop_right_inplace 返回去掉字符串 s 的最右边的 n 个字符后的子串
-    /// @func drop_mid, drop_mid_inplace 返回去掉字符串 s 中从 pos 开始的 n 的字符后的子串
-    /// @func drop_range, drop_range_inplace 返回去掉字符串 s 中指定范围内的字符后的子串
-    /// @func drop, drop_inplace
+    /// @ref drop_left_view, drop_left, drop_left_inplace 返回去掉字符串 s 的最左边前 n 个字符后的子串
+    /// @ref drop_right_view, drop_right, drop_right_inplace 返回去掉字符串 s 的最右边的 n 个字符后的子串
+    /// @ref drop_mid, drop_mid_inplace 返回去掉字符串 s 中从 pos 开始的 n 的字符后的子串
+    /// @ref drop_range, drop_range_inplace 返回去掉字符串 s 中指定范围内的字符后的子串
+    /// @ref drop, drop_inplace 返回去掉字符串 s 中特定的字符集后的子串
     static auto drop_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_right_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_left(std::string_view s, size_type n) -> std::string;
     static auto drop_right(std::string_view s, size_type n) -> std::string;
     static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
-    static auto drop_range(std::string_view s, range_type range) -> std::string;
+    static auto drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
     static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string;
     static auto drop(std::string_view s, size_type pos) -> std::string;
-    static auto drop(std::string_view s, char_checker_proc proc) -> std::string;
-    static auto drop(std::string_view s, charset_type charset) -> std::string;
+    static auto drop(std::string_view s, const char_checker_proc& proc) -> std::string;
+    static auto drop(std::string_view s, const charset_type& charset) -> std::string;
     //
     static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_right_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
-    static auto drop_range_inplace(std::string& s, range_type range) -> std::string&;
+    static auto drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
     static auto drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
     static auto drop_inplace(std::string& s, size_type pos) -> std::string&;
-    static auto drop_inplace(std::string& s, char_checker_proc proc) -> std::string&;
-    static auto drop_inplace(std::string& s, charset_type charset) -> std::string&;
+    static auto drop_inplace(std::string& s, const char_checker_proc& proc) -> std::string&;
+    static auto drop_inplace(std::string& s, const charset_type& charset) -> std::string&;
 
     //! 定位子串
     static auto range_first(std::string_view s, const char_match_proc& proc) -> range_type;
@@ -722,10 +739,10 @@ struct str {
 
     //! 对齐
     ///
-    /// @func align_left, align_left_inplace 在字符串 s 尾部填充 ch，直到字符串长度达到 width，以使得字符串看起来是左对齐的效果
-    /// @func align_right, align_right_inplace 在字符串 s 头部追加 ch，直到字符串长度达到 width，以使得字符串看起来是左对齐的效果
-    /// @func align_center, align_center_inplace 在字符串 s 首尾添加 ch，直到字符串长度达到 width，以使得字符串看起来是居中对齐的效果
-    /// @func align_zfill, align_zfill_inplace 在字符串 s 头部添加字符 '0'，使得字符串看起来被补齐了前缀 0，这通常用于全是数字的字符串的场景
+    /// @ref align_left, align_left_inplace 在字符串 s 尾部填充 ch，直到字符串长度达到 width，以使得字符串看起来是左对齐的效果
+    /// @ref align_right, align_right_inplace 在字符串 s 头部追加 ch，直到字符串长度达到 width，以使得字符串看起来是左对齐的效果
+    /// @ref align_center, align_center_inplace 在字符串 s 首尾添加 ch，直到字符串长度达到 width，以使得字符串看起来是居中对齐的效果
+    /// @ref align_zfill, align_zfill_inplace 在字符串 s 头部添加字符 '0'，使得字符串看起来被补齐了前缀 0，这通常用于全是数字的字符串的场景
     ///
     /// @param s 被对齐的字符串
     /// @param widht 指定新生成的字符串的宽度，如果 width 小于或者等于 s 的长度，不会追加 ch，也即对齐前后字符串内容不变
@@ -807,8 +824,8 @@ struct str {
 
     //! 空白操作
     ///
-    /// @func spaces 用于生成指定 width 宽度的空白字符序列
-    /// @func after_skip_spaces_view, after_skip_spaces, after_skip_spaces_inplace 返回跳过空白后剩余的内容
+    /// @ref spaces 用于生成指定 width 宽度的空白字符序列
+    /// @ref after_skip_spaces_view, after_skip_spaces, after_skip_spaces_inplace 返回跳过空白后剩余的内容
     ///
     /// @param witdh 指定待生成的空白串的宽度，这里的空白串采用 ASCII 码为 0x20 的字符填充
     /// @param s 用于去除空白字符的串
@@ -962,7 +979,6 @@ struct str {
     static auto join_search_path(const Sequence& items) -> std::string {
         return join_search_path(":", items);
     }
-    
 
     //! 以单个字符作为分隔符拆分字符串
     ///
@@ -983,7 +999,6 @@ struct str {
     static auto split_view(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_view(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_view(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
-    
 
     //! 以字符串为分隔符拆分字符串
     ///
@@ -1000,7 +1015,6 @@ struct str {
     static auto split_list(std::string_view s, const std::regex& sepstr, size_type max_n = npos) -> std::vector<std::string>;
     static auto split_list_view(std::string_view s, const std::regex& sepstr, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_list_view(std::string_view s, std::string_view sepstr = ",", size_type max_n = npos) -> std::vector<std::string_view>;
-    
 
     //! 以指定的字符串为分隔符将字符串拆分为两个部分
     ///
@@ -1176,7 +1190,6 @@ struct str {
     static auto simplified_decimal(std::string_view s) -> std::string;
     static auto simplified_integer_inplace(std::string& s) -> std::string&;
     static auto simplified_decimal_inplace(std::string& s) -> std::string&;
-    
 
     // 拷贝
     static auto copy(pointer dest, size_type size, std::string_view s) -> size_type;
@@ -1205,7 +1218,6 @@ struct str {
     static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, std::string_view key, std::string_view val) -> std::string&;
-    
 
     //! tab 扩展
     ///
@@ -1216,7 +1228,6 @@ struct str {
     /// @param tab_size 指定一个 tab 应该等价于多少个空格字符（0x20）。
     static auto expand_tabs(std::string_view s, size_type tab_size = 8) -> std::string;
     static auto expand_tabs_inplace(std::string& s, size_type tab_size = 8) -> std::string&;
-    
 
     //! HOME 字符扩展
     //
@@ -1225,26 +1236,23 @@ struct str {
     /// @param s 将被扩展的字符串
     static auto expand_user(std::string_view s) -> std::string;
     static auto expand_user_inplace(std::string& s) -> std::string&;
-    
 
     //! 路径正常化
     static auto normpath(std::string_view s) -> std::string;
     static auto normpath_inplace(std::string& s) -> std::string&;
-    
 
     //! 路径处理
     ///
     /// 将字符串 s 视作文件路径，并检查其是否是绝对路径的形式或者相对路径的形式
     static auto is_absolute(std::string_view s) -> bool;
     static auto is_relative(std::string_view s) -> bool;
-    
 
     //! 路径处理函数：基础定位函数
     ///
     /// 将入参 s 视作文件路径：
-    /// * @func basename_ptr 返回文件名的基本名（basename）的起始位置
-    /// * @func extname_ptr 返回文件的扩展名的起始位置
-    /// * @func dirname_ptr 返回文件路径的尾部位置
+    /// * @ref basename_ptr 返回文件名的基本名（basename）的起始位置
+    /// * @ref extname_ptr 返回文件的扩展名的起始位置
+    /// * @ref dirname_ptr 返回文件路径的尾部位置
     ///
     /// 为介绍三个函数之间的关系，假设 s 为字符串 "abc/def/ghi.txt"，那么：
     /// basename_ptr(s) 返回的是指向 `g` 的位置的指针
@@ -1253,14 +1261,13 @@ struct str {
     static auto basename_ptr(std::string_view s) -> std::string::const_pointer;
     static auto extname_ptr(std::string_view s) -> std::string::const_pointer;
     static auto dirname_ptr(std::string_view s) -> std::string::const_pointer;
-    
 
     //! 路径处理函数：目录
     ///
-    /// @func dirname_view, dirname, dirname_inplace 获取路径 s 的目录部分
-    /// @func remove_dirname_view, remove_dirname, remove_dirname_inplace 删除路径 s 的目录部分，返回剩余部分
-    /// @func replace_dirname, replace_dirname_inplace 使用 new_name 替换路径 s 中的目录部分
-    /// @func split_diename 将路径 s 拆分为目录部分和剩余部分
+    /// @ref dirname_view, dirname, dirname_inplace 获取路径 s 的目录部分
+    /// @ref remove_dirname_view, remove_dirname, remove_dirname_inplace 删除路径 s 的目录部分，返回剩余部分
+    /// @ref replace_dirname, replace_dirname_inplace 使用 new_name 替换路径 s 中的目录部分
+    /// @ref split_diename 将路径 s 拆分为目录部分和剩余部分
     static auto dirname_view(std::string_view s) -> std::string_view;
     static auto dirname(std::string_view s) -> std::string;
     static auto remove_dirname_view(std::string_view s) -> std::string_view;
@@ -1271,14 +1278,13 @@ struct str {
     static auto dirname_inplace(std::string& s) -> std::string&;
     static auto remove_dirname_inplace(std::string& s) -> std::string&;
     static auto replace_dirname_inplace(std::string& s, std::string_view new_name) -> std::string&;
-    
 
     //! 路径处理函数：文件名
     ///
-    /// @func basename_view, basename, basename_inplace 获取路径 s 的文件名部分
-    /// @func remove_basename_view, remove_basename, remove_basename_inplace 删除路径 s 的文件名部分，返回剩余部分
-    /// @func replace_basename, replace_basename_inplace 使用 new_name 替换路径 s 中的文件名
-    /// @func split_basename 将路径 s 拆分为文件名和剩余部分
+    /// @ref basename_view, basename, basename_inplace 获取路径 s 的文件名部分
+    /// @ref remove_basename_view, remove_basename, remove_basename_inplace 删除路径 s 的文件名部分，返回剩余部分
+    /// @ref replace_basename, replace_basename_inplace 使用 new_name 替换路径 s 中的文件名
+    /// @ref split_basename 将路径 s 拆分为文件名和剩余部分
     static auto basename_view(std::string_view s) -> std::string_view;
     static auto basename(std::string_view s) -> std::string;
     static auto remove_basename_view(std::string_view s) -> std::string_view;
@@ -1289,14 +1295,13 @@ struct str {
     static auto basename_inplace(std::string& s) -> std::string&;
     static auto remove_basename_inplace(std::string& s) -> std::string&;
     static auto replace_basename_inplace(std::string& s, std::string_view new_name) -> std::string&;
-    
 
     //! 路径处理函数：扩展名
     ///
-    /// @func extname_view, extname, extname_inplace 获取路径 s 的扩展名部分
-    /// @func remove_extname_view, remove_extname, remove_extname_inplace 删除路径 s 的扩展名，返回剩余部分
-    /// @func replace_extname, replace_extname_inplace 使用 new_name 替换路径 s 中的扩展名
-    /// @func split_basename 将路径 s 拆分为扩展名和剩余部分
+    /// @ref extname_view, extname, extname_inplace 获取路径 s 的扩展名部分
+    /// @ref remove_extname_view, remove_extname, remove_extname_inplace 删除路径 s 的扩展名，返回剩余部分
+    /// @ref replace_extname, replace_extname_inplace 使用 new_name 替换路径 s 中的扩展名
+    /// @ref split_basename 将路径 s 拆分为扩展名和剩余部分
     static auto extname_view(std::string_view s) -> std::string_view;
     static auto extname(std::string_view s) -> std::string;
     static auto remove_extname_view(std::string_view s) -> std::string_view;
@@ -1312,9 +1317,9 @@ struct str {
     ///
     /// 裸文件件名是指不包含文件后缀名的部分
     ///
-    /// @func rawname_view, rawname, rawname_inplace 获取路径 s 的中裸文件名部分
-    /// @func replace_rawname, replace_rawname_inplace 使用 new_name 替换路径 s 中的裸文件名
-    /// @func split_rawname 将路径 s 拆分为目录、裸文件名，扩展名三个部分
+    /// @ref rawname_view, rawname, rawname_inplace 获取路径 s 的中裸文件名部分
+    /// @ref replace_rawname, replace_rawname_inplace 使用 new_name 替换路径 s 中的裸文件名
+    /// @ref split_rawname 将路径 s 拆分为目录、裸文件名，扩展名三个部分
     static auto rawname_view(std::string_view s) -> std::string_view;
     static auto rawname(std::string_view s) -> std::string;
     static auto replace_rawname(std::string_view s, std::string_view new_name) -> std::string;
@@ -1341,8 +1346,8 @@ struct str {
     static auto decode_url_inplace(std::string& s) -> std::string&;
 
     // C语言字符串编解码
-    static auto encode_cstr(std::string_view s, view_consumer_proc proc) -> void;
-    static auto decode_cstr(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_cstr(std::string_view s) -> std::string;
     static auto decode_cstr(std::string_view s) -> std::string;
 
@@ -1350,8 +1355,8 @@ struct str {
     static auto decode_cstr_inplace(std::string& s) -> std::string;
 
     // base64 编解码
-    static auto encode_base64(std::string_view s, view_consumer_proc proc) -> void;
-    static auto decode_base64(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto decode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_base64(std::string_view s) -> std::string;
     static auto decode_base64(std::string_view s) -> std::string;
 
@@ -1359,8 +1364,8 @@ struct str {
     static auto decode_base64_inplace(std::string& s) -> std::string&;
 
     // base16  编解码
-    static auto encode_base16(std::string_view s, bool upper, view_consumer_proc proc) -> void;
-    static auto decode_base16(std::string_view s, view_consumer_proc proc) -> void;
+    static auto encode_base16(std::string_view s, bool upper, const view_consumer_proc& proc) -> void;
+    static auto decode_base16(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_base16(std::string_view s, bool upper = false) -> std::string;
     static auto decode_base16(std::string_view s) -> std::string;
 
@@ -1369,7 +1374,7 @@ struct str {
 
     // 求和
     template <typename T>
-    static auto sum(std::string_view s, mapping_proc<T> proc) -> T {
+    static auto sum(std::string_view s, const mapping_proc<T>& proc) -> T {
         T result = 0;
         for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
             result += proc(*ptr);
@@ -1382,9 +1387,9 @@ struct str {
     static auto charset(std::string_view s, charset_type& charset) -> charset_type&;
 
     //! 读取文件内容
-    /// @func read_all 用于读取文件所有内容
-    /// @func read_line 用于读取文件中的一行，通过连续调用可以读取多行
-    /// @func read_lines 用于连续读取多行
+    /// @ref read_all 用于读取文件所有内容
+    /// @ref read_line 用于读取文件中的一行，通过连续调用可以读取多行
+    /// @ref read_lines 用于连续读取多行
     ///
     /// @param filename, file, stream 指定计划读取的文件的文件名，或者一个已经打开的文件对象，或者文件输入流对象
     /// @param keeo_ends 是否保留行尾的续行符
@@ -1416,7 +1421,6 @@ struct str {
     /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
     static auto read_opt_view(std::string_view s, size_type& pos) -> std::tuple<std::string_view, std::string_view>;
     static auto read_opt(std::string_view s, size_type& pos) -> std::tuple<std::string, std::string>;
-    
 
     //! 符号识别
     ///
@@ -1440,8 +1444,8 @@ struct str {
 
     //! 字符筛选和分组
     ///
-    /// @func grouping 按 proc 将字符序列分成两组，左边的满足 proc 的字符组成的新串，右边不满足 proc 的字符组成的新串
-    /// @func filter, filter_inplace 筛选出输入字符串 s 中的满足 proc 条件的字符，并组合成新串返回
+    /// @ref grouping 按 proc 将字符序列分成两组，左边的满足 proc 的字符组成的新串，右边不满足 proc 的字符组成的新串
+    /// @ref filter, filter_inplace 筛选出输入字符串 s 中的满足 proc 条件的字符，并组合成新串返回
     static auto grouping(std::string_view s, const char_checker_proc& proc) -> std::tuple<std::string, std::string>;
     static auto filter(std::string_view s, const char_checker_proc& proc) -> std::string;
     static auto filter(std::string_view s, const charset_type& charset) -> std::string;

@@ -1229,12 +1229,8 @@ auto str::take_mid_view(std::string_view s, size_type pos, size_type n) -> std::
     return {s.data() + pos, n};
 }
 
-//auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
-//    return str::take_mid_view(s, begin_pos, begin_pos + end_pos);
-//}
-
-auto str::take_range_view(std::string_view s, range_type range) -> std::string_view {
-    return take_mid_view(s, range.begin, range.end);
+auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
+    return str::take_mid_view(s, begin_pos, begin_pos + end_pos);
 }
 
 auto str::take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
@@ -1317,12 +1313,8 @@ auto str::take_mid(std::string_view s, size_type pos, size_type n) -> std::strin
     return std::string{take_mid_view(s, pos, n)};
 }
 
-//auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
-//    return std::string{take_range_view(s, begin_pos, end_pos)};
-//}
-
-auto str::take_range(std::string_view s, range_type range) -> std::string {
-    return std::string{take_range_view(s, range)};
+auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
+    return std::string{take_range_view(s, begin_pos, end_pos)};
 }
 
 auto str::take(std::string_view s, size_type pos, ssize_type offset) -> std::string {
@@ -1379,35 +1371,31 @@ auto str::take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::s
     return s;
 }
 
-auto str::take_range_inplace(std::string& s, range_type range) -> std::string& {
-    if (range.begin == range.end) [[unlikely]] {
+auto str::take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
+    if (begin_pos == end_pos) [[unlikely]] {
         s.resize(0);
         return s;
     }
 
-    if (range.begin > range.end) [[unlikely]] {
-        std::swap(range.begin, range.end);
+    if (begin_pos > end_pos) [[unlikely]] {
+        std::swap(begin_pos, end_pos);
     }
 
-    if (range.begin >= s.size()) [[unlikely]] {
+    if (begin_pos >= s.size()) [[unlikely]] {
         s.resize(0);
         return s;
     }
 
-    if (range.end >= s.size()) {
-        std::memmove(s.data(), (s.data() + range.begin), (s.size() - range.begin));
-        s.resize(s.size() - range.begin);
+    if (end_pos >= s.size()) {
+        std::memmove(s.data(), (s.data() + begin_pos), (s.size() - begin_pos));
+        s.resize(s.size() - begin_pos);
         return s;
     }
 
-    std::memmove(s.data(), (s.data() + range.begin), (range.end - range.begin));
-    s.resize(range.end - range.begin);
+    std::memmove(s.data(), (s.data() + begin_pos), (end_pos - begin_pos));
+    s.resize(end_pos - begin_pos);
     return s;
 }
-
-//auto str::take_range_inplace(std::string& s, range_type range) -> std::string& {
-//    return take_range_inplace(s, range.begin_pos(), range.end_pos());
-//}
 
 auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
     if (offset == 0) {
@@ -1477,28 +1465,28 @@ auto str::drop_mid(std::string_view s, size_type pos, size_type n) -> std::strin
     return result;
 }
 
-auto str::drop_range(std::string_view s, range_type range) -> std::string {
-    if (range.end <= range.begin) {
+auto str::drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
+    if (end_pos <= begin_pos) {
         return {};
     }
 
-    if (range.end > s.size()) {
-        range.end = s.size();
+    if (end_pos > s.size()) {
+        end_pos = s.size();
     }
 
-    if (range.begin >= s.size()) {
+    if (begin_pos >= s.size()) {
         return {};
     }
 
     std::string result;
-    result.reserve(s.size() - (range.end - range.begin));
+    result.reserve(s.size() - (end_pos - begin_pos));
 
-    if (range.begin > 0) {
-        result.append(s.data(), range.begin);
+    if (begin_pos > 0) {
+        result.append(s.data(), begin_pos);
     }
 
-    if ((s.size() - range.end) > 0) {
-        result.append(s.data() + range.end, (s.size() - range.end));
+    if ((s.size() - end_pos) > 0) {
+        result.append(s.data() + end_pos, (s.size() - end_pos));
     }
     return result;
 }
@@ -1549,7 +1537,7 @@ auto str::drop(std::string_view s, size_type pos) -> std::string {
     return str::drop(s, pos, s.size());
 }
 
-auto str::drop(std::string_view s, char_checker_proc proc) -> std::string {
+auto str::drop(std::string_view s, const char_checker_proc& proc) -> std::string {
     if (s.empty()) {
         return {};
     }
@@ -1564,7 +1552,7 @@ auto str::drop(std::string_view s, char_checker_proc proc) -> std::string {
     return result;
 }
 
-auto str::drop(std::string_view s, charset_type charset) -> std::string {
+auto str::drop(std::string_view s, const charset_type& charset) -> std::string {
     if (s.empty()) {
         return {};
     }
@@ -1608,10 +1596,10 @@ auto str::drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::s
     return s;
 }
 
-//auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
-//    s = drop_range(s, begin_pos, end_pos);
-//    return s;
-//}
+auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
+    s = drop_range(s, begin_pos, end_pos);
+    return s;
+}
 
 auto str::drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
     s = drop(s, pos, offset);
@@ -1623,12 +1611,12 @@ auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
     return s;
 }
 
-auto str::drop_inplace(std::string& s, char_checker_proc proc) -> std::string& {
+auto str::drop_inplace(std::string& s, const char_checker_proc& proc) -> std::string& {
     s = drop(s, proc);
     return s;
 }
 
-auto str::drop_inplace(std::string& s, charset_type charset) -> std::string& {
+auto str::drop_inplace(std::string& s, const charset_type& charset) -> std::string& {
     s = drop(s, charset);
     return s;
 }
@@ -1638,19 +1626,19 @@ auto str::take_before_view(std::string_view s, range_type sep_range, bool with_s
         return s;
     }
 
-    if (sep_range.begin >= s.size()) {
+    if (sep_range.pos >= s.size()) {
         return s;
     }
 
-    if (sep_range.end > s.size()) {
-        sep_range.end = s.size() - sep_range.begin;
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
     }
 
     if (with_sep) {
-        return {s.data(), sep_range.end};
+        return {s.data(), sep_range.end_pos()};
     }
 
-    return {s.data(), sep_range.begin};
+    return {s.data(), sep_range.begin_pos()};
 }
 
 auto str::take_after_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1658,19 +1646,19 @@ auto str::take_after_view(std::string_view s, range_type sep_range, bool with_se
         return s;
     }
 
-    if (sep_range.begin >= s.size()) {
+    if (sep_range.pos >= s.size()) {
         return s;
     }
 
-    if (sep_range.end > s.size()) {
-        sep_range.end = s.size() - sep_range.begin;
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
     }
 
     if (with_sep) {
-        return {s.data() + sep_range.begin, s.size() - sep_range.begin};
+        return {s.data() + sep_range.begin_pos(), s.size() - sep_range.begin_pos()};
     }
 
-    return {s.data() + sep_range.end, s.size() - sep_range.end};
+    return {s.data() + sep_range.end_pos(), s.size() - sep_range.end_pos()};
 }
 
 auto str::drop_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1678,19 +1666,19 @@ auto str::drop_before_view(std::string_view s, range_type sep_range, bool with_s
         return s;
     }
 
-    if (sep_range.begin >= s.size()) {
+    if (sep_range.pos >= s.size()) {
         return s;
     }
 
-    if (sep_range.end > s.size()) {
-        sep_range.end = s.size() - sep_range.begin;
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
     }
 
     if (with_sep) {
-        return {s.data() + sep_range.end, s.size() - sep_range.end};
+        return {s.data() + sep_range.end_pos(), s.size() - sep_range.end_pos()};
     }
 
-    return {s.data() + sep_range.begin, s.size() - sep_range.begin};
+    return {s.data() + sep_range.begin_pos(), s.size() - sep_range.begin_pos()};
 }
 
 auto str::drop_after_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1698,19 +1686,19 @@ auto str::drop_after_view(std::string_view s, range_type sep_range, bool with_se
         return s;
     }
 
-    if (sep_range.begin >= s.size()) {
+    if (sep_range.pos >= s.size()) {
         return s;
     }
 
-    if (sep_range.end > s.size()) {
-        sep_range.end = s.size() - sep_range.begin;
+    if ((sep_range.pos + sep_range.len) > s.size()) {
+        sep_range.len = s.size() - sep_range.pos;
     }
 
     if (with_sep) {
-        return {s.data(), sep_range.begin};
+        return {s.data(), sep_range.begin_pos()};
     }
 
-    return {s.data(), sep_range.end};
+    return {s.data(), sep_range.end_pos()};
 }
 
 auto str::take_before(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
@@ -1906,15 +1894,13 @@ auto str::spaces(size_type width) -> std::string {
 }
 
 auto str::after_skip_spaces_view(std::string_view s) -> std::string_view {
-    return after_skip_spaces_view(s, 0);
+    size_type pos = 0;
+    return after_skip_spaces_view(s, pos);
 }
 
 auto str::after_skip_spaces(std::string_view s) -> std::string {
-    return after_skip_spaces(s, 0);
-}
-
-auto str::after_skip_spaces_inplace(std::string& s) -> std::string& {
-    return after_skip_spaces_inplace(s, 0);
+    size_type pos = 0;
+    return std::string{after_skip_spaces_view(s, pos)};
 }
 
 auto str::after_skip_spaces_view(std::string_view s, size_type pos) -> std::string_view {
@@ -1931,11 +1917,26 @@ auto str::after_skip_spaces_view(std::string_view s, size_type pos) -> std::stri
         ptr++;
     }
 
-    return s.substr(ptr - s.data());
+    pos = ptr - s.data();
+    return s.substr(pos);
 }
 
 auto str::after_skip_spaces(std::string_view s, size_type pos) -> std::string {
-    return std::string{after_skip_spaces_view(s, pos)};
+    if (pos >= s.size()) {
+        pos = s.size();
+        return {};
+    }
+
+    const_pointer ptr = s.data() + pos;
+    while (ptr < s.data() + s.size()) {
+        if (!std::isspace(*ptr)) {
+            break;
+        }
+        ptr++;
+    }
+
+    pos = ptr - s.data();
+    return std::string{s.data() + pos, s.size() - pos};
 }
 
 auto str::after_skip_spaces_inplace(std::string& s, size_type pos) -> std::string& {
@@ -1944,30 +1945,6 @@ auto str::after_skip_spaces_inplace(std::string& s, size_type pos) -> std::strin
     s.resize(remain.size());
     return s;
 }
-
-//auto str::cover_left(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
-//}
-//
-//auto str::cover_right(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
-//}
-//
-//auto str::cover_center(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
-//}
-//
-//auto str::cover_surrounding(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
-//}
-//
-//auto str::cover_left_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
-//}
-//
-//auto str::cover_right_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
-//}
-//
-//auto str::cover_center_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
-//}
-//
-//auto str::cover_surrounding_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
-//}
 
 auto str::join(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
@@ -2158,7 +2135,7 @@ auto str::split(std::string_view s, std::string_view sepset, const view_consumer
 auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
     size_type pos = 0;
     while (pos < s.size()) {
-        std::string_view word = iter_next_words(s, pos);
+        std::string_view word = str::iter_next_words(s, pos);
         if (word.empty()) {
             assert(pos >= s.size());
             continue;
@@ -3392,7 +3369,7 @@ auto str::replace_rawname_inplace(std::string& s, std::string_view name) -> std:
     return s;
 }
 
-auto str::encode_cstr(std::string_view s, view_consumer_proc proc) -> void {
+auto str::encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void {
     static std::string_view map[256]{
         "\\x00", // 0	0	00	NUL (null)
         "\\x01", // 1	1	01	SOH (start of header)
@@ -3562,7 +3539,7 @@ auto str::encode_cstr(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::decode_cstr(std::string_view s, view_consumer_proc proc) -> void {
+auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
         return;
     }
@@ -3574,82 +3551,82 @@ auto str::decode_cstr(std::string_view s, view_consumer_proc proc) -> void {
     const char* c = s.data();
     for (; ptr < end; ptr++) {
         // clang-format off
-        switch (*ptr) {
-            case 'A'...'Z':  [[fallthrough]];
-            case 'a'...'z':  [[fallthrough]];
-            case '0'...'9':  [[fallthrough]];
-            case ' ':  [[fallthrough]];
-            case '!':  [[fallthrough]];
-            case '#':  [[fallthrough]];
-            case '$':  [[fallthrough]];
-            case '%':  [[fallthrough]];
-            case '&':  [[fallthrough]];
-            case '(':  [[fallthrough]];
-            case ')':  [[fallthrough]];
-            case '*':  [[fallthrough]];
-            case '+':  [[fallthrough]];
-            case ',':  [[fallthrough]];
-            case '-':  [[fallthrough]];
-            case '.':  [[fallthrough]];
-            case '/':  [[fallthrough]];
-            case ':':  [[fallthrough]];
-            case ';':  [[fallthrough]];
-            case '<':  [[fallthrough]];
-            case '=':  [[fallthrough]];
-            case '>':  [[fallthrough]];
-            case '?':  [[fallthrough]];
-            case '@':  [[fallthrough]];
-            case '[':  [[fallthrough]];
-            case ']':  [[fallthrough]];
-            case '^':  [[fallthrough]];
-            case '_':  [[fallthrough]];
-            case '`':  [[fallthrough]];
-            case '{':  [[fallthrough]];
-            case '|':  [[fallthrough]];
-            case '}':  [[fallthrough]];
-            case '~':  [[fallthrough]];
-                c++;
-                break;
-            case '\\':
-                if (w != c) {
-                    if (proc({w, static_cast<size_t>(c - w)}) != 0) {
-                        return;
-                    }
+       switch (*ptr) {
+           case 'A'...'Z':  [[fallthrough]];
+           case 'a'...'z':  [[fallthrough]];
+           case '0'...'9':  [[fallthrough]];
+           case ' ':  [[fallthrough]];
+           case '!':  [[fallthrough]];
+           case '#':  [[fallthrough]];
+           case '$':  [[fallthrough]];
+           case '%':  [[fallthrough]];
+           case '&':  [[fallthrough]];
+           case '(':  [[fallthrough]];
+           case ')':  [[fallthrough]];
+           case '*':  [[fallthrough]];
+           case '+':  [[fallthrough]];
+           case ',':  [[fallthrough]];
+           case '-':  [[fallthrough]];
+           case '.':  [[fallthrough]];
+           case '/':  [[fallthrough]];
+           case ':':  [[fallthrough]];
+           case ';':  [[fallthrough]];
+           case '<':  [[fallthrough]];
+           case '=':  [[fallthrough]];
+           case '>':  [[fallthrough]];
+           case '?':  [[fallthrough]];
+           case '@':  [[fallthrough]];
+           case '[':  [[fallthrough]];
+           case ']':  [[fallthrough]];
+           case '^':  [[fallthrough]];
+           case '_':  [[fallthrough]];
+           case '`':  [[fallthrough]];
+           case '{':  [[fallthrough]];
+           case '|':  [[fallthrough]];
+           case '}':  [[fallthrough]];
+           case '~':  [[fallthrough]];
+               c++;
+               break;
+           case '\\':
+               if (w != c) {
+                   if (proc({w, static_cast<size_t>(c - w)}) != 0) {
+                       return;
+                   }
 
-                    w = c;
-                }
-                ptr++;
-                if (ptr > end) {
-                    return;
-                }
+                   w = c;
+               }
+               ptr++;
+               if (ptr > end) {
+                   return;
+               }
 
-                uint8_t ch = 0;
-                switch (*ptr) {
-                    case '\'': ch = '\''; break;
-                    case '\"': ch = '\"'; break;
-                    case '?': ch = '?'; break;
-                    case 'a': ch = '\a'; break;
-                    case 'b': ch = '\b'; break;
-                    case 'f': ch = '\f'; break;
-                    case 'n': ch = '\n'; break;
-                    case 'r': ch = '\r'; break;
-                    case 't': ch = '\t'; break;
-                    case 'v': ch = '\v'; break;
-                    case '0': [[fallthrough]];
-                    case '1': [[fallthrough]];
-                    case '2': [[fallthrough]];
-                    case '3': [[fallthrough]];
-                    case '4': [[fallthrough]];
-                    case '5': [[fallthrough]];
-                    case '6': [[fallthrough]];
-                    case '7':
-                        break;
-                    case 'x':
-                        break;
-                }
+               uint8_t ch = 0;
+               switch (*ptr) {
+                   case '\'': ch = '\''; break;
+                   case '\"': ch = '\"'; break;
+                   case '?': ch = '?'; break;
+                   case 'a': ch = '\a'; break;
+                   case 'b': ch = '\b'; break;
+                   case 'f': ch = '\f'; break;
+                   case 'n': ch = '\n'; break;
+                   case 'r': ch = '\r'; break;
+                   case 't': ch = '\t'; break;
+                   case 'v': ch = '\v'; break;
+                   case '0': [[fallthrough]];
+                   case '1': [[fallthrough]];
+                   case '2': [[fallthrough]];
+                   case '3': [[fallthrough]];
+                   case '4': [[fallthrough]];
+                   case '5': [[fallthrough]];
+                   case '6': [[fallthrough]];
+                   case '7':
+                       break;
+                   case 'x':
+                       break;
+               }
 
-                break;
-        }
+               break;
+       }
         // clang-format on
     }
 }
@@ -3664,7 +3641,7 @@ auto str::decode_cstr(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::encode_base64(std::string_view s, view_consumer_proc proc) -> void {
+auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
         proc({});
         return;
@@ -3730,7 +3707,7 @@ auto str::encode_base64(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::decode_base64(std::string_view s, view_consumer_proc proc) -> void {
+auto str::decode_base64(std::string_view s, const view_consumer_proc& proc) -> void {
     static uint8_t table[256]{};
     if (table['+'] == 0) {
         table['+'] = 62;
@@ -3846,7 +3823,7 @@ auto str::decode_base64(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::encode_base16(std::string_view s, bool upper, view_consumer_proc proc) -> void {
+auto str::encode_base16(std::string_view s, bool upper, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
         proc({});
         return;
@@ -3879,7 +3856,7 @@ auto str::encode_base16(std::string_view s, bool upper) -> std::string {
     return result;
 }
 
-auto str::decode_base16(std::string_view s, view_consumer_proc proc) -> void {
+auto str::decode_base16(std::string_view s, const view_consumer_proc& proc) -> void {
     assert((s.size() % 2) == 0);
 
     if (s.empty()) {
@@ -3946,7 +3923,7 @@ auto str::charset(std::string_view s, charset_type& set) -> charset_type& {
     return set;
 }
 
-auto str::is_all(std::string_view s, mapping_proc<bool> proc) -> bool {
+auto str::is_all(std::string_view s, const mapping_proc<bool>& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (!proc(*ptr)) {
             return false;
@@ -3955,7 +3932,7 @@ auto str::is_all(std::string_view s, mapping_proc<bool> proc) -> bool {
     return true;
 }
 
-auto str::is_all(std::string_view s, charset_type set) -> bool {
+auto str::is_all(std::string_view s, const charset_type& set) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (!set.get(*ptr)) {
             return false;
@@ -3964,7 +3941,7 @@ auto str::is_all(std::string_view s, charset_type set) -> bool {
     return true;
 }
 
-auto str::has_any(std::string_view s, mapping_proc<bool> proc) -> bool {
+auto str::has_any(std::string_view s, const mapping_proc<bool>& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (proc(*ptr)) {
             return true;
@@ -3973,7 +3950,7 @@ auto str::has_any(std::string_view s, mapping_proc<bool> proc) -> bool {
     return false;
 }
 
-auto str::has_any(std::string_view s, charset_type set) -> bool {
+auto str::has_any(std::string_view s, const charset_type& set) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (set.get(*ptr)) {
             return true;
