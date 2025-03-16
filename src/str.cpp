@@ -1229,8 +1229,12 @@ auto str::take_mid_view(std::string_view s, size_type pos, size_type n) -> std::
     return {s.data() + pos, n};
 }
 
-auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
-    return str::take_mid_view(s, begin_pos, begin_pos + end_pos);
+//auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
+//    return str::take_mid_view(s, begin_pos, begin_pos + end_pos);
+//}
+
+auto str::take_range_view(std::string_view s, range_type range) -> std::string_view {
+    return take_mid_view(s, range.begin, range.end);
 }
 
 auto str::take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
@@ -1313,8 +1317,12 @@ auto str::take_mid(std::string_view s, size_type pos, size_type n) -> std::strin
     return std::string{take_mid_view(s, pos, n)};
 }
 
-auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
-    return std::string{take_range_view(s, begin_pos, end_pos)};
+//auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
+//    return std::string{take_range_view(s, begin_pos, end_pos)};
+//}
+
+auto str::take_range(std::string_view s, range_type range) -> std::string {
+    return std::string{take_range_view(s, range)};
 }
 
 auto str::take(std::string_view s, size_type pos, ssize_type offset) -> std::string {
@@ -1371,31 +1379,35 @@ auto str::take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::s
     return s;
 }
 
-auto str::take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
-    if (begin_pos == end_pos) [[unlikely]] {
+auto str::take_range_inplace(std::string& s, range_type range) -> std::string& {
+    if (range.begin == range.end) [[unlikely]] {
         s.resize(0);
         return s;
     }
 
-    if (begin_pos > end_pos) [[unlikely]] {
-        std::swap(begin_pos, end_pos);
+    if (range.begin > range.end) [[unlikely]] {
+        std::swap(range.begin, range.end);
     }
 
-    if (begin_pos >= s.size()) [[unlikely]] {
+    if (range.begin >= s.size()) [[unlikely]] {
         s.resize(0);
         return s;
     }
 
-    if (end_pos >= s.size()) {
-        std::memmove(s.data(), (s.data() + begin_pos), (s.size() - begin_pos));
-        s.resize(s.size() - begin_pos);
+    if (range.end >= s.size()) {
+        std::memmove(s.data(), (s.data() + range.begin), (s.size() - range.begin));
+        s.resize(s.size() - range.begin);
         return s;
     }
 
-    std::memmove(s.data(), (s.data() + begin_pos), (end_pos - begin_pos));
-    s.resize(end_pos - begin_pos);
+    std::memmove(s.data(), (s.data() + range.begin), (range.end - range.begin));
+    s.resize(range.end - range.begin);
     return s;
 }
+
+//auto str::take_range_inplace(std::string& s, range_type range) -> std::string& {
+//    return take_range_inplace(s, range.begin_pos(), range.end_pos());
+//}
 
 auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
     if (offset == 0) {
@@ -1465,28 +1477,28 @@ auto str::drop_mid(std::string_view s, size_type pos, size_type n) -> std::strin
     return result;
 }
 
-auto str::drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
-    if (end_pos <= begin_pos) {
+auto str::drop_range(std::string_view s, range_type range) -> std::string {
+    if (range.end <= range.begin) {
         return {};
     }
 
-    if (end_pos > s.size()) {
-        end_pos = s.size();
+    if (range.end > s.size()) {
+        range.end = s.size();
     }
 
-    if (begin_pos >= s.size()) {
+    if (range.begin >= s.size()) {
         return {};
     }
 
     std::string result;
-    result.reserve(s.size() - (end_pos - begin_pos));
+    result.reserve(s.size() - (range.end - range.begin));
 
-    if (begin_pos > 0) {
-        result.append(s.data(), begin_pos);
+    if (range.begin > 0) {
+        result.append(s.data(), range.begin);
     }
 
-    if ((s.size() - end_pos) > 0) {
-        result.append(s.data() + end_pos, (s.size() - end_pos));
+    if ((s.size() - range.end) > 0) {
+        result.append(s.data() + range.end, (s.size() - range.end));
     }
     return result;
 }
@@ -1596,10 +1608,10 @@ auto str::drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::s
     return s;
 }
 
-auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
-    s = drop_range(s, begin_pos, end_pos);
-    return s;
-}
+//auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
+//    s = drop_range(s, begin_pos, end_pos);
+//    return s;
+//}
 
 auto str::drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
     s = drop(s, pos, offset);
@@ -1626,19 +1638,19 @@ auto str::take_before_view(std::string_view s, range_type sep_range, bool with_s
         return s;
     }
 
-    if (sep_range.pos >= s.size()) {
+    if (sep_range.begin >= s.size()) {
         return s;
     }
 
-    if ((sep_range.pos + sep_range.len) > s.size()) {
-        sep_range.len = s.size() - sep_range.pos;
+    if (sep_range.end > s.size()) {
+        sep_range.end = s.size() - sep_range.begin;
     }
 
     if (with_sep) {
-        return {s.data(), sep_range.end_pos()};
+        return {s.data(), sep_range.end};
     }
 
-    return {s.data(), sep_range.begin_pos()};
+    return {s.data(), sep_range.begin};
 }
 
 auto str::take_after_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1646,19 +1658,19 @@ auto str::take_after_view(std::string_view s, range_type sep_range, bool with_se
         return s;
     }
 
-    if (sep_range.pos >= s.size()) {
+    if (sep_range.begin >= s.size()) {
         return s;
     }
 
-    if ((sep_range.pos + sep_range.len) > s.size()) {
-        sep_range.len = s.size() - sep_range.pos;
+    if (sep_range.end > s.size()) {
+        sep_range.end = s.size() - sep_range.begin;
     }
 
     if (with_sep) {
-        return {s.data() + sep_range.begin_pos(), s.size() - sep_range.begin_pos()};
+        return {s.data() + sep_range.begin, s.size() - sep_range.begin};
     }
 
-    return {s.data() + sep_range.end_pos(), s.size() - sep_range.end_pos()};
+    return {s.data() + sep_range.end, s.size() - sep_range.end};
 }
 
 auto str::drop_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1666,19 +1678,19 @@ auto str::drop_before_view(std::string_view s, range_type sep_range, bool with_s
         return s;
     }
 
-    if (sep_range.pos >= s.size()) {
+    if (sep_range.begin >= s.size()) {
         return s;
     }
 
-    if ((sep_range.pos + sep_range.len) > s.size()) {
-        sep_range.len = s.size() - sep_range.pos;
+    if (sep_range.end > s.size()) {
+        sep_range.end = s.size() - sep_range.begin;
     }
 
     if (with_sep) {
-        return {s.data() + sep_range.end_pos(), s.size() - sep_range.end_pos()};
+        return {s.data() + sep_range.end, s.size() - sep_range.end};
     }
 
-    return {s.data() + sep_range.begin_pos(), s.size() - sep_range.begin_pos()};
+    return {s.data() + sep_range.begin, s.size() - sep_range.begin};
 }
 
 auto str::drop_after_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1686,19 +1698,19 @@ auto str::drop_after_view(std::string_view s, range_type sep_range, bool with_se
         return s;
     }
 
-    if (sep_range.pos >= s.size()) {
+    if (sep_range.begin >= s.size()) {
         return s;
     }
 
-    if ((sep_range.pos + sep_range.len) > s.size()) {
-        sep_range.len = s.size() - sep_range.pos;
+    if (sep_range.end > s.size()) {
+        sep_range.end = s.size() - sep_range.begin;
     }
 
     if (with_sep) {
-        return {s.data(), sep_range.begin_pos()};
+        return {s.data(), sep_range.begin};
     }
 
-    return {s.data(), sep_range.end_pos()};
+    return {s.data(), sep_range.end};
 }
 
 auto str::take_before(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
@@ -1893,17 +1905,19 @@ auto str::spaces(size_type width) -> std::string {
     return repeat(' ', width);
 }
 
-auto str::skip_spaces_view(std::string_view s) -> std::string_view {
-    size_type pos = 0;
-    return skip_spaces_view(s, pos);
+auto str::after_skip_spaces_view(std::string_view s) -> std::string_view {
+    return after_skip_spaces_view(s, 0);
 }
 
-auto str::skip_spaces(std::string_view s) -> std::string {
-    size_type pos = 0;
-    return std::string{skip_spaces_view(s, pos)};
+auto str::after_skip_spaces(std::string_view s) -> std::string {
+    return after_skip_spaces(s, 0);
 }
 
-auto str::skip_spaces_view(std::string_view s, size_type& pos) -> std::string_view {
+auto str::after_skip_spaces_inplace(std::string& s) -> std::string& {
+    return after_skip_spaces_inplace(s, 0);
+}
+
+auto str::after_skip_spaces_view(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         pos = s.size();
         return {};
@@ -1917,32 +1931,43 @@ auto str::skip_spaces_view(std::string_view s, size_type& pos) -> std::string_vi
         ptr++;
     }
 
-    pos = ptr - s.data();
-    return s.substr(pos);
+    return s.substr(ptr - s.data());
 }
 
-auto str::skip_spaces(std::string_view s, size_type& pos) -> std::string {
-    if (pos >= s.size()) {
-        pos = s.size();
-        return {};
-    }
-
-    const_pointer ptr = s.data() + pos;
-    while (ptr < s.data() + s.size()) {
-        if (!std::isspace(*ptr)) {
-            break;
-        }
-        ptr++;
-    }
-
-    pos = ptr - s.data();
-    return std::string{s.data() + pos, s.size() - pos};
+auto str::after_skip_spaces(std::string_view s, size_type pos) -> std::string {
+    return std::string{after_skip_spaces_view(s, pos)};
 }
 
-auto str::skip_spaces_inplace(std::string& s, size_type pos) -> std::string& {
-    s = skip_spaces_view(s, pos);
+auto str::after_skip_spaces_inplace(std::string& s, size_type pos) -> std::string& {
+    std::string_view remain = after_skip_spaces_view(s, pos);
+    std::memmove(s.data(), remain.data(), remain.size());
+    s.resize(remain.size());
     return s;
 }
+
+//auto str::cover_left(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
+//}
+//
+//auto str::cover_right(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
+//}
+//
+//auto str::cover_center(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
+//}
+//
+//auto str::cover_surrounding(std::string_view s, std::string_view mask, size_type show_size, size_type fixed_width) -> std::string {
+//}
+//
+//auto str::cover_left_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
+//}
+//
+//auto str::cover_right_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
+//}
+//
+//auto str::cover_center_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
+//}
+//
+//auto str::cover_surrounding_inplace(std::string& s, std::string_view mask, size_type show_size, size_type fixed_size) -> std::string& {
+//}
 
 auto str::join(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result;
@@ -2001,7 +2026,6 @@ auto str::join_lines(const view_provider_proc& proc) -> std::string {
 }
 
 auto str::join_path(std::string_view sep, const view_provider_proc& proc) -> std::string {
-
 }
 
 auto str::join_path(const view_provider_proc& proc) -> std::string {
@@ -2134,7 +2158,7 @@ auto str::split(std::string_view s, std::string_view sepset, const view_consumer
 auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
     size_type pos = 0;
     while (pos < s.size()) {
-        std::string_view word = str::iter_next_word(s, pos);
+        std::string_view word = iter_next_words(s, pos);
         if (word.empty()) {
             assert(pos >= s.size());
             continue;
