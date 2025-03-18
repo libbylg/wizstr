@@ -1889,7 +1889,7 @@ auto str::repeat(value_type ch, size_type times) -> std::string {
     return result;
 }
 
-auto str::spaces(size_type width) -> std::string {
+auto str::make_spaces(size_type width) -> std::string {
     return repeat(' ', width);
 }
 
