@@ -9,8 +9,8 @@
 
 #define SECTION(text)
 
-template<typename T>
-auto operator==(const std::vector<T>& a, const std::vector<T>& b) -> bool {
+template<typename T, typename Y>
+auto operator==(const std::vector<T>& a, const std::vector<Y>& b) -> bool {
     if (a.size() != b.size()) {
         return false;
     }

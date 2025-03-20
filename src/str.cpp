@@ -2421,7 +2421,16 @@ auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_pr
     }
 }
 
-auto str::split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string_view> {
+auto str::split_lines(std::string_view s, bool keep_ends) -> std::vector<std::string> {
+    std::vector<std::string> result;
+    str::split_lines(s, keep_ends, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
+}
+
+auto str::split_lines_view(std::string_view s, bool keep_ends) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
     str::split_lines(s, keep_ends, [&result](std::string_view item) -> int {
         result.emplace_back(item);
