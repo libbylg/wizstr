@@ -824,7 +824,9 @@ struct str {
     /// @param proc 指定一个函数，用来接受遍历每一个被视作单词的子串
     /// @param sep_proc 用于识别分隔符的函数
     /// @param sep_ch 用于拆分字符串的分隔字符
+    static auto foreach_words(std::string_view s, size_type pos, const range_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, size_type pos, const view_consumer_proc& proc) -> void;
+    static auto foreach_words(std::string_view s, const range_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto count_words(std::string_view s, const char_match_proc& sep_proc) -> size_type;
     static auto count_words(std::string_view s, const charset_type& sep_charset) -> size_type;

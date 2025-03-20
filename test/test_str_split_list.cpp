@@ -6,37 +6,37 @@
 
 TEST(test_str, split_list_vector) {
     SECTION("一般情况") {
-        ASSERT_EQ(str::split_list("a,b,c", ","), (std::vector<std::string_view>{"a", "b", "c"}));
+        ASSERT_EQ(str::split_list("a,b,c", ","), (std::vector<std::string>{"a", "b", "c"}));
     }
     SECTION("被拆分字符串全部是分隔符") {
-        ASSERT_EQ(str::split_list(",,", ","), (std::vector<std::string_view>{"", "", ""}));
+        ASSERT_EQ(str::split_list(",,", ","), (std::vector<std::string>{"", "", ""}));
     }
     SECTION("没有替换分个符") {
-        ASSERT_EQ(str::split_list("abc", ","), (std::vector<std::string_view>{"abc"}));
+        ASSERT_EQ(str::split_list("abc", ","), (std::vector<std::string>{"abc"}));
     }
     SECTION("分隔符号在开头") {
-        ASSERT_EQ(str::split_list(",abc", ","), (std::vector<std::string_view>{"", "abc"}));
+        ASSERT_EQ(str::split_list(",abc", ","), (std::vector<std::string>{"", "abc"}));
     }
     SECTION("分隔符号在结尾") {
-        ASSERT_EQ(str::split_list("abc,", ","), (std::vector<std::string_view>{"abc", ""}));
+        ASSERT_EQ(str::split_list("abc,", ","), (std::vector<std::string>{"abc", ""}));
     }
     SECTION("拆分空串") {
-        ASSERT_EQ(str::split_list("", ","), (std::vector<std::string_view>{""}));
+        ASSERT_EQ(str::split_list("", ","), (std::vector<std::string>{""}));
     }
     SECTION("被拆分字符串无对应分隔符") {
-        ASSERT_EQ(str::split_list("abcdef#@#$", ","), (std::vector<std::string_view>{"abcdef#@#$"}));
+        ASSERT_EQ(str::split_list("abcdef#@#$", ","), (std::vector<std::string>{"abcdef#@#$"}));
     }
     SECTION("空串作为分隔符") {
-        ASSERT_EQ(str::split_list("ab,cdef", ""), (std::vector<std::string_view>{"ab", "cdef"}));
+        ASSERT_EQ(str::split_list("ab,cdef", ""), (std::vector<std::string>{"ab", "cdef"}));
     }
     SECTION("限制值为0") {
-        ASSERT_EQ(str::split_list(":aa::bb:cc:", ":", 0), (std::vector<std::string_view>{":aa::bb:cc:"}));
+        ASSERT_EQ(str::split_list(":aa::bb:cc:", ":", 0), (std::vector<std::string>{":aa::bb:cc:"}));
     }
     SECTION("限制值合适") {
-        ASSERT_EQ(str::split_list(":aa::bb:cc:", ":", 4), (std::vector<std::string_view>{"", "aa", "", "bb", "cc:"}));
+        ASSERT_EQ(str::split_list(":aa::bb:cc:", ":", 4), (std::vector<std::string>{"", "aa", "", "bb", "cc:"}));
     }
     SECTION("限制值超过总段数") {
-        ASSERT_EQ(str::split_list(":aa::bb:cc:", ":", 100), (std::vector<std::string_view>{"", "aa", "", "bb", "cc", ""}));
+        ASSERT_EQ(str::split_list(":aa::bb:cc:", ":", 100), (std::vector<std::string>{"", "aa", "", "bb", "cc", ""}));
     }
 }
 
@@ -145,19 +145,19 @@ TEST(test_str, split_list_proc) {
 TEST(test_str, split_list_regex) {
     SECTION("一般场景") {
         std::regex sep("[ \t]*(:|,|;)[ \t]*");
-        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
-        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 0), (std::vector<std::string_view>{"aaa, bbb:ccc ;ddd "}));
-        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 1), (std::vector<std::string_view>{"aaa", "bbb:ccc ;ddd "}));
-        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 2), (std::vector<std::string_view>{"aaa", "bbb", "ccc ;ddd "}));
-        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 3), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
-        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 4), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
-        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, str::npos), (std::vector<std::string_view>{"aaa", "bbb", "ccc", "ddd "}));
+        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep), (std::vector<std::string>{"aaa", "bbb", "ccc", "ddd "}));
+        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 0), (std::vector<std::string>{"aaa, bbb:ccc ;ddd "}));
+        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 1), (std::vector<std::string>{"aaa", "bbb:ccc ;ddd "}));
+        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 2), (std::vector<std::string>{"aaa", "bbb", "ccc ;ddd "}));
+        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 3), (std::vector<std::string>{"aaa", "bbb", "ccc", "ddd "}));
+        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, 4), (std::vector<std::string>{"aaa", "bbb", "ccc", "ddd "}));
+        ASSERT_EQ(str::split_list("aaa, bbb:ccc ;ddd ", sep, str::npos), (std::vector<std::string>{"aaa", "bbb", "ccc", "ddd "}));
     }
     SECTION("空串") {
         std::regex sep(":|,|;");
-        ASSERT_EQ(str::split_list("", sep), (std::vector<std::string_view>{""}));
-        ASSERT_EQ(str::split_list("", sep, 0), (std::vector<std::string_view>{""}));
-        ASSERT_EQ(str::split_list("", sep, 3), (std::vector<std::string_view>{""}));
+        ASSERT_EQ(str::split_list("", sep), (std::vector<std::string>{""}));
+        ASSERT_EQ(str::split_list("", sep, 0), (std::vector<std::string>{""}));
+        ASSERT_EQ(str::split_list("", sep, 3), (std::vector<std::string>{""}));
     }
     SECTION("proc:不限拆分次数") {
         std::regex sep("[ \t]*(:|,|;)[ \t]*");
@@ -194,14 +194,14 @@ TEST(test_str, split_list_regex) {
     }
     SECTION("全都是分隔符") {
         std::regex sep(":|,|;");
-        ASSERT_EQ(str::split_list("::,,;;", sep), (std::vector<std::string_view>{"", "", "", "", "", "", ""}));
+        ASSERT_EQ(str::split_list("::,,;;", sep), (std::vector<std::string>{"", "", "", "", "", "", ""}));
     }
     SECTION("分隔符刚好在尾部") {
         std::regex sep(":|,|;");
-        ASSERT_EQ(str::split_list("aaa:bbb,ccc;", sep), (std::vector<std::string_view>{"aaa", "bbb", "ccc", ""}));
+        ASSERT_EQ(str::split_list("aaa:bbb,ccc;", sep), (std::vector<std::string>{"aaa", "bbb", "ccc", ""}));
     }
     SECTION("分隔符刚好在头部") {
         std::regex sep(":|,|;");
-        ASSERT_EQ(str::split_list(":aaa:bbb,ccc", sep), (std::vector<std::string_view>{"", "aaa", "bbb", "ccc"}));
+        ASSERT_EQ(str::split_list(":aaa:bbb,ccc", sep), (std::vector<std::string>{"", "aaa", "bbb", "ccc"}));
     }
 }
