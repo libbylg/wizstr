@@ -272,6 +272,10 @@ struct str {
     //! 用于表示代替无效位置的值
     static inline constexpr size_type npos = std::string::npos;
 
+    //! 定义了一些操作系统强相关的常量
+    /// * @ref{sep_search_path, sep_search_path_char} 搜索路径分隔符
+    /// * @ref{sep_path, sep_path_char} 文件路径分隔符
+    /// * @ref{sep_line_ends} 行结束符
 #if defined(_WIN32)
     static constexpr std::string_view sep_search_path = ";";
     static constexpr value_type sep_search_path_char = ';';
@@ -288,16 +292,28 @@ struct str {
     static constexpr std::string_view sep_line_ends = "\n";
 #endif
 
-    static constexpr std::string_view uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    static constexpr std::string_view lowers = "abcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view digits = "0123456789";
-    static constexpr std::string_view xdigits = "0123456789ABCDEFabcdef";
-    static constexpr std::string_view alnums = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    static constexpr std::string_view alnumuls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
-    static constexpr std::string_view aluls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
-    static constexpr std::string_view spaces = "\x09\x0A\x0B\x0C\x0d\x20";
+    //! 字符分类
+    ///
+    // * @ref{all_uppers} 所有大写字母集合
+    // * @ref{all_lowers} 所有小写字母集合
+    // * @ref{all_leters} 所有字母集合
+    // * @ref{all_alphas} 所有字母集合
+    // * @ref{all_digits} 所有数字字符
+    // * @ref{all_xdigits} 所有十六进制数字表示的字符集合
+    // * @ref{all_alnums} 所有的字母和数字集合
+    // * @ref{all_alnumuls} 所有的字母、数字、下划线的集合
+    // * @ref{all_aluls} 所有字母和下滑线的集合
+    // * @ref{all_spaces} 所有空白字符
+    static constexpr std::string_view all_uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static constexpr std::string_view all_lowers = "abcdefghijklmnopqrstuvwxyz";
+    static constexpr std::string_view all_leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    static constexpr std::string_view all_alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    static constexpr std::string_view all_digits = "0123456789";
+    static constexpr std::string_view all_xdigits = "0123456789ABCDEFabcdef";
+    static constexpr std::string_view all_alnums = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    static constexpr std::string_view all_alnumuls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+    static constexpr std::string_view all_aluls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+    static constexpr std::string_view all_spaces = "\x09\x0A\x0B\x0C\x0d\x20";
 
     //! 在尾部追加 @anchor{append}
     ///
@@ -313,30 +329,12 @@ struct str {
     static auto append(std::string_view s, std::string_view other, size_type n = 1) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto append(std::string_view s, const Sequence& items) -> std::string {
-        auto itr = items.begin();
-        return append(s, [&items, &itr]() -> std::optional<std::string_view> {
-            if (itr == items.end()) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
+    static auto append(std::string_view s, const Sequence& items) -> std::string;
     //
     static auto append_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
     static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto append_inplace(std::string& s, const Sequence& items) -> std::string& {
-        auto itr = items.begin();
-        return append(s, [&items, &itr]() -> std::optional<std::string_view> {
-            if (itr == items.end()) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
+    static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
 
     //! 向头部追加 @anchor{prepend}
     ///
@@ -353,30 +351,12 @@ struct str {
     static auto prepend(std::string_view s, std::string_view other, size_type n) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto prepend(std::string_view s, const Sequence& items) -> std::string {
-        auto itr = items.begin();
-        return prepend(s, [&items, &itr]() -> std::optional<std::string_view> {
-            if (itr == items.end()) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
+    static auto prepend(std::string_view s, const Sequence& items) -> std::string;
     //
     static auto prepend_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
     static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
-        auto itr = items.begin();
-        return prepend_inplace(s, [&items, &itr]() -> std::optional<std::string_view> {
-            if (itr == items.end()) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
+    static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string&;
 
     //! 向字符串中间插入 @anchor{insert}
     ///
@@ -394,31 +374,13 @@ struct str {
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type n = 1) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto insert(std::string& s, size_type pos, const Sequence& items) -> std::string& {
-        auto itr = items.begin();
-        return insert(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
-            if (itr == items.end()) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
+    static auto insert(std::string& s, size_type pos, const Sequence& items) -> std::string&;
     //
     static auto insert_inplace(std::string& s, size_type pos, std::string_view other, size_type n = 1) -> std::string&;
     static auto insert_inplace(std::string& s, size_type pos, value_type ch, size_type n = 1) -> std::string&;
     static auto insert_inplace(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string& {
-        auto itr = items.begin();
-        return insert_inplace(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
-            if (itr == items.end()) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
+    static auto insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string&;
 
     //! 不区分大小写的比较 @anchor{icompare}
     ///
@@ -972,104 +934,75 @@ struct str {
 
     //! 字符串拼接 @anchor join
     ///
-    /// 用 s 作为分隔符，拼接一个多种不同来源的字符串。
+    /// 用 s 作为分隔符，拼接多个字符串。输入串可以通过 proc 或者 items 供给。如果 proc 无法提供任何字符串或者 items 为空，返回空串。
     ///
     /// @param s 分隔符
-    /// @param proc 用于供给被拼接的字符串
-    /// @param items 字符串容器序列
+    /// @param proc 用于通过回调函数的方式供给被拼接的字符串
+    /// @param items 被字符串容器序列
+    /// @return 返回合并后的字符串
     static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join(std::string_view s, const Sequence& items) -> std::string;
-    // {
-    //     std::string result;
-    //     auto itr = items.begin();
-    //     return join(s, [&items, &itr]() -> std::optional<std::string_view> {
-    //         if (itr == items.end()) {
-    //             return std::nullopt;
-    //         }
-    //
-    //         return *(itr++);
-    //     });
-    // }
-
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join(const Sequence& items) -> std::string;
-    // {
-    //     return join("", items);
-    // }
 
+    //! 拼接列表
+    ///
+    /// 使用逗号作为分隔符，拼接多个子串。输入串可以通过 proc 或者 items 供给。如果 proc 无法提供任何字符串或者 items 为空，返回空串。
+    ///
+    /// @param proc 用于通过回调函数的方式供给被拼接的字符串
+    /// @param items 被字符串容器序列
+    /// @return 返回合并后的字符串
     static auto join_list(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_list(const Sequence& items) -> std::string {
         return join(",", items);
     }
 
-    //! 使用逗号和冒号拼接 map
+    //! 映射拼接
+    ///
+    /// 使用 sep_pair 和 sep_list 拼接多个 key-value 对。该函数拼接的结果接近 json 的字典的内部结构（没有外围的花括号）。
+    ///
+    /// @param sep_pair 用于拼接每个 key-value 对，当未指定该参数或者为空时，自动采用 `":"`
+    /// @param sep_list 用于拼接多个拼接好的 key-value 对，当未指定该参数或者为空时，自动采用 `","`
+    /// @param proc 用于供给 key-value 对， key-value 对由 `std::tuple<std::string_view, std::string_view>` 来表示
+    /// @param items 用于存储 key-value 对的容器
+    /// @return 返回拼接后的字符串
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string;
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
-
     template <typename Map, typename = typename Map::const_iterator>
-    static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
-        auto itr = items.cbegin();
-        return str::join_map(sep_pair, sep_list, [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
-            if (itr == end) {
-                return std::nullopt;
-            }
-
-            auto& [key, val] = *(itr++);
-            return std::tuple{key, val};
-        });
-    }
-
+    static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string;
     template <typename Map, typename = typename Map::const_iterator>
-    static auto join_map(const Map& items) -> std::string {
-        return str::join_map("=", ",", items);
-    }
+    static auto join_map(const Map& items) -> std::string;
 
     //! 按行拼接
-    /// @param sep
+    ///
+    /// 将每个字符串视作一行，然后用换行符拼接成一个字符串
+    ///
+    /// @param sep 指定换行符号，如果未指定，默认使用 @ref{sep_line_ends} 作为分隔符
     /// @param proc
     /// @param items
     static auto join_lines(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_lines(const view_provider_proc& proc) -> std::string;
-    //
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_lines(std::string_view sep, const Sequence& items) -> std::string {
-        auto itr = items.cbegin();
-        return join_lines([&itr, &items]() -> std::optional<std::string_view> {
-            if (itr == items.cend()) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
-    //
+    static auto join_lines(std::string_view sep, const Sequence& items) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_lines(const Sequence& items) -> std::string {
-        return join_lines(sep_line_ends, items);
-    }
+    static auto join_lines(const Sequence& items) -> std::string;
 
-    //! 拼接文件路径
+    //! 拼接路径
+    ///
+    /// 使用指定的分隔符 sep 或者系统默认的路径分隔符，将不同来源的路径片段拼接成完整的文件路径
+    ///
+    /// @param sep 指定的路径分隔符，如果不带该参数，默认使用 @ref{sep_path}
+    /// @param proc 供给路径片段
+    /// @param items 供给路径片段的容器
+    /// @return 返回拼接后的路径
     static auto join_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_path(const view_provider_proc& proc) -> std::string;
-    //
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_path(std::string_view sep, const Sequence& items) -> std::string {
-        auto itr = items.begin();
-        return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
-            if (itr == end) {
-                return std::nullopt;
-            }
-
-            return *(itr++);
-        });
-    }
-    //
+    static auto join_path(std::string_view sep, const Sequence& items) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_path(const Sequence& items) -> std::string {
-        return str::join_path(sep_path, items);
-    }
+    static auto join_path(const Sequence& items) -> std::string;
 
     //! 拼接搜索路径
     ///
@@ -1084,25 +1017,15 @@ struct str {
     /// @return 返回以当前系统的搜索路径分隔符拼接好的字符串。
     static auto join_search_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_search_path(const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_search_path(std::string_view sep, const Sequence& items) -> std::string;
 
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_search_path(std::string_view sep, const Sequence& items) -> std::string {
-        auto itr = items.begin();
-        return str::join_search_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
-            if (itr == end) {
-                return std::nullopt;
-            }
+    static auto join_search_path(const Sequence& items) -> std::string;
 
-            return *(itr++);
-        });
-    }
-
-    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_search_path(const Sequence& items) -> std::string {
-        return join_search_path(":", items);
-    }
-
-    //! 以单个字符作为分隔符拆分字符串
+    //! 字符串拆分
+    ///
+    /// 以指定的字符集为分隔符将字符串拆分为多个子串
     ///
     /// @param s 被拆分的字符串。
     /// @param sepset 分隔符集合，可以有多种形式组成。
@@ -1622,6 +1545,78 @@ struct str {
     static auto mapping(std::string& s, const char_mapping_proc& proc) -> std::string;
 };
 
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+auto str::append(std::string_view s, const Sequence& items) -> std::string {
+    auto itr = items.begin();
+    return append(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& {
+    auto itr = items.begin();
+    return append(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
+    auto itr = items.begin();
+    return prepend(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+auto str::prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
+    auto itr = items.begin();
+    return prepend_inplace(s, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+auto str::insert(std::string& s, size_type pos, const Sequence& items) -> std::string& {
+    auto itr = items.begin();
+    return insert(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+auto str::insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string& {
+    auto itr = items.begin();
+    return insert_inplace(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
 template <typename Sequence, typename>
 auto str::join(std::string_view s, const Sequence& items) -> std::string {
     std::string result;
@@ -1638,6 +1633,76 @@ auto str::join(std::string_view s, const Sequence& items) -> std::string {
 template <typename Sequence, typename>
 auto str::join(const Sequence& items) -> std::string {
     return join("", items);
+}
+
+template <typename Map, typename>
+auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
+    auto itr = items.cbegin();
+    return str::join_map(sep_pair, sep_list, [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
+        if (itr == end) {
+            return std::nullopt;
+        }
+
+        auto& [key, val] = *(itr++);
+        return std::tuple{key, val};
+    });
+}
+
+template <typename Map, typename>
+auto str::join_map(const Map& items) -> std::string {
+    return str::join_map("=", ",", items);
+}
+
+template <typename Sequence, typename>
+auto str::join_lines(std::string_view sep, const Sequence& items) -> std::string {
+    auto itr = items.cbegin();
+    return join_lines([&itr, &items]() -> std::optional<std::string_view> {
+        if (itr == items.cend()) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence, typename>
+auto str::join_lines(const Sequence& items) -> std::string {
+    return join_lines(sep_line_ends, items);
+}
+
+template <typename Sequence, typename>
+auto str::join_path(std::string_view sep, const Sequence& items) -> std::string {
+    auto itr = items.begin();
+    return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
+        if (itr == end) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence, typename>
+auto str::join_path(const Sequence& items) -> std::string {
+    return str::join_path(sep_path, items);
+}
+
+
+template <typename Sequence, typename>
+auto str::join_search_path(std::string_view sep, const Sequence& items) -> std::string {
+    auto itr = items.begin();
+    return str::join_search_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
+        if (itr == end) {
+            return std::nullopt;
+        }
+
+        return *(itr++);
+    });
+}
+
+template <typename Sequence, typename>
+auto str::join_search_path(const Sequence& items) -> std::string {
+    return join_search_path(":", items);
 }
 
 #endif // TINY_STR_H
