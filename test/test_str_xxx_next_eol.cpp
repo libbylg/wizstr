@@ -18,10 +18,10 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 5);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), str::range_type{1, 1});
-            ASSERT_EQ(str::find_next_eol(s, 2), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 5), "");
-            ASSERT_EQ(str::find_next_eol(s, 5), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{1, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 2), (str::range_type{3, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{}));
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{}));
         }
     }
     SECTION("\\r+\\n") {
@@ -38,10 +38,10 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 6);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\r\n");
-            ASSERT_EQ(str::find_next_eol(s, 3), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 5), "");
-            ASSERT_EQ(str::find_next_eol(s, 6), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{1, 2}));
+            ASSERT_EQ(str::find_next_eol(s, 3), (str::range_type{4, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{}));
+            ASSERT_EQ(str::find_next_eol(s, 6), (str::range_type{}));
         }
     }
     SECTION("\\r+\\r") {
@@ -60,11 +60,11 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 6);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\r");
-            ASSERT_EQ(str::find_next_eol(s, 2), "\r");
-            ASSERT_EQ(str::find_next_eol(s, 3), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 5), "");
-            ASSERT_EQ(str::find_next_eol(s, 6), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{1, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 2), (str::range_type{2, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 3), (str::range_type{4, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{}));
+            ASSERT_EQ(str::find_next_eol(s, 6), (str::range_type{}));
         }
     }
     SECTION("\\n+\\n") {
@@ -83,11 +83,11 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 6);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 2), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 3), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 5), "");
-            ASSERT_EQ(str::find_next_eol(s, 6), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{1, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 2), (str::range_type{2, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 3), (str::range_type{4, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{}));
+            ASSERT_EQ(str::find_next_eol(s, 6), (str::range_type{}));
         }
     }
     SECTION("\\n+\\r") {
@@ -106,11 +106,11 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 6);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 2), "\r");
-            ASSERT_EQ(str::find_next_eol(s, 3), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 5), "");
-            ASSERT_EQ(str::find_next_eol(s, 6), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{1, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 2), (str::range_type{2, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 3), (str::range_type{4, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{}));
+            ASSERT_EQ(str::find_next_eol(s, 6), (str::range_type{}));
         }
     }
     SECTION("空串") {
@@ -123,7 +123,7 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 0);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{}));
         }
     }
     SECTION("无任何换行符号") {
@@ -136,8 +136,8 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 6);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "");
-            ASSERT_EQ(str::find_next_eol(s, 6), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{}));
+            ASSERT_EQ(str::find_next_eol(s, 6), (str::range_type{}));
         }
     }
     SECTION("单一\\r") {
@@ -150,8 +150,8 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 1);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\r");
-            ASSERT_EQ(str::find_next_eol(s, 1), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{0, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 1), (str::range_type{}));
         }
     }
     SECTION("单一\\n") {
@@ -164,8 +164,8 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 1);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 1), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{0, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 1), (str::range_type{}));
         }
     }
     SECTION("综合") {
@@ -188,12 +188,12 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 7);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\n");
-            ASSERT_EQ(str::find_next_eol(s, 1), "\r\n");
-            ASSERT_EQ(str::find_next_eol(s, 3), "\r");
-            ASSERT_EQ(str::find_next_eol(s, 4), "\r");
-            ASSERT_EQ(str::find_next_eol(s, 5), "\r\n");
-            ASSERT_EQ(str::find_next_eol(s, 7), "");
+            ASSERT_EQ(str::find_next_eol(s, 0), (str::range_type{0, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 1), (str::range_type{1, 2}));
+            ASSERT_EQ(str::find_next_eol(s, 3), (str::range_type{3, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 4), (str::range_type{4, 1}));
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{5, 2}));
+            ASSERT_EQ(str::find_next_eol(s, 7), (str::range_type{}));
         }
     }
     SECTION("pos超出字符串范围[1]") {
@@ -206,7 +206,7 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 5);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 5), "");
+            ASSERT_EQ(str::find_next_eol(s, 5), (str::range_type{}));
         }
     }
     SECTION("pos超出字符串范围[2]") {
@@ -219,7 +219,7 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 5);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 10), "");
+            ASSERT_EQ(str::find_next_eol(s, 10), (str::range_type{}));
         }
     }
     SECTION("pos超出字符串范围[3]") {
@@ -232,7 +232,7 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 5);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, str::npos), "");
+            ASSERT_EQ(str::find_next_eol(s, str::npos), (str::range_type{}));
         }
     }
 }

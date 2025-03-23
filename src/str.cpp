@@ -2916,9 +2916,9 @@ auto str::trim_anywhere_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-auto str::simplified_integer_view(std::string_view s) -> std::string_view {
+auto str::simplified_integer(std::string_view s) -> std::string {
     if (s.empty()) {
-        return s;
+        return {};
     }
 
     const_pointer ptr = s.data();
@@ -2940,15 +2940,11 @@ auto str::simplified_integer_view(std::string_view s) -> std::string_view {
         ptr--;
     }
 
-    return std::string_view{ptr, static_cast<size_type>((s.data() + s.size()) - ptr)};
-}
-
-auto str::simplified_integer(std::string_view s) -> std::string {
-    return std::string{simplified_integer_view(s)};
+    return std::string{ptr, static_cast<size_type>((s.data() + s.size()) - ptr)};
 }
 
 auto str::simplified_integer_inplace(std::string& s) -> std::string& {
-    s = simplified_integer_view(s);
+    s = simplified_integer(s);
     return s;
 }
 
