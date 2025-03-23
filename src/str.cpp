@@ -1537,7 +1537,7 @@ auto str::drop(std::string_view s, size_type pos) -> std::string {
     return str::drop(s, pos, s.size());
 }
 
-auto str::drop(std::string_view s, const char_checker_proc& proc) -> std::string {
+auto str::drop(std::string_view s, const char_match_proc& proc) -> std::string {
     if (s.empty()) {
         return {};
     }
@@ -1611,7 +1611,7 @@ auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
     return s;
 }
 
-auto str::drop_inplace(std::string& s, const char_checker_proc& proc) -> std::string& {
+auto str::drop_inplace(std::string& s, const char_match_proc& proc) -> std::string& {
     s = drop(s, proc);
     return s;
 }
@@ -2569,7 +2569,7 @@ auto str::swap_case_inplace(std::string& s) -> std::string& {
 // auto str::translate(std::string_view s, const char_mapping_proc& proc) -> std::string {
 // }
 
-auto str::simplified(std::string_view s, std::string_view sep, const char_checker_proc& proc) -> std::string {
+auto str::simplified(std::string_view s, std::string_view sep, const char_match_proc& proc) -> std::string {
     if (s.empty()) {
         return std::string{s};
     }
@@ -2638,7 +2638,7 @@ auto str::simplified(std::string_view s) -> std::string {
     });
 }
 
-auto str::simplified_inplace(std::string& s, std::string_view sep, const char_checker_proc& proc) -> std::string& {
+auto str::simplified_inplace(std::string& s, std::string_view sep, const char_match_proc& proc) -> std::string& {
     s = simplified(s, sep, proc);
     return s;
 }
@@ -2648,7 +2648,7 @@ auto str::simplified_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-auto str::trim_left_view(std::string_view s, const char_checker_proc& proc) -> std::string_view {
+auto str::trim_left_view(std::string_view s, const char_match_proc& proc) -> std::string_view {
     if (s.empty()) [[unlikely]] {
         return s;
     }
@@ -2681,7 +2681,7 @@ auto str::trim_left_view(std::string_view s, std::string_view charset) -> std::s
     return trim_left_view(s, charset_type{charset});
 }
 
-auto str::trim_right_view(std::string_view s, const char_checker_proc& proc) -> std::string_view {
+auto str::trim_right_view(std::string_view s, const char_match_proc& proc) -> std::string_view {
     if (s.empty()) [[unlikely]] {
         return s;
     }
@@ -2713,7 +2713,7 @@ auto str::trim_right_view(std::string_view s) -> std::string_view {
     });
 }
 
-auto str::trim_surrounding_view(std::string_view s, const char_checker_proc& proc) -> std::string_view {
+auto str::trim_surrounding_view(std::string_view s, const char_match_proc& proc) -> std::string_view {
     if (s.empty()) {
         return s;
     }
@@ -2754,7 +2754,7 @@ auto str::trim_surrounding_view(std::string_view s) -> std::string_view {
     });
 }
 
-auto str::trim_left(std::string_view s, const char_checker_proc& proc) -> std::string {
+auto str::trim_left(std::string_view s, const char_match_proc& proc) -> std::string {
     return std::string{trim_left_view(s, proc)};
 }
 
@@ -2770,7 +2770,7 @@ auto str::trim_left(std::string_view s, std::string_view charset) -> std::string
     return std::string{trim_left_view(s, charset)};
 }
 
-auto str::trim_right(std::string_view s, const char_checker_proc& proc) -> std::string {
+auto str::trim_right(std::string_view s, const char_match_proc& proc) -> std::string {
     return std::string{trim_right_view(s, proc)};
 }
 
@@ -2786,7 +2786,7 @@ auto str::trim_right(std::string_view s) -> std::string {
     return std::string{trim_right_view(s)};
 }
 
-auto str::trim_surrounding(std::string_view s, const char_checker_proc& proc) -> std::string {
+auto str::trim_surrounding(std::string_view s, const char_match_proc& proc) -> std::string {
     return std::string{trim_surrounding_view(s, proc)};
 }
 
@@ -2802,7 +2802,7 @@ auto str::trim_surrounding(std::string_view s) -> std::string {
     return std::string{trim_surrounding_view(s)};
 }
 
-auto str::trim_anywhere(std::string_view s, const char_checker_proc& proc) -> std::string {
+auto str::trim_anywhere(std::string_view s, const char_match_proc& proc) -> std::string {
     std::string result;
 
     for (const_pointer r = s.data(); r < (s.data() + s.size()); r++) {
@@ -2838,7 +2838,7 @@ auto str::trim_anywhere(std::string_view s) -> std::string {
     });
 }
 
-auto str::trim_anywhere_inplace(std::string& s, const char_checker_proc& proc) -> std::string& {
+auto str::trim_anywhere_inplace(std::string& s, const char_match_proc& proc) -> std::string& {
     s = trim_anywhere(s, proc);
     return s;
 }
@@ -2899,18 +2899,18 @@ auto str::simplified_integer_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-auto str::copy(pointer dest, size_type size, std::string_view s) -> size_type {
-    assert(dest != nullptr);
+auto str::copy(pointer buffer, size_type size, std::string_view s) -> size_type {
+    assert(buffer != nullptr);
     size_type len = std::min(size, s.size());
     if (len == 0) {
         return len;
     }
 
-    std::memcpy(dest, s.data(), len);
+    std::memcpy(buffer, s.data(), len);
     return len;
 }
 
-auto str::expand_envs(std::string_view s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string {
+auto str::expand_envs(std::string_view s, bool keep_unexpanded, const string_mapping_proc& proc) -> std::string {
     std::string result;
     size_type start = 0;
     std::string key;
@@ -3037,7 +3037,7 @@ auto str::expand_envs(std::string_view s, std::string_view key, std::string_view
     });
 }
 
-auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded, const expand_vars_proc& proc) -> std::string& {
+auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded, const string_mapping_proc& proc) -> std::string& {
     s = expand_envs(s, keep_unexpanded, proc);
     return s;
 }
@@ -3272,7 +3272,7 @@ auto str::replace_dirname(std::string_view s, std::string_view newdir) -> std::s
     return result;
 }
 
-auto str::split_dirname(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
+auto str::split_dirname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
     auto base_ptr = str::basename_ptr(s);
     auto dir_ptr = str::dirname_ptr({s.data(), static_cast<size_type>(base_ptr - s.data())});
     return {{s.data(), static_cast<size_type>(dir_ptr - s.data())},
@@ -3306,7 +3306,7 @@ auto str::replace_basename(std::string_view s, std::string_view newname) -> std:
     return result;
 }
 
-auto str::split_basename(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
+auto str::split_basename_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
     auto ptr = str::basename_ptr(s);
     return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
 }
@@ -3339,7 +3339,7 @@ auto str::replace_extname(std::string_view s, std::string_view newname) -> std::
     return result;
 }
 
-auto str::split_extname(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
+auto str::split_extname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
     auto ptr = str::extname_ptr(s);
     return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
 }
@@ -3358,7 +3358,7 @@ auto str::replace_rawname(std::string_view s, std::string_view name) -> std::str
     return result;
 }
 
-auto str::split_rawname(std::string_view s) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::split_rawname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view, std::string_view> {
     auto [dirname, basename] = split_basename(s);
     auto [rawname, extname] = split_extname(basename);
     return std::tuple{dirname, rawname, extname};
@@ -4183,7 +4183,7 @@ auto str::read_lines(const char* filename, size_type max_n) -> std::vector<std::
     return str::read_lines(file, max_n);
 }
 
-auto str::grouping(std::string_view s, const char_checker_proc& proc) -> std::tuple<std::string, std::string> {
+auto str::grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string> {
     std::string matched;
     std::string unmatched;
 
@@ -4198,7 +4198,7 @@ auto str::grouping(std::string_view s, const char_checker_proc& proc) -> std::tu
     return {matched, unmatched};
 }
 
-auto str::filter(std::string_view s, const char_checker_proc& proc) -> std::string {
+auto str::filter(std::string_view s, const char_match_proc& proc) -> std::string {
     std::string result;
     for (const_pointer rptr = s.data(); rptr < (s.data() + s.size()); rptr++) {
         if (proc(*rptr)) {
@@ -4218,7 +4218,7 @@ auto str::filter(std::string_view s, const charset_type& charset) -> std::string
     return result;
 }
 
-auto str::filter_inplace(std::string& s, const char_checker_proc& proc) -> std::string& {
+auto str::filter_inplace(std::string& s, const char_match_proc& proc) -> std::string& {
     if (s.empty()) {
         return s;
     }
