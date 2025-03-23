@@ -574,6 +574,28 @@ auto str::find_next_regex_view(std::string_view s, std::string_view pattern, siz
     return find_next_regex_view(s, std::regex{pattern.begin(), pattern.end()}, pos);
 }
 
+auto str::find_next_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string> {
+    auto result = find_next_regex_view(s, pattern, pos);
+    if (!result) {
+        return std::nullopt;
+    }
+
+    return {std::string{result.value()}};
+}
+
+auto str::find_next_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string> {
+    auto result = find_next_regex_view(s, pattern, pos);
+    if (!result) {
+        return std::nullopt;
+    }
+
+    return {std::string{result.value()}};
+}
+
+auto str::find_next_string(std::string_view s, std::string_view pattern, size_type pos) -> size_type {
+    return s.find(pattern, pos);
+}
+
 auto str::find_next_eol_view(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         return {};
@@ -603,6 +625,37 @@ auto str::find_next_eol_view(std::string_view s, size_type pos) -> std::string_v
     }
 
     return {};
+}
+
+auto str::find_next_eol(std::string_view s, size_type pos) -> range_type {
+    if (pos >= s.size()) {
+        return range_type{};
+    }
+
+    s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
+
+    const_pointer endptr = (s.data() + s.size());
+    const_pointer ptr = s.data();
+    while (ptr < endptr) {
+        if (*ptr == '\r') [[unlikely]] {
+            // 遇到 xxx\r\nyyyy
+            if (((ptr + 1) < endptr) && (*(ptr + 1) == '\n')) {
+                return range_type{static_cast<size_type>(ptr - s.data()), 2};
+            }
+
+            // 遇到 xxx\ryyyy
+            return range_type{static_cast<size_type>(ptr - s.data()), 1};
+        }
+
+        // 遇到 xxx\nyyyy
+        if (*ptr == '\n') {
+            return range_type{static_cast<size_type>(ptr - s.data()), 1};
+        }
+
+        ptr++;
+    }
+
+    return range_type{};
 }
 
 auto str::find_next_words_view(std::string_view s, size_type pos) -> std::string_view {
@@ -2410,7 +2463,7 @@ auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_pr
         assert(!eol.empty());
 
         // 遇到结束符
-        const_pointer next_start = eol.data() + eol.size();
+        const_pointer next_start = s.data() + eol.end_pos();
         const_pointer line_text = s.data() + start;
         size_type line_size = keep_ends ? (next_start - line_text) : (next_start - line_text - eol.size());
         if (proc(std::string_view{line_text, line_size}) != 0) {
@@ -2762,7 +2815,7 @@ auto str::trim_left(std::string_view s) -> std::string {
     return std::string{trim_left_view(s)};
 }
 
-auto str::trim_left(std::string_view s, charset_type charset) -> std::string {
+auto str::trim_left(std::string_view s, const charset_type& charset) -> std::string {
     return std::string{trim_left_view(s, charset)};
 }
 
@@ -2774,7 +2827,7 @@ auto str::trim_right(std::string_view s, const char_match_proc& proc) -> std::st
     return std::string{trim_right_view(s, proc)};
 }
 
-auto str::trim_right(std::string_view s, charset_type charset) -> std::string {
+auto str::trim_right(std::string_view s, const charset_type& charset) -> std::string {
     return std::string{trim_right_view(s, charset)};
 }
 
@@ -2790,7 +2843,7 @@ auto str::trim_surrounding(std::string_view s, const char_match_proc& proc) -> s
     return std::string{trim_surrounding_view(s, proc)};
 }
 
-auto str::trim_surrounding(std::string_view s, charset_type charset) -> std::string {
+auto str::trim_surrounding(std::string_view s, const charset_type& charset) -> std::string {
     return std::string{trim_surrounding_view(s, charset)};
 }
 

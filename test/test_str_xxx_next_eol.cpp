@@ -18,7 +18,7 @@ TEST(test_str, xxx_next_eol) {
             ASSERT_EQ(pos, 5);
         }
         SECTION("str::find_next_eol") {
-            ASSERT_EQ(str::find_next_eol(s, 0), "\n");
+            ASSERT_EQ(str::find_next_eol(s, 0), str::range_type{1, 1});
             ASSERT_EQ(str::find_next_eol(s, 2), "\n");
             ASSERT_EQ(str::find_next_eol(s, 5), "");
             ASSERT_EQ(str::find_next_eol(s, 5), "");
