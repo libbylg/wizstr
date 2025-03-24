@@ -678,6 +678,10 @@ auto str::find_next_words_view(std::string_view s, size_type pos) -> std::string
     return std::string_view{start, static_cast<size_type>(end - start)};
 }
 
+auto str::find_next_words(std::string_view s, size_type pos) -> std::string {
+    return std::string{find_next_words_view(s, pos)};
+}
+
 auto str::iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view> {
     auto result = str::find_next_regex_view(s, pattern, pos);
     if (!result) {
@@ -734,6 +738,10 @@ auto str::iter_next_words_view(std::string_view s, size_type& pos) -> std::strin
 
     pos = (word.data() + word.size()) - s.data();
     return word;
+}
+
+auto str::iter_next_words(std::string_view s, size_type& pos) -> std::string {
+    return std::string{iter_next_words_view(s, pos)};
 }
 
 // auto str::iter_prev_word(std::string_view s, size_type& rpos) -> std::string_view {
@@ -2056,6 +2064,28 @@ auto str::join_lines(const view_provider_proc& proc) -> std::string {
 }
 
 auto str::join_path(std::string_view sep, const view_provider_proc& proc) -> std::string {
+    std::string result;
+    for (auto item = proc(); item; item = proc()) {
+        // 如果每项为空,全部跳过
+        if (item->empty()) {
+            continue;
+        }
+
+        // 如果某项以斜杠开头，那么该项目将作为绝对路径项替换已有内容
+        if (item->front() == '/') {
+            result = *item;
+            continue;
+        }
+
+        // 根据 result 的后缀决定是否要补路径分隔符
+        if (!result.empty() && (result.back() != '/')) {
+            result.append(sep);
+        }
+
+        result.append(*item);
+    }
+
+    return result;
 }
 
 auto str::join_path(const view_provider_proc& proc) -> std::string {
@@ -2083,7 +2113,7 @@ auto str::join_path(const view_provider_proc& proc) -> std::string {
     return result;
 }
 
-auto str::join_search_path(const view_provider_proc& proc) -> std::string {
+auto str::join_search_path(std::string_view sep, const view_provider_proc& proc) -> std::string {
     std::string result;
     for (auto item = proc(); item; item = proc()) {
         // 如果每项为空,全部跳过
@@ -2092,13 +2122,17 @@ auto str::join_search_path(const view_provider_proc& proc) -> std::string {
         }
 
         if (!result.empty()) {
-            result.append(":");
+            result.append(sep);
         }
 
         result.append(*item);
     }
 
     return result;
+}
+
+auto str::join_search_path(const view_provider_proc& proc) -> std::string {
+    return join_search_path(":", proc);
 }
 
 auto str::split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void {
@@ -3360,6 +3394,11 @@ auto str::split_basename_view(std::string_view s) -> std::tuple<std::string_view
     return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
 }
 
+auto str::split_basename(std::string_view s) -> std::tuple<std::string, std::string> {
+    auto items = split_basename_view(s);
+    return std::tuple{std::string{std::get<0>(items)}, std::string{std::get<1>(items)}};
+}
+
 auto str::extname_view(std::string_view s) -> std::string_view {
     auto ptr = str::extname_ptr(s);
     return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
@@ -3408,9 +3447,14 @@ auto str::replace_rawname(std::string_view s, std::string_view name) -> std::str
 }
 
 auto str::split_rawname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view, std::string_view> {
-    auto [dirname, basename] = split_basename(s);
-    auto [rawname, extname] = split_extname(basename);
+    auto [dirname, basename] = split_basename_view(s);
+    auto [rawname, extname] = split_extname_view(basename);
     return std::tuple{dirname, rawname, extname};
+}
+
+auto str::split_rawname(std::string_view s) -> std::tuple<std::string, std::string, std::string> {
+    auto items = split_rawname_view(s);
+    return std::tuple{std::string{std::get<0>(items)}, std::string{std::get<1>(items)}, std::string{std::get<2>(items)}};
 }
 
 auto str::rawname_inplace(std::string& s) -> std::string& {

@@ -537,7 +537,7 @@ struct str {
     static auto find_next_eol_view(std::string_view s, size_type pos = 0) -> std::string_view;
     static auto find_next_eol(std::string_view s, size_type pos = 0) -> range_type;
     static auto find_next_words_view(std::string_view s, size_type pos = 0) -> std::string_view;
-    static auto find_next_words(std::string_view s, size_type pos = 0) -> std::string_view;
+    static auto find_next_words(std::string_view s, size_type pos = 0) -> std::string;
     //
     static auto iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
     static auto iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
