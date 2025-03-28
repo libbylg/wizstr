@@ -43,7 +43,7 @@ else ()
     target_compile_definitions(str_test PRIVATE TEST_FRAMEWORK=UT_WITH_GTEST)
 endif ()
 
-#target_link_libraries(str_test PRIVATE PCRE2::8BIT GTest::gtest GTest::gtest_main)
-#target_compile_options(str_test PRIVATE -Wall -Wextra -I${CMAKE_CURRENT_LIST_DIR}/catch2/include)
-#target_compile_options(str_test PRIVATE -Wall -Wextra)
-#target_link_options(str_test PRIVATE -L${CMAKE_CURRENT_LIST_DIR}/catch2/lib -lCatch2Main -lCatch2)
+
+add_executable(gendoc doc/gendoc.cpp include/str.hpp src/str.cpp)
+set_target_properties(gendoc PROPERTIES RUNTIME_OUTPUT_DIRECTORY doc)
+target_include_directories(gendoc PRIVATE include ${INCLUDEPATH})

@@ -1,334 +1,180 @@
-/**
- * Copyright (c) 2021-2024 libbylg@126.com
- * tiny is licensed under Mulan PSL v2.
- * You can use this software according to the terms and conditions of the Mulan PSL v2.
- * You may obtain a copy of Mulan PSL v2 at:
- *          http://license.coscl.org.cn/MulanPSL2
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
- * FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PSL v2 for more details.
- */
-#ifndef TINY_STR_H
-#define TINY_STR_H
 
-#include <cinttypes>
-#include <functional>
-#include <initializer_list>
-#include <limits>
-#include <map>
-#include <numeric>
-#include <optional>
-#include <regex>
-#include <string>
-#include <string_view>
-#include <tuple>
-#include <vector>
+# 简介
 
-#include <array>
-#include <cstring>
-#include <regex>
+str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
+
+当前提供了下列算法：
+
+* 追加插入（[append](#)、[prepend](#) 和 [insert](#) 系列）
+* 大小写不敏感的比较（[icompare](#) 和 [iequals](#) 系列）
+* 基于通配符匹配（[wildcmp](#) 系列）
+* 两字符串之间的关系（[contains](#) 系列）
+* 特征字符串统计（[count](#) 系列）
+* 前后缀操作（[prefix](#) 和 [suffix](#) 系列）
+* 查找（[find](#) 和 [iter](#) 系列）
+* 特征测试（[is](#)、[has](#) 系列）
+* 子串提取（[take](#)、[drop](#)、[range](#) 系列）
+* 修剪和整形（[align](#)、[surround](#)、[unsurround](#)、[invert](#)、[simplified](#)、[trim](#) 列）
+* 按多行处理（[lines](#) 系列）
+* 按单词处理（[words](#) 系列）
+* 字符串生成（[repeat](#)、[random](#) 系列）
+* 空白串处理（[spaces](#) 系列）
+* 字符串遮罩（[cover](#) 系列）
+* 字符串拆分（[split](#)、[partition](#)、[chunked](#)、[windowed](#) 系列）
+* 字符串拼接（[join](#) 系列）
+* 大小写转换（[to](#) 系列）
+* 变量展开（expand）
+* 文件名路径操作（[basemame](#)、[extname](#)、[dirname](#) 系列）
+* 字符串哈希算法（[hash](#) 系列）
+* 字符串转义（[encode](#)、[decode](#) 系列）
+* 文本文件读取（[read](#) 系列）
+* 字符分组和筛选（[grouping](#) 和 [filter](#) 系列）
+
+关于函数的返回值及其使用注意事项：
+
+str 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
+
+* `xxx_view` 形式：
+
+通常意味着该函数的返回值是输入参数的一个（或多个）视图，该函数不会发生任何分配行为（返回存放
+容器的 `std::string_view`，如 `std::vector<std::string_view>` 类似的除外）。但这种形式的接口是**不安全**的
+时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些接口时，需要确保在使用
+前其输入参数的地址仍然是有效的。
+
+* `xxx_inplace` 形式：
+
+这类函数通常意味着该函数返回的是输入参数自身，返回值也通常是 `std::string&`。该函数在执行
+过程中通常会修改输入参数，并返回。如果使用这类函数，需要确保原始输入串是可以被改写的，否则建议使用 `xxx_view 形式`或
+者 `xxx 形式` 的函数代替。
+
+* `xxx` 形式：
+
+与前面几种对应，这类不带 `_view` 或者 `_inplace` 后缀的函数，其返回值不是原始输入的视图，而是一个新的字符串拷贝。
+因此，这类函数既没有类似 `_view` 系列函数那样的返回值依赖于输入参数的生存期的问题，也没有类似 `xxx_inplace` 那样会修改
+原始输入参数的问题。但这类函数由于总是会拷贝原始输入字符串的，所以如果返回的字符串无法充分利用字符串的 SSO 特性，
+那么性能会比 `xxx_view` 和 `xxx_inplace` 系列要低一些。当然这类函数的优点也是显而易见的，就是更`安全`。
+
+## 常用类型
+
+*| class charset_type | 字符集 |
+*| struct range_type  | 基于位置的范围类型|
+
+## 常用函数
+
+*| @ref{view_provider_proc}       |   std::string_view 供给器：每次调用返回一个字符串，直到返回 std::nullopt  |
+*| @ref{view_pair_provider_proc}  |   键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 std::nullopt  |
+*| @ref{number_provider_proc}     |   整数供给器：每次调用返回一个 size_type 类型的整数，主要用于抽象随机函数     |
+*| @ref{view_consumer_proc}       |   std::string_view 消费器：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以返回 0  |
+*| @ref{view_pair_consumer_proc}  |   键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回 0     |
+*| @ref{range_consumer_proc}      |   range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回 0  |
+*| @ref{char_match_proc}          |   单字符匹配器：检查作为输入参数的字符是否满足特定的条件，常用基于字符的查找和搜索场景    |
+*| @ref{range_search_proc}        |   字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt |
+*| @ref{line_consumer_proc}       |   行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0    |
+*| @ref{mapping_proc}             |   单字符映射：将单个字符映射为另一个数据类型的值  |
+*| @ref{char_mapping_proc}        |   单字符映射器：将一个字符映射为另一个字符    |
+*| @ref{string_mapping_proc}      |   字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt     |
+
+## 常用常量：操作系统相关
+
+ *| @ref{sep_search_path, sep_search_path_char}  |  搜索路径分隔符 |             
+ *| @ref{sep_path, sep_path_char}                |  文件路径分隔符 |             
+ *| @ref{sep_line_ends}                          |  行结束符       |         
 
 
-//! str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
-///
-/// %# 提供了下列算法：
-///
-/// * 追加插入（[append](#)、[prepend](#) 和 [insert](#) 系列）
-/// * 大小写不敏感的比较（[icompare](#) 和 [iequals](#) 系列）
-/// * 基于通配符匹配（[wildcmp](#) 系列）
-/// * 两字符串之间的关系（[contains](#) 系列）
-/// * 特征字符串统计（[count](#) 系列）
-/// * 前后缀操作（[prefix](#) 和 [suffix](#) 系列）
-/// * 查找（[find](#) 和 [iter](#) 系列）
-/// * 特征测试（[is](#)、[has](#) 系列）
-/// * 子串提取（[take](#)、[drop](#)、[range](#) 系列）
-/// * 修剪和整形（[align](#)、[surround](#)、[unsurround](#)、[invert](#)、[simplified](#)、[trim](#) 系列）
-/// * 按多行处理（[lines](#) 系列）
-/// * 按单词处理（[words](#) 系列）
-/// * 字符串生成（[repeat](#)、[random](#) 系列）
-/// * 空白串处理（[spaces](#) 系列）
-/// * 字符串遮罩（[cover](#) 系列）
-/// * 字符串拆分（[split](#)、[partition](#)、[chunked](#)、[windowed](#) 系列）
-/// * 字符串拼接（[join](#) 系列）
-/// * 大小写转换（[to](#) 系列）
-/// * 变量展开（expand）
-/// * 文件名路径操作（[basemame](#)、[extname](#)、[dirname](#) 系列）
-/// * 字符串哈希算法（[hash](#) 系列）
-/// * 字符串转义（[encode](#)、[decode](#) 系列）
-/// * 文本文件读取（[read](#) 系列）
-/// * 字符分组和筛选（[grouping](#) 和 [filter](#) 系列）
-///
-/// %# 关于函数的返回值及其使用注意事项：
-///
-/// str 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
-///
-/// * `xxx_view` 形式：
-///
-///     通常意味着该函数的返回值是输入参数的一个（或多个）视图，该函数不会发生任何分配行为（返回存放
-///     容器的 `std::string_view`，如 `std::vector<std::string_view>` 类似的除外）。但这种形式的接口是**不安全**的
-///     时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些接口时，需要确保在使用
-///     前其输入参数的地址仍然是有效的。
-///
-/// * `xxx_inplace` 形式：
-///
-///     这类函数通常意味着该函数返回的是输入参数自身，返回值也通常是 `std::string&`。该函数在执行
-///     过程中通常会修改输入参数，并返回。如果使用这类函数，需要确保原始输入串是可以被改写的，否则建议使用 `xxx_view 形式`或
-///     者 `xxx 形式` 的函数代替。
-///
-/// * `xxx` 形式：
-///
-///     与前面几种对应，这类不带 `_view` 或者 `_inplace` 后缀的函数，其返回值不是原始输入的视图，而是一个新的字符串拷贝。
-///     因此，这类函数既没有类似 `_view` 系列函数那样的返回值依赖于输入参数的生存期的问题，也没有类似 `xxx_inplace` 那样会修改
-///     原始输入参数的问题。但这类函数由于总是会拷贝原始输入字符串的，所以如果返回的字符串无法充分利用字符串的 SSO 特性，
-///     那么性能会比 `xxx_view` 和 `xxx_inplace` 系列要低一些。当然这类函数的优点也是显而易见的，就是更`安全`。
-struct str {
-    using size_type = std::string::size_type;
-    using ssize_type = ssize_t;
-    using value_type = std::string::value_type;
-    // using reference = std::string::reference;
-    // using const_reference = std::string::const_reference;
-    using pointer = std::string::pointer;
-    using const_pointer = std::string::const_pointer;
+## 常用常量：字符分类   
 
-    //! 字符集
-    class charset_type {
-    public:
-        explicit charset_type() {
-        }
+*| @ref{all_uppers}   | 所有大写字母集合    |
+*| @ref{all_lowers}   | 所有小写字母集合    |
+*| @ref{all_leters}   | 所有字母集合    |
+*| @ref{all_alphas}   | 所有字母集合    |
+*| @ref{all_digits}   | 所有数字字符    |
+*| @ref{all_xdigits}  | 所有十六进制数字表示的字符集合  |
+*| @ref{all_alnums}   | 所有的字母和数字集合    |
+*| @ref{all_alnumuls} | 所有的字母、数字、下划线的集合  |
+*| @ref{all_aluls}    | 所有字母和下滑线的集合  |
+*| @ref{all_spaces}   | 所有空白字符    |
 
-        //! 支持自动转换
-        explicit charset_type(value_type ch)
-            : charset_type() {
-            set(ch);
-        }
+## 在尾部追加 @anchor{append}
 
-        //! 支持自动转换
-        explicit charset_type(std::string_view s)
-            : charset_type() {
-            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-                set(*ptr);
-            }
-        }
+### append、append_inplace
 
-        inline auto set(std::string_view s, bool val = true) -> void {
-            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-                set(*ptr, val);
-            }
-        }
+提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的追加字符串，这里针对
+大量字符串拼接提供了相对简便的方法。
+对于 append_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
 
-        inline auto set(value_type c, bool val = true) -> void {
-            uint8_t ch = static_cast<value_type>(c);
-            size_type index = ch / 64;
-            size_type mask = uint64_t{1} << (ch % 64);
-            if (val) {
-                bits[index] |= mask;
-            } else {
-                bits[index] ^= ~mask;
-            }
-        }
+*| @param{s}        |   指定向哪个字符串后添加新串。    |
+*| @param{other}    |   被追加的字符串。    |
+*| @param{n}        |   重复追加多少次，如果指定为 0，则实际不会做任何追加操作。    |
+*| @param{proc}     |   由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。 |
+*| @param{items}    |   从容器 items 中获取被追加的字符串。 |
 
-        inline auto clr(std::string_view s) -> void {
-            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-                clr(*ptr);
-            }
-        }
-
-        inline auto clr(value_type c) -> void {
-            uint8_t ch = static_cast<value_type>(c);
-            size_type index = ch / 64;
-            size_type mask = uint64_t{1} << (ch % 64);
-            bits[index] ^= ~mask;
-        }
-
-        inline auto clr() -> void {
-            bits[0] = 0;
-            bits[1] = 0;
-            bits[2] = 0;
-            bits[3] = 0;
-        }
-
-        inline auto get(value_type c) const -> bool {
-            uint8_t ch = static_cast<value_type>(c);
-            size_type index = ch / 64;
-            size_type mask = uint64_t{1} << (ch % 64);
-            return !!(bits[index] & mask);
-        }
-
-        inline auto invert() {
-            bits[0] = ~bits[0];
-            bits[1] = ~bits[1];
-            bits[2] = ~bits[2];
-            bits[3] = ~bits[3];
-        }
-
-        inline auto operator[](value_type c) const -> bool {
-            return get(c);
-        }
-
-        inline auto data() const -> const uint64_t* {
-            return bits;
-        }
-
-        inline auto data() -> uint64_t* {
-            return bits;
-        }
-
-    private:
-        uint64_t bits[4]{0, 0, 0, 0};
-    };
-
-    //! 基于位置的范围类型
-    struct range_type {
-        size_type pos{0};
-        size_type len{0};
-
-        explicit range_type() = default;
-        explicit range_type(size_type tpos, size_type tn)
-            : pos{tpos}
-            , len{tn} {
-        }
-
-        inline auto size() const -> size_type {
-            return len;
-        }
-
-        inline auto empty() const -> bool {
-            return len == 0;
-        }
-
-        inline auto begin() const -> size_type {
-            return pos;
-        }
-
-        inline auto begin_pos() const -> size_type {
-            return pos;
-        }
-
-        inline auto end() const -> size_type {
-            return pos + len;
-        }
-
-        inline auto end_pos() const -> size_type {
-            return pos + len;
-        }
-
-        inline auto operator==(const range_type& range) const -> bool {
-            if (len != range.len) {
-                return false;
-            }
-
-            if (len == 0) {
-                return true;
-            }
-
-            return pos == range.pos;
-        }
-    };
-
-    //! std::string_view 供给器：每次调用返回一个字符串，直到返回 std::nullopt
-    using view_provider_proc = std::function<std::optional<std::string_view>()>;
-
-    //! 键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 std::nullopt
-    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
-
-    //! 整数供给器：每次调用返回一个 size_type 类型的整数，主要用于抽象随机函数
-    using number_provider_proc = std::function<size_type()>;
-
-    //! std::string_view 小飞机：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以返回 0
-    using view_consumer_proc = std::function<int(std::string_view item)>;
-
-    //! 键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回 0
-    using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
-
-    //! range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回 0
-    using range_consumer_proc = std::function<int(range_type range)>;
-
-    //! 单字符匹配器：检查作为输入参数的字符是否满足特定的条件，常用基于字符的查找和搜索场景
-    using char_match_proc = std::function<bool(value_type ch)>;
-
-    //! 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt
-    using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
-
-    //! 行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0
-    using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
-
-    //! 单字符映射：将单个字符映射为另一个数据类型的值
-    template <typename MappedType>
-    using mapping_proc = std::function<auto(value_type)->MappedType>;
-
-    //! 单字符映射器：将一个字符映射为另一个字符
-    using char_mapping_proc = mapping_proc<value_type>;
-
-    //! 字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt
-    using string_mapping_proc = std::function<std::optional<std::string>(const std::string& key)>;
-
-    //! 用于表示代替无效位置的值
-    static inline constexpr size_type npos = std::string::npos;
-
-    //! 定义了一些操作系统强相关的常量
-    /// * @ref{sep_search_path, sep_search_path_char} 搜索路径分隔符
-    /// * @ref{sep_path, sep_path_char} 文件路径分隔符
-    /// * @ref{sep_line_ends} 行结束符
-#if defined(_WIN32)
-    static constexpr std::string_view sep_search_path = ";";
-    static constexpr value_type sep_search_path_char = ';';
-    static constexpr std::string_view sep_path = "\\";
-    static constexpr value_type sep_path_char = '\\';
-    //
-    static constexpr std::string_view sep_line_ends = "\r\n";
-#else
-    static constexpr std::string_view sep_search_path = ":";
-    static constexpr value_type sep_search_path_char = ':';
-    static constexpr std::string_view sep_path = "/";
-    static constexpr value_type sep_path_char = '/';
-    //
-    static constexpr std::string_view sep_line_ends = "\n";
-#endif
-
-    //! 字符分类
-    ///
-    // * @ref{all_uppers} 所有大写字母集合
-    // * @ref{all_lowers} 所有小写字母集合
-    // * @ref{all_leters} 所有字母集合
-    // * @ref{all_alphas} 所有字母集合
-    // * @ref{all_digits} 所有数字字符
-    // * @ref{all_xdigits} 所有十六进制数字表示的字符集合
-    // * @ref{all_alnums} 所有的字母和数字集合
-    // * @ref{all_alnumuls} 所有的字母、数字、下划线的集合
-    // * @ref{all_aluls} 所有字母和下滑线的集合
-    // * @ref{all_spaces} 所有空白字符
-    static constexpr std::string_view all_uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    static constexpr std::string_view all_lowers = "abcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view all_leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view all_alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view all_digits = "0123456789";
-    static constexpr std::string_view all_xdigits = "0123456789ABCDEFabcdef";
-    static constexpr std::string_view all_alnums = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    static constexpr std::string_view all_alnumuls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
-    static constexpr std::string_view all_aluls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
-    static constexpr std::string_view all_spaces = "\x09\x0A\x0B\x0C\x0d\x20";
-
-    //! 在尾部追加 @anchor{append}
-    ///
-    /// 提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的追加字符串，这里针对
-    /// 大量字符串拼接提供了相对简便的方法。
-    /// 对于 append_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
-    ///
-    /// @param s 指定向哪个字符串后添加新串。
-    /// @param other 被追加的字符串。
-    /// @param n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
-    /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
-    /// @param items 从容器 items 中获取被追加的字符串。
-    static auto append(std::string_view s, std::string_view other, size_type n = 1) -> std::string;
-    static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
-    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto append(std::string_view s, const Sequence& items) -> std::string;
-    //
-    static auto append_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
-    static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
-    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
+<table>
+<tr>
+<td>
+<code>
+static auto append(std::string_view s, std::string_view other, size_type n = 1) -> std::string;
+</code>
+</td>
+<td>
+(1)
+</td>
+</tr>
+<tr>
+<td>
+<code>
+static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
+</code>
+</td>
+<td>
+(2)
+</td>
+</tr>
+<tr>
+<td>
+<code>
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+static auto append(std::string_view s, const Sequence& items) -> std::string;
+</code>
+</td>
+<td>
+(3)
+</td>
+</tr>
+<tr>
+<td>
+<code>
+static auto append_inplace(std::string& s, std::string_view other, size_type n) -> std::string&;
+</code>
+</td>
+<td>
+(4)
+</td>
+</tr>
+<tr>
+<td>
+<code>
+static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
+</code>
+</td>
+<td>
+(5)
+</td>
+</tr>
+<tr>
+<td>
+<code>
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
+</code>
+</td>
+<td>
+(6)
+</td>
+</tr>
+<tr>
+<td>
+<code>
+</table>
 
     //! 向头部追加 @anchor{prepend}
     ///
@@ -1695,178 +1541,5 @@ struct str {
     static auto mapping(std::string& s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
     static auto mapping(std::string& s, const char_mapping_proc& proc) -> std::string;
 };
-
-template <typename Sequence, typename>
-auto str::append(std::string_view s, const Sequence& items) -> std::string {
-    auto itr = items.begin();
-    return append(s, [&items, &itr]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& {
-    auto itr = items.begin();
-    return append(s, [&items, &itr]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
-    auto itr = items.begin();
-    return prepend(s, [&items, &itr]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
-    auto itr = items.begin();
-    return prepend_inplace(s, [&items, &itr]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::insert(std::string& s, size_type pos, const Sequence& items) -> std::string& {
-    auto itr = items.begin();
-    return insert(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string& {
-    auto itr = items.begin();
-    return insert_inplace(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::join(std::string_view s, const Sequence& items) -> std::string {
-    std::string result;
-    auto itr = items.begin();
-    return join(s, [&items, &itr]() -> std::optional<std::string_view> {
-        if (itr == items.end()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::join(const Sequence& items) -> std::string {
-    return join("", items);
-}
-
-template <typename Sequence, typename>
-auto str::join_list(const Sequence& items) -> std::string {
-    return join(",", items);
-}
-
-template <typename Map, typename>
-auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
-    auto itr = items.cbegin();
-    return str::join_map(sep_pair, sep_list, [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
-        if (itr == end) {
-            return std::nullopt;
-        }
-
-        auto& [key, val] = *(itr++);
-        return std::tuple{key, val};
-    });
-}
-
-template <typename Map, typename>
-auto str::join_map(const Map& items) -> std::string {
-    return str::join_map("=", ",", items);
-}
-
-template <typename Sequence, typename>
-auto str::join_lines(std::string_view sep, const Sequence& items) -> std::string {
-    auto itr = items.cbegin();
-    return join_lines([&itr, &items]() -> std::optional<std::string_view> {
-        if (itr == items.cend()) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::join_lines(const Sequence& items) -> std::string {
-    return join_lines(sep_line_ends, items);
-}
-
-template <typename Sequence, typename>
-auto str::join_path(std::string_view sep, const Sequence& items) -> std::string {
-    auto itr = items.begin();
-    return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
-        if (itr == end) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::join_path(const Sequence& items) -> std::string {
-    return str::join_path(sep_path, items);
-}
-
-template <typename Sequence, typename>
-auto str::join_search_path(std::string_view sep, const Sequence& items) -> std::string {
-    auto itr = items.begin();
-    return str::join_search_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
-        if (itr == end) {
-            return std::nullopt;
-        }
-
-        return *(itr++);
-    });
-}
-
-template <typename Sequence, typename>
-auto str::join_search_path(const Sequence& items) -> std::string {
-    return join_search_path(":", items);
-}
-
-template <typename T>
-auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
-    T result = 0;
-    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-        result += proc(*ptr);
-    }
-    return result;
-}
 
 #endif // TINY_STR_H
