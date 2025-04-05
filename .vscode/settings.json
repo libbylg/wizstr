@@ -67,6 +67,13 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
-    }
+        "variant": "cpp",
+        "filesystem": "cpp",
+        "codecvt": "cpp"
+    },
+    "files.autoSave": "afterDelay",
+    "editor.formatOnSave": true,
+    "notebook.formatOnSave.enabled": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnType": true
 }

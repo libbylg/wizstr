@@ -29,7 +29,6 @@
 #include <cstring>
 #include <regex>
 
-
 //! str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
 ///
 /// %# 提供了下列算法：
@@ -491,6 +490,12 @@ struct str {
     static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
     static auto remove_suffix_inplace(std::string& s, value_type suffix) -> std::string&;
 
+    //! 是否以特定的模式开头和结束
+    static auto starts_with_spaces(std::string_view s) -> bool;
+    static auto ends_with_spaces(std::string_view s) -> bool;
+    static auto starts_with_margin(std::string_view s) -> bool;
+    static auto ends_with_eol(std::string_view s) -> bool;
+
     //! 查找下一个子串  @anchor{iter, find}
     ///
     /// 从指定的 pos 位置开始，查找并返回满足匹配条件的字符串或者位置。需要注意 `find_xxx` 系列函数的 pos 参数是值类型的，
@@ -514,8 +519,8 @@ struct str {
     static auto find_next_string(std::string_view s, std::string_view pattern, size_type pos = 0) -> size_type;
     static auto find_next_eol_view(std::string_view s, size_type pos = 0) -> std::string_view;
     static auto find_next_eol(std::string_view s, size_type pos = 0) -> range_type;
-    static auto find_next_words_view(std::string_view s, size_type pos = 0) -> std::string_view;
-    static auto find_next_words(std::string_view s, size_type pos = 0) -> std::string;
+    // static auto find_next_words_view(std::string_view s, size_type pos = 0) -> std::string_view;
+    // static auto find_next_words(std::string_view s, size_type pos = 0) -> std::string;
     //
     static auto iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
     static auto iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
@@ -524,8 +529,37 @@ struct str {
     static auto iter_next_string(std::string_view s, size_type& pos, std::string_view pattern) -> size_type;
     static auto iter_next_eol_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto iter_next_eol(std::string_view s, size_type& pos) -> std::string;
-    static auto iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view;
-    static auto iter_next_words(std::string_view s, size_type& pos) -> std::string;
+    // static auto iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view;
+    // static auto iter_next_words(std::string_view s, size_type& pos) -> std::string;
+
+    //! 查找以空格为分隔的第一个单词
+    ///
+    /// @param s 原始字符串
+    /// @param pos 作为输入时表示查找的起点，作为输出时，表示下一次查找的七点
+    /// @return 如果首个字符就是空格，那么返回空串
+    static auto first_word_view(std::string_view s) -> std::string_view;
+    static auto first_word_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto first_word_range(std::string_view s, size_type& pos) -> range_type;
+    static auto first_word(std::string_view s) -> std::string;
+    static auto first_word(std::string_view s, size_type& pos) -> std::string;
+    //
+    static auto last_word_view(std::string_view s) -> std::string_view;
+    static auto last_word_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto last_word_range(std::string_view s, size_type& pos) -> range_type;
+    static auto last_word(std::string_view s) -> std::string;
+    static auto last_word(std::string_view s, size_type& pos) -> std::string;
+    //
+    static auto next_word_view(std::string_view s) -> std::string_view;
+    static auto next_word_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto next_word_range(std::string_view s, size_type& pos) -> range_type;
+    static auto next_word(std::string_view s) -> std::string;
+    static auto next_word(std::string_view s, size_type& pos) -> std::string;
+    //
+    static auto prev_word_view(std::string_view s) -> std::string_view;
+    static auto prev_word_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto prev_word_range(std::string_view s, size_type& pos) -> range_type;
+    static auto prev_word(std::string_view s) -> std::string;
+    static auto prev_word(std::string_view s, size_type& pos) -> std::string;
 
     //! 特征测试：传统类 @anchor{is}
     ///
@@ -1572,8 +1606,8 @@ struct str {
     static auto read_all(const std::string& filename) -> std::string;
     static auto read_all(const char* filename) -> std::string;
     //
-    static auto read_line(FILE* file, bool keeo_ends = false) -> std::string;
-    static auto read_line(std::istream& stream) -> std::string;
+    static auto read_line(FILE* file, bool keeo_ends = false) -> std::optional<std::string>;
+    static auto read_line(std::istream& stream) -> std::optional<std::string>;
     //
     static auto read_lines(FILE* file, const line_consumer_proc& proc) -> void;
     static auto read_lines(FILE* file, size_type max_n = npos) -> std::vector<std::string>;
@@ -1584,6 +1618,8 @@ struct str {
     static auto read_lines(const char* filename, const line_consumer_proc& proc) -> void;
     static auto read_lines(const std::string& filename, size_type max_n = npos) -> std::vector<std::string>;
     static auto read_lines(const char* filename, size_type max_n = npos) -> std::vector<std::string>;
+
+    static auto with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* f)>& proc) -> void;
 
     //! 选项识别
     ///
@@ -1616,6 +1652,9 @@ struct str {
     /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
     static auto read_opt_view(std::string_view s, size_type& pos) -> std::tuple<std::string_view, std::string_view>;
     static auto read_opt(std::string_view s, size_type& pos) -> std::tuple<std::string, std::string>;
+    static auto read_opt(int argc, char* argv[], int& next_index) -> std::tuple<std::string_view, std::string_view>;
+    template <typename Container, typename = typename Container::size_type>
+    static auto read_opt(const Container& items, typename Container::size_type& next_index) -> std::tuple<std::string_view, std::string_view>;
 
     //! 符号识别
     ///
@@ -1867,6 +1906,11 @@ auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
         result += proc(*ptr);
     }
     return result;
+}
+
+template <typename Container, typename>
+auto str::read_opt(const Container& items, typename Container::size_type& next_index) -> std::tuple<std::string_view, std::string_view> {
+    return {"", ""};
 }
 
 #endif // TINY_STR_H

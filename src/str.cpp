@@ -4133,7 +4133,7 @@ auto str::read_all(const char* filename) -> std::string {
     return result;
 }
 
-auto str::read_line(FILE* file, bool keep_ends) -> std::string {
+auto str::read_line(FILE* file, bool keep_ends) -> std::optional<std::string> {
     assert(file != nullptr);
 
     std::string result;
@@ -4274,6 +4274,15 @@ auto str::read_lines(const char* filename, size_type max_n) -> std::vector<std::
     assert(filename != nullptr);
     std::ifstream file{filename};
     return str::read_lines(file, max_n);
+}
+
+auto str::with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* file)>& proc) -> void {
+    std::unique_ptr<FILE, decltype(&fclose)> file{ fopen(filepath.c_str(), mode), fclose};
+    if (file == nullptr) {
+        return;
+    }
+
+    proc(file.get());
 }
 
 auto str::grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string> {
