@@ -402,7 +402,7 @@ auto main(int argc, char* argv[]) -> int {
 
     for (const auto& filepath : opts.input_files) {
         std::string error;
-        str::with_file(filepath, [&opts, &error](FILE* file) -> void {
+        str::with_file(filepath, "r", [&opts, &error](FILE* file) -> void {
             assert(file != nullptr);
             render_context context{stdin, opts.output_directory, opts.root_directory};
             error = render_one_file(context);

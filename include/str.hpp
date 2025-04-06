@@ -493,7 +493,7 @@ struct str {
     //! 是否以特定的模式开头和结束
     static auto starts_with_spaces(std::string_view s) -> bool;
     static auto ends_with_spaces(std::string_view s) -> bool;
-    static auto starts_with_margin(std::string_view s) -> bool;
+    static auto starts_with_margin(std::string_view s, value_type margin) -> bool;
     static auto ends_with_eol(std::string_view s) -> bool;
 
     //! 查找下一个子串  @anchor{iter, find}
@@ -516,50 +516,40 @@ struct str {
     static auto find_next_regex_view(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
     static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string>;
     static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string>;
-    static auto find_next_string(std::string_view s, std::string_view pattern, size_type pos = 0) -> size_type;
-    static auto find_next_eol_view(std::string_view s, size_type pos = 0) -> std::string_view;
-    static auto find_next_eol(std::string_view s, size_type pos = 0) -> range_type;
-    // static auto find_next_words_view(std::string_view s, size_type pos = 0) -> std::string_view;
-    // static auto find_next_words(std::string_view s, size_type pos = 0) -> std::string;
     //
     static auto iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
     static auto iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
     static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string>;
     static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string>;
-    static auto iter_next_string(std::string_view s, size_type& pos, std::string_view pattern) -> size_type;
-    static auto iter_next_eol_view(std::string_view s, size_type& pos) -> std::string_view;
-    static auto iter_next_eol(std::string_view s, size_type& pos) -> std::string;
-    // static auto iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view;
-    // static auto iter_next_words(std::string_view s, size_type& pos) -> std::string;
 
-    //! 查找以空格为分隔的第一个单词
-    ///
-    /// @param s 原始字符串
-    /// @param pos 作为输入时表示查找的起点，作为输出时，表示下一次查找的七点
-    /// @return 如果首个字符就是空格，那么返回空串
-    static auto first_word_view(std::string_view s) -> std::string_view;
-    static auto first_word_view(std::string_view s, size_type& pos) -> std::string_view;
-    static auto first_word_range(std::string_view s, size_type& pos) -> range_type;
-    static auto first_word(std::string_view s) -> std::string;
-    static auto first_word(std::string_view s, size_type& pos) -> std::string;
+    //! 字符/字符集
+    static auto next_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto next_char(std::string_view s, size_type& pos, const charset_type& charset) -> size_type;
+    static auto next_char(std::string_view s, size_type& pos, std::string_view charset) -> size_type;
+    static auto next_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type;
     //
-    static auto last_word_view(std::string_view s) -> std::string_view;
-    static auto last_word_view(std::string_view s, size_type& pos) -> std::string_view;
-    static auto last_word_range(std::string_view s, size_type& pos) -> range_type;
-    static auto last_word(std::string_view s) -> std::string;
-    static auto last_word(std::string_view s, size_type& pos) -> std::string;
+    static auto prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto prev_char(std::string_view s, size_type& pos, const charset_type& charset) -> size_type;
+    static auto prev_char(std::string_view s, size_type& pos, std::string_view charset) -> size_type;
+    static auto prev_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type;
+
+    //! 子串
+    static auto next_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type;
+    static auto next_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
+    static auto next_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
     //
-    static auto next_word_view(std::string_view s) -> std::string_view;
-    static auto next_word_view(std::string_view s, size_type& pos) -> std::string_view;
-    static auto next_word_range(std::string_view s, size_type& pos) -> range_type;
-    static auto next_word(std::string_view s) -> std::string;
-    static auto next_word(std::string_view s, size_type& pos) -> std::string;
+    static auto prev_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type;
+    static auto prev_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
+    static auto prev_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
+
+    //! 换行符
+    static auto next_eol_range(std::string_view s, size_type& pos) -> range_type;
+    static auto next_eol_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto next_eol(std::string_view s, size_type& pos) -> std::string;
     //
-    static auto prev_word_view(std::string_view s) -> std::string_view;
-    static auto prev_word_view(std::string_view s, size_type& pos) -> std::string_view;
-    static auto prev_word_range(std::string_view s, size_type& pos) -> range_type;
-    static auto prev_word(std::string_view s) -> std::string;
-    static auto prev_word(std::string_view s, size_type& pos) -> std::string;
+    static auto prev_eol_range(std::string_view s, size_type& pos) -> range_type;
+    static auto prev_eol_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto prev_eol(std::string_view s, size_type& pos) -> std::string;
 
     //! 特征测试：传统类 @anchor{is}
     ///
@@ -733,17 +723,29 @@ struct str {
     /// @param sep_charset 指定一个字符集作为分隔符
     /// @param sep_str 指定一个字符串作为定位条件
     /// @param sep_regex 指定一个正则表达式作为子串的匹配条件
-    static auto range_first(std::string_view s, const char_match_proc& proc) -> range_type;
-    static auto range_first(std::string_view s, value_type sep_ch) -> range_type;
-    static auto range_first(std::string_view s, const charset_type& sep_charset) -> range_type;
-    static auto range_first(std::string_view s, std::string_view sep_str) -> range_type;
-    static auto range_first(std::string_view s, const std::regex& sep_regex) -> range_type;
+    static auto first_range(std::string_view s, const char_match_proc& proc) -> range_type;
+    static auto first_range(std::string_view s, value_type sep_ch) -> range_type;
+    static auto first_range(std::string_view s, const charset_type& sep_charset) -> range_type;
+    static auto first_range(std::string_view s, std::string_view sep_str) -> range_type;
+    static auto first_range(std::string_view s, const std::regex& sep_regex) -> range_type;
     //
-    static auto range_last(std::string_view s, const char_match_proc& proc) -> range_type;
-    static auto range_last(std::string_view s, value_type sep_ch) -> range_type;
-    static auto range_last(std::string_view s, const charset_type& sep_charset) -> range_type;
-    static auto range_last(std::string_view s, std::string_view sep_str) -> range_type;
-    static auto range_last(std::string_view s, const std::regex& sep_regex) -> range_type;
+    static auto last_range(std::string_view s, const char_match_proc& proc) -> range_type;
+    static auto last_range(std::string_view s, value_type sep_ch) -> range_type;
+    static auto last_range(std::string_view s, const charset_type& sep_charset) -> range_type;
+    static auto last_range(std::string_view s, std::string_view sep_str) -> range_type;
+    static auto last_range(std::string_view s, const std::regex& sep_regex) -> range_type;
+    //
+    static auto next_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
+    static auto next_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
+    static auto next_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
+    static auto next_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
+    static auto next_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
+    //
+    static auto prev_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
+    static auto prev_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
+    static auto prev_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
+    static auto prev_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
+    static auto prev_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
 
     //! 对齐 @anchor{align}
     ///
@@ -804,7 +806,7 @@ struct str {
     static auto trim_lines_indent_inplace(std::string& s) -> std::string&;
     static auto trim_lines_margin_inplace(std::string& s, value_type margin = ' ') -> std::string&;
 
-    //! 按单词统计 @anchor{words}
+    //! 单词 @anchor{words}
     ///
     /// * @ref foreach_words 用于遍历字符串中的每个单词
     /// * @ref count_words 用于统计字符串中的单词的数量
@@ -818,10 +820,27 @@ struct str {
     static auto foreach_words(std::string_view s, size_type pos, const view_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, const range_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, const view_consumer_proc& proc) -> void;
+    //
     static auto count_words(std::string_view s, const char_match_proc& sep_proc) -> size_type;
     static auto count_words(std::string_view s, const charset_type& sep_charset) -> size_type;
     static auto count_words(std::string_view s, value_type sep_ch) -> size_type;
     static auto count_words(std::string_view s) -> size_type;
+    //
+    static auto first_word_view(std::string_view s) -> std::string_view;
+    static auto first_word_range(std::string_view s) -> range_type;
+    static auto first_word(std::string_view s) -> std::string;
+    //
+    static auto last_word_view(std::string_view s) -> std::string_view;
+    static auto last_word_range(std::string_view s) -> range_type;
+    static auto last_word(std::string_view s) -> std::string;
+    //
+    static auto next_word_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto next_word_range(std::string_view s, size_type& pos) -> range_type;
+    static auto next_word(std::string_view s, size_type& pos) -> std::string;
+    //
+    static auto prev_word_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto prev_word_range(std::string_view s, size_type& pos) -> range_type;
+    static auto prev_word(std::string_view s, size_type& pos) -> std::string;
 
     //! 用指定的模式串环绕字符串 @anchor{surround, unsurround}
     ///

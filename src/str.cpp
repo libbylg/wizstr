@@ -555,6 +555,46 @@ auto str::remove_suffix_inplace(std::string& s, value_type suffix) -> std::strin
     return s;
 }
 
+auto str::starts_with_spaces(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    return std::isspace(s.front());
+}
+
+auto str::ends_with_spaces(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    return std::isspace(s.back());
+}
+
+auto str::starts_with_margin(std::string_view s, value_type margin) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    const_pointer ptr = s.data();
+    while (ptr < (s.data() + s.size())) {
+        if (!std::isspace(*ptr)) {
+            return (*ptr == margin);
+        }
+        ptr++;
+    }
+
+    return false;
+}
+
+auto str::ends_with_eol(std::string_view s) -> bool {
+    if (s.empty()) {
+        return false;
+    }
+
+    return (s.back() == '\n');
+}
+
 auto str::find_next_regex_view(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
     if (pos >= s.size()) {
         s = {};
@@ -592,95 +632,29 @@ auto str::find_next_regex(std::string_view s, std::string_view pattern, size_typ
     return {std::string{result.value()}};
 }
 
-auto str::find_next_string(std::string_view s, std::string_view pattern, size_type pos) -> size_type {
-    return s.find(pattern, pos);
-}
-
-auto str::find_next_eol_view(std::string_view s, size_type pos) -> std::string_view {
-    if (pos >= s.size()) {
-        return {};
-    }
-
-    s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
-
-    const_pointer endptr = (s.data() + s.size());
-    const_pointer ptr = s.data();
-    while (ptr < endptr) {
-        if (*ptr == '\r') [[unlikely]] {
-            // 遇到 xxx\r\nyyyy
-            if (((ptr + 1) < endptr) && (*(ptr + 1) == '\n')) {
-                return std::string_view{ptr, 2};
-            }
-
-            // 遇到 xxx\ryyyy
-            return std::string_view{ptr, 1};
-        }
-
-        // 遇到 xxx\nyyyy
-        if (*ptr == '\n') {
-            return std::string_view{ptr, 1};
-        }
-
-        ptr++;
-    }
-
-    return {};
-}
-
-auto str::find_next_eol(std::string_view s, size_type pos) -> range_type {
-    if (pos >= s.size()) {
-        return range_type{};
-    }
-
-    s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
-
-    const_pointer endptr = (s.data() + s.size());
-    const_pointer ptr = s.data();
-    while (ptr < endptr) {
-        if (*ptr == '\r') [[unlikely]] {
-            // 遇到 xxx\r\nyyyy
-            if (((ptr + 1) < endptr) && (*(ptr + 1) == '\n')) {
-                return range_type{static_cast<size_type>(ptr - s.data()), 2};
-            }
-
-            // 遇到 xxx\ryyyy
-            return range_type{static_cast<size_type>(ptr - s.data()), 1};
-        }
-
-        // 遇到 xxx\nyyyy
-        if (*ptr == '\n') {
-            return range_type{static_cast<size_type>(ptr - s.data()), 1};
-        }
-
-        ptr++;
-    }
-
-    return range_type{};
-}
-
-auto str::find_next_words_view(std::string_view s, size_type pos) -> std::string_view {
-    if (pos >= s.size()) {
-        return {};
-    }
-
-    auto start = std::find_if_not(s.begin() + pos, s.end(), [](value_type ch) -> bool {
-        return std::isspace(ch);
-    });
-
-    if (start == s.end()) {
-        return {};
-    }
-
-    auto end = std::find_if(start, s.end(), [](value_type ch) -> bool {
-        return std::isspace(ch);
-    });
-
-    return std::string_view{start, static_cast<size_type>(end - start)};
-}
-
-auto str::find_next_words(std::string_view s, size_type pos) -> std::string {
-    return std::string{find_next_words_view(s, pos)};
-}
+// auto str::find_next_words_view(std::string_view s, size_type pos) -> std::string_view {
+//     if (pos >= s.size()) {
+//         return {};
+//     }
+//
+//     auto start = std::find_if_not(s.begin() + pos, s.end(), [](value_type ch) -> bool {
+//         return std::isspace(ch);
+//     });
+//
+//     if (start == s.end()) {
+//         return {};
+//     }
+//
+//     auto end = std::find_if(start, s.end(), [](value_type ch) -> bool {
+//         return std::isspace(ch);
+//     });
+//
+//     return std::string_view{start, static_cast<size_type>(end - start)};
+// }
+//
+// auto str::find_next_words(std::string_view s, size_type pos) -> std::string {
+//     return std::string{find_next_words_view(s, pos)};
+// }
 
 auto str::iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view> {
     auto result = str::find_next_regex_view(s, pattern, pos);
@@ -697,65 +671,130 @@ auto str::iter_next_regex_view(std::string_view s, size_type& pos, std::string_v
     return str::iter_next_regex_view(s, pos, std::regex{pattern.begin(), pattern.end()});
 }
 
-auto str::iter_next_string(std::string_view s, size_type& pos, std::string_view other) -> size_type {
-    assert(!other.empty());
+auto str::iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string> {
+    auto result = iter_next_regex_view(s, pos, pattern);
+    if (!result) {
+        return std::nullopt;
+    }
+
+    return std::string{result.value()};
+}
+
+auto str::iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string> {
+    return iter_next_regex(s, pos, std::regex{pattern.begin(), pattern.end()});
+}
+
+auto str::next_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type {
+    assert(!substr.empty());
 
     if (pos >= s.size()) {
         pos = s.size();
-        return str::npos;
+        return range_type{pos, 0};
     }
 
-    auto next_pos = s.find(other, pos);
+    auto next_pos = s.find(substr, pos);
     if (next_pos == std::string_view::npos) {
         pos = s.size();
-        return str::npos;
+        return range_type{pos, 0};
     }
 
-    pos = next_pos + other.size();
-    return next_pos;
+    pos = next_pos + substr.size();
+    return range_type{next_pos, substr.size()};
 }
 
-auto str::iter_next_eol_view(std::string_view s, size_type& pos) -> std::string_view {
-    std::string_view eol = str::find_next_eol_view(s, pos);
-    if (eol.empty()) {
+auto str::next_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view {
+    auto range = next_substr_range(s, pos, substr);
+    return std::string_view{s.data() + range.begin_pos(), range.size()};
+}
+
+auto str::next_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string {
+    return std::string{next_substr_view(s, pos, substr)};
+}
+
+auto str::next_eol_range(std::string_view s, size_type& pos) -> range_type {
+    if (pos >= s.size()) {
         pos = s.size();
-        return {};
+        return range_type{pos, 0};
     }
 
-    pos = static_cast<size_type>((eol.data() + eol.size()) - s.data());
-    return eol;
+    s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
+
+    const_pointer endptr = (s.data() + s.size());
+    const_pointer ptr = s.data();
+    while (ptr < endptr) {
+        if (*ptr == '\r') [[unlikely]] {
+            // 遇到 xxx\r\nyyyy
+            if (((ptr + 1) < endptr) && (*(ptr + 1) == '\n')) {
+                pos = static_cast<size_type>((ptr + 2) - s.data());
+                return range_type{static_cast<size_type>(ptr - s.data()), 2};
+            }
+
+            // 遇到 xxx\ryyyy
+            pos = static_cast<size_type>((ptr + 1) - s.data());
+            return range_type{static_cast<size_type>(ptr - s.data()), 1};
+        }
+
+        // 遇到 xxx\nyyyy
+        if (*ptr == '\n') {
+            pos = static_cast<size_type>((ptr + 1) - s.data());
+            return range_type{static_cast<size_type>(ptr - s.data()), 1};
+        }
+
+        ptr++;
+    }
+
+    pos = s.size();
+    return range_type{pos, 0};
 }
+
+auto str::next_eol_view(std::string_view s, size_type& pos) -> std::string_view {
+    auto range = next_eol_range(s, pos);
+    return std::string_view{s.data() + range.begin_pos(), range.size()};
+}
+
+auto str::next_eol(std::string_view s, size_type& pos) -> std::string {
+    return std::string{next_eol_view(s, pos)};
+}
+
+// auto str::prev_eol_range(std::string_view s, size_type& pos) -> range_type {
+// }
+//
+// auto str::prev_eol_view(std::string_view s, size_type& pos) -> std::string_view {
+// }
+//
+// auto str::prev_eol(std::string_view s, size_type& pos) -> std::string {
+// }
 
 // auto str::iter_prev_eol(std::string_view s, size_type& rpos) -> size_type {
 // }
 
-auto str::iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view {
-    auto word = str::find_next_words_view(s, pos);
-    if (word.empty()) {
-        pos = s.size();
-        return {};
-    }
+// auto str::iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view {
+//     auto word = str::find_next_words_view(s, pos);
+//     if (word.empty()) {
+//         pos = s.size();
+//         return {};
+//     }
 
-    pos = (word.data() + word.size()) - s.data();
-    return word;
-}
+// pos = (word.data() + word.size()) - s.data();
+// return word;
+// }
 
-auto str::iter_next_words(std::string_view s, size_type& pos) -> std::string {
-    return std::string{iter_next_words_view(s, pos)};
-}
+// auto str::iter_next_words(std::string_view s, size_type& pos) -> std::string {
+//     return std::string{iter_next_words_view(s, pos)};
+// }
 
 // auto str::iter_prev_word(std::string_view s, size_type& rpos) -> std::string_view {
 // }
 
 auto str::foreach_words(std::string_view s, size_type pos, const range_consumer_proc& proc) -> void {
     while (pos < s.size()) {
-        auto r = str::iter_next_words(s, pos);
+        range_type r = str::next_word_range(s, pos);
         if (r.empty()) {
             assert(pos >= s.size());
             break;
         }
 
-        if (proc(range_type(r.data() - s.data(), r.size())) != 0) {
+        if (proc(r) != 0) {
             return;
         }
     }
@@ -788,6 +827,115 @@ auto str::foreach_words(std::string_view s, const view_consumer_proc& proc) -> v
 
 // auto str::is_match_regex(std::string_view s, const std::regex& pattern) -> bool {
 // }
+
+auto str::first_word_view(std::string_view s) -> std::string_view {
+    size_type pos = 0;
+    return next_word_view(s, pos);
+}
+
+auto str::first_word_range(std::string_view s) -> range_type {
+    size_type pos = 0;
+    return next_word_range(s, pos);
+}
+
+auto str::first_word(std::string_view s) -> std::string {
+    return std::string{first_word_view(s)};
+}
+
+auto str::last_word_view(std::string_view s) -> std::string_view {
+    auto range = last_word_range(s);
+    return std::string_view{s.data() + range.begin_pos(), range.size()};
+}
+
+auto str::last_word_range(std::string_view s) -> range_type {
+    auto pos = s.size();
+    return prev_word_range(s, pos);
+}
+
+auto str::last_word(std::string_view s) -> std::string {
+    return std::string{last_word_view(s)};
+}
+
+auto str::next_word_view(std::string_view s, size_type& pos) -> std::string_view {
+    auto range = next_word_range(s, pos);
+    return std::string_view{(s.data() + range.begin_pos()), range.size()};
+}
+
+auto str::next_word_range(std::string_view s, size_type& pos) -> range_type {
+    if (pos >= s.size()) {
+        return range_type{s.size(), 0};
+    }
+
+    auto itr_pos = s.cbegin();
+    std::advance(itr_pos, pos);
+
+    // 先找到非空白
+    auto itr_begin = std::find_if(itr_pos, s.cend(), [](std::string_view::value_type ch) -> bool {
+        return !std::isspace(ch);
+    });
+
+    if (itr_begin == s.cend()) {
+        pos = s.size();
+        return range_type{s.size(), 0};
+    }
+
+    // 找到空白
+    auto itr_end = std::find_if(itr_begin, s.cend(), [](std::string_view::value_type ch) -> bool {
+        return std::isspace(ch);
+    });
+
+    if (itr_end == s.cend()) {
+        pos = s.size();
+    } else {
+        pos = std::distance(s.cbegin(), itr_end);
+    }
+
+    size_type pos_begin = std::distance(s.cbegin(), itr_begin);
+    return range_type{pos_begin, (pos - pos_begin)};
+}
+
+auto str::next_word(std::string_view s, size_type& pos) -> std::string {
+    return std::string{next_word_view(s, pos)};
+}
+
+auto str::prev_word_view(std::string_view s, size_type& pos) -> std::string_view {
+    auto range = prev_word_range(s, pos);
+    return std::string_view(s.data() + range.begin_pos(), range.size());
+}
+
+auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
+    if (pos == 0) {
+        return range_type{0, 0};
+    }
+
+    if (pos > s.size()) {
+        pos = s.size();
+    }
+
+    const_pointer ptr_end = s.data() + pos - 1;
+
+    while (ptr_end > s.data()) {
+        if (!std::isspace(*(ptr_end - 1))) {
+            break;
+        }
+        ptr_end--;
+    }
+
+    const_pointer ptr_begin = ptr_end;
+
+    while (ptr_begin > s.data()) {
+        if (std::isspace(*(ptr_begin - 1))) {
+            break;
+        }
+        ptr_begin--;
+    }
+
+    return range_type{size_type(ptr_begin - s.data()), size_type(ptr_end - ptr_begin)};
+}
+
+auto str::prev_word(std::string_view s, size_type& pos) -> std::string {
+    return std::string{prev_word_view(s, pos)};
+}
 
 auto str::is_lower(std::string_view s) -> bool {
     if (s.empty()) {
@@ -1294,6 +1442,10 @@ auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end
     return str::take_mid_view(s, begin_pos, begin_pos + end_pos);
 }
 
+auto str::take_range_view(std::string_view s, range_type range) -> std::string_view {
+    return take_range_view(s, range_type{range.begin_pos(), range.end_pos()});
+}
+
 auto str::take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
     if (s.empty() || (offset == 0)) {
         return {};
@@ -1378,6 +1530,10 @@ auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos)
     return std::string{take_range_view(s, begin_pos, end_pos)};
 }
 
+auto str::take_range(std::string_view s, range_type range) -> std::string {
+    return take_range(s, range.begin_pos(), range.end_pos());
+}
+
 auto str::take(std::string_view s, size_type pos, ssize_type offset) -> std::string {
     return std::string{take_view(s, pos, offset)};
 }
@@ -1456,6 +1612,10 @@ auto str::take_range_inplace(std::string& s, size_type begin_pos, size_type end_
     std::memmove(s.data(), (s.data() + begin_pos), (end_pos - begin_pos));
     s.resize(end_pos - begin_pos);
     return s;
+}
+
+auto str::take_range_inplace(std::string& s, range_type range) -> std::string& {
+    return take_range_inplace(s, range.begin_pos(), range.end_pos());
 }
 
 auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
@@ -1550,6 +1710,10 @@ auto str::drop_range(std::string_view s, size_type begin_pos, size_type end_pos)
         result.append(s.data() + end_pos, (s.size() - end_pos));
     }
     return result;
+}
+
+auto str::drop_range(std::string_view s, range_type range) -> std::string {
+    return drop_range(s, range.begin_pos(), range.end_pos());
 }
 
 auto str::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string {
@@ -1660,6 +1824,10 @@ auto str::drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::s
 auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
     s = drop_range(s, begin_pos, end_pos);
     return s;
+}
+
+auto str::drop_range_inplace(std::string& s, range_type range) -> std::string& {
+    return drop_range_inplace(s, range.begin_pos(), range.end_pos());
 }
 
 auto str::drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
@@ -1861,6 +2029,15 @@ auto str::align_zfill_inplace(std::string& s, size_type width) -> std::string& {
     s = align_zfill(s, width);
     return s;
 }
+
+auto str::foreach_lines(std::string_view s, const line_consumer_proc& proc) -> void {
+}
+
+// auto str::count_lines(std::string_view s) -> size_type {
+// }
+//
+// auto str::lines_indentation(std::string_view s) -> size_type {
+// }
 
 auto str::to_capitalize(std::string_view s) -> std::string {
     if (s.empty()) {
@@ -2222,7 +2399,7 @@ auto str::split(std::string_view s, std::string_view sepset, const view_consumer
 auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
     size_type pos = 0;
     while (pos < s.size()) {
-        std::string_view word = str::iter_next_words(s, pos);
+        std::string_view word = str::next_word_view(s, pos);
         if (word.empty()) {
             assert(pos >= s.size());
             continue;
@@ -2486,7 +2663,7 @@ auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_pr
 
     size_type start = 0;
     while (start < s.size()) {
-        auto eol = str::find_next_eol(s, start);
+        auto eol = str::next_eol_range(s, start);
 
         // 最后一部分没有结束符
         if (eol.empty()) {
@@ -4163,7 +4340,11 @@ auto str::read_line(FILE* file, bool keep_ends) -> std::optional<std::string> {
     return result;
 }
 
-auto str::read_line(std::istream& file) -> std::string {
+auto str::read_line(std::istream& file) -> std::optional<std::string> {
+    if (file.eof() || file.bad()) {
+        return std::nullopt;
+    }
+
     std::string line_text;
     std::getline(file, line_text);
     return line_text;
@@ -4277,7 +4458,7 @@ auto str::read_lines(const char* filename, size_type max_n) -> std::vector<std::
 }
 
 auto str::with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* file)>& proc) -> void {
-    std::unique_ptr<FILE, decltype(&fclose)> file{ fopen(filepath.c_str(), mode), fclose};
+    std::unique_ptr<FILE, decltype(&fclose)> file{fopen(filepath.c_str(), mode), fclose};
     if (file == nullptr) {
         return;
     }
