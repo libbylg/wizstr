@@ -702,6 +702,77 @@ auto str::next_substr_range(std::string_view s, size_type& pos, std::string_view
     return range_type{next_pos, substr.size()};
 }
 
+auto str::next_char(std::string_view s, size_type& pos, value_type ch) -> size_type {
+    return next_char(s, pos, [ch](value_type c) -> bool {
+        return c == ch;
+    });
+}
+
+auto str::next_char(std::string_view s, size_type& pos, const charset_type& charset) -> size_type {
+    return next_char(s, pos, [&charset](value_type ch) -> bool {
+       return charset.get(ch);
+    });
+}
+
+auto str::next_char(std::string_view s, size_type& pos, std::string_view charset) -> size_type {
+    return next_char(s, pos, charset_type{charset});
+}
+
+auto str::next_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type {
+    if (pos >= s.size()) {
+        pos = s.size();
+        return npos;
+    }
+
+    const_pointer ptr = s.data() + pos;
+    while (ptr < (s.data() + s.size())) {
+        if (proc(*ptr)) {
+            pos = ptr - s.data();
+            return pos++;
+        }
+    }
+
+    return npos;
+}
+
+auto str::prev_char(std::string_view s, size_type& pos, value_type ch) -> size_type {
+    return prev_char(s, pos, [&ch](value_type c) -> bool {
+        return c == ch;
+    });
+}
+
+auto str::prev_char(std::string_view s, size_type& pos, const charset_type& charset) -> size_type {
+    return prev_char(s, pos, [&charset](value_type ch) -> bool {
+        return charset.get(ch);
+    });
+}
+
+auto str::prev_char(std::string_view s, size_type& pos, std::string_view charset) -> size_type {
+    return prev_char(s, pos, charset_type{charset});
+}
+
+auto str::prev_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type {
+    if (pos <= 0) {
+        pos = 0;
+        return 0;
+    }
+
+    if (pos > s.size()) {
+        pos = s.size();
+    }
+
+    const_pointer ptr = s.data() + pos;
+    while (ptr > s.data()) {
+        if (proc(*(ptr-1))) {
+            pos = (ptr -1) -  s.data();
+            return pos;
+        }
+    }
+
+    pos = 0;
+    return 0;
+}
+
 auto str::next_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view {
     auto range = next_substr_range(s, pos, substr);
     return std::string_view{s.data() + range.begin_pos(), range.size()};

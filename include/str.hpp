@@ -287,16 +287,16 @@ struct str {
 
     //! 字符分类
     ///
-    // * @ref{all_uppers} 所有大写字母集合
-    // * @ref{all_lowers} 所有小写字母集合
-    // * @ref{all_leters} 所有字母集合
-    // * @ref{all_alphas} 所有字母集合
-    // * @ref{all_digits} 所有数字字符
-    // * @ref{all_xdigits} 所有十六进制数字表示的字符集合
-    // * @ref{all_alnums} 所有的字母和数字集合
-    // * @ref{all_alnumuls} 所有的字母、数字、下划线的集合
-    // * @ref{all_aluls} 所有字母和下滑线的集合
-    // * @ref{all_spaces} 所有空白字符
+    /// * @ref{all_uppers} 所有大写字母集合
+    /// * @ref{all_lowers} 所有小写字母集合
+    /// * @ref{all_leters} 所有字母集合
+    /// * @ref{all_alphas} 所有字母集合
+    /// * @ref{all_digits} 所有数字字符
+    /// * @ref{all_xdigits} 所有十六进制数字表示的字符集合
+    /// * @ref{all_alnums} 所有的字母和数字集合
+    /// * @ref{all_alnumuls} 所有的字母、数字、下划线的集合
+    /// * @ref{all_aluls} 所有字母和下滑线的集合
+    /// * @ref{all_spaces} 所有空白字符
     static constexpr std::string_view all_uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     static constexpr std::string_view all_lowers = "abcdefghijklmnopqrstuvwxyz";
     static constexpr std::string_view all_leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -735,17 +735,17 @@ struct str {
     static auto last_range(std::string_view s, std::string_view sep_str) -> range_type;
     static auto last_range(std::string_view s, const std::regex& sep_regex) -> range_type;
     //
-    static auto next_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
-    static auto next_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
-    static auto next_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
-    static auto next_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
-    static auto next_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
-    //
-    static auto prev_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
-    static auto prev_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
-    static auto prev_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
-    static auto prev_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
-    static auto prev_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
+//    static auto next_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
+//    static auto next_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
+//    static auto next_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
+//    static auto next_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
+//    static auto next_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
+//    //
+//    static auto prev_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
+//    static auto prev_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
+//    static auto prev_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
+//    static auto prev_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
+//    static auto prev_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
 
     //! 对齐 @anchor{align}
     ///
