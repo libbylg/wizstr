@@ -173,6 +173,16 @@ struct str {
             return bits;
         }
 
+        inline auto string() const -> std::string {
+            std::string result;
+            for (size_type ch = 0; ch <= std::numeric_limits<value_type>::max(); ch++) {
+                if (get(ch)) {
+                    result.push_back(static_cast<value_type>(ch));
+                }
+            }
+            return result;
+        }
+
     private:
         uint64_t bits[4]{0, 0, 0, 0};
     };
@@ -247,7 +257,10 @@ struct str {
     using char_match_proc = std::function<bool(value_type ch)>;
 
     //! 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt
-    using range_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
+    using view_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
+
+    //! 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt
+    using range_search_proc = std::function<range_type(std::string_view text, range_type search_range)>;
 
     //! 行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0
     using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
@@ -496,33 +509,33 @@ struct str {
     static auto starts_with_margin(std::string_view s, value_type margin) -> bool;
     static auto ends_with_eol(std::string_view s) -> bool;
 
-    //! 查找下一个子串  @anchor{iter, find}
-    ///
-    /// 从指定的 pos 位置开始，查找并返回满足匹配条件的字符串或者位置。需要注意 `find_xxx` 系列函数的 pos 参数是值类型的，
-    /// 而 `iter_xxx` 系列在的 pos 类型是引用类型。所以，`iter_xxx` 系列函数在每次查找之后都会修改 pos，以便再次调用时可以
-    /// 继续查找下一个满足条件的字符串。因此，如果只是简单地查找一次 `find_xxx` 系列函数显然更方便，如果需要在同一输入串中
-    /// 联系多次，查找多个满足匹配条件的子串，用 `iter_xxx` 系列函数会更方便。
-    ///
-    /// @param s 从该字符串中查找子串
-    /// @param pattern 子串需要满足的正则表达式
-    /// @param other 需要匹配的子串
-    /// @param pos 查找字符串的起始位置，对于该参数为引用类型的函数，可以通过测试 `pos == str::npos` 来决定是否已经找到
-    ///            输入串 s 的结尾。通常也用于判断是否找到需要的子串
-    /// @return 不同函数返回值有些差别，其中一个比较重要的场景是“如何判断并未在 s 找到满足条件的子串”，不同函数检测方式如下：
-    ///     * xxx_next_regex 系列：其返回值是一个 optional 对象，可以通过测试返回值是否未负值判确定是否找到满足条件的子串
-    ///     * xxx_string 系列：其返回值是 size_type，如果返回值为 `str::npos`，则表示未找到匹配的串。
-    ///     * next_eol 和 next_word 系列：如果返回值的字符串是空串，即表示未找到匹配串
-    static auto find_next_regex_view(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
-    static auto find_next_regex_view(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
-    static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string>;
-    static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string>;
-    //
-    static auto iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
-    static auto iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
-    static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string>;
-    static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string>;
+    // //! 查找下一个子串  @anchor{iter, find}
+    // ///
+    // /// 从指定的 pos 位置开始，查找并返回满足匹配条件的字符串或者位置。需要注意 `find_xxx` 系列函数的 pos 参数是值类型的，
+    // /// 而 `iter_xxx` 系列在的 pos 类型是引用类型。所以，`iter_xxx` 系列函数在每次查找之后都会修改 pos，以便再次调用时可以
+    // /// 继续查找下一个满足条件的字符串。因此，如果只是简单地查找一次 `find_xxx` 系列函数显然更方便，如果需要在同一输入串中
+    // /// 联系多次，查找多个满足匹配条件的子串，用 `iter_xxx` 系列函数会更方便。
+    // ///
+    // /// @param s 从该字符串中查找子串
+    // /// @param pattern 子串需要满足的正则表达式
+    // /// @param other 需要匹配的子串
+    // /// @param pos 查找字符串的起始位置，对于该参数为引用类型的函数，可以通过测试 `pos == str::npos` 来决定是否已经找到
+    // ///            输入串 s 的结尾。通常也用于判断是否找到需要的子串
+    // /// @return 不同函数返回值有些差别，其中一个比较重要的场景是“如何判断并未在 s 找到满足条件的子串”，不同函数检测方式如下：
+    // ///     * xxx_next_regex 系列：其返回值是一个 optional 对象，可以通过测试返回值是否未负值判确定是否找到满足条件的子串
+    // ///     * xxx_string 系列：其返回值是 size_type，如果返回值为 `str::npos`，则表示未找到匹配的串。
+    // ///     * next_eol 和 next_word 系列：如果返回值的字符串是空串，即表示未找到匹配串
+    // static auto find_next_regex_view(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string_view>;
+    // static auto find_next_regex_view(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string_view>;
+    // static auto find_next_regex(std::string_view s, const std::regex& pattern, size_type pos = 0) -> std::optional<std::string>;
+    // static auto find_next_regex(std::string_view s, std::string_view pattern, size_type pos = 0) -> std::optional<std::string>;
+    // //
+    // static auto iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view>;
+    // static auto iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view>;
+    // static auto iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string>;
+    // static auto iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string>;
 
-    //! 字符/字符集
+    //! 定位字符/字符集
     static auto next_char(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto next_char(std::string_view s, size_type& pos, const charset_type& charset) -> size_type;
     static auto next_char(std::string_view s, size_type& pos, std::string_view charset) -> size_type;
@@ -533,7 +546,7 @@ struct str {
     static auto prev_char(std::string_view s, size_type& pos, std::string_view charset) -> size_type;
     static auto prev_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type;
 
-    //! 子串
+    //! 定位子串
     static auto next_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type;
     static auto next_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
     static auto next_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
@@ -542,7 +555,7 @@ struct str {
     static auto prev_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
     static auto prev_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
 
-    //! 换行符
+    //! 定位换行符
     static auto next_eol_range(std::string_view s, size_type& pos) -> range_type;
     static auto next_eol_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto next_eol(std::string_view s, size_type& pos) -> std::string;
@@ -550,6 +563,24 @@ struct str {
     static auto prev_eol_range(std::string_view s, size_type& pos) -> range_type;
     static auto prev_eol_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto prev_eol(std::string_view s, size_type& pos) -> std::string;
+
+    //! 定位模式
+    static auto next_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
+    static auto next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
+    static auto next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
+    //
+    static auto prev_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
+    static auto prev_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
+    static auto prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
+
+    //! 定位过程
+    static auto next_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;
+    static auto next_proc_view(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string_view;
+    static auto next_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
+    //
+    static auto prev_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;
+    static auto prev_proc_view(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string_view;
+    static auto prev_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
 
     //! 特征测试：传统类 @anchor{is}
     ///
@@ -712,41 +743,6 @@ struct str {
     static auto drop_before(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string;
     static auto drop_after(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string;
 
-    //! 定位子串 @anchor{range}
-    ///
-    /// 给定条件找到满足该条件的第一个（@ref{range_first}）或者最后一个（@ref{range_last}）子串的位置。
-    /// 通常会配合 [take](#) 或者 [drop](#) 系列函数使用，用于提取子串。
-    ///
-    /// @param s 将在该字符串类查找和定位
-    /// @param proc 用于定位特定条件的字符的位置。
-    /// @param sep_ch 指定字符分隔符
-    /// @param sep_charset 指定一个字符集作为分隔符
-    /// @param sep_str 指定一个字符串作为定位条件
-    /// @param sep_regex 指定一个正则表达式作为子串的匹配条件
-    static auto first_range(std::string_view s, const char_match_proc& proc) -> range_type;
-    static auto first_range(std::string_view s, value_type sep_ch) -> range_type;
-    static auto first_range(std::string_view s, const charset_type& sep_charset) -> range_type;
-    static auto first_range(std::string_view s, std::string_view sep_str) -> range_type;
-    static auto first_range(std::string_view s, const std::regex& sep_regex) -> range_type;
-    //
-    static auto last_range(std::string_view s, const char_match_proc& proc) -> range_type;
-    static auto last_range(std::string_view s, value_type sep_ch) -> range_type;
-    static auto last_range(std::string_view s, const charset_type& sep_charset) -> range_type;
-    static auto last_range(std::string_view s, std::string_view sep_str) -> range_type;
-    static auto last_range(std::string_view s, const std::regex& sep_regex) -> range_type;
-    //
-//    static auto next_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
-//    static auto next_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
-//    static auto next_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
-//    static auto next_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
-//    static auto next_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
-//    //
-//    static auto prev_range(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
-//    static auto prev_range(std::string_view s, size_type& pos, value_type sep_ch) -> range_type;
-//    static auto prev_range(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
-//    static auto prev_range(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
-//    static auto prev_range(std::string_view s, size_type& pos, const std::regex& sep_regex) -> range_type;
-
     //! 对齐 @anchor{align}
     ///
     /// @ref align_left, align_left_inplace 在字符串 s 尾部填充 ch，直到字符串长度达到 width，以使得字符串看起来是左对齐的效果
@@ -786,7 +782,7 @@ struct str {
     /// @param num_format 指定整数的格式
     /// @param pad 指定缩进时的填充字符
     /// @param margin 指定一个边缘字符
-    static auto foreach_lines(std::string_view s, const line_consumer_proc& proc) -> void;
+    static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc& proc) -> void;
     static auto count_lines(std::string_view s) -> size_type;
     static auto lines_indentation(std::string_view s) -> size_type;
     //
@@ -886,17 +882,12 @@ struct str {
     ///
     /// 按照特定的策略，随机生成字符串
     ///
-    /// @param max_len, min_len 指定生成的字符串的长度的范围
+    /// @param n 指定生成的字符串的长度的范围
     /// @param proc 指定随机数函数
     /// @param ch, charset 指生成的字符串中的字符的范围
-    static auto random(size_type max_len, size_type min_len, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type max_len, size_type min_len, value_type ch, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type max_len, size_type min_len, std::string_view charset, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type max_len, size_type min_len, charset_type charset, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type max_len, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type max_len, value_type ch, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type max_len, std::string_view charset, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type max_len, charset_type charset, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type n, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type n, std::string_view charset, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type n, charset_type charset, const number_provider_proc& proc) -> std::string;
 
     //! 生成：
     ///
@@ -959,25 +950,18 @@ struct str {
     /// cover_center("abc/mnop/def", "", 0, 0)    //  "***"
     /// ```
     ///
-    /// @ref{cover_left, cover_left_inplace} 对 s 的左侧使用遮罩
+    /// @ref{cover, cover_inplace} 对 s 的中间部分使用遮罩 mask 替换
     /// @ref{cover_right, cover_right_inplace} 对 s 的右侧使用遮罩
     /// @ref{cover_center, cover_center_inplace} 对 s 的中间部分使用遮罩
     /// @ref{cover_surrounding, cover_surrounding_inplace} 对 s 的两侧使用遮罩
     ///
     /// @param s 被遮罩的字符串
-    /// @param mask 用于遮罩的字符串，如果 mask 为空，自动区默认值 "*"
-    /// @param visible 保留可见的部分的长度
-    /// @param width 限定宽度
+    /// @param mask 用于遮罩的字符串，如果 mask 为空，自动区默认值 "***"
+    /// @param left_n 左侧保留多少可见字符
+    /// @param right_n 右侧保留多少可见字符
     /// @return 返回遮罩后的字符串
-    static auto cover_left(std::string_view s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string;
-    static auto cover_right(std::string_view s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string;
-    static auto cover_center(std::string_view s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string;
-    static auto cover_surrounding(std::string_view s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string;
-    //
-    static auto cover_left_inplace(std::string& s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string&;
-    static auto cover_right_inplace(std::string& s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string&;
-    static auto cover_center_inplace(std::string& s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string&;
-    static auto cover_surrounding_inplace(std::string& s, std::string_view mask = "***", size_type visible = 3, size_type width = 10) -> std::string&;
+    static auto cover(std::string_view s, std::string_view mask = "***", size_type left_n = 1, size_type right_n = 3) -> std::string;
+    static auto cover_inplace(std::string& s, std::string_view mask = "***", size_type visible = 1, size_type width = 3) -> std::string&;
 
     //! 字符串拼接 @anchor join
     ///
@@ -1170,31 +1154,31 @@ struct str {
     /// * `charset_type` : 只要某个字符在字符集范围内，即表示找到分隔符
     /// * `char_match_proc` : 只要某个字符使得函数返回true，则表示找到分隔符
     /// * `std::string_view` : 表示子串作为分隔符
-    /// * `range_search_proc` : 同样以子串作为分隔符
+    /// * `view_search_proc` : 同样以子串作为分隔符
     /// @return 返回依次由分隔符左侧的子串，分隔符自身，分隔符右侧子串组成的 tuple
     static auto partition_view(std::string_view s, charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, const std::regex& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto partition_view(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+    static auto partition_view(std::string_view s, const view_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     //
     static auto partition(std::string_view s, charset_type sep) -> std::tuple<std::string, std::string, std::string>;
     static auto partition(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string, std::string, std::string>;
     static auto partition(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string, std::string>;
     static auto partition(std::string_view s, const std::regex& sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto partition(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
+    static auto partition(std::string_view s, const view_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
     //
     static auto rpartition_view(std::string_view s, charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto rpartition_view(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto rpartition_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto rpartition_view(std::string_view s, const std::regex& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto rpartition_view(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+    static auto rpartition_view(std::string_view s, const view_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     //
     static auto rpartition(std::string_view s, charset_type sep) -> std::tuple<std::string, std::string, std::string>;
     static auto rpartition(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string, std::string, std::string>;
     static auto rpartition(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string, std::string>;
     static auto rpartition(std::string_view s, const std::regex& sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto rpartition(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
+    static auto rpartition(std::string_view s, const view_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
 
     //! 指定宽度拆分字符串
     ///
