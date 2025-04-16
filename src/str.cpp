@@ -2141,6 +2141,20 @@ auto str::align_right(std::string_view s, size_type width, value_type ch) -> std
     return result;
 }
 
+auto str::align_right(std::string_view s, size_type width, value_type ch, const view_consumer_proc& proc) -> void {
+    if (s.size() >= width) {
+        proc(s);
+        return;
+    }
+
+    std::string result;
+    result.resize(width);
+    std::fill(result.data(), result.data() + (width - s.size()), ch);
+    std::memcpy(result.data() + (width - s.size()), s.data(), s.size());
+    proc(result);
+    return;
+}
+
 auto str::align_center(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
         return std::string{s};
@@ -2155,6 +2169,34 @@ auto str::align_center(std::string_view s, size_type width, value_type ch) -> st
     result.append(s);
     result.append(right_len, ch);
     return result;
+}
+
+auto str::align_zfill(std::string_view s, size_type width, const view_consumer_proc& proc) -> void {
+    if (s.empty()) {
+        std::string r;
+        r.resize(width, '0');
+        proc(r);
+        return;
+    }
+
+    if (s.size() >= width) {
+        proc(s);
+        return;
+    }
+
+    if ((s[0] != '+') && (s[0] != '-')) {
+        str::align_right(s, width, '0', proc);
+        return;
+    }
+
+    std::string result;
+    result.reserve(width);
+    result.append(s.data(), 1);
+    result.resize((width - s.size() + 1), '0');
+    result.append(s.data() + 1, static_cast<size_type>(s.size() - 1));
+
+    proc(result);
+    return;
 }
 
 auto str::align_zfill(std::string_view s, size_type width) -> std::string {
@@ -2226,6 +2268,7 @@ auto str::count_lines(std::string_view s) -> size_type {
     size_type count = 0;
     foreach_lines(s, true, [&count](size_type line_index, std::string_view line_text) -> int {
         count++;
+        return 0;
     });
     return count;
 }
@@ -2238,6 +2281,8 @@ auto str::lines_indentation(std::string_view s) -> size_type {
         if (pos < min_spaces) {
             min_spaces = pos;
         }
+
+        return 0;
     });
     return min_spaces;
 }
@@ -2473,7 +2518,7 @@ auto str::after_skip_spaces(std::string_view s, size_type pos) -> std::string {
     return std::string{s.data() + pos, s.size() - pos};
 }
 
-auto str::cover(std::string_view s, std::string_view mask = "***", size_type left_n, size_type right_n) -> std::string {
+auto str::cover(std::string_view s, std::string_view mask, size_type left_n, size_type right_n) -> std::string {
     if (s.size() < (left_n + right_n)) {
         return {};
     }
@@ -3146,7 +3191,7 @@ auto str::partition_view(std::string_view s, const view_search_proc& proc) -> st
 
     std::string_view matched = result.value();
     std::string_view right = {(matched.data() + matched.size()), s.size() - (matched.data() + matched.size() - s.data())};
-    return {{s.data(), (matched.data() - s.data())}, matched, right};
+    return {{s.data(), static_cast<size_type>(matched.data() - s.data())}, matched, right};
 }
 
 auto str::partition(std::string_view s, charset_type charset) -> std::tuple<std::string, std::string, std::string> {
@@ -3488,6 +3533,66 @@ auto str::trim_surrounding(std::string_view s, std::string_view charset) -> std:
 
 auto str::trim_surrounding(std::string_view s) -> std::string {
     return std::string{trim_surrounding_view(s)};
+}
+
+auto str::trim_left_inplace(std::string& s, const char_match_proc& proc) -> std::string& {
+    s = trim_left(s, proc);
+    return s;
+}
+
+auto str::trim_left_inplace(std::string& s, const charset_type& charset) -> std::string& {
+    s = trim_left(s, charset);
+    return s;
+}
+
+auto str::trim_left_inplace(std::string& s, std::string_view charset) -> std::string& {
+    s = trim_left(s, charset);
+    return s;
+}
+
+auto str::trim_left_inplace(std::string& s) -> std::string& {
+    s = trim_left(s);
+    return s;
+}
+
+auto str::trim_right_inplace(std::string& s, const char_match_proc& proc) -> std::string& {
+    s = trim_right(s, proc);
+    return s;
+}
+
+auto str::trim_right_inplace(std::string& s, const charset_type& charset) -> std::string& {
+    s = trim_right(s, charset);
+    return s;
+}
+
+auto str::trim_right_inplace(std::string& s, std::string_view charset) -> std::string& {
+    s = trim_right(s, charset);
+    return s;
+}
+
+auto str::trim_right_inplace(std::string& s) -> std::string& {
+    s = trim_right(s);
+    return s;
+}
+
+auto str::trim_surrounding_inplace(std::string& s, const char_match_proc& proc) -> std::string& {
+    s = trim_surrounding(s, proc);
+    return s;
+}
+
+auto str::trim_surrounding_inplace(std::string& s, const charset_type& charset) -> std::string& {
+    s = trim_surrounding(s, charset);
+    return s;
+}
+
+auto str::trim_surrounding_inplace(std::string& s, std::string_view charset) -> std::string& {
+    s = trim_surrounding(s, charset);
+    return s;
+}
+
+auto str::trim_surrounding_inplace(std::string& s) -> std::string& {
+    s = trim_surrounding(s);
+    return s;
 }
 
 auto str::trim_anywhere(std::string_view s, const char_match_proc& proc) -> std::string {
@@ -4617,6 +4722,168 @@ auto str::decode_base16(std::string_view s) -> std::string {
     return result;
 }
 
+auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, std::string& line) -> void {
+    dump_hex_offset(offset, offset_width, upper, [&line](std::string_view text) -> int {
+        line += text;
+        return 0;
+    });
+}
+
+auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void {
+    value_type offset_buffer[32];
+    int wlen = snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%X" : "%x"), offset);
+    assert(wlen > 0);
+    str::align_zfill(std::string_view{offset_buffer, wlen}, offset_width, proc);
+}
+
+auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, std::string& line) -> void {
+    if ((data == nullptr) || (len == 0)) {
+        return;
+    }
+
+    dump_hex_ascii(data, len, ascii_mask, [&line](std::string_view text) -> int {
+        line += text;
+        return 0;
+    });
+}
+
+auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, const view_consumer_proc& proc) -> void {
+    if ((data == nullptr) || (len == 0)) {
+        return;
+    }
+
+    std::string line;
+    line.resize(len);
+
+    const_pointer ptr = static_cast<const_pointer>(data);
+    for (size_type index = 0; index < len; index++) {
+        line += std::isprint(ptr[index]) ? ptr[index] : ascii_mask;
+    }
+
+    proc(line);
+}
+
+auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, std::string& line) -> size_type {
+    if ((data == nullptr) || (len == 0)) {
+        return 0;
+    }
+
+    return dump_hex_groups(data, len, group_bytes, upper, [&line](std::string_view text) -> int {
+        line += text;
+        return 0;
+    });
+}
+
+auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, const view_consumer_proc& proc) -> size_type {
+    if ((data == nullptr) || (len == 0)) {
+        return 0;
+    }
+
+    std::string_view hex = upper ? all_hex_upper : all_hex_lower;
+
+    std::string line;
+
+    // 处理完整组
+    const_pointer ptr_group = static_cast<const_pointer>(data);
+    for (size_type group_index = 0; group_index < len / group_bytes; group_index++) {
+        for (size_type byte_index = 0; byte_index < group_bytes; byte_index++) {
+            uint8_t ch = static_cast<uint8_t>(ptr_group[byte_index]);
+            line += hex[(ch & 0xF0) >> 4];
+            line += hex[(ch & 0x0F) >> 0];
+        }
+
+        line += ' ';
+        ptr_group += group_bytes;
+    }
+
+    // 处理不完整的分组
+    for (size_type byte_index = 0; byte_index < len % group_bytes; byte_index++) {
+        uint8_t ch = static_cast<uint8_t>(ptr_group[byte_index]);
+        line += hex[(ch & 0xF0) >> 4];
+        line += hex[(ch & 0x0F) >> 0];
+    }
+
+    proc(line);
+
+    return line.size();
+}
+
+auto str::dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void {
+    if ((data == nullptr) || (len == 0)) {
+        return;
+    }
+
+    bool upper = (format.flags & dump_hex_format::show_upper) != 0;
+    std::string_view hex = upper ? all_hex_upper : all_hex_lower;
+
+    // 每行多少字节
+    size_type line_bytes = format.line_groups * format.group_bytes;
+    size_type groups_len = line_bytes + format.line_groups;
+
+    // 完整行的数量
+    size_type full_line_num = len / line_bytes;
+
+    std::string line;
+    size_type line_index = 0;
+    const_pointer ptr_line = static_cast<const_pointer>(data);
+    for (; line_index < full_line_num; line_index++) {
+        line.clear();
+
+        // Dump offset
+        if (format.flags & dump_hex_format::show_offset) {
+            dump_hex_offset(line_index * line_bytes, upper, format.offset_width, line);
+            line += format.offset_margin;
+        }
+
+        // Dump groups
+        auto dumped_groups_len = dump_hex_groups(ptr_line, line_bytes, format.group_bytes, upper, line);
+        assert(dumped_groups_len == groups_len);
+
+        // Dump ascii
+        if (format.flags & dump_hex_format::show_ascii) {
+            dump_hex_ascii(ptr_line, line_bytes, format.ascii_mask, line);
+            line += format.ascii_margin;
+        }
+
+        // 输出当前行
+        if (proc(line_index, line) != 0) {
+            return;
+        }
+
+        ptr_line += line_bytes;
+    }
+
+    // 处理不完整行
+    if ((full_line_num * line_bytes) < len) {
+        line.clear();
+        const_pointer ptr_line = static_cast<const_pointer>(data + line_index * line_bytes);
+        size_type remain_len = len - (full_line_num * line_bytes);
+
+        // Dump offset
+        if (format.flags & dump_hex_format::show_offset) {
+            dump_hex_offset(line_index * line_bytes, format.offset_width, upper, line);
+            line += format.offset_margin;
+        }
+
+        // Dump groups
+        size_type dumped_groups_len = dump_hex_groups(ptr_line, remain_len, format.group_bytes, upper, line);
+        for (size_type index = 0; index < (groups_len - dumped_groups_len); index++) {
+            line += ' ';
+        }
+
+        // Dump ascii
+        if (format.flags & dump_hex_format::show_ascii) {
+            dump_hex_ascii(ptr_line, line_bytes, format.ascii_mask, line);
+            line += format.ascii_margin;
+        }
+
+        // 输出当前行
+        if (proc(line_index, line) != 0) {
+            return;
+        }
+    }
+}
+
 auto str::charset(std::string_view s) -> charset_type {
     return charset_type{s};
 }
@@ -4700,13 +4967,47 @@ auto str::chunked_view(std::string_view s, size_type width) -> std::vector<std::
     return result;
 }
 
+auto str::take_window_view(std::string_view s, size_type& pos, size_type max_n) -> std::string_view {
+    if (pos >= s.size()) {
+        return {};
+    }
+
+    if ((s.size() - pos) < max_n) {
+        max_n = (s.size() - pos);
+    }
+
+    auto result = std::string_view{s.data() + pos, max_n};
+    pos += max_n;
+    return result;
+}
+
+auto str::take_window(std::string_view s, size_type& pos, size_type max_n) -> std::string {
+    return std::string{take_window_view(s, pos, max_n)};
+}
+
 auto str::windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void {
+    size_type pos = 0;
+    while (pos < s.size()) {
+        if (proc(str::take_window_view(s, pos, width)) != 0) {
+            return;
+        }
+    }
 }
 
 auto str::windowed_view(std::string_view s, size_type width, size_type step) -> std::vector<std::string_view> {
+    std::vector<std::string_view> result;
+    windowed(s, width, step, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
 }
 
 auto str::windowed(std::string_view s, size_type width, size_type step) -> std::vector<std::string> {
+    std::vector<std::string> result;
+    windowed(s, width, step, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
 }
 
 auto str::read_all(const std::string& filename) -> std::string {

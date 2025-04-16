@@ -320,6 +320,8 @@ struct str {
     static constexpr std::string_view all_alnumuls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
     static constexpr std::string_view all_aluls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
     static constexpr std::string_view all_spaces = "\x09\x0A\x0B\x0C\x0d\x20";
+    static constexpr std::string_view all_hex_upper = "0123456789ABCDEF";
+    static constexpr std::string_view all_hex_lower = "0123456789abcdef";
 
     //! 在尾部追加 @anchor{append}
     ///
@@ -755,9 +757,11 @@ struct str {
     /// @param ch 当 width 大于 s 的长度时，所采用的填充字符
     static auto align_left(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
+    static auto align_right(std::string_view s, size_type width, value_type ch, const view_consumer_proc& proc) -> void;
     static auto align_center(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
     static auto align_zfill(std::string_view s, size_type width) -> std::string;
-    //
+    static auto align_zfill(std::string_view s, size_type width, const view_consumer_proc& proc) -> void;
+
     static auto align_left_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_right_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
     static auto align_center_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
@@ -1193,6 +1197,8 @@ struct str {
     static auto chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view>;
 
     // 基于窗口拆分字符串
+    static auto take_window_view(std::string_view s, size_type& pos, size_type max_n) -> std::string_view;
+    static auto take_window(std::string_view s, size_type& pos, size_type max_n) -> std::string;
     static auto windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void;
     static auto windowed_view(std::string_view s, size_type width, size_type step) -> std::vector<std::string_view>;
     static auto windowed(std::string_view s, size_type width, size_type step) -> std::vector<std::string>;
@@ -1300,8 +1306,8 @@ struct str {
     static auto simplified_integer(std::string_view s) -> std::string;
     static auto simplified_integer_inplace(std::string& s) -> std::string&;
     //
-    static auto simplified_decimal(std::string_view s) -> std::string;
-    static auto simplified_decimal_inplace(std::string& s) -> std::string&;
+    static auto simplified_real(std::string_view s) -> std::string;
+    static auto simplified_real_inplace(std::string& s) -> std::string&;
 
     //! 拷贝
     ///
@@ -1563,18 +1569,26 @@ struct str {
     /// @param format 指定 dump_hex 时的格式化信息，参考 @ref{dump_hex_format}
     /// @param proc 用于接收格式化数据
     struct dump_hex_format {
-        enum format {
+        enum format : uint8_t {
             show_offset = 0x01,
             show_ascii = 0x02,
+            show_upper = 0x04,
         };
-        uint8_t flags{format::show_offset | format::show_ascii}; ///< 可选标记位
-        uint8_t line_size{16};                                   ///< 每行格式化多少个字节
-        uint8_t group_size{1};                                   ///< 多少字节一组，如果大于 line_size，自动校正为 line_size
-        value_type ascii_mask{'.'};                              ///< 显示 ascii 时，对不打印字符显示的掩码字符
-        std::string_view ascii_margin{" "};                      ///< 显示 ascii 时，在此之前显示的 margin 字符
-        std::string_view offset_margin{":"};                     ///< 显示 offset 时，offset 右侧与文本段的分隔符
+        uint8_t flags{0};                     ///< 可选标记位
+        uint8_t offset_width{0};              ///< offset 的宽度
+        uint8_t line_groups{4};               ///< 每行格式化多少个字节
+        uint8_t group_bytes{4};               ///< 多少字节一组，如果大于 line_size，自动校正为 line_size
+        value_type ascii_mask{'.'};           ///< 显示 ascii 时，对不打印字符显示的掩码字符
+        std::string_view offset_margin{": "}; ///< 显示 offset 时，offset 右侧与文本段的分隔符
+        std::string_view ascii_margin{" "};   ///< 显示 ascii 时，在此之前显示的 margin 字符
     };
-    static auto dump_hex(void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void;
+    static auto dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, std::string& line) -> void;
+    static auto dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void;
+    static auto dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, std::string& line) -> void;
+    static auto dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, const view_consumer_proc& proc) -> void;
+    static auto dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, std::string& line) -> size_type;
+    static auto dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, const view_consumer_proc& proc) -> size_type;
+    static auto dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void;
 
     //! 求和
     ///
