@@ -452,8 +452,8 @@ struct str {
     /// @param pattern 用于统计满足表达式的子串的数量
     /// @param ignore_case 如果为 true，表示忽略大小写差异，否则，表示采用大小写敏感的方式查找。
     /// @return 返回满足条件的子串或者字符的数量。特别的，当 s 或者 other 为空时，总是返回 0
-    static auto count(std::string_view s, std::string_view other, bool ignore_case = false) -> size_type;
-    static auto count(std::string_view s, value_type ch, bool ignore_case = false) -> size_type;
+    static auto count(std::string_view s, std::string_view other) -> size_type;
+    static auto count(std::string_view s, value_type ch) -> size_type;
     static auto count(std::string_view s, const char_match_proc& proc) -> size_type;
     static auto count(std::string_view s, const charset_type& charset) -> size_type;
     static auto count(std::string_view s, const std::regex& pattern) -> size_type;
@@ -1667,11 +1667,13 @@ struct str {
     /// @param s 命令行字符串
     /// @param pos 从指定的位置开始读取下一个选项
     /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
-    static auto read_opt_view(std::string_view s, size_type& pos) -> std::tuple<std::string_view, std::string_view>;
-    static auto read_opt(std::string_view s, size_type& pos) -> std::tuple<std::string, std::string>;
-    static auto read_opt(int argc, char* argv[], int& next_index) -> std::tuple<std::string_view, std::string_view>;
-    template <typename Container, typename = typename Container::size_type>
-    static auto read_opt(const Container& items, typename Container::size_type& next_index) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt(int& next_index, int argc, char* argv[]) -> std::tuple<std::string_view, std::string_view>;
+    template <typename Container, typename SizeType = typename Container::size_type>
+    static auto next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view>;
+    template <typename Iterator>
+    static auto next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view>;
+    template <typename IterProc>
+    static auto next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view>;
 
     //! 符号识别
     ///
@@ -1925,9 +1927,64 @@ auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
     return result;
 }
 
-template <typename Container, typename>
-auto str::read_opt(const Container& items, typename Container::size_type& next_index) -> std::tuple<std::string_view, std::string_view> {
-    return {"", ""};
+template <typename Container, typename SizeType>
+auto str::next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view> {
+    return next_opt([&next_index, &items]() -> std::optional<std::string_view> {
+        if (next_index >= items.size()) {
+            return std::nullopt;
+        }
+
+        return items[next_index++];
+    });
+}
+
+template <typename Iterator>
+auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view> {
+    return next_opt([&itr, &end]() {
+        if (itr == end) {
+            return std::nullopt;
+        }
+
+        return {*itr};
+    });
+}
+
+template <typename IterProc>
+auto str::next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view> {
+    /// * `-` 为选项识别符
+    /// * `-key` 定义一个独立的、无 value 选项，常常用来定义开关型的选项
+    /// * `-key=value` 定义一个名字为 key 值为 value 的选项
+    /// * `value` 定义一个没有 key，但是有 value 的参数
+    /// * `-- value` 用于对选项识别符号进行转义，用于处理位置参数本身已以 `-` 开头的情况
+    std::optional<std::string_view> item_opt = proc();
+    if (!item_opt) {
+        return {std::string_view{}, std::string_view{}};
+    }
+
+    std::string_view item = item_opt.value();
+    if (item.empty()) {
+        return {std::string_view{}, item};
+    }
+
+    if (item[0] != '-') {
+        return {std::string_view{}, item};
+    }
+
+    if (item == "--") {
+        item_opt = proc();
+        if (!item_opt) {
+            return {std::string_view{}, std::string_view{}};
+        }
+
+        return {std::string_view{}, item_opt.value()};
+    }
+
+    auto pos = item.find('=', 0);
+    if (pos == std::string_view::npos) {
+        return {item, std::string_view{}};
+    }
+
+    return {item.substr(0, pos), item.substr(pos + 1)};
 }
 
 #endif // TINY_STR_H

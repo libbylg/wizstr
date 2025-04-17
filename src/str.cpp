@@ -362,7 +362,7 @@ auto str::contains(std::string_view s, const std::regex& pattern) -> bool {
     return std::regex_search(s.begin(), s.end(), pattern);
 }
 
-auto str::count(std::string_view s, std::string_view other, bool ignore_case) -> str::size_type {
+auto str::count(std::string_view s, std::string_view other) -> size_type {
     if (other.empty()) {
         return s.size() + 1;
     }
@@ -383,7 +383,7 @@ auto str::count(std::string_view s, std::string_view other, bool ignore_case) ->
     return count;
 }
 
-auto str::count(std::string_view s, value_type ch, bool ignore_case) -> str::size_type {
+auto str::count(std::string_view s, value_type ch) -> str::size_type {
     size_type count = 0;
     for (auto elem_ch : s) {
         count += ((elem_ch == ch) ? 1 : 0);
@@ -1614,7 +1614,7 @@ auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end
 }
 
 auto str::take_range_view(std::string_view s, range_type range) -> std::string_view {
-    return take_range_view(s, range_type{range.begin_pos(), range.end_pos()});
+    return take_range_view(s, range.begin_pos(), range.end_pos());
 }
 
 auto str::take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
@@ -2266,7 +2266,7 @@ auto str::foreach_lines(std::string_view s, bool keep_ends, const line_consumer_
 
 auto str::count_lines(std::string_view s) -> size_type {
     size_type count = 0;
-    foreach_lines(s, true, [&count](size_type line_index, std::string_view line_text) -> int {
+    foreach_lines(s, true, [&count](size_type, std::string_view) -> int {
         count++;
         return 0;
     });
@@ -2275,7 +2275,7 @@ auto str::count_lines(std::string_view s) -> size_type {
 
 auto str::lines_indentation(std::string_view s) -> size_type {
     size_type min_spaces = 0;
-    foreach_lines(s, true, [&min_spaces](size_type line_index, std::string_view line_text) -> int {
+    foreach_lines(s, true, [&min_spaces](size_type, std::string_view line_text) -> int {
         size_type pos = 0;
         skip_spaces(line_text, pos);
         if (pos < min_spaces) {
@@ -4392,7 +4392,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
            case '{':  [[fallthrough]];
            case '|':  [[fallthrough]];
            case '}':  [[fallthrough]];
-           case '~':  [[fallthrough]];
+           case '~': 
                c++;
                break;
            case '\\':
@@ -4731,9 +4731,9 @@ auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, st
 
 auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void {
     value_type offset_buffer[32];
-    int wlen = snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%X" : "%x"), offset);
+    int wlen = snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%lX" : "%lx"), offset);
     assert(wlen > 0);
-    str::align_zfill(std::string_view{offset_buffer, wlen}, offset_width, proc);
+    str::align_zfill(std::string_view{offset_buffer, static_cast<size_type>(wlen)}, offset_width, proc);
 }
 
 auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, std::string& line) -> void {
@@ -4814,7 +4814,6 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
     }
 
     bool upper = (format.flags & dump_hex_format::show_upper) != 0;
-    std::string_view hex = upper ? all_hex_upper : all_hex_lower;
 
     // 每行多少字节
     size_type line_bytes = format.line_groups * format.group_bytes;
@@ -4856,7 +4855,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
     // 处理不完整行
     if ((full_line_num * line_bytes) < len) {
         line.clear();
-        const_pointer ptr_line = static_cast<const_pointer>(data + line_index * line_bytes);
+        const_pointer ptr_line = static_cast<const_pointer>(data) + line_index * line_bytes;
         size_type remain_len = len - (full_line_num * line_bytes);
 
         // Dump offset
@@ -4991,6 +4990,7 @@ auto str::windowed(std::string_view s, size_type width, size_type step, const vi
         if (proc(str::take_window_view(s, pos, width)) != 0) {
             return;
         }
+        pos += step;
     }
 }
 
@@ -5000,6 +5000,7 @@ auto str::windowed_view(std::string_view s, size_type width, size_type step) -> 
         result.emplace_back(item);
         return 0;
     });
+    return result;
 }
 
 auto str::windowed(std::string_view s, size_type width, size_type step) -> std::vector<std::string> {
@@ -5008,6 +5009,7 @@ auto str::windowed(std::string_view s, size_type width, size_type step) -> std::
         result.emplace_back(item);
         return 0;
     });
+    return result;
 }
 
 auto str::read_all(const std::string& filename) -> std::string {
@@ -5198,6 +5200,51 @@ auto str::with_file(const std::string& filepath, const char* mode, const std::fu
     }
 
     proc(file.get());
+}
+
+// auto str::next_opt_view(size_type& pos, std::string_view s) -> std::tuple<std::string_view, std::string_view>;
+// auto str::next_opt(size_type& pos, std::string_view s) -> std::tuple<std::string, std::string>;
+
+class argv_view {
+public:
+    using size_type = int;
+    using value_type = char*;
+    using const_iterator = const char**;
+    argv_view(int argc, char* argv[])
+        : argc_{argc}
+        , argv_{argv} {
+        assert(argc >= 0);
+    }
+
+    inline auto size() const -> int {
+        assert(argc_ >= 0);
+        return argc_;
+    }
+
+    inline auto operator[](size_type index) const -> value_type {
+        return argv_[index];
+    }
+
+private:
+    int argc_;
+    char** argv_;
+};
+
+auto str::next_opt(int& next_index, int n, char* items[]) -> std::tuple<std::string_view, std::string_view> {
+    return next_opt(next_index, argv_view{n, items});
+}
+
+auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
+    if (pos > s.size()) {
+        pos = s.size();
+        return;
+    }
+
+    for (; pos < s.size(); ++pos) {
+        if (!std::isspace(s[pos])) {
+            break;
+        }
+    }
 }
 
 auto str::grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string> {

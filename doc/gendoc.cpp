@@ -195,9 +195,9 @@ struct gendoc_options {
     std::string root_directory;
 
     auto load(int argc, char* argv[]) -> std::string {
-        int pos = 0;
+        int pos = 1;
         while (pos <= argc) {
-            auto [key, val] = str::read_opt(argc, argv, pos);
+            auto [key, val] = str::next_opt(pos, argc, argv + 1);
             key = str::trim_surrounding_view(key);
             val = str::trim_surrounding_view(val);
             if (key.empty() && val.empty()) {
