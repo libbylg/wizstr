@@ -549,13 +549,13 @@ struct str {
     static auto prev_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type;
 
     //! 定位子串
-    static auto next_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type;
-    static auto next_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
-    static auto next_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
+    static auto next_string_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type;
+    static auto next_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
+    static auto next_string(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
     //
-    static auto prev_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type;
-    static auto prev_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
-    static auto prev_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
+    static auto prev_string_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type;
+    static auto prev_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view;
+    static auto prev_string(std::string_view s, size_type& pos, std::string_view substr) -> std::string;
 
     //! 定位换行符
     static auto next_eol_range(std::string_view s, size_type& pos) -> range_type;
@@ -570,10 +570,12 @@ struct str {
     static auto next_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
     static auto next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
     static auto next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
+    static auto next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
     //
     static auto prev_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
     static auto prev_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
     static auto prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
+    static auto prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
 
     //! 定位过程
     static auto next_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;

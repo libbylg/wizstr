@@ -684,7 +684,7 @@ auto str::ends_with_eol(std::string_view s) -> bool {
 //    return iter_next_regex(s, pos, std::regex{pattern.begin(), pattern.end()});
 //}
 
-auto str::next_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type {
+auto str::next_string_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type {
     assert(!substr.empty());
 
     if (pos >= s.size()) {
@@ -773,13 +773,13 @@ auto str::prev_char(std::string_view s, size_type& pos, const char_match_proc& p
     return 0;
 }
 
-auto str::next_substr_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view {
-    auto range = next_substr_range(s, pos, substr);
+auto str::next_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::string_view {
+    auto range = next_string_range(s, pos, substr);
     return std::string_view{s.data() + range.begin_pos(), range.size()};
 }
 
-auto str::next_substr(std::string_view s, size_type& pos, std::string_view substr) -> std::string {
-    return std::string{next_substr_view(s, pos, substr)};
+auto str::next_string(std::string_view s, size_type& pos, std::string_view substr) -> std::string {
+    return std::string{next_string_view(s, pos, substr)};
 }
 
 // auto str::prev_substr_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type {
@@ -880,6 +880,10 @@ auto str::next_regex_view(std::string_view s, size_type& pos, const std::regex& 
 
 auto str::next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string {
     return std::string{next_regex_view(s, pos, pattern)};
+}
+
+auto str::next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string {
+    return std::string{next_regex_view(s, pos, std::regex{pattern.begin(), pattern.end()})};
 }
 
 auto str::next_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type {
@@ -4172,8 +4176,13 @@ auto str::replace_rawname_inplace(std::string& s, std::string_view name) -> std:
     std::string_view rawname = rawname_view(s);
     assert((rawname.data() >= s.data()) && (rawname.data() < (s.data() + s.size())));
     size_type extlen = (s.data() + s.size()) - (rawname.data() + rawname.size());
-    std::memmove((s.data() + (rawname.data() - s.data())), (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
-    s.resize(s.size() - rawname.size());
+    if (rawname.size() > name.size()) {
+        std::memmove((s.data() + (rawname.data() - s.data())), (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
+        s.resize(s.size() - rawname.size());
+    } else {
+        std::memmove((s.data() + (rawname.data() - s.data())), (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
+        s.resize(s.size() - rawname.size());
+    }
     return s;
 }
 
@@ -4432,7 +4441,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
                    case 'x':
                        break;
                }
-
+                //proc();
                break;
        }
         // clang-format on
