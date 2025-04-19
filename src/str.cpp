@@ -1,5 +1,4 @@
-tus
-''/**
+/**
  * Copyright (c) 2021-2024 libbylg@126.com
  * tiny is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -823,7 +822,7 @@ auto str::next_eol_range(std::string_view s, size_type& pos) -> range_type {
     s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
 
     const_pointer endptr = (s.data() + s.size());
-    const_pointer ptr = s.data();
+    const_pointer ptr = s.data() + pos;
     while (ptr < endptr) {
         if (*ptr == '\r') [[unlikely]] {
             // 遇到 xxx\r\nyyyy
@@ -3036,10 +3035,12 @@ auto str::split_map(std::string_view s, std::string_view sep_list, std::string_v
 
 auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
+        proc(s);
         return;
     }
 
     size_type start = 0;
+    const_pointer ptr_line = s.data();
     while (start < s.size()) {
         auto eol = str::next_eol_range(s, start);
 
@@ -3052,14 +3053,24 @@ auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_pr
         assert(!eol.empty());
 
         // 遇到结束符
-        const_pointer next_start = s.data() + eol.end_pos();
-        const_pointer line_text = s.data() + start;
-        size_type line_size = keep_ends ? (next_start - line_text) : (next_start - line_text - eol.size());
-        if (proc(std::string_view{line_text, line_size}) != 0) {
+        size_type line_size = 0;
+        if (keep_ends) {
+            line_size = static_cast<size_type>(s.data() + eol.end_pos() - ptr_line);
+        } else {
+            line_size = static_cast<size_type>(s.data() + eol.begin_pos() - ptr_line);
+        }
+
+        if (proc(std::string_view{ptr_line, line_size}) != 0) {
             return;
         }
 
-        start = next_start - s.data();
+        // 移动到下一行起始位置
+        ptr_line = s.data() + eol.end_pos();
+    }
+
+    // 最后一部分可能没有换行符
+    if (ptr_line < (s.data() + s.size())) {
+        proc(std::string_view{ptr_line, static_cast<size_type>((s.data() + s.size()) - ptr_line)});
     }
 }
 
