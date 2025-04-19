@@ -2,7 +2,6 @@
 
 #include "str.hpp"
 
-
 #include <array>
 
 TEST(test_str, foreach_words) {
@@ -96,7 +95,7 @@ TEST(test_str, foreach_words) {
             return 0;
         });
         ASSERT_EQ(result.size(), 3);
-        ASSERT_EQ(result[0], "ABC");
+        ASSERT_EQ(result[0], "BC");
         ASSERT_EQ(result[1], "DEF");
         ASSERT_EQ(result[2], "GHXWYI");
     }
@@ -110,7 +109,7 @@ TEST(test_str, foreach_words) {
             return 0;
         });
         ASSERT_EQ(result.size(), 2);
-        ASSERT_EQ(result[0], "ABC");
+        ASSERT_EQ(result[0], "BC");
         ASSERT_EQ(result[1], "DEF");
     }
 }

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.24)
 project(str LANGUAGES CXX)
 
-#set(TEST_FRAMEWORK "gtest")
-set(TEST_FRAMEWORK "catch2")
+set(TEST_FRAMEWORK "gtest")
+#set(TEST_FRAMEWORK "catch2")
 
 #   Setup the global settings
 set(CMAKE_CXX_STANDARD 17)

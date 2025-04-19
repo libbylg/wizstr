@@ -1,4 +1,5 @@
-/**
+tus
+''/**
  * Copyright (c) 2021-2024 libbylg@126.com
  * tiny is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -333,6 +334,14 @@ auto str::wildcmp(std::string_view s, std::string_view pattern) -> bool {
 }
 
 auto str::contains(std::string_view s, std::string_view other, bool ignore_case) -> bool {
+    if (other.empty()) {
+        return true;
+    }
+
+    if (s.empty()) {
+        return false;
+    }
+
     if (ignore_case) {
         return std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
             return std::tolower(a) == std::tolower(b);
