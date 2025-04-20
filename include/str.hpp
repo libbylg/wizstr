@@ -85,8 +85,6 @@ struct str {
     using size_type = std::string::size_type;
     using ssize_type = ssize_t;
     using value_type = std::string::value_type;
-    // using reference = std::string::reference;
-    // using const_reference = std::string::const_reference;
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
 
@@ -279,19 +277,19 @@ struct str {
     static inline constexpr size_type npos = std::string::npos;
 
     //! 定义了一些操作系统强相关的常量
-    /// * @ref{sep_search_path, sep_search_path_char} 搜索路径分隔符
+    /// * @ref{sep_searchpath, sep_searchpath_char} 搜索路径分隔符
     /// * @ref{sep_path, sep_path_char} 文件路径分隔符
     /// * @ref{sep_line_ends} 行结束符
 #if defined(_WIN32)
-    static constexpr std::string_view sep_search_path = ";";
-    static constexpr value_type sep_search_path_char = ';';
+    static constexpr std::string_view sep_searchpath = ";";
+    static constexpr value_type sep_searchpath_char = ';';
     static constexpr std::string_view sep_path = "\\";
     static constexpr value_type sep_path_char = '\\';
     //
     static constexpr std::string_view sep_line_ends = "\r\n";
 #else
-    static constexpr std::string_view sep_search_path = ":";
-    static constexpr value_type sep_search_path_char = ':';
+    static constexpr std::string_view sep_searchpath = ":";
+    static constexpr value_type sep_searchpath_char = ':';
     static constexpr std::string_view sep_path = "/";
     static constexpr value_type sep_path_char = '/';
     //
@@ -566,7 +564,7 @@ struct str {
     static auto prev_eol_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto prev_eol(std::string_view s, size_type& pos) -> std::string;
 
-    //! 定位模式
+    //! 定位正则表达式分隔符
     static auto next_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
     static auto next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
     static auto next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
@@ -576,6 +574,15 @@ struct str {
     static auto prev_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
     static auto prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
     static auto prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
+
+    //! 定位路径分隔符
+    static auto next_pathsep_range(std::string_view s, size_type& pos) -> range_type;
+    static auto next_pathsep_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto next_pathsep(std::string_view s, size_type& pos) -> std::string;
+
+    static auto next_searchpathsep_range(std::string_view s, size_type& pos) -> range_type;
+    static auto next_searchpathsep_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto next_searchpathsep(std::string_view s, size_type& pos) -> std::string;
 
     //! 定位过程
     static auto next_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;
@@ -792,16 +799,16 @@ struct str {
     static auto count_lines(std::string_view s) -> size_type;
     static auto lines_indentation(std::string_view s) -> size_type;
     //
-    static auto numbering_lines(std::string_view s, size_type from_n, std::string_view num_format = "") -> std::string;
-    static auto unnumbering_lines(std::string_view s, size_type from_n, std::string_view num_format = "") -> std::string;
+    static auto numbering_lines(std::string_view s, size_type from_n) -> std::string;
+    static auto unnumbering_lines(std::string_view s) -> std::string;
     static auto indent_lines(std::string_view s, size_type n, value_type pad = ' ') -> std::string;
     static auto dedent_lines(std::string_view s, size_type n, value_type pad = ' ') -> std::string;
     static auto unindent_lines(std::string_view s, size_type n, value_type pad = ' ') -> std::string;
     static auto trim_lines_indent(std::string_view s) -> std::string;
     static auto trim_lines_margin(std::string_view s, value_type margin = ' ') -> std::string;
     //
-    static auto numbering_lines_inplace(std::string& s, size_type from_n, std::string_view num_format = "") -> std::string&;
-    static auto unnumbering_lines_inplace(std::string& s, size_type from_n, std::string_view num_format = "") -> std::string&;
+    static auto numbering_lines_inplace(std::string& s, size_type from_n) -> std::string&;
+    static auto unnumbering_lines_inplace(std::string& s) -> std::string&;
     static auto indent_lines_inplace(std::string& s, size_type n, value_type pad = ' ') -> std::string&;
     static auto dedent_lines_inplace(std::string& s, size_type n, value_type pad = ' ') -> std::string&;
     static auto unindent_lines_nplacet(std::string& s, size_type n, value_type pad = ' ') -> std::string&;
@@ -823,9 +830,6 @@ struct str {
     static auto foreach_words(std::string_view s, const range_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, const view_consumer_proc& proc) -> void;
     //
-    static auto count_words(std::string_view s, const char_match_proc& sep_proc) -> size_type;
-    static auto count_words(std::string_view s, const charset_type& sep_charset) -> size_type;
-    static auto count_words(std::string_view s, value_type sep_ch) -> size_type;
     static auto count_words(std::string_view s) -> size_type;
     //
     static auto first_word_view(std::string_view s) -> std::string_view;
@@ -872,7 +876,6 @@ struct str {
     /// @param max_n 指定从 pos 位置开始最多反转多少字符
     /// @return 返回颠倒位置后的字符串
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
-    //
     static auto invert_inplace(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
 
     //! 生成
@@ -1042,7 +1045,7 @@ struct str {
     //! 拼接搜索路径
     ///
     /// 使用搜索路径分隔符拼接由 proc 或者 items 供给的字符串，并返回拼接后的结果。
-    /// 路径分隔符可以由 sep 手工指定，当调用没有该参数的形式的函数时，自动使用系统默认的分隔符（参见 @ref sep_search_path）
+    /// 路径分隔符可以由 sep 手工指定，当调用没有该参数的形式的函数时，自动使用系统默认的分隔符（参见 @ref sep_searchpath）
     /// 对于提供 proc 参数的接口，proc 会持续调用该哈数获得数据直到该函数返回 std::optnull。如果 proc 在第一次调用时就返回
     /// std::optnull，返回的搜索路径为空串。
     ///
@@ -1050,13 +1053,12 @@ struct str {
     /// @param proc 提供搜素路径片段的函数。
     /// @param items 存放路径片段的容器。
     /// @return 返回以当前系统的搜索路径分隔符拼接好的字符串。
-    static auto join_search_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
-    static auto join_search_path(const view_provider_proc& proc) -> std::string;
+    static auto join_searchpath(std::string_view sep, const view_provider_proc& proc) -> std::string;
+    static auto join_searchpath(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_search_path(std::string_view sep, const Sequence& items) -> std::string;
-
+    static auto join_searchpath(std::string_view sep, const Sequence& items) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_search_path(const Sequence& items) -> std::string;
+    static auto join_searchpath(const Sequence& items) -> std::string;
 
     //! 字符串拆分
     ///
@@ -1136,8 +1138,8 @@ struct str {
     static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_path(std::string_view s) -> std::vector<std::string_view>;
 
-    static auto split_search_path(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
-    static auto split_search_path(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string_view>;
+    static auto split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
+    static auto split_searchpath(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string_view>;
 
     // // 拆分 csv 数据
     // static auto split_csv(std::string_view s) -> std::vector<std::string>;
@@ -1406,6 +1408,7 @@ struct str {
     ///
     /// @param s 路径字符串
     /// @param new_name 表示被替换成的新名字
+    static auto dirname_range(std::string_view s) -> range_type;
     static auto dirname_view(std::string_view s) -> std::string_view;
     static auto dirname(std::string_view s) -> std::string;
     static auto remove_dirname_view(std::string_view s) -> std::string_view;
@@ -1427,6 +1430,7 @@ struct str {
     ///
     /// @param s 路径字符串
     /// @param new_name 表示被替换成的新名字
+    static auto basename_range(std::string_view s) -> range_type;
     static auto basename_view(std::string_view s) -> std::string_view;
     static auto basename(std::string_view s) -> std::string;
     static auto remove_basename_view(std::string_view s) -> std::string_view;
@@ -1445,6 +1449,7 @@ struct str {
     /// @ref remove_extname_view, remove_extname, remove_extname_inplace 删除路径 s 的扩展名，返回剩余部分
     /// @ref replace_extname, replace_extname_inplace 使用 new_name 替换路径 s 中的扩展名
     /// @ref split_basename 将路径 s 拆分为扩展名和剩余部分
+    static auto extname_range(std::string_view s) -> range_type;
     static auto extname_view(std::string_view s) -> std::string_view;
     static auto extname(std::string_view s) -> std::string;
     static auto remove_extname_view(std::string_view s) -> std::string_view;
@@ -1467,6 +1472,7 @@ struct str {
     ///
     /// @param s 路径字符串
     /// @param new_name 表示被替换成的新名字
+    static auto rawname_range(std::string_view s) -> range_type;
     static auto rawname_view(std::string_view s) -> std::string_view;
     static auto rawname(std::string_view s) -> std::string;
     static auto replace_rawname(std::string_view s, std::string_view new_name) -> std::string;
@@ -1904,9 +1910,9 @@ auto str::join_path(const Sequence& items) -> std::string {
 }
 
 template <typename Sequence, typename>
-auto str::join_search_path(std::string_view sep, const Sequence& items) -> std::string {
+auto str::join_searchpath(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.begin();
-    return str::join_search_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
+    return str::join_searchpath(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
         if (itr == end) {
             return std::nullopt;
         }
@@ -1916,8 +1922,8 @@ auto str::join_search_path(std::string_view sep, const Sequence& items) -> std::
 }
 
 template <typename Sequence, typename>
-auto str::join_search_path(const Sequence& items) -> std::string {
-    return join_search_path(":", items);
+auto str::join_searchpath(const Sequence& items) -> std::string {
+    return join_searchpath(":", items);
 }
 
 template <typename T>

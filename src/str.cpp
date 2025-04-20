@@ -730,7 +730,7 @@ auto str::next_eol_range(std::string_view s, size_type& pos) -> range_type {
         return range_type{pos, 0};
     }
 
-    //s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
+    // s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
 
     const_pointer endptr = (s.data() + s.size());
     const_pointer ptr = s.data() + pos;
@@ -783,7 +783,8 @@ auto str::next_regex_range(std::string_view s, size_type& pos, const std::regex&
         return range_type{};
     }
 
-    auto range = range_type{static_cast<size_type>(result[0].first - s.data()), static_cast<size_type>(result[0].second - result[0].first)};
+    auto range = range_type{static_cast<size_type>(result[0].first - s.data()),
+        static_cast<size_type>(result[0].second - result[0].first)};
     pos = range.end_pos();
     return range;
 }
@@ -834,36 +835,6 @@ auto str::next_proc(std::string_view s, size_type& pos, const range_search_proc&
     return std::string{next_proc_view(s, pos, proc)};
 }
 
-// auto str::prev_eol_range(std::string_view s, size_type& pos) -> range_type {
-// }
-//
-// auto str::prev_eol_view(std::string_view s, size_type& pos) -> std::string_view {
-// }
-//
-// auto str::prev_eol(std::string_view s, size_type& pos) -> std::string {
-// }
-
-// auto str::iter_prev_eol(std::string_view s, size_type& rpos) -> size_type {
-// }
-
-// auto str::iter_next_words_view(std::string_view s, size_type& pos) -> std::string_view {
-//     auto word = str::find_next_words_view(s, pos);
-//     if (word.empty()) {
-//         pos = s.size();
-//         return {};
-//     }
-
-// pos = (word.data() + word.size()) - s.data();
-// return word;
-// }
-
-// auto str::iter_next_words(std::string_view s, size_type& pos) -> std::string {
-//     return std::string{iter_next_words_view(s, pos)};
-// }
-
-// auto str::iter_prev_word(std::string_view s, size_type& rpos) -> std::string_view {
-// }
-
 auto str::foreach_words(std::string_view s, size_type pos, const range_consumer_proc& proc) -> void {
     while (pos < s.size()) {
         range_type r = str::next_word_range(s, pos);
@@ -894,33 +865,14 @@ auto str::foreach_words(std::string_view s, const view_consumer_proc& proc) -> v
     });
 }
 
-// auto str::count_words(std::string_view s, const char_match_proc& sep_proc) -> size_type {
-//
-// }
-//
-// auto str::count_words(std::string_view s, const charset_type& sep_charset) -> size_type {
-//
-// }
-//
-// auto str::count_words(std::string_view s, value_type sep_ch) -> size_type {
-//
-// }
-//
-// auto str::count_words(std::string_view s) -> size_type {
-//
-// }
-
-// auto str::is_match_wild(std::string_view s, std::string_view pattern) -> bool {
-// }
-
-// auto str::is_match_charset(std::string_view s, charset_type set) -> bool {
-// }
-
-// auto str::is_match_regex(std::string_view s, std::string_view pattern) -> bool {
-// }
-
-// auto str::is_match_regex(std::string_view s, const std::regex& pattern) -> bool {
-// }
+auto str::count_words(std::string_view s) -> size_type {
+    size_type count = 0;
+    str::foreach_words(s, [&count](range_type) -> int {
+        count++;
+        return 0;
+    });
+    return count;
+}
 
 auto str::first_word_view(std::string_view s) -> std::string_view {
     size_type pos = 0;
@@ -2211,6 +2163,56 @@ auto str::lines_indentation(std::string_view s) -> size_type {
     return min_spaces;
 }
 
+auto str::numbering_lines(std::string_view s, size_type from_n) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result, from_n](size_type line_index, std::string_view line_text) -> int {
+        value_type buf[64]{0};
+        int len = snprintf(buf, sizeof(buf), "%lu ", from_n + line_index);
+        assert(len >= 0);
+        result.append(std::string{buf, static_cast<size_type>(len)});
+        result.append(line_text);
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::unnumbering_lines(std::string_view s) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result](size_type line_index, std::string_view line_text) -> int {
+        const_pointer ptr = line_text.data();
+        const_pointer end = line_text.data() + line_text.size();
+        for (; ptr < end; ptr++) {
+            if (!std::isdigit(*ptr)) {
+                break;
+            }
+        }
+
+        for (; ptr < end; ptr++) {
+            if (!std::isspace(*ptr)) {
+                break;
+            }
+        }
+
+        result.append(std::string{ptr, static_cast<size_type>(end - ptr)});
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::numbering_lines_inplace(std::string& s, size_type from_n) -> std::string& {
+    s = numbering_lines(s, from_n);
+    return s;
+}
+
+auto str::unnumbering_lines_inplace(std::string& s) -> std::string& {
+    s = unnumbering_lines(s);
+    return s;
+}
+
 auto str::to_capitalize(std::string_view s) -> std::string {
     if (s.empty()) {
         return {};
@@ -2492,7 +2494,8 @@ auto str::join_list(const view_provider_proc& proc) -> std::string {
     return join(",", proc);
 }
 
-auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string {
+auto str::join_map(std::string_view sep_pair, std::string_view sep_list,
+    const view_pair_provider_proc& proc) -> std::string {
     std::string result;
     bool suffix = false;
     for (auto item = proc(); item; item = proc()) {
@@ -2581,7 +2584,7 @@ auto str::join_path(const view_provider_proc& proc) -> std::string {
     return result;
 }
 
-auto str::join_search_path(std::string_view sep, const view_provider_proc& proc) -> std::string {
+auto str::join_searchpath(std::string_view sep, const view_provider_proc& proc) -> std::string {
     std::string result;
     for (auto item = proc(); item; item = proc()) {
         // 如果每项为空,全部跳过
@@ -2599,8 +2602,8 @@ auto str::join_search_path(std::string_view sep, const view_provider_proc& proc)
     return result;
 }
 
-auto str::join_search_path(const view_provider_proc& proc) -> std::string {
-    return join_search_path(":", proc);
+auto str::join_searchpath(const view_provider_proc& proc) -> std::string {
+    return join_searchpath(":", proc);
 }
 
 auto str::split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void {
@@ -2906,7 +2909,8 @@ auto str::split_pair_view(std::string_view s, std::string_view sep) -> std::tupl
     return {pair[0], pair[1]};
 }
 
-auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void {
+auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
+    const view_pair_consumer_proc& proc) -> void {
     if (s.empty()) [[unlikely]] {
         return;
     }
@@ -2925,7 +2929,8 @@ auto str::split_map(std::string_view s, std::string_view sep_list, std::string_v
     });
 }
 
-auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, size_type max_n) -> std::map<std::string, std::string> {
+auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
+    size_type max_n) -> std::map<std::string, std::string> {
     if (max_n == 0) {
         return {};
     }
@@ -3056,7 +3061,7 @@ auto str::split_path(std::string_view s) -> std::vector<std::string_view> {
     return result;
 }
 
-auto str::split_search_path(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void {
+auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void {
     str::split_list(s, std::string_view{&sep, 1}, [keep_empty, &proc](std::string_view item) -> int {
         if (!keep_empty && item.empty()) {
             return 0;
@@ -3066,9 +3071,9 @@ auto str::split_search_path(std::string_view s, bool keep_empty, value_type sep,
     });
 }
 
-auto str::split_search_path(std::string_view s, bool keep_empty, value_type sep) -> std::vector<std::string_view> {
+auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
-    str::split_search_path(s, keep_empty, sep, [&result](std::string_view item) -> int {
+    str::split_searchpath(s, keep_empty, sep, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });
@@ -3078,32 +3083,40 @@ auto str::split_search_path(std::string_view s, bool keep_empty, value_type sep)
 // auto str::split_csv(std::string_view s) -> std::vector<std::string> {
 // }
 
-auto str::partition_view(std::string_view s, charset_type charset) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s,
+    charset_type charset) -> std::tuple<std::string_view, std::string_view, std::string_view> {
     return partition_view(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
     });
 }
 
-auto str::partition_view(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s,
+    const char_match_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view> {
     auto itr = std::find_if(s.begin(), s.end(), proc);
     if (itr == s.cend()) {
         return {s, {}, {}};
     }
 
     size_type pos = std::distance(s.begin(), itr);
-    return {{s.data(), pos}, {(s.data() + pos), 1}, {(s.data() + pos + 1), (s.size() - (pos + 1))}};
+    return {{s.data(), pos},
+        {(s.data() + pos), 1},
+        {(s.data() + pos + 1), (s.size() - (pos + 1))}};
 }
 
-auto str::partition_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s,
+    std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view> {
     size_type pos = s.find(sep, 0);
     if (pos >= s.size()) {
         return {s, {}, {}};
     }
 
-    return {{s.data(), pos}, {(s.data() + pos), 1}, {(s.data() + pos + 1), (s.size() - (pos + 1))}};
+    return {{s.data(), pos},
+        {(s.data() + pos), 1},
+        {(s.data() + pos + 1), (s.size() - (pos + 1))}};
 }
 
-auto str::partition_view(std::string_view s, const std::regex& pattern) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s,
+    const std::regex& pattern) -> std::tuple<std::string_view, std::string_view, std::string_view> {
     std::match_results<std::string_view::const_iterator> match;
     bool ret = std::regex_search(s.begin(), s.end(), match, pattern);
     if (!ret) {
@@ -3112,17 +3125,21 @@ auto str::partition_view(std::string_view s, const std::regex& pattern) -> std::
 
     size_type pos = match.position(0);
     size_type len = match.length(0);
-    return {{s.data(), pos}, {s.data() + pos, len}, {(s.data() + pos + len), (s.size() - pos - len)}};
+    return {{s.data(), pos},
+        {s.data() + pos, len},
+        {(s.data() + pos + len), (s.size() - pos - len)}};
 }
 
-auto str::partition_view(std::string_view s, const view_search_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s,
+    const view_search_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view> {
     auto result = proc(s);
     if (!result) {
         return {s, {}, {}};
     }
 
     std::string_view matched = result.value();
-    std::string_view right = {(matched.data() + matched.size()), s.size() - (matched.data() + matched.size() - s.data())};
+    std::string_view right = {(matched.data() + matched.size()),
+        s.size() - (matched.data() + matched.size() - s.data())};
     return {{s.data(), static_cast<size_type>(matched.data() - s.data())}, matched, right};
 }
 
@@ -3733,7 +3750,8 @@ auto str::expand_envs(std::string_view s, bool keep_unexpanded) -> std::string {
     });
 }
 
-auto str::expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string {
+auto str::expand_envs(std::string_view s, bool keep_unexpanded,
+    const std::map<std::string, std::string>& kvs) -> std::string {
     return str::expand_envs(s, keep_unexpanded, [&kvs](const std::string& key) -> std::optional<std::string> {
         auto itr = kvs.find(key);
         if (itr == kvs.cend()) {
@@ -3768,7 +3786,8 @@ auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded) -> std::stri
     return s;
 }
 
-auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string& {
+auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded,
+    const std::map<std::string, std::string>& kvs) -> std::string& {
     s = expand_envs(s, keep_unexpanded, kvs);
     return s;
 }
@@ -3961,12 +3980,17 @@ auto str::dirname_ptr(std::string_view s) -> std::string::const_pointer {
     return ptr;
 }
 
-auto str::dirname_view(std::string_view s) -> std::string_view {
+auto str::dirname_range(std::string_view s) -> range_type {
     auto ptr = str::dirname_ptr(s);
     if ((ptr == s.data()) && (*ptr == '/')) {
-        return std::string_view{s.data(), 1};
+        return range_type{0, 1};
     }
-    return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
+    return range_type{0, static_cast<size_type>(ptr - s.data())};
+}
+
+auto str::dirname_view(std::string_view s) -> std::string_view {
+    auto range = dirname_range(s);
+    return std::string_view{s.data() + range.begin_pos(), range.size()};
 }
 
 auto str::dirname(std::string_view s) -> std::string {
@@ -4016,6 +4040,11 @@ auto str::split_dirname_view(std::string_view s) -> std::tuple<std::string_view,
         {base_ptr, static_cast<size_type>((s.data() + s.size()) - base_ptr)}};
 }
 
+auto str::basename_range(std::string_view s) -> range_type {
+    auto ptr = str::basename_ptr(s);
+    return range_type{static_cast<size_type>(ptr - s.data()), static_cast<size_type>(s.data() + s.size() - ptr)};
+}
+
 auto str::basename_view(std::string_view s) -> std::string_view {
     auto ptr = str::basename_ptr(s);
     return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
@@ -4045,7 +4074,8 @@ auto str::replace_basename(std::string_view s, std::string_view newname) -> std:
 
 auto str::split_basename_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
     auto ptr = str::basename_ptr(s);
-    return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+    return {{s.data(), static_cast<size_type>(ptr - s.data())},
+        {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
 }
 
 auto str::split_basename(std::string_view s) -> std::tuple<std::string, std::string> {
@@ -4053,9 +4083,23 @@ auto str::split_basename(std::string_view s) -> std::tuple<std::string, std::str
     return std::tuple{std::string{std::get<0>(items)}, std::string{std::get<1>(items)}};
 }
 
-auto str::extname_view(std::string_view s) -> std::string_view {
+// auto str::basename_inplace(std::string &s) -> std::string & {
+// }
+//
+// auto str::remove_basename_inplace(std::string &s) -> std::string & {
+// }
+//
+// auto str::replace_basename_inplace(std::string &s, std::string_view new_name) -> std::string & {
+// }
+
+auto str::extname_range(std::string_view s) -> range_type {
     auto ptr = str::extname_ptr(s);
-    return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
+    return range_type{static_cast<size_type>(ptr - s.data()), static_cast<size_type>(s.data() + s.size() - ptr)};
+}
+
+auto str::extname_view(std::string_view s) -> std::string_view {
+    auto range = str::extname_range(s);
+    return s.substr(range.begin_pos(), range.size());
 }
 
 auto str::extname(std::string_view s) -> std::string {
@@ -4083,11 +4127,33 @@ auto str::replace_extname(std::string_view s, std::string_view newname) -> std::
 
 auto str::split_extname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
     auto ptr = str::extname_ptr(s);
-    return {{s.data(), static_cast<size_type>(ptr - s.data())}, {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+    return {{s.data(), static_cast<size_type>(ptr - s.data())},
+        {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+}
+
+auto str::rawname_range(std::string_view s) -> range_type {
+    if (s.empty()) {
+        return range_type{};
+    }
+
+    std::string::const_pointer base_ptr = basename_ptr(s);
+    std::string::const_pointer ptr = s.data() + s.size() - 1;
+
+    while (ptr > base_ptr) {
+        if (*ptr == '.') {
+            return range_type{static_cast<size_type>(base_ptr - s.data()), static_cast<size_type>(ptr - base_ptr)};
+        }
+        ptr--;
+    }
+
+    auto ext_pos = static_cast<size_type>(base_ptr - s.data());
+    return range_type{ext_pos, s.size() - ext_pos};
 }
 
 auto str::rawname_view(std::string_view s) -> std::string_view {
-    return remove_extname_view(basename_view(s));
+    // return remove_extname_view(basename_view(s));
+    auto range = rawname_range(s);
+    return std::string_view{s.data() + range.begin_pos(), range.size()};
 }
 
 auto str::rawname(std::string_view s) -> std::string {
@@ -4108,7 +4174,8 @@ auto str::split_rawname_view(std::string_view s) -> std::tuple<std::string_view,
 
 auto str::split_rawname(std::string_view s) -> std::tuple<std::string, std::string, std::string> {
     auto items = split_rawname_view(s);
-    return std::tuple{std::string{std::get<0>(items)}, std::string{std::get<1>(items)}, std::string{std::get<2>(items)}};
+    return std::tuple{std::string{std::get<0>(items)}, std::string{std::get<1>(items)},
+        std::string{std::get<2>(items)}};
 }
 
 auto str::rawname_inplace(std::string& s) -> std::string& {
@@ -4121,10 +4188,12 @@ auto str::replace_rawname_inplace(std::string& s, std::string_view name) -> std:
     assert((rawname.data() >= s.data()) && (rawname.data() < (s.data() + s.size())));
     size_type extlen = (s.data() + s.size()) - (rawname.data() + rawname.size());
     if (rawname.size() > name.size()) {
-        std::memmove((s.data() + (rawname.data() - s.data())), (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
+        std::memmove((s.data() + (rawname.data() - s.data())),
+            (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
         s.resize(s.size() - rawname.size());
     } else {
-        std::memmove((s.data() + (rawname.data() - s.data())), (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
+        std::memmove((s.data() + (rawname.data() - s.data())),
+            (s.data() + (rawname.data() + rawname.size() - s.data())), extlen);
         s.resize(s.size() - rawname.size());
     }
     return s;
@@ -4312,82 +4381,141 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
     const char* c = s.data();
     for (; ptr < end; ptr++) {
         // clang-format off
-       switch (*ptr) {
-           case 'A'...'Z':  [[fallthrough]];
-           case 'a'...'z':  [[fallthrough]];
-           case '0'...'9':  [[fallthrough]];
-           case ' ':  [[fallthrough]];
-           case '!':  [[fallthrough]];
-           case '#':  [[fallthrough]];
-           case '$':  [[fallthrough]];
-           case '%':  [[fallthrough]];
-           case '&':  [[fallthrough]];
-           case '(':  [[fallthrough]];
-           case ')':  [[fallthrough]];
-           case '*':  [[fallthrough]];
-           case '+':  [[fallthrough]];
-           case ',':  [[fallthrough]];
-           case '-':  [[fallthrough]];
-           case '.':  [[fallthrough]];
-           case '/':  [[fallthrough]];
-           case ':':  [[fallthrough]];
-           case ';':  [[fallthrough]];
-           case '<':  [[fallthrough]];
-           case '=':  [[fallthrough]];
-           case '>':  [[fallthrough]];
-           case '?':  [[fallthrough]];
-           case '@':  [[fallthrough]];
-           case '[':  [[fallthrough]];
-           case ']':  [[fallthrough]];
-           case '^':  [[fallthrough]];
-           case '_':  [[fallthrough]];
-           case '`':  [[fallthrough]];
-           case '{':  [[fallthrough]];
-           case '|':  [[fallthrough]];
-           case '}':  [[fallthrough]];
-           case '~': 
-               c++;
-               break;
-           case '\\':
-               if (w != c) {
-                   if (proc({w, static_cast<size_t>(c - w)}) != 0) {
-                       return;
-                   }
+        switch (*ptr) {
+            case 'A'...'Z':
+                [[fallthrough]];
+            case 'a'...'z':
+                [[fallthrough]];
+            case '0'...'9':
+                [[fallthrough]];
+            case ' ':
+                [[fallthrough]];
+            case '!':
+                [[fallthrough]];
+            case '#':
+                [[fallthrough]];
+            case '$':
+                [[fallthrough]];
+            case '%':
+                [[fallthrough]];
+            case '&':
+                [[fallthrough]];
+            case '(':
+                [[fallthrough]];
+            case ')':
+                [[fallthrough]];
+            case '*':
+                [[fallthrough]];
+            case '+':
+                [[fallthrough]];
+            case ',':
+                [[fallthrough]];
+            case '-':
+                [[fallthrough]];
+            case '.':
+                [[fallthrough]];
+            case '/':
+                [[fallthrough]];
+            case ':':
+                [[fallthrough]];
+            case ';':
+                [[fallthrough]];
+            case '<':
+                [[fallthrough]];
+            case '=':
+                [[fallthrough]];
+            case '>':
+                [[fallthrough]];
+            case '?':
+                [[fallthrough]];
+            case '@':
+                [[fallthrough]];
+            case '[':
+                [[fallthrough]];
+            case ']':
+                [[fallthrough]];
+            case '^':
+                [[fallthrough]];
+            case '_':
+                [[fallthrough]];
+            case '`':
+                [[fallthrough]];
+            case '{':
+                [[fallthrough]];
+            case '|':
+                [[fallthrough]];
+            case '}':
+                [[fallthrough]];
+            case '~':
+                c++;
+                break;
+            case '\\':
+                if (w != c) {
+                    if (proc({w, static_cast<size_t>(c - w)}) != 0) {
+                        return;
+                    }
 
-                   w = c;
-               }
-               ptr++;
-               if (ptr > end) {
-                   return;
-               }
+                    w = c;
+                }
+                ptr++;
+                if (ptr > end) {
+                    return;
+                }
 
-               uint8_t ch = 0;
-               switch (*ptr) {
-                   case '\'': ch = '\''; break;
-                   case '\"': ch = '\"'; break;
-                   case '?': ch = '?'; break;
-                   case 'a': ch = '\a'; break;
-                   case 'b': ch = '\b'; break;
-                   case 'f': ch = '\f'; break;
-                   case 'n': ch = '\n'; break;
-                   case 'r': ch = '\r'; break;
-                   case 't': ch = '\t'; break;
-                   case 'v': ch = '\v'; break;
-                   case '0': [[fallthrough]];
-                   case '1': [[fallthrough]];
-                   case '2': [[fallthrough]];
-                   case '3': [[fallthrough]];
-                   case '4': [[fallthrough]];
-                   case '5': [[fallthrough]];
-                   case '6': [[fallthrough]];
-                   case '7':
-                       break;
-                   case 'x':
-                       break;
-               }
+                uint8_t ch = 0;
+                switch (*ptr) {
+                    case '\'':
+                        ch = '\'';
+                        break;
+                    case '\"':
+                        ch = '\"';
+                        break;
+                    case '?':
+                        ch = '?';
+                        break;
+                    case 'a':
+                        ch = '\a';
+                        break;
+                    case 'b':
+                        ch = '\b';
+                        break;
+                    case 'f':
+                        ch = '\f';
+                        break;
+                    case 'n':
+                        ch = '\n';
+                        break;
+                    case 'r':
+                        ch = '\r';
+                        break;
+                    case 't':
+                        ch = '\t';
+                        break;
+                    case 'v':
+                        ch = '\v';
+                        break;
+                    case '0':
+                        [[fallthrough]];
+                    case '1':
+                        [[fallthrough]];
+                    case '2':
+                        [[fallthrough]];
+                    case '3':
+                        [[fallthrough]];
+                    case '4':
+                        [[fallthrough]];
+                    case '5':
+                        [[fallthrough]];
+                    case '6':
+                        [[fallthrough]];
+                    case '7':
+                        break;
+                    case 'x':
+                        break;
+                }
                 //proc();
-               break;
-       }
+                break;
+        }
         // clang-format on
     }
 }
@@ -4727,7 +4855,8 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
     });
 }
 
-auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, const view_consumer_proc& proc) -> size_type {
+auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper,
+    const view_consumer_proc& proc) -> size_type {
     if ((data == nullptr) || (len == 0)) {
         return 0;
     }
@@ -5163,6 +5292,7 @@ public:
     using size_type = int;
     using value_type = char*;
     using const_iterator = const char**;
+
     argv_view(int argc, char* argv[])
         : argc_{argc}
         , argv_{argv} {
