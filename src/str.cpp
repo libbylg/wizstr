@@ -603,95 +603,6 @@ auto str::ends_with_eol(std::string_view s) -> bool {
     return (s.back() == '\n');
 }
 
-// auto str::find_next_regex_view(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string_view> {
-//     if (pos >= s.size()) {
-//         s = {};
-//     } else {
-//         s = s.substr(pos);
-//     }
-//
-//     std::match_results<std::string_view::const_iterator> result;
-//     if (!std::regex_search(s.begin(), s.end(), result, pattern)) {
-//         return std::nullopt;
-//     }
-//
-//     return std::string_view{result[0].first, static_cast<size_type>(result[0].second - result[0].first)};
-// }
-
-// auto str::find_next_regex_view(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string_view> {
-//     return find_next_regex_view(s, std::regex{pattern.begin(), pattern.end()}, pos);
-// }
-//
-// auto str::find_next_regex(std::string_view s, const std::regex& pattern, size_type pos) -> std::optional<std::string> {
-//     auto result = find_next_regex_view(s, pattern, pos);
-//     if (!result) {
-//         return std::nullopt;
-//     }
-//
-//     return {std::string{result.value()}};
-// }
-//
-// auto str::find_next_regex(std::string_view s, std::string_view pattern, size_type pos) -> std::optional<std::string> {
-//     auto result = find_next_regex_view(s, pattern, pos);
-//     if (!result) {
-//         return std::nullopt;
-//     }
-//
-//     return {std::string{result.value()}};
-// }
-
-// auto str::find_next_words_view(std::string_view s, size_type pos) -> std::string_view {
-//     if (pos >= s.size()) {
-//         return {};
-//     }
-//
-//     auto start = std::find_if_not(s.begin() + pos, s.end(), [](value_type ch) -> bool {
-//         return std::isspace(ch);
-//     });
-//
-//     if (start == s.end()) {
-//         return {};
-//     }
-//
-//     auto end = std::find_if(start, s.end(), [](value_type ch) -> bool {
-//         return std::isspace(ch);
-//     });
-//
-//     return std::string_view{start, static_cast<size_type>(end - start)};
-// }
-//
-// auto str::find_next_words(std::string_view s, size_type pos) -> std::string {
-//     return std::string{find_next_words_view(s, pos)};
-// }
-//
-// auto str::iter_next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string_view> {
-//    auto result = str::find_next_regex_view(s, pattern, pos);
-//    if (!result) {
-//        pos = s.size();
-//        return std::nullopt;
-//    }
-//
-//    pos = (result.value().data() + result.value().size()) - s.data();
-//    return result.value();
-//}
-//
-// auto str::iter_next_regex_view(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string_view> {
-//    return str::iter_next_regex_view(s, pos, std::regex{pattern.begin(), pattern.end()});
-//}
-//
-// auto str::iter_next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::optional<std::string> {
-//    auto result = iter_next_regex_view(s, pos, pattern);
-//    if (!result) {
-//        return std::nullopt;
-//    }
-//
-//    return std::string{result.value()};
-//}
-//
-// auto str::iter_next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::optional<std::string> {
-//    return iter_next_regex(s, pos, std::regex{pattern.begin(), pattern.end()});
-//}
-
 auto str::next_string_range(std::string_view s, size_type& pos, std::string_view substr) -> range_type {
     assert(!substr.empty());
 
@@ -819,7 +730,7 @@ auto str::next_eol_range(std::string_view s, size_type& pos) -> range_type {
         return range_type{pos, 0};
     }
 
-    s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
+    //s = std::string_view{s.data() + pos, static_cast<size_type>(s.size() - pos)};
 
     const_pointer endptr = (s.data() + s.size());
     const_pointer ptr = s.data() + pos;
@@ -864,10 +775,10 @@ auto str::next_regex_range(std::string_view s, size_type& pos, const std::regex&
         return range_type{};
     }
 
-    s = s.substr(pos);
-
+    auto itr = s.begin();
+    std::advance(itr, pos);
     std::match_results<std::string_view::const_iterator> result;
-    if (!std::regex_search(s.begin(), s.end(), result, pattern)) {
+    if (!std::regex_search(itr, s.end(), result, pattern)) {
         pos = s.size();
         return range_type{};
     }
@@ -1046,6 +957,7 @@ auto str::next_word_view(std::string_view s, size_type& pos) -> std::string_view
 
 auto str::next_word_range(std::string_view s, size_type& pos) -> range_type {
     if (pos >= s.size()) {
+        pos = s.size();
         return range_type{s.size(), 0};
     }
 
@@ -2909,22 +2821,20 @@ auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n,
     size_type pos = 0;
     while (pos < s.size()) {
         // 找到满足正则表达式的位置
-        auto item = str::next_regex(s, pos, sep);
-        if (item.empty()) {
-            pos = s.size();
+        range_type range = str::next_regex_range(s, pos, sep);
+        if (range.empty()) {
             break;
         }
 
         // 将找到的数据输出给调用方
-        size_type start = item.data() - s.data();
-        size_type stop = start + item.size();
+        size_type start = range.begin_pos();
+        size_type stop = range.end_pos();
         if (proc(std::string_view{s.data() + last_pos, (start - last_pos)}) != 0) {
             return;
         }
 
         // 为下次查找做准备
         last_pos = stop;
-        pos = stop;
 
         // 如果次数达到最大次数限制:中断循环，并将剩余的数据输出
         n++;
@@ -3035,7 +2945,6 @@ auto str::split_map(std::string_view s, std::string_view sep_list, std::string_v
 
 auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
-        proc(s);
         return;
     }
 
@@ -3046,8 +2955,7 @@ auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_pr
 
         // 最后一部分没有结束符
         if (eol.empty()) {
-            proc(std::string_view{s.data() + start, (s.size() - start)});
-            return;
+            break;
         }
 
         assert(!eol.empty());
@@ -3935,6 +3843,10 @@ auto str::expand_user_inplace(std::string& s) -> std::string& {
 }
 
 auto str::normpath(std::string_view s) -> std::string {
+    if (s.empty()) {
+        return ".";
+    }
+
     auto components = str::split_path(s);
     if (components.size() < 2) {
         return std::string{components[0]};
@@ -3949,13 +3861,20 @@ auto str::normpath(std::string_view s) -> std::string {
         }
 
         if (components[rpos] == "..") {
+            // 如果遇到已经固定的长度了
             if (result.size() == fixlen) {
+                // 如果已经到跟目录了，根目录可以吸收所有的后退运算符号
+                if (!result.empty() && result.back() == "/") {
+                    continue;
+                }
+
+                // 如果碰到固定长度，意味着退无可退了，只能将自己继续作为父级目录增长 fixlen
                 result.emplace_back(components[rpos]);
                 fixlen++;
                 continue;
             }
 
-            assert(result.size() >= 1);
+            assert(!result.empty());
             result.resize(result.size() - 1);
             continue;
         }
@@ -3967,6 +3886,11 @@ auto str::normpath(std::string_view s) -> std::string {
         }
 
         result.emplace_back(components[rpos]);
+    }
+
+    // 如果计算之后数组为空，而且不是绝对路径形式，那么裁定为当前目录
+    if (result.empty()) {
+        return ".";
     }
 
     return str::join_path(result);

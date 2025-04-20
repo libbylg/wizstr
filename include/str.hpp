@@ -1947,7 +1947,7 @@ auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, 
             return std::nullopt;
         }
 
-        return {*itr};
+        return *itr++;
     });
 }
 

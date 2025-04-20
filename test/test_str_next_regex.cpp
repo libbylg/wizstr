@@ -2,21 +2,7 @@
 
 #include "str.hpp"
 
-TEST(test_str, find_next_regex) {
-    SECTION("不同起始位置") {
-        size_t pos = 0;
-        ASSERT_EQ(str::next_regex("abc1234def", pos = 0, "[0-9]+"), std::string("1234"));
-        ASSERT_EQ(str::next_regex("abc1234def", pos = 3, "[0-9]+"), std::string("1234"));
-        ASSERT_EQ(str::next_regex("1234def789", pos = 3, "[0-9]+"), std::string("4"));
-        ASSERT_EQ(str::next_regex("1234def789", pos = 4, "[0-9]+"), std::string("789"));
-        ASSERT_EQ(str::next_regex("", pos = str::npos, "[0-9]+"), "");
-        ASSERT_EQ(str::next_regex("abc----def", pos = 0, "[0-9]+"), "");
-        ASSERT_EQ(str::next_regex("abc----def", pos = 10, "[0-9]+"), "");
-        ASSERT_EQ(str::next_regex("abc----def", pos = str::npos, "[0-9]+"), "");
-    }
-}
-
-TEST(test_str, itr_next_regex) {
+TEST(test_str, next_regex) {
     SECTION("不同起始位置:从0开始连续查找") {
         size_t pos = 0;
         ASSERT_EQ(str::next_regex("abc1234def", pos, "[0-9]+"), std::string("1234"));
