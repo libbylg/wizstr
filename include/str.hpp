@@ -152,6 +152,10 @@ struct str {
             return !!(bits[index] & mask);
         }
 
+        inline auto contains(value_type c) const -> bool {
+            return get(c);
+        }
+
         inline auto invert() {
             bits[0] = ~bits[0];
             bits[1] = ~bits[1];
@@ -1548,8 +1552,8 @@ struct str {
     /// @param proc 用于接收转换后，生成的字符串
     /// @return 返回编码或者解码后的字符串
     static auto encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_cstr(std::string_view s) -> std::string;
+    static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto decode_cstr(std::string_view s) -> std::string;
     //
     static auto encode_cstr_inplace(std::string& s) -> std::string;
@@ -1563,8 +1567,8 @@ struct str {
     /// @param proc 用于接收转换后，生成的字符串
     /// @return 返回编码或者解码后的字符串
     static auto encode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto decode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_base64(std::string_view s) -> std::string;
+    static auto decode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto decode_base64(std::string_view s) -> std::string;
     //
     static auto encode_base64_inplace(std::string& s) -> std::string&;
@@ -1579,8 +1583,8 @@ struct str {
     /// @param upper 转换出来的十六进制是否采用大写形式
     /// @return 返回编码或者解码后的字符串
     static auto encode_base16(std::string_view s, bool upper, const view_consumer_proc& proc) -> void;
-    static auto decode_base16(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_base16(std::string_view s, bool upper = false) -> std::string;
+    static auto decode_base16(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto decode_base16(std::string_view s) -> std::string;
     //
     static auto encode_base16_inplace(std::string& s, bool upper = false) -> std::string&;
@@ -1775,8 +1779,10 @@ struct str {
     /// @param match_charset 匹配字符集
     /// @param replace_charset 替换字符集
     /// @param proc 将匹配的字符映射为其他字符集
-    static auto mapping(std::string& s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
-    static auto mapping(std::string& s, const char_mapping_proc& proc) -> std::string;
+    static auto mapping(std::string_view s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
+    static auto mapping(std::string_view s, const char_mapping_proc& proc) -> std::string;
+    static auto mapping_inplace(std::string& s, std::string_view match_charset, std::string_view replace_charset) -> std::string&;
+    static auto mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std::string&;
 };
 
 template <typename Sequence, typename>
