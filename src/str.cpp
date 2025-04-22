@@ -984,6 +984,30 @@ auto str::prev_word(std::string_view s, size_type& pos) -> std::string {
     return std::string{prev_word_view(s, pos)};
 }
 
+auto str::surround(std::string_view s, std::string_view left, std::string_view right) -> std::string {
+    std::string result;
+    result.reserve(s.size() + left.size() + right.size());
+    return result.append(left).append(s).append(right);
+}
+
+auto str::surround_inplace(std::string& s, std::string_view left, std::string_view right) -> std::string& {
+    s = surround(s, left, right);
+    return s;
+}
+
+auto str::unsurround_view(std::string_view s, std::string_view left, std::string_view right) -> std::string_view {
+    return remove_suffix_view(remove_prefix_view(s, left), right);
+}
+
+auto str::unsurround(std::string_view s, std::string_view left, std::string_view right) -> std::string {
+    return std::string{unsurround_view(s, left, right)};
+}
+
+auto str::unsurround_inplace(std::string& s, std::string_view left, std::string_view right) -> std::string& {
+    s = unsurround(s, left, right);
+    return s;
+}
+
 auto str::is_lower(std::string_view s) -> bool {
     if (s.empty()) {
         return false;
@@ -2181,7 +2205,7 @@ auto str::numbering_lines(std::string_view s, size_type from_n) -> std::string {
 auto str::unnumbering_lines(std::string_view s) -> std::string {
     std::string result;
     result.reserve(s.size());
-    foreach_lines(s, true, [&result](size_type line_index, std::string_view line_text) -> int {
+    foreach_lines(s, true, [&result](size_type, std::string_view line_text) -> int {
         const_pointer ptr = line_text.data();
         const_pointer end = line_text.data() + line_text.size();
         for (; ptr < end; ptr++) {
@@ -2210,6 +2234,149 @@ auto str::numbering_lines_inplace(std::string& s, size_type from_n) -> std::stri
 
 auto str::unnumbering_lines_inplace(std::string& s) -> std::string& {
     s = unnumbering_lines(s);
+    return s;
+}
+
+auto str::indent_lines(std::string_view s, size_type n) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result, n](size_type, std::string_view line_text) -> int {
+        result.append(n, ' ');
+        result.append(line_text);
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::dedent_lines(std::string_view s, size_type n) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result, n](size_type, std::string_view line_text) -> int {
+        const_pointer ptr = line_text.data();
+        const_pointer end = std::min((line_text.data() + line_text.size()), (line_text.data() + n));
+        for (; ptr < end; ptr++) {
+            if (!std::isspace(*ptr)) {
+                break;
+            }
+        }
+
+        result.append(ptr, static_cast<size_type>((line_text.data() + line_text.size()) - ptr));
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::align_indent_lines(std::string_view s, size_type n) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result, n](size_type, std::string_view line_text) -> int {
+        result.append(n, ' ');
+        result.append(after_skip_spaces_view(line_text));
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::trim_indent_lines(std::string_view s) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result](size_type, std::string_view line_text) -> int {
+        result.append(after_skip_spaces_view(line_text));
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::simplify_indent_lines(std::string_view s) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+
+    // 计算最大缩减量
+    size_type max_n = lines_indentation(s);
+    if (max_n == 0) {
+        result = s;
+        return result;
+    }
+
+    foreach_lines(s, true, [&result, max_n](size_type, std::string_view line_text) -> int {
+        result.append(line_text.substr(max_n));
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::indent_lines_inplace(std::string& s, size_type n) -> std::string& {
+    s = indent_lines(s, n);
+    return s;
+}
+
+auto str::dedent_lines_inplace(std::string& s, size_type n) -> std::string& {
+    s = dedent_lines(s, n);
+    return s;
+}
+
+auto str::align_indent_lines_inplace(std::string& s, size_type n) -> std::string& {
+    s = align_indent_lines(s, n);
+    return s;
+}
+
+auto str::trim_indent_lines_inplace(std::string& s) -> std::string& {
+    s = trim_indent_lines(s);
+    return s;
+}
+
+auto str::simplify_indent_lines_inplace(std::string& s) -> std::string& {
+    s = simplify_indent_lines(s);
+    return s;
+}
+
+auto str::margin_lines(std::string_view s, size_type n, value_type margin_ch) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result, n, margin_ch](size_type, std::string_view line_text) -> int {
+        result.append(n, ' ');
+        result.append(1, margin_ch);
+        result.append(line_text);
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::trim_margin_lines(std::string_view s, value_type margin_ch) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    foreach_lines(s, true, [&result, margin_ch](size_type, std::string_view line_text) -> int {
+        const_pointer ptr = line_text.data();
+        const_pointer end = line_text.data() + line_text.size();
+        for (; ptr < end; ptr++) {
+            if (!std::isspace(*ptr)) {
+                if ((ptr < end) && (*ptr == margin_ch)) {
+                    ptr++;
+                }
+                break;
+            }
+        }
+
+        result.append(ptr, static_cast<size_type>(end - ptr));
+        return 0;
+    });
+
+    return result;
+}
+
+auto str::margin_lines_inplace(std::string& s, size_type n, value_type margin_ch) -> std::string& {
+    s = margin_lines(s, n, margin_ch);
+    return s;
+}
+
+auto str::trim_margin_lines_inplace(std::string& s, value_type margin_ch) -> std::string& {
+    s = trim_margin_lines(s, margin_ch);
     return s;
 }
 
@@ -3083,15 +3250,62 @@ auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep) 
 // auto str::split_csv(std::string_view s) -> std::vector<std::string> {
 // }
 
-auto str::partition_view(std::string_view s,
-    charset_type charset) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_range(std::string_view s, charset_type charset) -> std::tuple<range_type, range_type, range_type> {
+    return partition_range(s, [&charset](value_type ch) -> bool {
+        return charset.get(ch);
+    });
+}
+
+auto str::partition_range(std::string_view s, const char_match_proc& proc) -> std::tuple<range_type, range_type, range_type> {
+    auto itr = std::find_if(s.begin(), s.end(), proc);
+    if (itr == s.cend()) {
+        return {range_type{0, s.size()}, range_type{}, range_type{}};
+    }
+
+    size_type pos = std::distance(s.begin(), itr);
+    return {range_type{0, pos}, range_type{pos, 1}, range_type{(pos + 1), (s.size() - (pos + 1))}};
+}
+
+auto str::partition_range(std::string_view s, std::string_view sep) -> std::tuple<range_type, range_type, range_type> {
+    size_type pos = s.find(sep, 0);
+    if (pos >= s.size()) {
+        return {range_type{0, s.size()}, range_type{}, range_type{}};
+    }
+
+    return {range_type{0, pos}, range_type{pos, 1}, range_type{(pos + 1), (s.size() - (pos + 1))}};
+}
+
+auto str::partition_range(std::string_view s, const std::regex& pattern) -> std::tuple<range_type, range_type, range_type> {
+    std::match_results<std::string_view::const_iterator> match;
+    bool ret = std::regex_search(s.begin(), s.end(), match, pattern);
+    if (!ret) {
+        return {range_type{0, s.size()}, range_type{}, range_type{}};
+    }
+
+    size_type pos = match.position(0);
+    size_type len = match.length(0);
+    return {range_type{0, pos}, range_type{pos, len}, range_type{(pos + len), (s.size() - pos - len)}};
+}
+
+auto str::partition_range(std::string_view s, const range_search_proc& proc) -> std::tuple<range_type, range_type, range_type> {
+    auto matched = proc(s, range_type{0, s.size()});
+    if (matched.empty()) {
+        return {range_type{0, s.size()}, range_type{}, range_type{}};
+    }
+
+    range_type right = range_type{(matched.begin_pos() + matched.size()), s.size() - matched.end_pos()};
+    return {range_type{0, matched.begin_pos()}, matched, right};
+}
+
+auto str::partition_view(std::string_view s, charset_type charset)
+    -> std::tuple<std::string_view, std::string_view, std::string_view> {
     return partition_view(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
     });
 }
 
-auto str::partition_view(std::string_view s,
-    const char_match_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s, const char_match_proc& proc)
+    -> std::tuple<std::string_view, std::string_view, std::string_view> {
     auto itr = std::find_if(s.begin(), s.end(), proc);
     if (itr == s.cend()) {
         return {s, {}, {}};
@@ -3103,8 +3317,8 @@ auto str::partition_view(std::string_view s,
         {(s.data() + pos + 1), (s.size() - (pos + 1))}};
 }
 
-auto str::partition_view(std::string_view s,
-    std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s, std::string_view sep)
+    -> std::tuple<std::string_view, std::string_view, std::string_view> {
     size_type pos = s.find(sep, 0);
     if (pos >= s.size()) {
         return {s, {}, {}};
@@ -3115,8 +3329,8 @@ auto str::partition_view(std::string_view s,
         {(s.data() + pos + 1), (s.size() - (pos + 1))}};
 }
 
-auto str::partition_view(std::string_view s,
-    const std::regex& pattern) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s, const std::regex& pattern)
+    -> std::tuple<std::string_view, std::string_view, std::string_view> {
     std::match_results<std::string_view::const_iterator> match;
     bool ret = std::regex_search(s.begin(), s.end(), match, pattern);
     if (!ret) {
@@ -3130,8 +3344,8 @@ auto str::partition_view(std::string_view s,
         {(s.data() + pos + len), (s.size() - pos - len)}};
 }
 
-auto str::partition_view(std::string_view s,
-    const view_search_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view> {
+auto str::partition_view(std::string_view s, const view_search_proc& proc)
+    -> std::tuple<std::string_view, std::string_view, std::string_view> {
     auto result = proc(s);
     if (!result) {
         return {s, {}, {}};
@@ -3751,7 +3965,8 @@ auto str::expand_envs(std::string_view s, bool keep_unexpanded) -> std::string {
 }
 
 auto str::expand_envs(std::string_view s, bool keep_unexpanded,
-    const std::map<std::string, std::string>& kvs) -> std::string {
+    const std::map<std::string, std::string>& kvs)
+    -> std::string {
     return str::expand_envs(s, keep_unexpanded, [&kvs](const std::string& key) -> std::optional<std::string> {
         auto itr = kvs.find(key);
         if (itr == kvs.cend()) {
@@ -3787,7 +4002,8 @@ auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded) -> std::stri
 }
 
 auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded,
-    const std::map<std::string, std::string>& kvs) -> std::string& {
+    const std::map<std::string, std::string>& kvs)
+    -> std::string& {
     s = expand_envs(s, keep_unexpanded, kvs);
     return s;
 }
@@ -4040,6 +4256,26 @@ auto str::split_dirname_view(std::string_view s) -> std::tuple<std::string_view,
         {base_ptr, static_cast<size_type>((s.data() + s.size()) - base_ptr)}};
 }
 
+auto str::split_dirname(std::string_view s) -> std::tuple<std::string, std::string> {
+    auto [dir, name] = split_dirname(s);
+    return {dir, name};
+}
+
+auto str::dirname_inplace(std::string& s) -> std::string& {
+    s = dirname_view(s);
+    return s;
+}
+
+auto str::remove_dirname_inplace(std::string& s) -> std::string& {
+    s = remove_dirname_view(s);
+    return s;
+}
+
+auto str::replace_dirname_inplace(std::string& s, std::string_view new_name) -> std::string& {
+    s = replace_dirname(s, new_name);
+    return s;
+}
+
 auto str::basename_range(std::string_view s) -> range_type {
     auto ptr = str::basename_ptr(s);
     return range_type{static_cast<size_type>(ptr - s.data()), static_cast<size_type>(s.data() + s.size() - ptr)};
@@ -4083,14 +4319,20 @@ auto str::split_basename(std::string_view s) -> std::tuple<std::string, std::str
     return std::tuple{std::string{std::get<0>(items)}, std::string{std::get<1>(items)}};
 }
 
-// auto str::basename_inplace(std::string &s) -> std::string & {
-// }
-//
-// auto str::remove_basename_inplace(std::string &s) -> std::string & {
-// }
-//
-// auto str::replace_basename_inplace(std::string &s, std::string_view new_name) -> std::string & {
-// }
+auto str::basename_inplace(std::string& s) -> std::string& {
+    s = basename_view(s);
+    return s;
+}
+
+auto str::remove_basename_inplace(std::string& s) -> std::string& {
+    s = remove_basename_view(s);
+    return s;
+}
+
+auto str::replace_basename_inplace(std::string& s, std::string_view new_name) -> std::string& {
+    s = replace_basename(s, new_name);
+    return s;
+}
 
 auto str::extname_range(std::string_view s) -> range_type {
     auto ptr = str::extname_ptr(s);
@@ -4129,6 +4371,26 @@ auto str::split_extname_view(std::string_view s) -> std::tuple<std::string_view,
     auto ptr = str::extname_ptr(s);
     return {{s.data(), static_cast<size_type>(ptr - s.data())},
         {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+}
+
+auto str::split_extname(std::string_view s) -> std::tuple<std::string, std::string> {
+    auto [left, name] = split_extname_view(s);
+    return {std::string{left}, std::string{name}};
+}
+
+auto str::extname_inplace(std::string& s) -> std::string& {
+    s = extname_view(s);
+    return s;
+}
+
+auto str::remove_extname_inplace(std::string& s) -> std::string& {
+    s = remove_extname_view(s);
+    return s;
+}
+
+auto str::replace_extname_inplace(std::string& s, std::string_view new_name) -> std::string& {
+    s = replace_extname(s, new_name);
+    return s;
 }
 
 auto str::rawname_range(std::string_view s) -> range_type {
@@ -4198,6 +4460,18 @@ auto str::replace_rawname_inplace(std::string& s, std::string_view name) -> std:
     }
     return s;
 }
+
+// auto str::hash(std::string_view s, uint32_t mod) -> uint32_t {
+// }
+
+// auto str::hash(std::string_view s, uint64_t mod) -> uint64_t {
+// }
+
+// auto str::md5(std::string_view s) -> std::string {
+// }
+
+// auto str::md5(void* data, size_type n) -> std::string {
+// }
 
 auto str::encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void {
     static std::string_view map[256]{
@@ -4856,7 +5130,8 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
 }
 
 auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper,
-    const view_consumer_proc& proc) -> size_type {
+    const view_consumer_proc& proc)
+    -> size_type {
     if ((data == nullptr) || (len == 0)) {
         return 0;
     }

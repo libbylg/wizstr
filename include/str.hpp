@@ -785,7 +785,7 @@ struct str {
     /// * @ref unnumbering_lines, unnumbering_lines_inplace 去掉 s 中的多行的行号前缀
     /// * @ref indent_lines, indent_lines_inplace 将 s 中的所有行统一增加指定宽度的缩进空白
     /// * @ref dedent_lines, dedent_lines_inplace
-    /// * @ref unindent_lines, unindent_lines_nplacet 将 s 中的所有行统一去除指定宽度的缩进空白
+    /// * @ref unindent_lines, unindent_lines_inplace 将 s 中的所有行统一去除指定宽度的缩进空白
     /// * @ref trim_lines_indent, trim_lines_indent_inplace 将 s 中的所有行的缩进都去掉
     /// * @ref trim_lines_margin, trim_lines_margin_inplace 将 s 中的所有行的缩进以及前导符号去掉
     ///
@@ -798,22 +798,33 @@ struct str {
     static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc& proc) -> void;
     static auto count_lines(std::string_view s) -> size_type;
     static auto lines_indentation(std::string_view s) -> size_type;
-    //
+
+    //! 编号
     static auto numbering_lines(std::string_view s, size_type from_n) -> std::string;
     static auto unnumbering_lines(std::string_view s) -> std::string;
-    static auto indent_lines(std::string_view s, size_type n, value_type pad = ' ') -> std::string;
-    static auto dedent_lines(std::string_view s, size_type n, value_type pad = ' ') -> std::string;
-    static auto unindent_lines(std::string_view s, size_type n, value_type pad = ' ') -> std::string;
-    static auto trim_lines_indent(std::string_view s) -> std::string;
-    static auto trim_lines_margin(std::string_view s, value_type margin = ' ') -> std::string;
     //
     static auto numbering_lines_inplace(std::string& s, size_type from_n) -> std::string&;
     static auto unnumbering_lines_inplace(std::string& s) -> std::string&;
-    static auto indent_lines_inplace(std::string& s, size_type n, value_type pad = ' ') -> std::string&;
-    static auto dedent_lines_inplace(std::string& s, size_type n, value_type pad = ' ') -> std::string&;
-    static auto unindent_lines_nplacet(std::string& s, size_type n, value_type pad = ' ') -> std::string&;
-    static auto trim_lines_indent_inplace(std::string& s) -> std::string&;
-    static auto trim_lines_margin_inplace(std::string& s, value_type margin = ' ') -> std::string&;
+
+    //! 缩进
+    static auto indent_lines(std::string_view s, size_type n) -> std::string;
+    static auto dedent_lines(std::string_view s, size_type n) -> std::string;
+    static auto align_indent_lines(std::string_view s, size_type n) -> std::string;
+    static auto trim_indent_lines(std::string_view s) -> std::string;
+    static auto simplify_indent_lines(std::string_view s) -> std::string;
+    //
+    static auto indent_lines_inplace(std::string& s, size_type n) -> std::string&;
+    static auto dedent_lines_inplace(std::string& s, size_type n) -> std::string&;
+    static auto align_indent_lines_inplace(std::string& s, size_type n) -> std::string&;
+    static auto trim_indent_lines_inplace(std::string& s) -> std::string&;
+    static auto simplify_indent_lines_inplace(std::string& s) -> std::string&;
+
+    //! 留边
+    static auto margin_lines(std::string_view s, size_type n, value_type margin_ch = '|') -> std::string;
+    static auto trim_margin_lines(std::string_view s, value_type margin_ch = ' ') -> std::string;
+    //
+    static auto margin_lines_inplace(std::string& s, size_type n, value_type margin_ch = ' ') -> std::string&;
+    static auto trim_margin_lines_inplace(std::string& s, value_type margin_ch = ' ') -> std::string&;
 
     //! 单词 @anchor{words}
     ///
@@ -860,12 +871,12 @@ struct str {
     ///
     /// @param s 被处理的字符串
     /// @param pattern 指定字符串的环绕模式
-    static auto surround(std::string_view s, std::string_view pattern = "#(#)") -> std::string;
-    static auto surround_inplace(std::string_view s, std::string_view pattern = "#(#)") -> std::string;
+    static auto surround(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string;
+    static auto surround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
     //
-    static auto unsurround_view(std::string_view s, std::string_view mode = "#(#)") -> std::string_view;
-    static auto unsurround(std::string_view s, std::string_view mode = "#(#)") -> std::string;
-    static auto unsurround_inplace(std::string_view s, std::string_view mode = "#(#)") -> std::string;
+    static auto unsurround_view(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string_view;
+    static auto unsurround(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string;
+    static auto unsurround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
 
     //! 反转：字符串逆序
     ///
@@ -1164,6 +1175,12 @@ struct str {
     /// * `std::string_view` : 表示子串作为分隔符
     /// * `view_search_proc` : 同样以子串作为分隔符
     /// @return 返回依次由分隔符左侧的子串，分隔符自身，分隔符右侧子串组成的 tuple
+    static auto partition_range(std::string_view s, charset_type charset) -> std::tuple<range_type, range_type, range_type>;
+    static auto partition_range(std::string_view s, const char_match_proc& proc) -> std::tuple<range_type, range_type, range_type>;
+    static auto partition_range(std::string_view s, std::string_view sep) -> std::tuple<range_type, range_type, range_type>;
+    static auto partition_range(std::string_view s, const std::regex& pattern) -> std::tuple<range_type, range_type, range_type>;
+    static auto partition_range(std::string_view s, const range_search_proc& proc) -> std::tuple<range_type, range_type, range_type>;
+    //
     static auto partition_view(std::string_view s, charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
