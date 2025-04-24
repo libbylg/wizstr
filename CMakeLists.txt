@@ -19,8 +19,8 @@ endif ()
 
 
 #   Import sub-modules
-include(test/test.cmake)
 include(src/src.cmake)
+include(test/test.cmake)
 
 list(APPEND QUALITY_OPTIONS -Wall)
 list(APPEND QUALITY_OPTIONS -Wextra)
