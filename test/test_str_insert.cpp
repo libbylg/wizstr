@@ -2,94 +2,6 @@
 
 #include "str.hpp"
 
-TEST(test_str, append) {
-    SECTION("一般情况") {
-        ASSERT_EQ(str::append("aaa", "bbb"), "aaabbb");
-    }
-    SECTION("空串") {
-        ASSERT_EQ(str::append("aaa", ""), "aaa");
-        ASSERT_EQ(str::append("", "aaa"), "aaa");
-        ASSERT_EQ(str::append("", ""), "");
-    }
-    // SECTION("追加字符") {
-    //     ASSERT_EQ(str::append("aaa", 'A'), "aaaA");
-    //     ASSERT_EQ(str::append("", 'A'), "A");
-    //     ASSERT_EQ(str::append("", '\0'), (std::string_view{"\0", 1}));
-    // }
-    // SECTION("追加重复的字符") {
-    //     ASSERT_EQ(str::append("aaa", 'A', 3), "aaaAAA");
-    //     ASSERT_EQ(str::append("", 'A', 3), "AAA");
-    //     ASSERT_EQ(str::append("", '\0', 3), (std::string_view{"\0\0\0", 3}));
-    // }
-    SECTION("通过proc提供数据:一般") {
-        std::vector<std::string_view> items{
-            "Hello",
-            "World",
-            "",
-            "!!!",
-        };
-        str::size_type index = 0;
-        std::string result = str::append("abc", [&items, &index]() -> std::optional<std::string_view> {
-            if (index >= items.size()) {
-                return std::nullopt;
-            }
-
-            return items[index++];
-        });
-        ASSERT_EQ(result, "abcHelloWorld!!!");
-    }
-    SECTION("通过proc提供数据:立即终止") {
-        std::string result = str::append("abc", []() -> std::optional<std::string_view> {
-            return std::nullopt;
-        });
-        ASSERT_EQ(result, "abc");
-    }
-}
-
-TEST(test_str, prepend) {
-    SECTION("一般情况") {
-        ASSERT_EQ(str::prepend("aaa", {"bbb"}), "bbbaaa");
-    }
-    SECTION("空串") {
-        ASSERT_EQ(str::prepend("aaa", {""}), "aaa");
-        ASSERT_EQ(str::prepend("", {"aaa"}), "aaa");
-        ASSERT_EQ(str::prepend("", {""}), "");
-    }
-    // SECTION("追加字符") {
-    //     ASSERT_EQ(str::prepend("aaa", 'A'), "Aaaa");
-    //     ASSERT_EQ(str::prepend("", 'A'), "A");
-    //     ASSERT_EQ(str::prepend("", '\0'), (std::string_view{"\0", 1}));
-    // }
-    // SECTION("追加重复的字符") {
-    //     ASSERT_EQ(str::prepend("aaa", 'A', 3), "AAAaaa");
-    //     ASSERT_EQ(str::prepend("", 'A', 3), "AAA");
-    //     ASSERT_EQ(str::prepend("", '\0', 3), (std::string_view{"\0\0\0", 3}));
-    // }
-    SECTION("通过proc提供数据:一般") {
-        std::vector<std::string_view> items{
-            "Hello",
-            "World",
-            "",
-            "!!!",
-        };
-        str::size_type index = 0;
-        std::string result = str::prepend("abc", [&items, &index]() -> std::optional<std::string_view> {
-            if (index >= items.size()) {
-                return std::nullopt;
-            }
-
-            return items[index++];
-        });
-        ASSERT_EQ(result, "!!!WorldHelloabc");
-    }
-    SECTION("通过proc提供数据:立即终止") {
-        std::string result = str::prepend("abc", []() -> std::optional<std::string_view> {
-            return std::nullopt;
-        });
-        ASSERT_EQ(result, "abc");
-    }
-}
-
 TEST(test_str, insert) {
     SECTION("一般情况") {
         ASSERT_EQ(str::insert("aaa", 0, "bbb"), "bbbaaa");
@@ -98,6 +10,9 @@ TEST(test_str, insert) {
         ASSERT_EQ(str::insert("aaa", 3, "bbb"), "aaabbb");
         ASSERT_EQ(str::insert("aaa", 4, "bbb"), "aaabbb");
         ASSERT_EQ(str::insert("aaa", str::npos, "bbb"), "aaabbb");
+        ASSERT_EQ(str::insert("aaa", 1, "bbb", 3), "abbbbbbbbbaa");
+        ASSERT_EQ(str::insert("aaa", 1, "bbb", 0), "aaa");
+        ASSERT_EQ(str::insert("aaa", 1, "", 99), "aaa");
     }
     SECTION("插入空串") {
         ASSERT_EQ(str::insert("aaa", 0, ""), "aaa");

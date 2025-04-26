@@ -44,7 +44,7 @@ else ()
 endif ()
 
 
-add_executable(gendoc doc/gendoc.cpp include/str.hpp src/str.cpp)
-set_target_properties(gendoc PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/doc)
-target_compile_options(gendoc PRIVATE ${QUALITY_OPTIONS})
-target_include_directories(gendoc PRIVATE include ${INCLUDEPATH})
+#add_executable(gendoc doc/gendoc.cpp include/str.hpp src/str.cpp)
+#set_target_properties(gendoc PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/doc)
+#target_compile_options(gendoc PRIVATE ${QUALITY_OPTIONS})
+#target_include_directories(gendoc PRIVATE include ${INCLUDEPATH})

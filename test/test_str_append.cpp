@@ -1,0 +1,51 @@
+#include "tester.hpp"
+
+#include "str.hpp"
+
+#include <list>
+
+TEST(test_str, append) {
+    SECTION("一般情况") {
+        ASSERT_EQ(str::append("aaa", "bbb"), "aaabbb");
+        ASSERT_EQ(str::append("aaa", "bbb", 0), "aaa");
+        ASSERT_EQ(str::append("aaa", "bbb", 3), "aaabbbbbbbbb");
+    }
+    SECTION("空串") {
+        ASSERT_EQ(str::append("aaa", ""), "aaa");
+        ASSERT_EQ(str::append("aaa", "", 3), "aaa");
+        ASSERT_EQ(str::append("", "aaa"), "aaa");
+        ASSERT_EQ(str::append("", "aaa", 0), "");
+        ASSERT_EQ(str::append("", ""), "");
+        ASSERT_EQ(str::append("", "", 3), "");
+    }
+    SECTION("给定序列") {
+        ASSERT_EQ(str::append("aaa", {""}), "aaa");
+        ASSERT_EQ(str::append("aaa", {"", "def"}), "aaadef");
+        ASSERT_EQ(str::append("aaa", std::array{"mmm", "nnn"}), "aaammmnnn");
+        ASSERT_EQ(str::append("aaa", std::vector<std::string>{"", "nnn"}), "aaannn");
+        ASSERT_EQ(str::append("", {}), "");
+    }
+    SECTION("通过proc提供数据:一般") {
+        std::vector<std::string_view> items{
+                "Hello",
+                "World",
+                "",
+                "!!!",
+        };
+        str::size_type index = 0;
+        std::string result = str::append("abc", [&items, &index]() -> std::optional<std::string_view> {
+            if (index >= items.size()) {
+                return std::nullopt;
+            }
+
+            return items[index++];
+        });
+        ASSERT_EQ(result, "abcHelloWorld!!!");
+    }
+    SECTION("通过proc提供数据:立即终止") {
+        std::string result = str::append("abc", []() -> std::optional<std::string_view> {
+            return std::nullopt;
+        });
+        ASSERT_EQ(result, "abc");
+    }
+}
