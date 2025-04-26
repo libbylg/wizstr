@@ -131,9 +131,8 @@ auto str::insert_inplace(std::string &s, size_type pos, std::string_view other, 
         return s;
     }
 
-    // TODO 性能不是最优的，主要是会导致多次扩容
     size_type count = 0;
-    str::insert(s, pos, [times_n, &count, &other]() -> std::optional<std::string_view> {
+    s = str::insert(s, pos, [times_n, &count, &other]() -> std::optional<std::string_view> {
         if (count >= times_n) {
             return {};
         }
@@ -151,7 +150,7 @@ auto str::insert_inplace(std::string &s, size_type pos, value_type ch, size_type
     }
 
     if (pos >= s.size()) {
-        s.append(ch, times_n);
+        s.append(times_n, ch);
         return s;
     }
 
@@ -165,7 +164,7 @@ auto str::insert_inplace(std::string &s, size_type pos, value_type ch, size_type
     std::string result;
     result.reserve(s.size() + times_n);
     result.append(s.data(), pos);
-    result.append(ch, times_n);
+    result.append(times_n, ch);
     result.append(s.data() + pos, s.size() - pos);
     s = std::move(result);
     return s;

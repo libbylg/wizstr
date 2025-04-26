@@ -13,7 +13,9 @@ TEST(test_str, icompare) {
     }
     SECTION("长短不一的对比") {
         ASSERT_TRUE(str::icompare("abc", "ABCdef") < 0);
+        ASSERT_TRUE(str::icompare("abm", "ABCdef") > 0);
         ASSERT_TRUE(str::icompare("ABCdef", "abc") > 0);
+        ASSERT_TRUE(str::icompare("ABadef", "abc") < 0);
     }
     SECTION("空串") {
         ASSERT_EQ(str::icompare("", ""), 0);

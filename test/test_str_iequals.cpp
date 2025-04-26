@@ -14,7 +14,9 @@ TEST(test_str, iequals) {
     }
     SECTION("长短不一的对比") {
         ASSERT_EQ(str::iequals("abc", "ABCdef"), false);
+        ASSERT_EQ(str::iequals("abM", "ABCdef"), false);
         ASSERT_EQ(str::iequals("ABCdef", "abc"), false);
+        ASSERT_EQ(str::iequals("ABMdef", "abc"), false);
     }
     SECTION("空串") {
         ASSERT_EQ(str::iequals("", ""), true);
