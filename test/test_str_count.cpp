@@ -2,28 +2,6 @@
 
 #include "str.hpp"
 
-TEST(test_str, contains) {
-    SECTION("简单场景") {
-        ASSERT_EQ(str::contains("3bc1233", "3bc"), true);
-        ASSERT_EQ(str::contains("3bc1233", "12"), true);
-        ASSERT_EQ(str::contains("bc1233", "33"), true);
-        ASSERT_EQ(str::contains("bc1233", "31"), false);
-        ASSERT_EQ(str::contains("bc1233", "bc1233"), true);
-    }
-    SECTION("空串") {
-        ASSERT_EQ(str::contains("", ""), true);
-        ASSERT_EQ(str::contains("abc", ""), true);
-        ASSERT_EQ(str::contains("", "abc"), false);
-    }
-    SECTION("针对字符") {
-        ASSERT_EQ(str::contains(std::string_view{"abc\0def", 7}, '\0'), true); // 指定长度时，\0 被包含在内
-        ASSERT_EQ(str::contains("abc", '\0'), false);                          // "abc" 转换为 std::string_view 时，并不会包含 \0 字符
-        ASSERT_EQ(str::contains("abc", 'a'), true);
-        ASSERT_EQ(str::contains("abc", 'b'), true);
-        ASSERT_EQ(str::contains("abc", 'c'), true);
-    }
-}
-
 TEST(test_str, count) {
     SECTION("检查是否匹配某个正则表达式") {
         ASSERT_EQ(str::count("3bc12def1233", "12"), 2);

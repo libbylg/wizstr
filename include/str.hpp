@@ -413,7 +413,6 @@ struct str {
     /// @param max_n 表示最多比较前 max_n 个字符
     /// @return 返回正数，表示 s 大于 other；返回负值，表示 s 小于 other；返回 0，表示 s 和 other 相等。
     static auto icompare(std::string_view s, std::string_view other) -> int;
-
     static auto icompare(std::string_view s, std::string_view other, size_type max_n) -> int;
 
     //! 不区分大小写的相等測試 @anchor{iequals}
@@ -426,7 +425,6 @@ struct str {
     /// @param max_n 表示最多比较前 max_n 个字符
     /// @return 如果相等，返回 true，否则返回 false
     static auto iequals(std::string_view s, std::string_view other) -> bool;
-
     static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
 
     //! 基于通配符的匹配检测 @anchor{wildcmp}}
@@ -437,8 +435,10 @@ struct str {
     /// @param pattern 通配串
     /// @return 如果 s 字符串匹配 pattern，返回 true，否则返回 false。
     static auto wildcmp(const_pointer s, const_pointer pattern) -> bool;
-
     static auto wildcmp(std::string_view s, std::string_view pattern) -> bool;
+    //
+    static auto iwildcmp(const_pointer s, const_pointer pattern) -> bool;
+    static auto iwildcmp(std::string_view s, std::string_view pattern) -> bool;
 
     //! 判断两个字符串的包含关系 @anchor{contains}
     ///
@@ -452,15 +452,14 @@ struct str {
     /// @param charset 指定一个字符集，s 中只要有任意一个字符在 charset 中就表示 s 中包含 charset
     /// @param pattern 指定一个正则表达式，只要 s 中有任意子串匹配 pattern，表示 s 中包含 pattern
     /// @return 如果 s 包含指定的字符或者字符串或者某种模式，返回 true，否则返回 false。
-    static auto contains(std::string_view s, std::string_view other, bool ignore_case = false) -> bool;
-
-    static auto contains(std::string_view s, value_type ch, bool ignore_case = false) -> bool;
-
+    static auto contains(std::string_view s, std::string_view other) -> bool;
+    static auto contains(std::string_view s, value_type ch) -> bool;
     static auto contains(std::string_view s, const char_match_proc &proc) -> bool;
-
     static auto contains(std::string_view s, const charset_type &charset) -> bool;
-
     static auto contains(std::string_view s, const std::regex &pattern) -> bool;
+    //
+    static auto icontains(std::string_view s, std::string_view other) -> bool;
+    static auto icontains(std::string_view s, value_type ch) -> bool;
 
     //! 子串统计 @anchor{count}
     ///
@@ -473,13 +472,9 @@ struct str {
     /// @param ignore_case 如果为 true，表示忽略大小写差异，否则，表示采用大小写敏感的方式查找。
     /// @return 返回满足条件的子串或者字符的数量。特别的，当 s 或者 other 为空时，总是返回 0
     static auto count(std::string_view s, std::string_view other) -> size_type;
-
     static auto count(std::string_view s, value_type ch) -> size_type;
-
     static auto count(std::string_view s, const char_match_proc &proc) -> size_type;
-
     static auto count(std::string_view s, const charset_type &charset) -> size_type;
-
     static auto count(std::string_view s, const std::regex &pattern) -> size_type;
 
     //! 前缀操作 @anchor{prefix}

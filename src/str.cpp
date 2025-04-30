@@ -216,19 +216,24 @@ auto str::iequals(std::string_view s, std::string_view other, size_type max_n) -
     return str::iequals(s, other);
 }
 
-auto str::wildcmp(const_pointer pattern, const_pointer s) -> bool {
+auto str::wildcmp(const_pointer s, const_pointer pattern) -> bool {
     const_pointer cp = nullptr;
     const_pointer mp = nullptr;
 
+    // 非星号
     while ((*s) && (*pattern != '*')) {
+        // 如果遇到不匹配的情况
         if ((*pattern != *s) && (*pattern != '?')) {
             return false;
         }
+
+        // 字符相等或者?被匹配
         pattern++;
         s++;
     }
 
     while (*s) {
+        // 星号模式匹配任何字符
         if (*pattern == '*') {
             if (!*++pattern) {
                 return true;
@@ -251,44 +256,204 @@ auto str::wildcmp(const_pointer pattern, const_pointer s) -> bool {
 }
 
 auto str::wildcmp(std::string_view s, std::string_view pattern) -> bool {
-    const_pointer cp = nullptr;
-    const_pointer mp = nullptr;
+    if (pattern.empty()) {
+        return s.empty();
+    }
 
     const_pointer s_ptr = s.data();
     const_pointer p_ptr = pattern.data();
     const_pointer s_end = s.data() + s.size();
     const_pointer p_end = pattern.data() + pattern.size();
-    while ((s_ptr < s_end) && (pattern < p_end) && (*p_ptr != '*')) {
-        if ((*p_ptr != *s_ptr) && (*p_ptr != '?')) {
-            return false;
-        }
-        p_ptr++;
-        s_ptr++;
-    }
-
-    while (s_ptr < s_end) {
-        if (*p_ptr == '*') {
-            if (!*++p_ptr) {
-                return true;
+    if (s_ptr < s_end) {
+        while (*p_ptr != '*') {
+            if ((*p_ptr != *s_ptr) && (*p_ptr != '?')) {
+                return false;
             }
-            mp = p_ptr;
-            cp = s_ptr + 1;
-        } else if ((*p_ptr == *s_ptr) || (*p_ptr == '?')) {
+
             p_ptr++;
             s_ptr++;
-        } else {
-            p_ptr = mp;
-            s_ptr = cp++;
+
+            // 模式串结束了，但是还有更多字符没匹配完
+            if (p_ptr >= p_end) {
+                return (s_ptr >= s_end);
+            }
         }
     }
 
-    while (*p_ptr == '*') {
-        p_ptr++;
+    const_pointer ms = nullptr;
+    const_pointer mp = nullptr;
+    while (s_ptr < s_end) {
+        // 遇到星号其实表示星号后的字符要匹配
+        if (*p_ptr == '*') {
+            ++p_ptr;
+
+            // 星号是最后一个模式，那么星号一定能匹配后续任何字符
+            if (p_ptr >= p_end) {
+                return true;
+            }
+
+            // 星号后面还有更多字符，那么先记忆回朔的位置
+            mp = p_ptr;
+            ms = s_ptr + 1;
+            continue;
+        }
+
+        // 非星号的匹配方式
+        if ((*p_ptr == *s_ptr) || (*p_ptr == '?')) {
+            p_ptr++;
+            s_ptr++;
+
+            // 如果模式串还未结束，尝试继续匹配后续部分
+            if (p_ptr < p_end) {
+                continue;
+            }
+
+            // 如果模式串和被匹配串同时结束
+            if (s_ptr >= s_end) {
+                return true;
+            }
+
+            // 如果模式串结束了，但是被匹配串未结束，尝试回退后继续匹配
+        }
+
+        // 当前不匹配，回退继续查找
+        p_ptr = mp;
+        s_ptr = ms++;
     }
-    return !*p_ptr;
+
+    // 到这里，被匹配串已经全部吃掉，检查模式串后续是否是多余的字符
+    while (p_ptr < p_end) {
+        if (*p_ptr == '*') {
+            p_ptr++;
+            continue;
+        }
+        break;
+    }
+
+    // 如果模式串中的星号吃掉后，还有多余部分，说明不匹配
+    return (p_ptr >= p_end);
 }
 
-auto str::contains(std::string_view s, std::string_view other, bool ignore_case) -> bool {
+auto str::iwildcmp(const_pointer s, const_pointer pattern) -> bool {
+
+    const_pointer cp = nullptr;
+    const_pointer mp = nullptr;
+
+    // 非星号
+    while ((*s) && (*pattern != '*')) {
+        // 如果遇到不匹配的情况
+        if ((std::tolower(*pattern) != std::tolower(*s)) && (*pattern != '?')) {
+            return false;
+        }
+
+        // 字符相等或者?被匹配
+        pattern++;
+        s++;
+    }
+
+    while (*s) {
+        // 星号模式匹配任何字符
+        if (*pattern == '*') {
+            if (!*++pattern) {
+                return true;
+            }
+            mp = pattern;
+            cp = s + 1;
+        } else if (std::tolower(*pattern) == std::tolower(*s) || (*pattern == '?')) {
+            pattern++;
+            s++;
+        } else {
+            pattern = mp;
+            s = cp++;
+        }
+    }
+
+    while (*pattern == '*') {
+        pattern++;
+    }
+    return !*pattern;
+}
+
+auto str::iwildcmp(std::string_view s, std::string_view pattern) -> bool {
+    if (pattern.empty()) {
+        return s.empty();
+    }
+
+    const_pointer s_ptr = s.data();
+    const_pointer p_ptr = pattern.data();
+    const_pointer s_end = s.data() + s.size();
+    const_pointer p_end = pattern.data() + pattern.size();
+    if (s_ptr < s_end) {
+        while (*p_ptr != '*') {
+            if ((std::tolower(*p_ptr) != std::tolower(*s_ptr)) && (*p_ptr != '?')) {
+                return false;
+            }
+
+            p_ptr++;
+            s_ptr++;
+
+            // 模式串结束了，但是还有更多字符没匹配完
+            if (p_ptr >= p_end) {
+                return (s_ptr >= s_end);
+            }
+        }
+    }
+
+    const_pointer ms = nullptr;
+    const_pointer mp = nullptr;
+    while (s_ptr < s_end) {
+        // 遇到星号其实表示星号后的字符要匹配
+        if (*p_ptr == '*') {
+            ++p_ptr;
+
+            // 星号是最后一个模式，那么星号一定能匹配后续任何字符
+            if (p_ptr >= p_end) {
+                return true;
+            }
+
+            // 星号后面还有更多字符，那么先记忆回朔的位置
+            mp = p_ptr;
+            ms = s_ptr + 1;
+            continue;
+        }
+
+        // 非星号的匹配方式
+        if ((std::tolower(*p_ptr) == (*s_ptr)) || (*p_ptr == '?')) {
+            p_ptr++;
+            s_ptr++;
+
+            // 如果模式串还未结束，尝试继续匹配后续部分
+            if (p_ptr < p_end) {
+                continue;
+            }
+
+            // 如果模式串和被匹配串同时结束
+            if (s_ptr >= s_end) {
+                return true;
+            }
+
+            // 如果模式串结束了，但是被匹配串未结束，尝试回退后继续匹配
+        }
+
+        // 当前不匹配，回退继续查找
+        p_ptr = mp;
+        s_ptr = ms++;
+    }
+
+    // 到这里，被匹配串已经全部吃掉，检查模式串后续是否是多余的字符
+    while (p_ptr < p_end) {
+        if (*p_ptr == '*') {
+            p_ptr++;
+            continue;
+        }
+        break;
+    }
+
+    // 如果模式串中的星号吃掉后，还有多余部分，说明不匹配
+    return (p_ptr >= p_end);
+}
+
+auto str::contains(std::string_view s, std::string_view other) -> bool {
     if (other.empty()) {
         return true;
     }
@@ -297,19 +462,17 @@ auto str::contains(std::string_view s, std::string_view other, bool ignore_case)
         return false;
     }
 
-    if (ignore_case) {
-        return std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
-            return std::tolower(a) == std::tolower(b);
-        }) != s.cend();
-    } else {
-        return std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
-            return a == b;
-        }) != s.cend();
-    }
+    return std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
+        return a == b;
+    }) != s.cend();
 }
 
-auto str::contains(std::string_view s, value_type ch, bool ignore_case) -> bool {
-    return contains(s, std::string_view{&ch, 1}, ignore_case);
+auto str::contains(std::string_view s, value_type ch) -> bool {
+    return contains(s, std::string_view{&ch, 1});
+}
+
+auto str::contains(std::string_view s, const char_match_proc &proc) -> bool {
+    return std::find_if(s.begin(), s.end(), proc) != s.cend();
 }
 
 auto str::contains(std::string_view s, const charset_type &charset) -> bool {
@@ -320,6 +483,24 @@ auto str::contains(std::string_view s, const charset_type &charset) -> bool {
 
 auto str::contains(std::string_view s, const std::regex &pattern) -> bool {
     return std::regex_search(s.begin(), s.end(), pattern);
+}
+
+auto str::icontains(std::string_view s, std::string_view other) -> bool {
+    if (other.empty()) {
+        return true;
+    }
+
+    if (s.empty()) {
+        return false;
+    }
+
+    return std::search(s.begin(), s.end(), other.begin(), other.end(), [](value_type a, value_type b) -> bool {
+        return std::tolower(a) == std::tolower(b);
+    }) != s.cend();
+}
+
+auto str::icontains(std::string_view s, value_type ch) -> bool {
+    return icontains(s, std::string_view{&ch, 1});
 }
 
 auto str::count(std::string_view s, std::string_view other) -> size_type {
@@ -340,6 +521,16 @@ auto str::count(std::string_view s, std::string_view other) -> size_type {
         pos += other.size();
     }
 
+    return count;
+}
+
+auto str::count(std::string_view s, const char_match_proc &proc) -> size_type {
+    size_type count = 0;
+    for (value_type ch: s) {
+        if (proc(ch)) {
+            count++;
+        }
+    }
     return count;
 }
 
@@ -2652,9 +2843,9 @@ str::split(std::string_view s, const char_match_proc &sepset, size_type max_n, c
         auto itr_begin = s.begin();
         std::advance(itr_begin, pos_start);
         auto itr_pos = std::find_if(
-                itr_begin, s.end(), [&sepset](value_type ch) -> bool {
-                    return sepset(ch);
-                });
+            itr_begin, s.end(), [&sepset](value_type ch) -> bool {
+                return sepset(ch);
+            });
         size_type pos_end = std::distance(s.begin(), itr_pos);
         if (pos_end == std::string::npos) {
             break;
@@ -2681,18 +2872,18 @@ str::split(std::string_view s, const char_match_proc &sepset, size_type max_n, c
 auto
 str::split(std::string_view s, const charset_type &sepset, size_type max_n, const view_consumer_proc &proc) -> void {
     split(
-            s, [&sepset](value_type ch) -> bool {
-                return sepset.get(ch);
-            },
-            max_n, proc);
+        s, [&sepset](value_type ch) -> bool {
+            return sepset.get(ch);
+        },
+        max_n, proc);
 }
 
 auto str::split(std::string_view s, const charset_type &sepset, const view_consumer_proc &proc) -> void {
     split(
-            s, [&sepset](value_type ch) -> bool {
-                return sepset.get(ch);
-            },
-            npos, proc);
+        s, [&sepset](value_type ch) -> bool {
+            return sepset.get(ch);
+        },
+        npos, proc);
 }
 
 auto str::split(std::string_view s, const charset_type &sepset, size_type max_n) -> std::vector<std::string> {
@@ -2776,15 +2967,15 @@ auto str::split_view(std::string_view s, std::string_view sepset, size_type max_
 auto str::split_view(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
     split(
-            s,
-            [](value_type ch) -> bool {
-                return std::isspace(ch);
-            },
-            max_n,
-            [&result](std::string_view item) -> int {
-                result.emplace_back(item);
-                return 0;
-            });
+        s,
+        [](value_type ch) -> bool {
+            return std::isspace(ch);
+        },
+        max_n,
+        [&result](std::string_view item) -> int {
+            result.emplace_back(item);
+            return 0;
+        });
     return result;
 }
 
@@ -4489,134 +4680,134 @@ auto str::replace_rawname_inplace(std::string &s, std::string_view name) -> std:
 
 auto str::encode_cstr(std::string_view s, const view_consumer_proc &proc) -> void {
     static std::string_view map[256]{
-            "\\x00", // 0	0	00	NUL (null)
-            "\\x01", // 1	1	01	SOH (start of header)
-            "\\x02", // 2	2	02	STX (start of text)
-            "\\x03", // 3	3	03	ETX (end of text)
-            "\\x04", // 4	4	04	EOT (end of transmission)
-            "\\x05", // 5	5	05	ENQ (enquiry)
-            "\\x06", // 6	6	06	ACK (acknowledge)
-            "\\a",   // 7	7	07	BEL (bell)
-            "\\b",   // 8	10	08	BS (backspace)
-            "\\t",   // 9	11	09	HT (horizontal tab)
-            "\\n",   // 10	12	0a	LF (line feed - new line)
-            "\\b",   // 11	13	0b	VT (vertical tab)
-            "\\f",   // 12	14	0c	FF (form feed - new page)
-            "\\r",   // 13	15	0d	CR (carriage return)
-            "\\x0e", // 14	16	0e	SO (shift out)
-            "\\x0f", // 15	17	0f	SI (shift in)
-            "\\x10", // 16	20	10	DLE (data link escape)
-            "\\x11", // 17	21	11	DC1 (device control 1)
-            "\\x12", // 18	22	12	DC2 (device control 2)
-            "\\x13", // 19	23	13	DC3 (device control 3)
-            "\\x14", // 20	24	14	DC4 (device control 4)
-            "\\x15", // 21	25	15	NAK (negative acknowledge)
-            "\\x16", // 22	26	16	SYN (synchronous idle)
-            "\\x17", // 23	27	17	ETB (end of transmission block)
-            "\\x18", // 24	30	18	CAN (cancel)
-            "\\x19", // 25	31	19	EM (end of medium)
-            "\\x1a", // 26	32	1a	SUB (substitute)
-            "\\x1b", // 27	33	1b	ESC (escape)
-            "\\x1c", // 28	34	1c	FS (file separator)
-            "\\x1d", // 29	35	1d	GS (group separator)
-            "\\x1e", // 30	36	1e	RS (record separator)
-            "\\x1f", // 31	37	1f	US (unit separator)
-            " ",     // 32	40	20	(space)
-            "!",     // 33	41	21	!
-            "\\\"",  // 34	42	22	"
-            "#",     // 35	43	23	#
-            "$",     // 36	44	24	$
-            "%",     // 37	45	25	%
-            "&",     // 38	46	26	&
-            "\\'",   // 39	47	27	'
-            "(",     // 40	50	28	(
-            ")",     // 41	51	29	)
-            "*",     // 42	52	2a	*
-            "+",     // 43	53	2b	+
-            ",",     // 44	54	2c	,
-            "-",     // 45	55	2d	-
-            ".",     // 46	56	2e	.
-            "/",     // 47	57	2f	/
-            "0",     // 48	60	30	0
-            "1",     // 49	61	31	1
-            "2",     // 50	62	32	2
-            "3",     // 51	63	33	3
-            "4",     // 52	64	34	4
-            "5",     // 53	65	35	5
-            "6",     // 54	66	36	6
-            "7",     // 55	67	37	7
-            "8",     // 56	70	38	8
-            "9",     // 57	71	39	9
-            ":",     // 58	72	3a	:
-            ";",     // 59	73	3b	;
-            "<",     // 60	74	3c	<
-            "=",     // 61	75	3d	=
-            ">",     // 62	76	3e	>
-            "?",     // 63	77	3f	?
-            "@",     // 64	100	40	@
-            "A",     // 65	101	41	A
-            "B",     // 66	102	42	B
-            "C",     // 67	103	43	C
-            "D",     // 68	104	44	D
-            "E",     // 69	105	45	E
-            "F",     // 70	106	46	F
-            "G",     // 71	107	47	G
-            "H",     // 72	110	48	H
-            "I",     // 73	111	49	I
-            "J",     // 74	112	4a	J
-            "K",     // 75	113	4b	K
-            "L",     // 76	114	4c	L
-            "M",     // 77	115	4d	M
-            "N",     // 78	116	4e	N
-            "O",     // 79	117	4f	O
-            "P",     // 80	120	50	P
-            "Q",     // 81	121	51	Q
-            "R",     // 82	122	52	R
-            "S",     // 83	123	53	S
-            "T",     // 84	124	54	T
-            "U",     // 85	125	55	U
-            "V",     // 86	126	56	V
-            "W",     // 87	127	57	W
-            "X",     // 88	130	58	X
-            "Y",     // 89	131	59	Y
-            "Z",     // 90	132	5a	Z
-            "[",     // 91	133	5b	[
-            "\\\\",  // 92	134	5c	\ <---
-            "]",     // 93	135	5d	]
-            "^",     // 94	136	5e	^
-            "_",     // 95	137	5f	_
-            "`",     // 96	140	60	`
-            "a",     // 97	141	61	a
-            "b",     // 98	142	62	b
-            "c",     // 99	143	63	c
-            "d",     // 100	144	64	d
-            "e",     // 101	145	65	e
-            "f",     // 102	146	66	f
-            "g",     // 103	147	67	g
-            "h",     // 104	150	68	h
-            "i",     // 105	151	69	i
-            "j",     // 106	152	6a	j
-            "k",     // 107	153	6b	k
-            "l",     // 108	154	6c	l
-            "m",     // 109	155	6d	m
-            "n",     // 110	156	6e	n
-            "o",     // 111	157	6f	o
-            "p",     // 112	160	70	p
-            "q",     // 113	161	71	q
-            "r",     // 114	162	72	r
-            "s",     // 115	163	73	s
-            "t",     // 116	164	74	t
-            "u",     // 117	165	75	u
-            "v",     // 118	166	76	v
-            "w",     // 119	167	77	w
-            "x",     // 120	170	78	x
-            "y",     // 121	171	79	y
-            "z",     // 122	172	7a	z
-            "{",     // 123	173	7b	{
-            "|",     // 124	174	7c	|
-            "}",     // 125	175	7d	}
-            "~",     // 126	176	7e	~
-            "\\x7f", // 127	177	7f	DEL (delete)
+        "\\x00", // 0	0	00	NUL (null)
+        "\\x01", // 1	1	01	SOH (start of header)
+        "\\x02", // 2	2	02	STX (start of text)
+        "\\x03", // 3	3	03	ETX (end of text)
+        "\\x04", // 4	4	04	EOT (end of transmission)
+        "\\x05", // 5	5	05	ENQ (enquiry)
+        "\\x06", // 6	6	06	ACK (acknowledge)
+        "\\a",   // 7	7	07	BEL (bell)
+        "\\b",   // 8	10	08	BS (backspace)
+        "\\t",   // 9	11	09	HT (horizontal tab)
+        "\\n",   // 10	12	0a	LF (line feed - new line)
+        "\\b",   // 11	13	0b	VT (vertical tab)
+        "\\f",   // 12	14	0c	FF (form feed - new page)
+        "\\r",   // 13	15	0d	CR (carriage return)
+        "\\x0e", // 14	16	0e	SO (shift out)
+        "\\x0f", // 15	17	0f	SI (shift in)
+        "\\x10", // 16	20	10	DLE (data link escape)
+        "\\x11", // 17	21	11	DC1 (device control 1)
+        "\\x12", // 18	22	12	DC2 (device control 2)
+        "\\x13", // 19	23	13	DC3 (device control 3)
+        "\\x14", // 20	24	14	DC4 (device control 4)
+        "\\x15", // 21	25	15	NAK (negative acknowledge)
+        "\\x16", // 22	26	16	SYN (synchronous idle)
+        "\\x17", // 23	27	17	ETB (end of transmission block)
+        "\\x18", // 24	30	18	CAN (cancel)
+        "\\x19", // 25	31	19	EM (end of medium)
+        "\\x1a", // 26	32	1a	SUB (substitute)
+        "\\x1b", // 27	33	1b	ESC (escape)
+        "\\x1c", // 28	34	1c	FS (file separator)
+        "\\x1d", // 29	35	1d	GS (group separator)
+        "\\x1e", // 30	36	1e	RS (record separator)
+        "\\x1f", // 31	37	1f	US (unit separator)
+        " ",     // 32	40	20	(space)
+        "!",     // 33	41	21	!
+        "\\\"",  // 34	42	22	"
+        "#",     // 35	43	23	#
+        "$",     // 36	44	24	$
+        "%",     // 37	45	25	%
+        "&",     // 38	46	26	&
+        "\\'",   // 39	47	27	'
+        "(",     // 40	50	28	(
+        ")",     // 41	51	29	)
+        "*",     // 42	52	2a	*
+        "+",     // 43	53	2b	+
+        ",",     // 44	54	2c	,
+        "-",     // 45	55	2d	-
+        ".",     // 46	56	2e	.
+        "/",     // 47	57	2f	/
+        "0",     // 48	60	30	0
+        "1",     // 49	61	31	1
+        "2",     // 50	62	32	2
+        "3",     // 51	63	33	3
+        "4",     // 52	64	34	4
+        "5",     // 53	65	35	5
+        "6",     // 54	66	36	6
+        "7",     // 55	67	37	7
+        "8",     // 56	70	38	8
+        "9",     // 57	71	39	9
+        ":",     // 58	72	3a	:
+        ";",     // 59	73	3b	;
+        "<",     // 60	74	3c	<
+        "=",     // 61	75	3d	=
+        ">",     // 62	76	3e	>
+        "?",     // 63	77	3f	?
+        "@",     // 64	100	40	@
+        "A",     // 65	101	41	A
+        "B",     // 66	102	42	B
+        "C",     // 67	103	43	C
+        "D",     // 68	104	44	D
+        "E",     // 69	105	45	E
+        "F",     // 70	106	46	F
+        "G",     // 71	107	47	G
+        "H",     // 72	110	48	H
+        "I",     // 73	111	49	I
+        "J",     // 74	112	4a	J
+        "K",     // 75	113	4b	K
+        "L",     // 76	114	4c	L
+        "M",     // 77	115	4d	M
+        "N",     // 78	116	4e	N
+        "O",     // 79	117	4f	O
+        "P",     // 80	120	50	P
+        "Q",     // 81	121	51	Q
+        "R",     // 82	122	52	R
+        "S",     // 83	123	53	S
+        "T",     // 84	124	54	T
+        "U",     // 85	125	55	U
+        "V",     // 86	126	56	V
+        "W",     // 87	127	57	W
+        "X",     // 88	130	58	X
+        "Y",     // 89	131	59	Y
+        "Z",     // 90	132	5a	Z
+        "[",     // 91	133	5b	[
+        "\\\\",  // 92	134	5c	\ <---
+        "]",     // 93	135	5d	]
+        "^",     // 94	136	5e	^
+        "_",     // 95	137	5f	_
+        "`",     // 96	140	60	`
+        "a",     // 97	141	61	a
+        "b",     // 98	142	62	b
+        "c",     // 99	143	63	c
+        "d",     // 100	144	64	d
+        "e",     // 101	145	65	e
+        "f",     // 102	146	66	f
+        "g",     // 103	147	67	g
+        "h",     // 104	150	68	h
+        "i",     // 105	151	69	i
+        "j",     // 106	152	6a	j
+        "k",     // 107	153	6b	k
+        "l",     // 108	154	6c	l
+        "m",     // 109	155	6d	m
+        "n",     // 110	156	6e	n
+        "o",     // 111	157	6f	o
+        "p",     // 112	160	70	p
+        "q",     // 113	161	71	q
+        "r",     // 114	162	72	r
+        "s",     // 115	163	73	s
+        "t",     // 116	164	74	t
+        "u",     // 117	165	75	u
+        "v",     // 118	166	76	v
+        "w",     // 119	167	77	w
+        "x",     // 120	170	78	x
+        "y",     // 121	171	79	y
+        "z",     // 122	172	7a	z
+        "{",     // 123	173	7b	{
+        "|",     // 124	174	7c	|
+        "}",     // 125	175	7d	}
+        "~",     // 126	176	7e	~
+        "\\x7f", // 127	177	7f	DEL (delete)
     };
 
     if (s.empty()) {
@@ -5510,7 +5701,7 @@ public:
     using const_iterator = const char **;
 
     argv_view(int argc, char *argv[])
-            : argc_{argc}, argv_{argv} {
+        : argc_{argc}, argv_{argv} {
         assert(argc >= 0);
     }
 
@@ -5794,20 +5985,6 @@ auto str::foreach_words(std::string_view s, const view_consumer_proc &proc) -> v
     str::foreach_words(s, 0, [&s, &proc](range_type range) -> int {
         return proc(std::string_view{s.data() + range.pos, range.len});
     });
-}
-
-auto str::contains(std::string_view s, const char_match_proc &proc) -> bool {
-    return std::find_if(s.begin(), s.end(), proc) != s.cend();
-}
-
-auto str::count(std::string_view s, const char_match_proc &proc) -> size_type {
-    size_type count = 0;
-    for (value_type ch: s) {
-        if (proc(ch)) {
-            count++;
-        }
-    }
-    return count;
 }
 
 auto str::foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc &proc) -> void {
