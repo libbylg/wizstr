@@ -38,4 +38,16 @@ TEST(test_str, count) {
             return std::isupper(ch);
         }), 0);
     }
+    SECTION("指定字符集") {
+        ASSERT_EQ(str::count("3bc12def1233", str::charset_type{"abcd"}), 3);
+        ASSERT_EQ(str::count("3bc12def1233", str::charset_type{}), 0);
+        ASSERT_EQ(str::count("", str::charset_type{}), 0);
+    }
+    SECTION("指定正则") {
+        ASSERT_EQ(str::count("3bc12def1233", std::regex{"[a-z]+"}), 2);
+        ASSERT_EQ(str::count("3bc12def1233", std::regex{"[a-z]*"}), 10);
+        ASSERT_EQ(str::count("3bc12def1233", std::regex{"[A-Za-z][0-9]*"}), 5);
+        ASSERT_EQ(str::count("123", std::regex{"[A-Za-z][0-9]*"}), 0);
+        ASSERT_EQ(str::count("", str::charset_type{".*"}), 0);
+    }
 }

@@ -35,6 +35,9 @@ TEST(test_str, contains) {
         ASSERT_EQ(str::contains("abc123", std::regex("[0-9]{2}")), true);
         ASSERT_EQ(str::contains("abc123", std::regex("[0-9]{4}")), false);
         ASSERT_EQ(str::contains("abc123", std::regex("[A-Z]")), false);
+        ASSERT_EQ(str::contains("12ab", std::regex("[a-z]*")), true);
+        ASSERT_EQ(str::contains("12", std::regex("[a-z]*")), true);
+        ASSERT_EQ(str::contains("", std::regex("[a-z]*")), true);
         ASSERT_EQ(str::contains("", std::regex(".*")), true);
     }
     SECTION("针对proc") {

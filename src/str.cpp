@@ -482,7 +482,9 @@ auto str::contains(std::string_view s, const charset_type &charset) -> bool {
 }
 
 auto str::contains(std::string_view s, const std::regex &pattern) -> bool {
-    return std::regex_search(s.begin(), s.end(), pattern);
+    std::regex_iterator<std::string_view::const_iterator> end;
+    std::regex_iterator<std::string_view::const_iterator> itr(s.begin(), s.end(), pattern);
+    return (itr != end);
 }
 
 auto str::icontains(std::string_view s, std::string_view other) -> bool {
@@ -543,17 +545,20 @@ auto str::count(std::string_view s, value_type ch) -> size_type {
 }
 
 auto str::count(std::string_view s, const charset_type &charset) -> size_type {
+    if (s.empty()) {
+        return false;
+    }
+
     return count(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
     });
 }
 
 auto str::count(std::string_view s, const std::regex &pattern) -> size_type {
+    std::regex_iterator<std::string_view::const_iterator> end;
     size_type matched_count = 0;
-    std::match_results<std::string_view::const_iterator> matched;
-    while (std::regex_search(s.begin(), s.end(), matched, pattern)) {
+    for (std::regex_iterator<std::string_view::const_iterator> itr(s.begin(), s.end(), pattern); itr != end; ++itr) {
         matched_count++;
-        s = std::string_view{s.data() + matched.position(0), static_cast<size_type>(matched.length(0))};
     }
 
     return matched_count;
