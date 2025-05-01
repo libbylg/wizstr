@@ -1,10 +1,8 @@
-#include "tester.hpp"
+#include "testing.hpp"
 
 #include "str.hpp"
 
-
-
-TEST(test_str, remove_prefix) {
+TEST(test_str, remove_prefix_view) {
     SECTION("一般情况") {
         ASSERT_EQ(str::remove_prefix_view("aac", "aa"), "c");
         ASSERT_EQ(str::remove_prefix_view("aaa", "aab"), "aaa");
@@ -36,12 +34,5 @@ TEST(test_str, remove_prefix) {
         ASSERT_EQ(str::remove_prefix_view("", 'H'), "");
         ASSERT_EQ(str::remove_prefix_view("", '\0'), "");
     }
-//    SECTION("删除指定长度的前缀") {
-//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 0u), "HelloWorld");
-//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 5u), "World");
-//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 10u), "");
-//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", 11u), "");
-//        ASSERT_EQ(str::remove_prefix_view("HelloWorld", std::string_view::npos), "");
-//    }
 }
 

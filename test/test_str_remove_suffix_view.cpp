@@ -1,8 +1,8 @@
-#include "tester.hpp"
+#include "testing.hpp"
 
 #include "str.hpp"
 
-TEST(test_str, remove_suffix) {
+TEST(test_str, remove_suffix_view) {
     SECTION("一般情况") {
         ASSERT_EQ(str::remove_suffix_view("aaa", "baa"), "aaa");
     }

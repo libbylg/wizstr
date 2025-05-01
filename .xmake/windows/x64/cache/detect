@@ -1,0 +1,21 @@
+{
+    find_program_msvc_arch_x64_plat_windows_checktoolld = {
+        ["link.exe"] = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\link.exe]]
+    },
+    ["lib.detect.has_flags"] = {
+        ["windows_x64_D:\\Tools\\VC++\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.43.34808\\bin\\HostX64\\x64\\cl.exe_19.43.34810_cxx_cxflags_-nologo_cl_sourceDependencies"] = true,
+        ["windows_x64_D:\\Tools\\VC++\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.43.34808\\bin\\HostX64\\x64\\cl.exe_19.43.34810_cxx__-nologo_-O2"] = true,
+        ["windows_x64_D:\\Tools\\VC++\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.43.34808\\bin\\HostX64\\x64\\cl.exe_19.43.34810_cxx_cxflags_-nologo_-DNDEBUG"] = true
+    },
+    find_programver = {
+        ["D:\\Tools\\VC++\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.43.34808\\bin\\HostX64\\x64\\cl.exe"] = "19.43.34810"
+    },
+    find_program = {
+        nim = false,
+        ["D:\\Tools\\VC++\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.43.34808\\bin\\HostX64\\x64\\cl.exe"] = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\cl.exe]],
+        ["cl.exe"] = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\cl.exe]]
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolcxx = {
+        ["cl.exe"] = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\cl.exe]]
+    }
+}

@@ -1,0 +1,114 @@
+{
+    nasm_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    cuda_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    msvc_arch_x64_plat_windows = {
+        vcvars = {
+            VSInstallDir = [[D:\Tools\VC++\2022\BuildTools\]],
+            VCToolsInstallDir = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\]],
+            PATH = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64;D:\Tools\VC++\2022\BuildTools\Common7\IDE\VC\VCPackages;D:\Tools\VC++\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\TestWindow;D:\Tools\VC++\2022\BuildTools\MSBuild\Current\bin\Roslyn;D:\Tools\VC++\2022\BuildTools\Common7\IDE\Extensions\Microsoft\CodeCoverage.Console;D:\Tools\VC++\2022\BuildTools\\MSBuild\Current\Bin\amd64;C:\Windows\Microsoft.NET\Framework64\v4.0.30319;D:\Tools\VC++\2022\BuildTools\Common7\IDE\;D:\Tools\VC++\2022\BuildTools\Common7\Tools\;C:\Program Files\Google\Chrome\Application;C:\Windows\System32\HWAudioDriverLibs;C:\Windows\System32\HWAudioDriver\;C:\Program Files\Microsoft\jdk-11.0.16.101-hotspot\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;D:\Tools\Git\cmd;D:\Tools\xmake;d:\Tools\Microsoft VS Code\bin;C:\WINDOWS\system32\config\systemprofile\AppData\Local\Microsoft\WindowsApps;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Users\libbylg\.cargo\bin;C:\Users\HUAWEI\.cargo\bin;D:\Tools\Python311\Scripts\;D:\Tools\Python311\;C:\Users\HUAWEI\AppData\Local\Microsoft\WindowsApps;C:\Users\HUAWEI\AppData\Local\JetBrains\Toolbox\scripts;D:\Tools\Microsoft VS Code\bin;D:\Tools\cmake\cmake-3.26.3-windows-x86_64\bin;D:\Tools\go1.20.7\bin;C:\Users\libbylg\AppData\Local\Microsoft\WindowsApps;C:\Users\libbylg\AppData\Local\JetBrains\Toolbox\scripts;xxxD:\ToolsXXXX\Qt6\6.5.0\mingw_64\bin;;%USERPROFILE%\AppData\Local\Microsoft\WindowsApps;D:\Tools\VC++\2022\BuildTools\Common7\IDE\VC\Linux\bin\ConnectionManagerExe]],
+            WindowsSDKVersion = [[\]],
+            DevEnvdir = [[D:\Tools\VC++\2022\BuildTools\Common7\IDE\]],
+            VSCMD_ARG_HOST_ARCH = "x64",
+            VSCMD_VER = "17.13.6",
+            INCLUDE = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\include;D:\Tools\VC++\2022\BuildTools\VC\Auxiliary\VS\include]],
+            VSCMD_ARG_app_plat = "Desktop",
+            VCInstallDir = [[D:\Tools\VC++\2022\BuildTools\VC\]],
+            LIB = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\lib\x64]],
+            VCToolsVersion = "14.43.34808",
+            LIBPATH = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\lib\x64;D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\lib\x86\store\references;C:\Windows\Microsoft.NET\Framework64\v4.0.30319]],
+            UniversalCRTSdkDir = [[C:\Program Files (x86)\Windows Kits\10\]],
+            VS170COMNTOOLS = [[D:\Tools\VC++\2022\BuildTools\Common7\Tools\]],
+            VSCMD_ARG_TGT_ARCH = "x64",
+            WindowsLibPath = [[References\CommonConfiguration\Neutral]],
+            VCIDEInstallDir = [[D:\Tools\VC++\2022\BuildTools\Common7\IDE\VC\]],
+            VCToolsRedistDir = [[D:\Tools\VC++\2022\BuildTools\VC\Redist\MSVC\14.42.34433\]],
+            VisualStudioVersion = "17.0"
+        },
+        vs = "2022",
+        vcarchs = {
+            "arm",
+            "arm64",
+            "arm64ec",
+            "x64",
+            "x86"
+        },
+        __global = true,
+        vs_sdkver = [[\]],
+        plat = "windows",
+        __checked = "2022",
+        vs_toolset = "14.43.34808",
+        arch = "x64"
+    },
+    swift_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    fpc_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    rust_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    yasm_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    tool_target_str_windows_x64_ld = {
+        toolchain_info = {
+            name = "msvc",
+            plat = "windows",
+            arch = "x64",
+            cachekey = "msvc_arch_x64_plat_windows"
+        },
+        toolname = "link",
+        program = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\link.exe]]
+    },
+    go_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    nim_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = false
+    },
+    gfortran_arch_x64_plat_windows = {
+        plat = "windows",
+        __global = true,
+        arch = "x64",
+        __checked = true
+    },
+    tool_target_str_windows_x64_cxx = {
+        toolchain_info = {
+            name = "msvc",
+            plat = "windows",
+            arch = "x64",
+            cachekey = "msvc_arch_x64_plat_windows"
+        },
+        toolname = "cl",
+        program = [[D:\Tools\VC++\2022\BuildTools\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\cl.exe]]
+    }
+}

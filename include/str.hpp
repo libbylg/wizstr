@@ -96,13 +96,13 @@ struct str {
 
         //! 支持自动转换
         explicit charset_type(value_type ch)
-                : charset_type() {
+            : charset_type() {
             set(ch);
         }
 
         //! 支持自动转换
         explicit charset_type(std::string_view s)
-                : charset_type() {
+            : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 set(*ptr);
             }
@@ -197,7 +197,7 @@ struct str {
         explicit range_type() = default;
 
         explicit range_type(size_type tpos, size_type tn)
-                : pos{tpos}, len{tn} {
+            : pos{tpos}, len{tn} {
         }
 
         inline auto size() const -> size_type {
@@ -395,7 +395,8 @@ struct str {
     template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto insert(std::string &s, size_type pos, const Sequence &items) -> std::string &;
     //
-    static auto insert_inplace(std::string &s, size_type pos, std::string_view other, size_type times_n = 1) -> std::string &;
+    static auto
+    insert_inplace(std::string &s, size_type pos, std::string_view other, size_type times_n = 1) -> std::string &;
     static auto insert_inplace(std::string &s, size_type pos, value_type ch, size_type times_n = 1) -> std::string &;
     // template <typename ViewProviderProc, typename = std::enable_if<std::is_function<ViewProviderProc>::value>>
     // static auto insert_inplace(std::string& s, size_type pos, const ViewProviderProc& proc) -> std::string&;
@@ -2270,9 +2271,11 @@ struct str {
     /// @param match_charset 匹配字符集
     /// @param replace_charset 替换字符集
     /// @param proc 将匹配的字符映射为其他字符集
-    static auto mapping(std::string_view s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
+    static auto
+    mapping(std::string_view s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
     static auto mapping(std::string_view s, const char_mapping_proc &proc) -> std::string;
-    static auto mapping_inplace(std::string &s, std::string_view match_charset, std::string_view replace_charset) -> std::string &;
+    static auto
+    mapping_inplace(std::string &s, std::string_view match_charset, std::string_view replace_charset) -> std::string &;
     static auto mapping_inplace(std::string &s, const char_mapping_proc &proc) -> std::string &;
 };
 
