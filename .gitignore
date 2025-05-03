@@ -41,3 +41,6 @@ cmake-build-*/
 build/
 .idea/
 output-*/
+
+.xmake/
+.vscode/

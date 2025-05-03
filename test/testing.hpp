@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <string_view>
-#include <cinttypes>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <cstdarg>

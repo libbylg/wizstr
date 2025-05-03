@@ -12,7 +12,7 @@
 #ifndef TINY_STR_H
 #define TINY_STR_H
 
-#include <cinttypes>
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <limits>
@@ -95,14 +95,12 @@ struct str {
         }
 
         //! 支持自动转换
-        explicit charset_type(value_type ch)
-            : charset_type() {
+        explicit charset_type(value_type ch) : charset_type() {
             set(ch);
         }
 
         //! 支持自动转换
-        explicit charset_type(std::string_view s)
-            : charset_type() {
+        explicit charset_type(std::string_view s) : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 set(*ptr);
             }
@@ -163,7 +161,7 @@ struct str {
             bits[3] = ~bits[3];
         }
 
-        inline auto operator[](value_type c) const -> bool {
+        inline auto operator()(value_type c) const -> bool {
             return get(c);
         }
 
@@ -196,8 +194,7 @@ struct str {
 
         explicit range_type() = default;
 
-        explicit range_type(size_type tpos, size_type tn)
-            : pos{tpos}, len{tn} {
+        explicit range_type(size_type tpos, size_type tn) : pos{tpos}, len{tn} {
         }
 
         inline auto size() const -> size_type {
@@ -268,8 +265,7 @@ struct str {
     using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
 
     //! 单字符映射：将单个字符映射为另一个数据类型的值
-    template<typename MappedType>
-    using mapping_proc = std::function<auto(value_type)->MappedType>;
+    template<typename MappedType> using mapping_proc = std::function<auto(value_type)->MappedType>;
 
     //! 单字符映射器：将一个字符映射为另一个字符
     using char_mapping_proc = mapping_proc<value_type>;
@@ -490,26 +486,16 @@ struct str {
     /// @param other 参与公共前缀计算的另一个字符串，用于 @ref{prefix}
     /// @param prefix, ch 前缀字符串或者字符
     static auto prefix(std::string_view s, std::string_view other) -> size_type;
-
     static auto has_prefix(std::string_view s, value_type ch) -> bool;
-
     static auto has_prefix(std::string_view s, std::string_view prefix) -> bool;
-
     static auto starts_with(std::string_view s, value_type ch) -> bool;
-
     static auto starts_with(std::string_view s, std::string_view prefix) -> bool;
-
     static auto remove_prefix_view(std::string_view s, std::string_view prefix) -> std::string_view;
-
     static auto remove_prefix_view(std::string_view s, value_type prefix) -> std::string_view;
-
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string;
-
     static auto remove_prefix(std::string_view s, value_type prefix) -> std::string;
-
     //
     static auto remove_prefix_inplace(std::string &s, std::string_view prefix) -> std::string &;
-
     static auto remove_prefix_inplace(std::string &s, value_type prefix) -> std::string &;
 
     //! 后缀操作 @anchor{suffix}
@@ -523,54 +509,38 @@ struct str {
     /// @param s 目标字符串
     /// @param suffix, ch 后缀字符串或者字符
     static auto suffix(std::string_view s, std::string_view other) -> size_type;
-
     static auto has_suffix(std::string_view s, value_type ch) -> bool;
-
     static auto has_suffix(std::string_view s, std::string_view suffix) -> bool;
-
     static auto ends_with(std::string_view s, value_type ch) -> bool;
-
     static auto ends_with(std::string_view s, std::string_view suffix) -> bool;
-
     static auto remove_suffix_view(std::string_view s, std::string_view suffix) -> std::string_view;
-
     static auto remove_suffix_view(std::string_view s, value_type ch) -> std::string_view;
-
     static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string;
-
     static auto remove_suffix(std::string_view s, value_type ch) -> std::string;
-
     //
     static auto remove_suffix_inplace(std::string &s, std::string_view suffix) -> std::string &;
-
     static auto remove_suffix_inplace(std::string &s, value_type ch) -> std::string &;
 
     //! 是否以特定的模式开头和结束
     static auto starts_with_spaces(std::string_view s) -> bool;
-
     static auto ends_with_spaces(std::string_view s) -> bool;
-
     static auto starts_with_margin(std::string_view s, value_type margin) -> bool;
 
     //! 定位字符/字符集
     static auto next_char(std::string_view s, size_type &pos, value_type ch) -> size_type;
-
     static auto next_char(std::string_view s, size_type &pos, const charset_type &charset) -> size_type;
-
     static auto next_char(std::string_view s, size_type &pos, std::string_view charset) -> size_type;
-
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto next_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type;
+    static auto next_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> size_type;
+    //static auto next_char(std::string_view s, size_type &pos, auto (*proc)(value_type ch) -> int) -> size_type;
+//    template<typename CharMatchProc>
+//    static auto next_char(std::string_view s, size_type &pos,
+//                          const CharMatchProc &proc) -> std::enable_if<std::is_invocable_v<CharMatchProc>, size_type>;
 
     //
     static auto prev_char(std::string_view s, size_type &pos, value_type ch) -> size_type;
-
     static auto prev_char(std::string_view s, size_type &pos, const charset_type &charset) -> size_type;
-
     static auto prev_char(std::string_view s, size_type &pos, std::string_view charset) -> size_type;
-
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto prev_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type;
+    static auto prev_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> size_type;
 
     //! 定位子串
     static auto next_string_range(std::string_view s, size_type &pos, std::string_view substr) -> range_type;
@@ -839,7 +809,8 @@ struct str {
     ///
     /// @param s 原始字符串
     /// @param n 指定删除的子串的最大长度。
-    /// @param offset 该参数是有符号整数，用于指定删除字符串的长度和方向。如果为负数，表示向左删，如果为正表示向右删。offset 的绝对值表示期望提取的数据的长度。
+    /// @param offset 该参数是有符号整数，用于指定删除字符串的长度和方向。如果为负数，表示向左删，如果为正表示向右删。offset 的绝对值表示期望
+    /// 提取的数据的长度。
     /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 offset 组合起来确定删除子串范围
     /// @param begin_pos, end_pos  用于提取字符串的提取范围。
     /// @param range  用于提取字符串的提取范围，一般用在可以替代 begin_pos 和 end_pos 的场景。
@@ -2061,9 +2032,7 @@ struct str {
     /// @param proc 用于接收格式化数据
     struct dump_hex_format {
         enum format : uint8_t {
-            show_offset = 0x01,
-            show_ascii = 0x02,
-            show_upper = 0x04,
+            show_offset = 0x01, show_ascii = 0x02, show_upper = 0x04,
         };
         uint8_t flags{0};                     ///< 可选标记位
         uint8_t offset_width{0};              ///< offset 的宽度
@@ -2423,7 +2392,7 @@ auto str::insert(std::string &s, size_type pos, const Sequence &items) -> std::s
 //     while (item) {
 //         str::insert_inplace(s, pos, item.value(), 1); // TODO 不是最优的，会导致多次扩容
 //     }
-
+//
 // return s;
 // }
 
@@ -2455,46 +2424,49 @@ auto str::insert_inplace(std::string &s, size_type pos, const Sequence &items) -
 //     return count;
 // }
 
-template<typename CharMatchProc, typename>
-auto str::next_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type {
-    if (pos >= s.size()) {
-        pos = s.size();
-        return npos;
-    }
 
-    const_pointer ptr = s.data() + pos;
-    while (ptr < (s.data() + s.size())) {
-        if (proc(*ptr)) {
-            pos = ptr - s.data();
-            return pos++;
-        }
-    }
+//template<typename CharMatchProc>
+//auto str::next_char(std::string_view s, size_type &pos,
+//                      const CharMatchProc &proc) -> std::enable_if<std::is_invocable_v<CharMatchProc>, size_type> {
+//    if (pos >= s.size()) {
+//        pos = s.size();
+//        return npos;
+//    }
+//
+//    const_pointer ptr = s.data() + pos;
+//    while (ptr < (s.data() + s.size())) {
+//        if (proc(*ptr)) {
+//            pos = ptr - s.data();
+//            return pos++;
+//        }
+//        ptr++;
+//    }
+//
+//    return npos;
+//}
 
-    return npos;
-}
-
-template<typename CharMatchProc, typename>
-auto str::prev_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type {
-    if (pos <= 0) {
-        pos = 0;
-        return 0;
-    }
-
-    if (pos > s.size()) {
-        pos = s.size();
-    }
-
-    const_pointer ptr = s.data() + pos;
-    while (ptr > s.data()) {
-        if (proc(*(ptr - 1))) {
-            pos = (ptr - 1) - s.data();
-            return pos;
-        }
-    }
-
-    pos = 0;
-    return 0;
-}
+//template<typename CharMatchProc, typename>
+//auto str::prev_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type {
+//    if (pos <= 0) {
+//        pos = 0;
+//        return 0;
+//    }
+//
+//    if (pos > s.size()) {
+//        pos = s.size();
+//    }
+//
+//    const_pointer ptr = s.data() + pos;
+//    while (ptr > s.data()) {
+//        if (proc(*(ptr - 1))) {
+//            pos = (ptr - 1) - s.data();
+//            return pos;
+//        }
+//    }
+//
+//    pos = 0;
+//    return 0;
+//}
 
 template<typename RangeSearchProc, typename>
 auto str::next_proc_range(std::string_view s, size_type &pos, const RangeSearchProc &proc) -> range_type {

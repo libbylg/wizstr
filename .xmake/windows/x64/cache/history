@@ -1,7 +1,0 @@
-{
-    cmdlines = {
-        [[xmake l c:\Users\libbylg\.vscode\extensions\tboox.xmake-vscode-2.4.0\assets\config.lua]],
-        "xmake ",
-        "xmake "
-    }
-}
