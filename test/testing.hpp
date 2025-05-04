@@ -10,21 +10,6 @@
 #include <cstdio>
 #include <csetjmp>
 
-template<typename T, typename Y>
-auto operator==(const std::vector<T> &a, const std::vector<Y> &b) -> bool {
-    if (a.size() != b.size()) {
-        return false;
-    }
-
-    for (size_t index = 0; index < a.size(); index++) {
-        if (a[index] != b[index]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 //! 测试用例头
 struct testcase_head {
     testcase_head *next;
@@ -51,11 +36,6 @@ struct testcase : public testcase_head {
     // 用例定义在哪个文件的那一行
     const char *file;
     size_t lineno;
-
-    enum testcase_flags : uint8_t {
-        flag_pass = 0x01,
-        flag_abort = 0x02,
-    };
 
     //! 执行所有的测试用例
     static inline int exec_all(int argc, char *argv[]) {
@@ -151,7 +131,7 @@ struct testcase : public testcase_head {
 //! 定义一个测试用例的宏
 #define TEST(SuiteName_, CaseName_) \
     static void test_##SuiteName_##CaseName_(testcase* tcase, std::jmp_buf tenv); \
-    static testcase testcase_##SuiteName_##CaseName(&(test_##SuiteName_##CaseName_), #SuiteName_, #CaseName_, __FILE__, __LINE__); \
+    static testcase testcase_##SuiteName_##CaseName_(&(test_##SuiteName_##CaseName_), #SuiteName_, #CaseName_, __FILE__, __LINE__); \
     static void test_##SuiteName_##CaseName_(testcase* TESTCASE_, std::jmp_buf TEST_ASSERT_ENV_) \
     /* (end) */
 
@@ -161,8 +141,8 @@ struct testcase : public testcase_head {
 //
 #define EXPECT_EQ(Expr1_, Expr2_) (TEST_EXPECT(((Expr1_) == (Expr2_))))
 #define ASSERT_EQ(Expr1_, Expr2_) (TEST_ASSERT(((Expr1_) == (Expr2_))))
-#define EXPECT_TRUE(Expr1_) (TEST_EXPECT((Expr1_)))
-#define ASSERT_TRUE(Expr1_) (TEST_ASSERT((Expr1_)))
+#define EXPECT_TRUE(Expr1_) (TEST_EXPECT(!!(Expr1_)))
+#define ASSERT_TRUE(Expr1_) (TEST_ASSERT(!!(Expr1_)))
 #define EXPECT_FALSE(Expr1_) (TEST_EXPECT(!(Expr1_)))
 #define ASSERT_FALSE(Expr1_) (TEST_ASSERT(!(Expr1_)))
 

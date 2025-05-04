@@ -4,7 +4,7 @@
 
 TEST(test_str, next_regex) {
     SECTION("不同起始位置:从0开始连续查找") {
-        size_t pos = 0;
+        str::size_type pos = 0;
         ASSERT_EQ(str::next_regex("abc1234def", pos, "[0-9]+"), std::string("1234"));
         ASSERT_EQ(pos, 7);
         ASSERT_EQ(str::next_regex("abc1234def", pos, "[0-9]+"), "");
@@ -27,14 +27,14 @@ TEST(test_str, next_regex) {
         ASSERT_EQ(pos, 10);
     }
     SECTION("空串") {
-        size_t pos = 0;
+        str::size_type pos = 0;
         ASSERT_EQ(str::next_regex("", pos, "[0-9]+"), "");
         ASSERT_EQ(pos, 0);
         ASSERT_EQ(str::next_regex("", pos, "[0-9]+"), "");
         ASSERT_EQ(pos, 0);
     }
     SECTION("字符串中没有任何匹配子串") {
-        size_t pos = 0;
+        str::size_type pos = 0;
         ASSERT_EQ(str::next_regex("abc----def", pos, "[0-9]+"), "");
         ASSERT_EQ(pos, 10);
         ASSERT_EQ(str::next_regex("abc----def", pos, "[0-9]+"), "");

@@ -8,11 +8,9 @@ target("str")
     add_includedirs("include", "src")
     add_files("src/str.cpp")
     add_files("test/test_str_drop_xxx.cpp")
-    set_encodings("utf-8") -- msvc: /utf-8
     set_encodings("source:utf-8", "target:utf-8")
     set_languages("c99", "cxx17")
     set_warnings("all", "error")
-    set_languages("c99", "c++11")
 
 
 --

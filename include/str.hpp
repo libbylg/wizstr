@@ -527,48 +527,33 @@ struct str {
     static auto starts_with_margin(std::string_view s, value_type margin) -> bool;
 
     //! 定位字符/字符集
-    static auto next_char(std::string_view s, size_type &pos, value_type ch) -> size_type;
-    static auto next_char(std::string_view s, size_type &pos, const charset_type &charset) -> size_type;
-    static auto next_char(std::string_view s, size_type &pos, std::string_view charset) -> size_type;
-    static auto next_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> size_type;
-    //static auto next_char(std::string_view s, size_type &pos, auto (*proc)(value_type ch) -> int) -> size_type;
-//    template<typename CharMatchProc>
-//    static auto next_char(std::string_view s, size_type &pos,
-//                          const CharMatchProc &proc) -> std::enable_if<std::is_invocable_v<CharMatchProc>, size_type>;
-
+    static auto next_char(std::string_view s, size_type &pos, value_type ch) -> std::optional<size_type>;
+    static auto next_char(std::string_view s, size_type &pos, const charset_type &charset) -> std::optional<size_type>;
+    static auto next_char(std::string_view s, size_type &pos, std::string_view charset) -> std::optional<size_type>;
+    static auto next_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> std::optional<size_type>;
     //
-    static auto prev_char(std::string_view s, size_type &pos, value_type ch) -> size_type;
-    static auto prev_char(std::string_view s, size_type &pos, const charset_type &charset) -> size_type;
-    static auto prev_char(std::string_view s, size_type &pos, std::string_view charset) -> size_type;
-    static auto prev_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> size_type;
+    static auto prev_char(std::string_view s, size_type &pos, value_type ch) -> std::optional<size_type>;
+    static auto prev_char(std::string_view s, size_type &pos, const charset_type &charset) -> std::optional<size_type>;
+    static auto prev_char(std::string_view s, size_type &pos, std::string_view charset) -> std::optional<size_type>;
+    static auto prev_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> std::optional<size_type>;
 
     //! 定位子串
-    static auto next_string_range(std::string_view s, size_type &pos, std::string_view substr) -> range_type;
-
-    static auto next_string_view(std::string_view s, size_type &pos, std::string_view substr) -> std::string_view;
-
-    static auto next_string(std::string_view s, size_type &pos, std::string_view substr) -> std::string;
-
+    static auto next_string_range(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<range_type>;
+    static auto next_string_view(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string_view>;
+    static auto next_string(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string>;
     //
-    static auto prev_string_range(std::string_view s, size_type &pos, std::string_view substr) -> range_type;
-
-    static auto prev_string_view(std::string_view s, size_type &pos, std::string_view substr) -> std::string_view;
-
-    static auto prev_string(std::string_view s, size_type &pos, std::string_view substr) -> std::string;
+    static auto prev_string_range(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<range_type>;
+    static auto prev_string_view(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string_view>;
+    static auto prev_string(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string>;
 
     //! 定位换行符
-    static auto next_eol_range(std::string_view s, size_type &pos) -> range_type;
-
-    static auto next_eol_view(std::string_view s, size_type &pos) -> std::string_view;
-
-    static auto next_eol(std::string_view s, size_type &pos) -> std::string;
-
+    static auto next_eol_range(std::string_view s, size_type &pos) -> std::optional<range_type>;
+    static auto next_eol_view(std::string_view s, size_type &pos) -> std::optional<std::string_view>;
+    static auto next_eol(std::string_view s, size_type &pos) -> std::optional<std::string>;
     //
-    static auto prev_eol_range(std::string_view s, size_type &pos) -> range_type;
-
-    static auto prev_eol_view(std::string_view s, size_type &pos) -> std::string_view;
-
-    static auto prev_eol(std::string_view s, size_type &pos) -> std::string;
+    static auto prev_eol_range(std::string_view s, size_type &pos) -> std::optional<range_type>;
+    static auto prev_eol_view(std::string_view s, size_type &pos) -> std::optional<std::string_view>;
+    static auto prev_eol(std::string_view s, size_type &pos) -> std::optional<std::string>;
 
     //
     static auto ends_with_eol(std::string_view s) -> bool;
@@ -2136,7 +2121,7 @@ struct str {
     ///
     /// ```
     /// std::string cmdline{"create_dirs -- workdir -when_exist=quit -i"};
-    /// size_t pos = 0;
+    /// str::size_type pos = 0;
     /// while (pos >= cmdline.size()) {
     ///     auto [key, val] = str::read_opt_view(cmdline, pos);
     ///     std::cout << "{" << key << ":" << value << "}"<< std::endl;

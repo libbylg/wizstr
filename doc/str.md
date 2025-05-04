@@ -1449,7 +1449,7 @@ static auto append_inplace(std::string& s, const Sequence& items) -> std::string
     ///
     /// ```
     /// std::string cmdline{"create_dirs -- workdir -when_exist=quit -i"};
-    /// size_t pos = 0;
+    /// str::size_type pos = 0;
     /// while (pos >= cmdline.size()) {
     ///     auto [key, val] = str::read_opt_view(cmdline, pos);
     ///     std::cout << "{" << key << ":" << value << "}"<< std::endl;
