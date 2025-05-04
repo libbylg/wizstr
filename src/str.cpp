@@ -825,7 +825,7 @@ auto str::next_string_range(std::string_view s, size_type& pos, std::string_view
         return std::nullopt;
     }
 
-    pos = next_pos + substr.size();
+    pos = next_pos + 1;
     return range_type{next_pos, substr.size()};
 }
 
@@ -892,7 +892,7 @@ auto str::prev_string(std::string_view s, size_type& pos, std::string_view subst
 auto str::next_eol_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
     if (pos >= s.size()) {
         pos = s.size();
-        return range_type{pos, 0};
+        return std::nullopt;
     }
 
     const_pointer endptr = (s.data() + s.size());
@@ -920,7 +920,7 @@ auto str::next_eol_range(std::string_view s, size_type& pos) -> std::optional<ra
     }
 
     pos = s.size();
-    return range_type{pos, 0};
+    return std::nullopt;
 }
 
 auto str::next_eol_view(std::string_view s, size_type& pos) -> std::optional<std::string_view> {

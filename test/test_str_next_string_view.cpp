@@ -3,37 +3,101 @@
 #include "str.hpp"
 
 TEST(test_str, next_string_view) {
-//    SECTION("不同起始位置") {
-//        str::size_type pos = 0;
-//        ASSERT_EQ(str::next_word("abc def", pos = 0), std::string("abc"));
-//        ASSERT_EQ(str::next_word("abc def", pos = 1), std::string("bc"));
-//        ASSERT_EQ(str::next_word("abc def", pos = 2), std::string("c"));
-//        ASSERT_EQ(str::next_word("abc def", pos = 3), std::string("def"));
-//        ASSERT_EQ(str::next_word("abc def", pos = 4), std::string("def"));
-//        ASSERT_EQ(str::next_word("abc def", pos = 5), std::string("ef"));
-//        ASSERT_EQ(str::next_word("abc def", pos = 6), std::string("f"));
-//        ASSERT_EQ(str::next_word("abc def", pos = 7), std::string(""));
-//        ASSERT_EQ(str::next_word("abc def", pos = str::npos), std::string(""));
-//    }
-//    SECTION("不同空格和多段字符串组合") {
-//        str::size_type pos = 0;
-//
-//        ASSERT_EQ(str::next_word(" \r\t\n abc \r\t\n def \r\t\n ", pos = 0), std::string("abc"));
-//        ASSERT_EQ(str::next_word(" \r\t\n abc \r\t\n def \r\t\n ", pos = 8), std::string("def"));
-//        ASSERT_EQ(str::next_word(" \r\t\n abc \r\t\n def \r\t\n ", pos = 16), std::string(""));
-//    }
-//    SECTION("无任何空白的串") {
-//        str::size_type pos = 0;
-//        ASSERT_EQ(str::next_word("abc", pos = 0), std::string("abc"));
-//        ASSERT_EQ(str::next_word("abcdef", pos = str::npos), std::string(""));
-//    }
-//    SECTION("空串") {
-//        str::size_type pos = 0;
-//        ASSERT_EQ(str::next_word("", pos = 0), std::string(""));
-//        ASSERT_EQ(str::next_word("", pos = str::npos), std::string(""));
-//    }
-//    SECTION("全空白串") {
-//        str::size_type pos = 0;
-//        ASSERT_EQ(str::next_word(" \r\t\n ", pos = 1), std::string(""));
-//    }
+    SECTION("不同起始位置") {
+        str::size_type pos = 0;
+        std::optional<std::string_view> result;
+
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 0, "ab"));
+        ASSERT_TRUE((pos == 2) && (*result == "ab"));
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 1, "ab"));
+        ASSERT_TRUE((pos == 2) && (*result == "ab"));
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 2, "ab"));
+        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 3, "ab"));
+        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 4, "ab"));
+        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 5, "ab"));
+        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 6, "ab"));
+        ASSERT_TRUE((pos == 10) && (*result == "ab"));
+        ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 7, "ab"));
+        ASSERT_TRUE((pos == 10) && (*result == "ab"));
+        ASSERT_FALSE(result = str::next_string_view("Aabc ab Kaba", pos = 10, "ab"));
+        ASSERT_TRUE((pos == 12));
+        ASSERT_FALSE(result = str::next_string_view("Aabc ab Kaba", pos = str::npos, "ab"));
+        ASSERT_TRUE((pos == 12));
+    }
+    SECTION("在空串中查找") {
+        str::size_type pos = 0;
+        std::optional<std::string_view> result;
+
+        ASSERT_FALSE(result = str::next_string_view("", pos = 0, "ab"));
+        ASSERT_TRUE(pos == 0);
+        ASSERT_FALSE(result = str::next_string_view("", pos = str::npos, "ab"));
+        ASSERT_TRUE(pos == 0);
+    }
+    SECTION("查找空串") {
+        str::size_type pos = 0;
+        std::optional<std::string_view> result;
+
+        ASSERT_FALSE(result = str::next_string_view("ab", pos = 0, ""));
+        ASSERT_TRUE(pos == 2);
+        ASSERT_FALSE(result = str::next_string_view("ab", pos = 1, ""));
+        ASSERT_TRUE(pos == 2);
+        ASSERT_FALSE(result = str::next_string_view("ab", pos = 2, ""));
+        ASSERT_TRUE(pos == 2);
+        ASSERT_FALSE(result = str::next_string_view("ab", pos = 3, ""));
+        ASSERT_TRUE(pos == 2);
+        ASSERT_FALSE(result = str::next_string_view("abc", pos = str::npos, ""));
+        ASSERT_TRUE(pos == 3);
+        ASSERT_FALSE(result = str::next_string_view("", pos = str::npos, ""));
+        ASSERT_TRUE(pos == 0);
+        ASSERT_FALSE(result = str::next_string_view("", pos = 0, ""));
+        ASSERT_TRUE(pos == 0);
+    }
+    SECTION("被查找的目标串有重叠") {
+        str::size_type pos = 0;
+        std::optional<std::string_view> result;
+
+        ASSERT_TRUE(result = str::next_string_view("abababab", pos, "aba"));
+        ASSERT_TRUE(pos == 1);
+        ASSERT_TRUE(result = str::next_string_view("abababab", pos, "aba"));
+        ASSERT_TRUE(pos == 3);
+        ASSERT_TRUE(result = str::next_string_view("abababab", pos, "aba"));
+        ASSERT_TRUE(pos == 5);
+        ASSERT_FALSE(result = str::next_string_view("abababab", pos, "aba"));
+        ASSERT_TRUE(pos == 8);
+        ASSERT_FALSE(result = str::next_string_view("abababab", pos, "aba"));
+        ASSERT_TRUE(pos == 8);
+    }
+    SECTION("prev_xx与next_xx配合操作") {
+        str::size_type pos = 0;
+        std::optional<std::string_view> result;
+
+        std::string s{"abababa"};
+        ASSERT_TRUE(result = str::next_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 1) && (*result == "aba"));
+
+        ASSERT_TRUE(result = str::next_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 3) && (*result == "aba"));
+
+        ASSERT_TRUE(result = str::next_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 5) && (*result == "aba"));
+
+        ASSERT_FALSE(result = str::next_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 7));
+
+        ASSERT_TRUE(result = str::prev_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 4) && (*result == "aba"));
+
+        ASSERT_TRUE(result = str::prev_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 2) && (*result == "aba"));
+
+        ASSERT_TRUE(result = str::prev_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 0) && (*result == "aba"));
+
+        ASSERT_FALSE(result = str::prev_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 0));
+    }
 }

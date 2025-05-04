@@ -554,20 +554,13 @@ struct str {
     static auto prev_eol_range(std::string_view s, size_type &pos) -> std::optional<range_type>;
     static auto prev_eol_view(std::string_view s, size_type &pos) -> std::optional<std::string_view>;
     static auto prev_eol(std::string_view s, size_type &pos) -> std::optional<std::string>;
-
     //
     static auto ends_with_eol(std::string_view s) -> bool;
-
     static auto has_eol_suffix(std::string_view s) -> bool;
-
     static auto eol_suffix(std::string_view s) -> size_type;
-
     static auto remove_eol_suffix_range(std::string_view s) -> range_type;
-
     static auto remove_eol_suffix_view(std::string_view s) -> std::string_view;
-
     static auto remove_eol_suffix(std::string_view s) -> std::string;
-
     static auto remove_eol_suffix_inplace(std::string &s) -> std::string &;
 
     //! 定位正则表达式分隔符
