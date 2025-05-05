@@ -95,12 +95,14 @@ struct str {
         }
 
         //! 支持自动转换
-        explicit charset_type(value_type ch) : charset_type() {
+        explicit charset_type(value_type ch)
+            : charset_type() {
             set(ch);
         }
 
         //! 支持自动转换
-        explicit charset_type(std::string_view s) : charset_type() {
+        explicit charset_type(std::string_view s)
+            : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 set(*ptr);
             }
@@ -165,11 +167,11 @@ struct str {
             return get(c);
         }
 
-        inline auto data() const -> const uint64_t * {
+        inline auto data() const -> const uint64_t* {
             return bits;
         }
 
-        inline auto data() -> uint64_t * {
+        inline auto data() -> uint64_t* {
             return bits;
         }
 
@@ -194,7 +196,9 @@ struct str {
 
         explicit range_type() = default;
 
-        explicit range_type(size_type tpos, size_type tn) : pos{tpos}, len{tn} {
+        explicit range_type(size_type tpos, size_type tn)
+            : pos{tpos}
+            , len{tn} {
         }
 
         inline auto size() const -> size_type {
@@ -221,7 +225,7 @@ struct str {
             return pos + len;
         }
 
-        inline auto operator==(const range_type &range) const -> bool {
+        inline auto operator==(const range_type& range) const -> bool {
             if (len != range.len) {
                 return false;
             }
@@ -265,13 +269,14 @@ struct str {
     using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
 
     //! 单字符映射：将单个字符映射为另一个数据类型的值
-    template<typename MappedType> using mapping_proc = std::function<auto(value_type)->MappedType>;
+    template <typename MappedType>
+    using mapping_proc = std::function<auto(value_type)->MappedType>;
 
     //! 单字符映射器：将一个字符映射为另一个字符
     using char_mapping_proc = mapping_proc<value_type>;
 
     //! 字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt
-    using string_mapping_proc = std::function<std::optional<std::string>(const std::string &key)>;
+    using string_mapping_proc = std::function<std::optional<std::string>(const std::string& key)>;
 
     //! 用于表示代替无效位置的值
     static inline constexpr size_type npos = std::string::npos;
@@ -333,19 +338,19 @@ struct str {
     /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
     /// @param items 从容器 items 中获取被追加的字符串。
     static auto append(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
-    static auto append(std::string_view s, const view_provider_proc &proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto append(std::string_view s, const Sequence &items) -> std::string;
+    static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto append(std::string_view s, const Sequence& items) -> std::string;
     //
-    static auto append_inplace(std::string &s, std::string_view other, size_type times_n = 1) -> std::string &;
-    static auto append_inplace(std::string &s, const view_provider_proc &proc) -> std::string &;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto append_inplace(std::string &s, const Sequence &items) -> std::string &;
+    static auto append_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
+    static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
 
-    //    struct container_tag {};
-    //    struct array_tag {};
-    //    template<typename Sequence>
-    //    static auto append_inplace(std::string &s, const Sequence &items) -> std::enable_if_t<std::is_array_v<Sequence>, std::string &>;
+    // struct container_tag {};
+    // struct array_tag {};
+    // template<typename Sequence>
+    // static auto append_inplace(std::string &s, const Sequence &items) -> std::enable_if_t<std::is_array_v<Sequence>, std::string &>;
 
     //! 向头部追加 @anchor{prepend}
     ///
@@ -362,16 +367,16 @@ struct str {
     static auto prepend(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
     // template <typename ViewProviderProc>
     // static auto prepend(std::string_view s, const ViewProviderProc& proc) -> std::enable_if_t<std::is_invocable<ViewProviderProc>::value, std::string>;
-    static auto prepend(std::string_view s, const view_provider_proc &proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto prepend(std::string_view s, const Sequence &items) -> std::string;
+    static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto prepend(std::string_view s, const Sequence& items) -> std::string;
     //
-    static auto prepend_inplace(std::string &s, std::string_view other, size_type times_n = 1) -> std::string &;
+    static auto prepend_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
     // template <typename ViewProviderProc, typename = std::enable_if<std::is_function<ViewProviderProc>::value>>
     // static auto prepend_inplace(std::string& s, const ViewProviderProc& proc) -> std::string&;
-    static auto prepend_inplace(std::string &s, const view_provider_proc &proc) -> std::string &;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto prepend_inplace(std::string &s, const Sequence &items) -> std::string &;
+    static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string&;
 
     //! 向字符串中间插入 @anchor{insert}
     ///
@@ -387,18 +392,18 @@ struct str {
     /// @param items 从容器 items 中获取被插入的字符串。
     static auto insert(std::string_view s, size_type pos, std::string_view other, size_type times_n = 1) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type times_n = 1) -> std::string;
-    static auto insert(std::string_view s, size_type pos, const view_provider_proc &proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto insert(std::string &s, size_type pos, const Sequence &items) -> std::string &;
+    static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto insert(std::string& s, size_type pos, const Sequence& items) -> std::string&;
     //
     static auto
-    insert_inplace(std::string &s, size_type pos, std::string_view other, size_type times_n = 1) -> std::string &;
-    static auto insert_inplace(std::string &s, size_type pos, value_type ch, size_type times_n = 1) -> std::string &;
+    insert_inplace(std::string& s, size_type pos, std::string_view other, size_type times_n = 1) -> std::string&;
+    static auto insert_inplace(std::string& s, size_type pos, value_type ch, size_type times_n = 1) -> std::string&;
     // template <typename ViewProviderProc, typename = std::enable_if<std::is_function<ViewProviderProc>::value>>
     // static auto insert_inplace(std::string& s, size_type pos, const ViewProviderProc& proc) -> std::string&;
-    static auto insert_inplace(std::string &s, size_type pos, const view_provider_proc &proc) -> std::string &;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto insert_inplace(std::string &s, size_type pos, const Sequence &items) -> std::string &;
+    static auto insert_inplace(std::string& s, size_type pos, const view_provider_proc& proc) -> std::string&;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string&;
 
     //! 不区分大小写的比较 @anchor{icompare}
     ///
@@ -451,9 +456,9 @@ struct str {
     /// @return 如果 s 包含指定的字符或者字符串或者某种模式，返回 true，否则返回 false。
     static auto contains(std::string_view s, std::string_view other) -> bool;
     static auto contains(std::string_view s, value_type ch) -> bool;
-    static auto contains(std::string_view s, const char_match_proc &proc) -> bool;
-    static auto contains(std::string_view s, const charset_type &charset) -> bool;
-    static auto contains(std::string_view s, const std::regex &pattern) -> bool;
+    static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
+    static auto contains(std::string_view s, const charset_type& charset) -> bool;
+    static auto contains(std::string_view s, const std::regex& pattern) -> bool;
     //
     static auto icontains(std::string_view s, std::string_view other) -> bool;
     static auto icontains(std::string_view s, value_type ch) -> bool;
@@ -470,9 +475,9 @@ struct str {
     /// @return 返回满足条件的子串或者字符的数量。特别的，当 s 或者 other 为空时，总是返回 0
     static auto count(std::string_view s, std::string_view other) -> size_type;
     static auto count(std::string_view s, value_type ch) -> size_type;
-    static auto count(std::string_view s, const char_match_proc &proc) -> size_type;
-    static auto count(std::string_view s, const charset_type &charset) -> size_type;
-    static auto count(std::string_view s, const std::regex &pattern) -> size_type;
+    static auto count(std::string_view s, const char_match_proc& proc) -> size_type;
+    static auto count(std::string_view s, const charset_type& charset) -> size_type;
+    static auto count(std::string_view s, const std::regex& pattern) -> size_type;
 
     //! 前缀操作 @anchor{prefix}
     ///
@@ -495,8 +500,8 @@ struct str {
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string;
     static auto remove_prefix(std::string_view s, value_type prefix) -> std::string;
     //
-    static auto remove_prefix_inplace(std::string &s, std::string_view prefix) -> std::string &;
-    static auto remove_prefix_inplace(std::string &s, value_type prefix) -> std::string &;
+    static auto remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string&;
+    static auto remove_prefix_inplace(std::string& s, value_type prefix) -> std::string&;
 
     //! 后缀操作 @anchor{suffix}
     ///
@@ -518,8 +523,8 @@ struct str {
     static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string;
     static auto remove_suffix(std::string_view s, value_type ch) -> std::string;
     //
-    static auto remove_suffix_inplace(std::string &s, std::string_view suffix) -> std::string &;
-    static auto remove_suffix_inplace(std::string &s, value_type ch) -> std::string &;
+    static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
+    static auto remove_suffix_inplace(std::string& s, value_type ch) -> std::string&;
 
     //! 是否以特定的模式开头和结束
     static auto starts_with_spaces(std::string_view s) -> bool;
@@ -527,33 +532,33 @@ struct str {
     static auto starts_with_margin(std::string_view s, value_type margin) -> bool;
 
     //! 定位字符/字符集
-    static auto next_char(std::string_view s, size_type &pos, value_type ch) -> std::optional<size_type>;
-    static auto next_char(std::string_view s, size_type &pos, const charset_type &charset) -> std::optional<size_type>;
-    static auto next_char(std::string_view s, size_type &pos, std::string_view charset) -> std::optional<size_type>;
-    static auto next_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> std::optional<size_type>;
+    static auto next_char(std::string_view s, size_type& pos, value_type ch) -> std::optional<size_type>;
+    static auto next_char(std::string_view s, size_type& pos, const charset_type& charset) -> std::optional<size_type>;
+    static auto next_char(std::string_view s, size_type& pos, std::string_view charset) -> std::optional<size_type>;
+    static auto next_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> std::optional<size_type>;
     //
-    static auto prev_char(std::string_view s, size_type &pos, value_type ch) -> std::optional<size_type>;
-    static auto prev_char(std::string_view s, size_type &pos, const charset_type &charset) -> std::optional<size_type>;
-    static auto prev_char(std::string_view s, size_type &pos, std::string_view charset) -> std::optional<size_type>;
-    static auto prev_char(std::string_view s, size_type &pos, const char_match_proc &proc) -> std::optional<size_type>;
+    static auto prev_char(std::string_view s, size_type& pos, value_type ch) -> std::optional<size_type>;
+    static auto prev_char(std::string_view s, size_type& pos, const charset_type& charset) -> std::optional<size_type>;
+    static auto prev_char(std::string_view s, size_type& pos, std::string_view charset) -> std::optional<size_type>;
+    static auto prev_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> std::optional<size_type>;
 
     //! 定位子串
-    static auto next_string_range(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<range_type>;
-    static auto next_string_view(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string_view>;
-    static auto next_string(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string>;
+    static auto next_string_range(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<range_type>;
+    static auto next_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string_view>;
+    static auto next_string(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string>;
     //
-    static auto prev_string_range(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<range_type>;
-    static auto prev_string_view(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string_view>;
-    static auto prev_string(std::string_view s, size_type &pos, std::string_view substr) -> std::optional<std::string>;
+    static auto prev_string_range(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<range_type>;
+    static auto prev_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string_view>;
+    static auto prev_string(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string>;
 
     //! 定位换行符
-    static auto next_eol_range(std::string_view s, size_type &pos) -> std::optional<range_type>;
-    static auto next_eol_view(std::string_view s, size_type &pos) -> std::optional<std::string_view>;
-    static auto next_eol(std::string_view s, size_type &pos) -> std::optional<std::string>;
+    static auto next_eol_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
+    static auto next_eol_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
+    static auto next_eol(std::string_view s, size_type& pos) -> std::optional<std::string>;
     //
-    static auto prev_eol_range(std::string_view s, size_type &pos) -> std::optional<range_type>;
-    static auto prev_eol_view(std::string_view s, size_type &pos) -> std::optional<std::string_view>;
-    static auto prev_eol(std::string_view s, size_type &pos) -> std::optional<std::string>;
+    static auto prev_eol_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
+    static auto prev_eol_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
+    static auto prev_eol(std::string_view s, size_type& pos) -> std::optional<std::string>;
     //
     static auto ends_with_eol(std::string_view s) -> bool;
     static auto has_eol_suffix(std::string_view s) -> bool;
@@ -561,55 +566,38 @@ struct str {
     static auto remove_eol_suffix_range(std::string_view s) -> range_type;
     static auto remove_eol_suffix_view(std::string_view s) -> std::string_view;
     static auto remove_eol_suffix(std::string_view s) -> std::string;
-    static auto remove_eol_suffix_inplace(std::string &s) -> std::string &;
+    static auto remove_eol_suffix_inplace(std::string& s) -> std::string&;
 
     //! 定位正则表达式分隔符
-    static auto next_regex_range(std::string_view s, size_type &pos, const std::regex &pattern) -> range_type;
-
-    static auto next_regex_view(std::string_view s, size_type &pos, const std::regex &pattern) -> std::string_view;
-
-    static auto next_regex(std::string_view s, size_type &pos, const std::regex &pattern) -> std::string;
-
-    static auto next_regex(std::string_view s, size_type &pos, std::string_view pattern) -> std::string;
-
+    static auto next_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
+    static auto next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
+    static auto next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
+    static auto next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
     //
-    static auto prev_regex_range(std::string_view s, size_type &pos, const std::regex &pattern) -> range_type;
-
-    static auto prev_regex_view(std::string_view s, size_type &pos, const std::regex &pattern) -> std::string_view;
-
-    static auto prev_regex(std::string_view s, size_type &pos, const std::regex &pattern) -> std::string;
-
-    static auto prev_regex(std::string_view s, size_type &pos, std::string_view pattern) -> std::string;
+    static auto prev_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
+    static auto prev_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
+    static auto prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
+    static auto prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
 
     //! 定位路径分隔符
-    static auto next_pathsep_range(std::string_view s, size_type &pos) -> range_type;
-
-    static auto next_pathsep_view(std::string_view s, size_type &pos) -> std::string_view;
-
-    static auto next_pathsep(std::string_view s, size_type &pos) -> std::string;
-
-    static auto next_searchpathsep_range(std::string_view s, size_type &pos) -> range_type;
-
-    static auto next_searchpathsep_view(std::string_view s, size_type &pos) -> std::string_view;
-
-    static auto next_searchpathsep(std::string_view s, size_type &pos) -> std::string;
+    static auto next_pathsep_range(std::string_view s, size_type& pos) -> range_type;
+    static auto next_pathsep_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto next_pathsep(std::string_view s, size_type& pos) -> std::string;
+    static auto next_searchpathsep_range(std::string_view s, size_type& pos) -> range_type;
+    static auto next_searchpathsep_view(std::string_view s, size_type& pos) -> std::string_view;
+    static auto next_searchpathsep(std::string_view s, size_type& pos) -> std::string;
 
     //! 定位过程
-    template<typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
-    static auto next_proc_range(std::string_view s, size_type &pos, const RangeSearchProc &proc) -> range_type;
-
-    template<typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
-    static auto next_proc_view(std::string_view s, size_type &pos, const RangeSearchProc &proc) -> std::string_view;
-
-    template<typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
-    static auto next_proc(std::string_view s, size_type &pos, const RangeSearchProc &proc) -> std::string;
-
+    template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
+    static auto next_proc_range(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type;
+    template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
+    static auto next_proc_view(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view;
+    template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
+    static auto next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string;
     //
-    static auto prev_proc_range(std::string_view s, size_type &pos, const range_search_proc &proc) -> range_type;
-
-    static auto prev_proc_view(std::string_view s, size_type &pos, const range_search_proc &proc) -> std::string_view;
-
-    static auto prev_proc(std::string_view s, size_type &pos, const range_search_proc &proc) -> std::string;
+    static auto prev_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;
+    static auto prev_proc_view(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string_view;
+    static auto prev_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
 
     //! 特征测试：传统类 @anchor{is}
     ///
@@ -631,31 +619,18 @@ struct str {
     /// @param s 被测试的字符串
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
     static auto is_lower(std::string_view s) -> bool;
-
     static auto is_upper(std::string_view s) -> bool;
-
     static auto is_title(std::string_view s) -> bool;
-
     static auto is_capitalize(std::string_view s) -> bool;
-
     static auto is_digit(std::string_view s) -> bool;
-
     static auto is_xdigit(std::string_view s) -> bool;
-
     static auto is_ascii(std::string_view s) -> bool;
-
     static auto is_alpha(std::string_view s) -> bool;
-
     static auto is_alnum(std::string_view s) -> bool;
-
     static auto is_alnumul(std::string_view s) -> bool;
-
     static auto is_space(std::string_view s) -> bool;
-
     static auto is_blank(std::string_view s) -> bool;
-
     static auto is_print(std::string_view s) -> bool;
-
     static auto is_graph(std::string_view s) -> bool;
 
     //! 特征测试：常见词法特征类
@@ -693,10 +668,10 @@ struct str {
     /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
     /// @param charset 指定需要满足条件的字符集
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto is_all(std::string_view s, const CharMatchProc &proc) -> bool;
+    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
+    static auto is_all(std::string_view s, const CharMatchProc& proc) -> bool;
 
-    static auto is_all(std::string_view s, const charset_type &charset) -> bool;
+    static auto is_all(std::string_view s, const charset_type& charset) -> bool;
 
     //! 特征测试：单一条件类 @anchor{has}
     ///
@@ -705,10 +680,10 @@ struct str {
     /// @param charset 指定需要满足条件的字符集
     /// @return 与 is_xxx 系列函数需要“所有字符必须全部满足指定特征”不同，has_xxx 系列函数只需要有任意一个字符满足特征，
     ///         立即返回 true。唯一的特例是空串总是返回 false。
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto has_any(std::string_view s, const CharMatchProc &proc) -> bool;
+    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
+    static auto has_any(std::string_view s, const CharMatchProc& proc) -> bool;
 
-    static auto has_any(std::string_view s, const charset_type &charset) -> bool;
+    static auto has_any(std::string_view s, const charset_type& charset) -> bool;
 
     //! 提取子串：基于位置 @anchor{take}
     ///
@@ -754,19 +729,19 @@ struct str {
     static auto take(std::string_view s, size_type pos) -> std::string;
 
     //
-    static auto take_left_inplace(std::string &s, size_type n) -> std::string &;
+    static auto take_left_inplace(std::string& s, size_type n) -> std::string&;
 
-    static auto take_right_inplace(std::string &s, size_type n) -> std::string &;
+    static auto take_right_inplace(std::string& s, size_type n) -> std::string&;
 
-    static auto take_mid_inplace(std::string &s, size_type pos, size_type n) -> std::string &;
+    static auto take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
 
-    static auto take_range_inplace(std::string &s, size_type begin_pos, size_type end_pos) -> std::string &;
+    static auto take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
 
-    static auto take_range_inplace(std::string &s, range_type range) -> std::string &;
+    static auto take_range_inplace(std::string& s, range_type range) -> std::string&;
 
-    static auto take_inplace(std::string &s, size_type pos, ssize_type offset) -> std::string &;
+    static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
 
-    static auto take_inplace(std::string &s, size_type pos) -> std::string &;
+    static auto take_inplace(std::string& s, size_type pos) -> std::string&;
 
     //
     static auto take_before_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
@@ -810,30 +785,30 @@ struct str {
 
     static auto drop(std::string_view s, size_type pos) -> std::string;
 
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto drop(std::string_view s, const CharMatchProc &proc) -> std::string;
+    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
+    static auto drop(std::string_view s, const CharMatchProc& proc) -> std::string;
 
-    static auto drop(std::string_view s, const charset_type &charset) -> std::string;
+    static auto drop(std::string_view s, const charset_type& charset) -> std::string;
 
     //
-    static auto drop_left_inplace(std::string &s, size_type n) -> std::string &;
+    static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
 
-    static auto drop_right_inplace(std::string &s, size_type n) -> std::string &;
+    static auto drop_right_inplace(std::string& s, size_type n) -> std::string&;
 
-    static auto drop_mid_inplace(std::string &s, size_type pos, size_type n) -> std::string &;
+    static auto drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
 
-    static auto drop_range_inplace(std::string &s, size_type begin_pos, size_type end_pos) -> std::string &;
+    static auto drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
 
-    static auto drop_range_inplace(std::string &s, range_type range) -> std::string &;
+    static auto drop_range_inplace(std::string& s, range_type range) -> std::string&;
 
-    static auto drop_inplace(std::string &s, size_type pos, ssize_type offset) -> std::string &;
+    static auto drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
 
-    static auto drop_inplace(std::string &s, size_type pos) -> std::string &;
+    static auto drop_inplace(std::string& s, size_type pos) -> std::string&;
 
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto drop_inplace(std::string &s, const CharMatchProc &proc) -> std::string &;
+    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
+    static auto drop_inplace(std::string& s, const CharMatchProc& proc) -> std::string&;
 
-    static auto drop_inplace(std::string &s, const charset_type &charset) -> std::string &;
+    static auto drop_inplace(std::string& s, const charset_type& charset) -> std::string&;
 
     //
     static auto drop_before_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
@@ -858,21 +833,21 @@ struct str {
 
     static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
 
-    static auto align_right(std::string_view s, size_type width, value_type ch, const view_consumer_proc &proc) -> void;
+    static auto align_right(std::string_view s, size_type width, value_type ch, const view_consumer_proc& proc) -> void;
 
     static auto align_center(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
 
-    static auto align_zfill(std::string_view s, size_type width, const view_consumer_proc &proc) -> void;
+    static auto align_zfill(std::string_view s, size_type width, const view_consumer_proc& proc) -> void;
 
     static auto align_zfill(std::string_view s, size_type width) -> std::string;
 
-    static auto align_left_inplace(std::string &s, size_type width, value_type ch = ' ') -> std::string &;
+    static auto align_left_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
 
-    static auto align_right_inplace(std::string &s, size_type width, value_type ch = ' ') -> std::string &;
+    static auto align_right_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
 
-    static auto align_center_inplace(std::string &s, size_type width, value_type ch = ' ') -> std::string &;
+    static auto align_center_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
 
-    static auto align_zfill_inplace(std::string &s, size_type width) -> std::string &;
+    static auto align_zfill_inplace(std::string& s, size_type width) -> std::string&;
 
     //! 多行文本处理 @anchor{lines}
     ///
@@ -895,7 +870,7 @@ struct str {
     /// @param margin 指定一个边缘字符
     // template <typename LineConsumerProc, typename = std::enable_if<std::is_function<LineConsumerProc>::value>>
     // static auto foreach_lines(std::string_view s, bool keep_ends, const LineConsumerProc& proc) -> void;
-    static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc &proc) -> void;
+    static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc& proc) -> void;
 
     static auto count_lines(std::string_view s) -> size_type;
 
@@ -907,9 +882,9 @@ struct str {
     static auto unnumbering_lines(std::string_view s) -> std::string;
 
     //
-    static auto numbering_lines_inplace(std::string &s, size_type from_n) -> std::string &;
+    static auto numbering_lines_inplace(std::string& s, size_type from_n) -> std::string&;
 
-    static auto unnumbering_lines_inplace(std::string &s) -> std::string &;
+    static auto unnumbering_lines_inplace(std::string& s) -> std::string&;
 
     //! 缩进
     static auto indent_lines(std::string_view s, size_type n) -> std::string;
@@ -923,15 +898,15 @@ struct str {
     static auto simplify_indent_lines(std::string_view s) -> std::string;
 
     //
-    static auto indent_lines_inplace(std::string &s, size_type n) -> std::string &;
+    static auto indent_lines_inplace(std::string& s, size_type n) -> std::string&;
 
-    static auto dedent_lines_inplace(std::string &s, size_type n) -> std::string &;
+    static auto dedent_lines_inplace(std::string& s, size_type n) -> std::string&;
 
-    static auto align_indent_lines_inplace(std::string &s, size_type n) -> std::string &;
+    static auto align_indent_lines_inplace(std::string& s, size_type n) -> std::string&;
 
-    static auto trim_indent_lines_inplace(std::string &s) -> std::string &;
+    static auto trim_indent_lines_inplace(std::string& s) -> std::string&;
 
-    static auto simplify_indent_lines_inplace(std::string &s) -> std::string &;
+    static auto simplify_indent_lines_inplace(std::string& s) -> std::string&;
 
     //! 留边
     static auto margin_lines(std::string_view s, size_type n, value_type margin_ch = '|') -> std::string;
@@ -939,9 +914,9 @@ struct str {
     static auto trim_margin_lines(std::string_view s, value_type margin_ch = ' ') -> std::string;
 
     //
-    static auto margin_lines_inplace(std::string &s, size_type n, value_type margin_ch = ' ') -> std::string &;
+    static auto margin_lines_inplace(std::string& s, size_type n, value_type margin_ch = ' ') -> std::string&;
 
-    static auto trim_margin_lines_inplace(std::string &s, value_type margin_ch = ' ') -> std::string &;
+    static auto trim_margin_lines_inplace(std::string& s, value_type margin_ch = ' ') -> std::string&;
 
     //! 单词 @anchor{words}
     ///
@@ -955,19 +930,19 @@ struct str {
     /// @param sep_ch 用于拆分字符串的分隔字符
     // template <typename RangeConsumerProc, typename = std::enable_if<std::is_function<RangeConsumerProc>::value>>
     // static auto foreach_words(std::string_view s, size_type pos, const RangeConsumerProc& proc) -> void;
-    static auto foreach_words(std::string_view s, size_type pos, const range_consumer_proc &proc) -> void;
+    static auto foreach_words(std::string_view s, size_type pos, const range_consumer_proc& proc) -> void;
 
     // template <typename ViewConsumerProc, typename = std::enable_if<std::is_function<ViewConsumerProc>::value>>
     // static auto foreach_words(std::string_view s, size_type pos, const ViewConsumerProc& proc) -> void;
-    static auto foreach_words(std::string_view s, size_type pos, const view_consumer_proc &proc) -> void;
+    static auto foreach_words(std::string_view s, size_type pos, const view_consumer_proc& proc) -> void;
 
     // template <typename RangeConsumerProc, typename = std::enable_if<std::is_function<RangeConsumerProc>::value>>
     // static auto foreach_words(std::string_view s, const RangeConsumerProc& proc) -> void;
-    static auto foreach_words(std::string_view s, const range_consumer_proc &proc) -> void;
+    static auto foreach_words(std::string_view s, const range_consumer_proc& proc) -> void;
 
     // template <typename ViewConsumerProc, typename = std::enable_if<std::is_function<ViewConsumerProc>::value>>
     // static auto foreach_words(std::string_view s, const ViewConsumerProc& proc) -> void;
-    static auto foreach_words(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto foreach_words(std::string_view s, const view_consumer_proc& proc) -> void;
 
     //
     static auto count_words(std::string_view s) -> size_type;
@@ -981,18 +956,18 @@ struct str {
     // static auto last_word_range(std::string_view s) -> range_type;
     // static auto last_word(std::string_view s) -> std::string;
     //
-    static auto next_word_view(std::string_view s, size_type &pos) -> std::string_view;
+    static auto next_word_view(std::string_view s, size_type& pos) -> std::string_view;
 
-    static auto next_word_range(std::string_view s, size_type &pos) -> range_type;
+    static auto next_word_range(std::string_view s, size_type& pos) -> range_type;
 
-    static auto next_word(std::string_view s, size_type &pos) -> std::string;
+    static auto next_word(std::string_view s, size_type& pos) -> std::string;
 
     //
-    static auto prev_word_view(std::string_view s, size_type &pos) -> std::string_view;
+    static auto prev_word_view(std::string_view s, size_type& pos) -> std::string_view;
 
-    static auto prev_word_range(std::string_view s, size_type &pos) -> range_type;
+    static auto prev_word_range(std::string_view s, size_type& pos) -> range_type;
 
-    static auto prev_word(std::string_view s, size_type &pos) -> std::string;
+    static auto prev_word(std::string_view s, size_type& pos) -> std::string;
 
     //! 用指定的模式串环绕字符串 @anchor{surround, unsurround}
     ///
@@ -1009,7 +984,7 @@ struct str {
     static auto surround(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string;
 
     static auto
-    surround_inplace(std::string &s, std::string_view left = "(", std::string_view right = ")") -> std::string &;
+    surround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
 
     //
     static auto
@@ -1019,7 +994,7 @@ struct str {
     unsurround(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string;
 
     static auto
-    unsurround_inplace(std::string &s, std::string_view left = "(", std::string_view right = ")") -> std::string &;
+    unsurround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
 
     //! 反转：字符串逆序
     ///
@@ -1031,7 +1006,7 @@ struct str {
     /// @return 返回颠倒位置后的字符串
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
 
-    static auto invert_inplace(std::string &s, size_type pos = 0, size_type max_n = npos) -> std::string &;
+    static auto invert_inplace(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
 
     //! 生成
     ///
@@ -1050,11 +1025,11 @@ struct str {
     /// @param n 指定生成的字符串的长度的范围
     /// @param proc 指定随机数函数
     /// @param ch, charset 指生成的字符串中的字符的范围
-    static auto random(size_type n, const number_provider_proc &proc) -> std::string;
+    static auto random(size_type n, const number_provider_proc& proc) -> std::string;
 
-    static auto random(size_type n, std::string_view charset, const number_provider_proc &proc) -> std::string;
+    static auto random(size_type n, std::string_view charset, const number_provider_proc& proc) -> std::string;
 
-    static auto random(size_type n, charset_type charset, const number_provider_proc &proc) -> std::string;
+    static auto random(size_type n, charset_type charset, const number_provider_proc& proc) -> std::string;
 
     //! 生成：
     ///
@@ -1064,11 +1039,11 @@ struct str {
     /// @param charset 指定生成的字符串中的字符的范围
     /// @param proc 随机函数
     static auto
-    random_fill(std::string &s, std::string_view charset, const number_provider_proc &proc) -> std::string &;
+    random_fill(std::string& s, std::string_view charset, const number_provider_proc& proc) -> std::string&;
 
-    static auto random_fill(std::string &s, charset_type charset, const number_provider_proc &proc) -> std::string &;
+    static auto random_fill(std::string& s, charset_type charset, const number_provider_proc& proc) -> std::string&;
 
-    static auto random_fill(std::string &s, const number_provider_proc &proc) -> std::string &;
+    static auto random_fill(std::string& s, const number_provider_proc& proc) -> std::string&;
 
     //! 重排：
     ///
@@ -1077,7 +1052,7 @@ struct str {
     /// @param s 指定被重拍的字符串
     /// @param proc 随机数生成器
     /// @return 将 s 重排后返回
-    static auto random_reorder(std::string &s, const number_provider_proc &proc) -> std::string &;
+    static auto random_reorder(std::string& s, const number_provider_proc& proc) -> std::string&;
 
     //! 空白操作
     ///
@@ -1094,13 +1069,13 @@ struct str {
 
     static auto after_skip_spaces(std::string_view s) -> std::string;
 
-    static auto after_skip_spaces_inplace(std::string &s) -> std::string &;
+    static auto after_skip_spaces_inplace(std::string& s) -> std::string&;
 
     static auto after_skip_spaces_view(std::string_view s, size_type pos) -> std::string_view;
 
     static auto after_skip_spaces(std::string_view s, size_type pos) -> std::string;
 
-    static auto after_skip_spaces_inplace(std::string &s, size_type pos) -> std::string &;
+    static auto after_skip_spaces_inplace(std::string& s, size_type pos) -> std::string&;
 
     //! 字符串遮罩
     ///
@@ -1137,10 +1112,10 @@ struct str {
     /// @param right_n 右侧保留多少可见字符
     /// @return 返回遮罩后的字符串
     static auto cover(std::string_view s, std::string_view mask = "***", size_type left_n = 1,
-                      size_type right_n = 3) -> std::string;
+        size_type right_n = 3) -> std::string;
 
-    static auto cover_inplace(std::string &s, std::string_view mask = "***", size_type left_n = 1,
-                              size_type right_n = 3) -> std::string &;
+    static auto cover_inplace(std::string& s, std::string_view mask = "***", size_type left_n = 1,
+        size_type right_n = 3) -> std::string&;
 
     //! 字符串拼接 @anchor join
     ///
@@ -1150,13 +1125,13 @@ struct str {
     /// @param proc 用于通过回调函数的方式供给被拼接的字符串
     /// @param items 被字符串容器序列
     /// @return 返回合并后的字符串
-    static auto join(std::string_view s, const view_provider_proc &proc) -> std::string;
+    static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join(std::string_view s, const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto join(std::string_view s, const Sequence& items) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join(const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto join(const Sequence& items) -> std::string;
 
     //! 拼接列表
     ///
@@ -1165,10 +1140,10 @@ struct str {
     /// @param proc 用于通过回调函数的方式供给被拼接的字符串
     /// @param items 被字符串容器序列
     /// @return 返回合并后的字符串
-    static auto join_list(const view_provider_proc &proc) -> std::string;
+    static auto join_list(const view_provider_proc& proc) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_list(const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto join_list(const Sequence& items) -> std::string;
 
     //! 映射拼接
     ///
@@ -1180,15 +1155,15 @@ struct str {
     /// @param items 用于存储 key-value 对的容器
     /// @return 返回拼接后的字符串
     static auto
-    join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc &proc) -> std::string;
+    join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string;
 
-    static auto join_map(const view_pair_provider_proc &proc) -> std::string;
+    static auto join_map(const view_pair_provider_proc& proc) -> std::string;
 
-    template<typename Map, typename = typename Map::const_iterator>
-    static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map &items) -> std::string;
+    template <typename Map, typename = typename Map::const_iterator>
+    static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string;
 
-    template<typename Map, typename = typename Map::const_iterator>
-    static auto join_map(const Map &items) -> std::string;
+    template <typename Map, typename = typename Map::const_iterator>
+    static auto join_map(const Map& items) -> std::string;
 
     //! 按行拼接
     ///
@@ -1197,15 +1172,15 @@ struct str {
     /// @param sep 指定换行符号，如果未指定，默认使用 @ref{sep_line_ends} 作为分隔符
     /// @param proc
     /// @param items
-    static auto join_lines(std::string_view line_ends, const view_provider_proc &proc) -> std::string;
+    static auto join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string;
 
-    static auto join_lines(const view_provider_proc &proc) -> std::string;
+    static auto join_lines(const view_provider_proc& proc) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_lines(std::string_view sep, const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto join_lines(std::string_view sep, const Sequence& items) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_lines(const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    static auto join_lines(const Sequence& items) -> std::string;
 
     //! 拼接路径
     ///
@@ -1215,15 +1190,15 @@ struct str {
     /// @param proc 供给路径片段
     /// @param items 供给路径片段的容器
     /// @return 返回拼接后的路径
-    static auto join_path(std::string_view sep, const view_provider_proc &proc) -> std::string;
+    static auto join_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
 
-    static auto join_path(const view_provider_proc &proc) -> std::string;
+    static auto join_path(const view_provider_proc& proc) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_path(std::string_view sep, const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_path(std::string_view sep, const Sequence& items) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_path(const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_path(const Sequence& items) -> std::string;
 
     //! 拼接搜索路径
     ///
@@ -1236,15 +1211,15 @@ struct str {
     /// @param proc 提供搜素路径片段的函数。
     /// @param items 存放路径片段的容器。
     /// @return 返回以当前系统的搜索路径分隔符拼接好的字符串。
-    static auto join_searchpath(std::string_view sep, const view_provider_proc &proc) -> std::string;
+    static auto join_searchpath(std::string_view sep, const view_provider_proc& proc) -> std::string;
 
-    static auto join_searchpath(const view_provider_proc &proc) -> std::string;
+    static auto join_searchpath(const view_provider_proc& proc) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_searchpath(std::string_view sep, const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_searchpath(std::string_view sep, const Sequence& items) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
-    static auto join_searchpath(const Sequence &items) -> std::string;
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    static auto join_searchpath(const Sequence& items) -> std::string;
 
     //! 字符串拆分
     ///
@@ -1256,29 +1231,29 @@ struct str {
     /// @param proc 指定如何接受拆分出来的字符串。
     /// @return 当未指定 proc 参数时，会返回字符串列表。
     static auto
-    split(std::string_view s, const char_match_proc &sepset, size_type max_n, const view_consumer_proc &proc) -> void;
+    split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
 
     static auto
-    split(std::string_view s, const charset_type &sepset, size_type max_n, const view_consumer_proc &proc) -> void;
+    split(std::string_view s, const charset_type& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
 
-    static auto split(std::string_view s, const charset_type &sepset, const view_consumer_proc &proc) -> void;
-
-    static auto
-    split(std::string_view s, const charset_type &sepset, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split(std::string_view s, const charset_type& sepset, const view_consumer_proc& proc) -> void;
 
     static auto
-    split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc &proc) -> void;
+    split(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string>;
 
-    static auto split(std::string_view s, std::string_view sepset, const view_consumer_proc &proc) -> void;
+    static auto
+    split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void;
+
+    static auto split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void;
 
     static auto split(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string>;
 
-    static auto split(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string>;
 
     static auto
-    split_view(std::string_view s, const charset_type &sepset, size_type max_n = npos) -> std::vector<std::string_view>;
+    split_view(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
 
     static auto
     split_view(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string_view>;
@@ -1293,26 +1268,26 @@ struct str {
     /// @param proc 指定如何接受拆分出来的字符串。
     /// @return 当未指定 proc 参数时，会返回字符串列表。
     static auto
-    split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc &proc) -> void;
+    split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void;
 
-    static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc &proc) -> void;
+    static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
 
     static auto
     split_list(std::string_view s, std::string_view sep = ",", size_type max_n = npos) -> std::vector<std::string>;
 
     static auto
-    split_list(std::string_view s, const std::regex &sep, size_type max_n, const view_consumer_proc &proc) -> void;
+    split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void;
 
-    static auto split_list(std::string_view s, const std::regex &sep, const view_consumer_proc &proc) -> void;
-
-    static auto
-    split_list(std::string_view s, const std::regex &sep, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void;
 
     static auto
-    split_list_view(std::string_view s, const std::regex &sep, size_type max_n = npos) -> std::vector<std::string_view>;
+    split_list(std::string_view s, const std::regex& sep, size_type max_n = npos) -> std::vector<std::string>;
+
+    static auto
+    split_list_view(std::string_view s, const std::regex& sep, size_type max_n = npos) -> std::vector<std::string_view>;
 
     static auto split_list_view(std::string_view s, std::string_view sep = ",",
-                                size_type max_n = npos) -> std::vector<std::string_view>;
+        size_type max_n = npos) -> std::vector<std::string_view>;
 
     //! 以指定的字符串为分隔符将字符串拆分为两个部分
     ///
@@ -1343,30 +1318,30 @@ struct str {
     /// @param proc 输出拆分出来的每个键值对
     /// @return 返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
     static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
-                          const view_pair_consumer_proc &proc) -> void;
+        const view_pair_consumer_proc& proc) -> void;
 
     static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":",
-                          size_type max_n = npos) -> std::map<std::string, std::string>;
+        size_type max_n = npos) -> std::map<std::string, std::string>;
 
     //! 按照换行符将字符串 s，拆分成多行
     ///
     /// @param keep_ends 是否保留行尾分隔符
-    static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc &proc) -> void;
+    static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void;
 
     static auto split_lines(std::string_view s, bool keep_ends = false) -> std::vector<std::string>;
 
     static auto split_lines_view(std::string_view s, bool keep_ends = false) -> std::vector<std::string_view>;
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
-    static auto split_path(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto split_path(std::string_view s) -> std::vector<std::string_view>;
 
     static auto
-    split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc &proc) -> void;
+    split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
 
     static auto split_searchpath(std::string_view s, bool keep_empty = false,
-                                 value_type sep = ':') -> std::vector<std::string_view>;
+        value_type sep = ':') -> std::vector<std::string_view>;
 
     // // 拆分 csv 数据
     // static auto split_csv(std::string_view s) -> std::vector<std::string>;
@@ -1395,79 +1370,79 @@ struct str {
     partition_range(std::string_view s, charset_type charset) -> std::tuple<range_type, range_type, range_type>;
 
     static auto
-    partition_range(std::string_view s, const char_match_proc &proc) -> std::tuple<range_type, range_type, range_type>;
+    partition_range(std::string_view s, const char_match_proc& proc) -> std::tuple<range_type, range_type, range_type>;
 
     static auto
     partition_range(std::string_view s, std::string_view sep) -> std::tuple<range_type, range_type, range_type>;
 
     static auto
-    partition_range(std::string_view s, const std::regex &pattern) -> std::tuple<range_type, range_type, range_type>;
+    partition_range(std::string_view s, const std::regex& pattern) -> std::tuple<range_type, range_type, range_type>;
 
     static auto partition_range(std::string_view s,
-                                const range_search_proc &proc) -> std::tuple<range_type, range_type, range_type>;
+        const range_search_proc& proc) -> std::tuple<range_type, range_type, range_type>;
 
     //
     static auto partition_view(std::string_view s,
-                               charset_type charset) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        charset_type charset) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto partition_view(std::string_view s,
-                               const char_match_proc &proc) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        const char_match_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto partition_view(std::string_view s,
-                               std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto partition_view(std::string_view s,
-                               const std::regex &pattern) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        const std::regex& pattern) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto partition_view(std::string_view s,
-                               const view_search_proc &proc) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        const view_search_proc& proc) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     //
     static auto
     partition(std::string_view s, charset_type charset) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
-    partition(std::string_view s, const char_match_proc &proc) -> std::tuple<std::string, std::string, std::string>;
+    partition(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
     partition(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
-    partition(std::string_view s, const std::regex &pattern) -> std::tuple<std::string, std::string, std::string>;
+    partition(std::string_view s, const std::regex& pattern) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
-    partition(std::string_view s, const view_search_proc &proc) -> std::tuple<std::string, std::string, std::string>;
+    partition(std::string_view s, const view_search_proc& proc) -> std::tuple<std::string, std::string, std::string>;
 
     //
     static auto rpartition_view(std::string_view s,
-                                charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto rpartition_view(std::string_view s,
-                                const char_match_proc &sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        const char_match_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto rpartition_view(std::string_view s,
-                                std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto rpartition_view(std::string_view s,
-                                const std::regex &sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        const std::regex& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     static auto rpartition_view(std::string_view s,
-                                const view_search_proc &sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+        const view_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
 
     //
     static auto rpartition(std::string_view s, charset_type sep) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
-    rpartition(std::string_view s, const char_match_proc &sep) -> std::tuple<std::string, std::string, std::string>;
+    rpartition(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
     rpartition(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
-    rpartition(std::string_view s, const std::regex &sep) -> std::tuple<std::string, std::string, std::string>;
+    rpartition(std::string_view s, const std::regex& sep) -> std::tuple<std::string, std::string, std::string>;
 
     static auto
-    rpartition(std::string_view s, const view_search_proc &sep) -> std::tuple<std::string, std::string, std::string>;
+    rpartition(std::string_view s, const view_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
 
     //! 指定宽度拆分字符串
     ///
@@ -1477,18 +1452,18 @@ struct str {
     /// @param width 执行拆分宽度，如果 width 为 0 自动校正为 1；当 width 大于 s 的长度时，等价于不拆分
     /// @param proc 数据输出函数
     /// @return 通过 proc 或者返回值返回拆分后的子串列表
-    static auto chunked(std::string_view s, size_type width, const view_consumer_proc &proc) -> void;
+    static auto chunked(std::string_view s, size_type width, const view_consumer_proc& proc) -> void;
 
     static auto chunked(std::string_view s, size_type width) -> std::vector<std::string>;
 
     static auto chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view>;
 
     // 基于窗口拆分字符串
-    static auto take_window_view(std::string_view s, size_type &pos, size_type max_n) -> std::string_view;
+    static auto take_window_view(std::string_view s, size_type& pos, size_type max_n) -> std::string_view;
 
-    static auto take_window(std::string_view s, size_type &pos, size_type max_n) -> std::string;
+    static auto take_window(std::string_view s, size_type& pos, size_type max_n) -> std::string;
 
-    static auto windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc &proc) -> void;
+    static auto windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void;
 
     static auto windowed_view(std::string_view s, size_type width, size_type step) -> std::vector<std::string_view>;
 
@@ -1512,15 +1487,15 @@ struct str {
     static auto swap_case(std::string_view s) -> std::string;
 
     //
-    static auto to_lower_inplace(std::string &s) -> std::string &;
+    static auto to_lower_inplace(std::string& s) -> std::string&;
 
-    static auto to_upper_inplace(std::string &s) -> std::string &;
+    static auto to_upper_inplace(std::string& s) -> std::string&;
 
-    static auto to_title_inplace(std::string &s) -> std::string &;
+    static auto to_title_inplace(std::string& s) -> std::string&;
 
-    static auto to_capitalize_inplace(std::string &s) -> std::string &;
+    static auto to_capitalize_inplace(std::string& s) -> std::string&;
 
-    static auto swap_case_inplace(std::string &s) -> std::string &;
+    static auto swap_case_inplace(std::string& s) -> std::string&;
 
     //! 剔除
     ///
@@ -1533,84 +1508,84 @@ struct str {
     /// @param proc 字符匹配条件
     /// @param charset 表示可以满足条件的字符集
     /// @return 返回
-    static auto trim_left_view(std::string_view s, const char_match_proc &proc) -> std::string_view;
+    static auto trim_left_view(std::string_view s, const char_match_proc& proc) -> std::string_view;
 
     static auto trim_left_view(std::string_view s) -> std::string_view;
 
-    static auto trim_left_view(std::string_view s, const charset_type &charset) -> std::string_view;
+    static auto trim_left_view(std::string_view s, const charset_type& charset) -> std::string_view;
 
     static auto trim_left_view(std::string_view s, std::string_view charset) -> std::string_view;
 
-    static auto trim_right_view(std::string_view s, const char_match_proc &proc) -> std::string_view;
+    static auto trim_right_view(std::string_view s, const char_match_proc& proc) -> std::string_view;
 
-    static auto trim_right_view(std::string_view s, const charset_type &charset) -> std::string_view;
+    static auto trim_right_view(std::string_view s, const charset_type& charset) -> std::string_view;
 
     static auto trim_right_view(std::string_view s, std::string_view charset) -> std::string_view;
 
     static auto trim_right_view(std::string_view s) -> std::string_view;
 
-    static auto trim_surrounding_view(std::string_view s, const char_match_proc &proc) -> std::string_view;
+    static auto trim_surrounding_view(std::string_view s, const char_match_proc& proc) -> std::string_view;
 
-    static auto trim_surrounding_view(std::string_view s, const charset_type &charset) -> std::string_view;
+    static auto trim_surrounding_view(std::string_view s, const charset_type& charset) -> std::string_view;
 
     static auto trim_surrounding_view(std::string_view s, std::string_view charset) -> std::string_view;
 
     static auto trim_surrounding_view(std::string_view s) -> std::string_view;
 
     //
-    static auto trim_left(std::string_view s, const char_match_proc &proc) -> std::string;
+    static auto trim_left(std::string_view s, const char_match_proc& proc) -> std::string;
 
     static auto trim_left(std::string_view s) -> std::string;
 
-    static auto trim_left(std::string_view s, const charset_type &charset) -> std::string;
+    static auto trim_left(std::string_view s, const charset_type& charset) -> std::string;
 
     static auto trim_left(std::string_view s, std::string_view charset) -> std::string;
 
-    static auto trim_right(std::string_view s, const char_match_proc &proc) -> std::string;
+    static auto trim_right(std::string_view s, const char_match_proc& proc) -> std::string;
 
-    static auto trim_right(std::string_view s, const charset_type &charset) -> std::string;
+    static auto trim_right(std::string_view s, const charset_type& charset) -> std::string;
 
     static auto trim_right(std::string_view s, std::string_view charset) -> std::string;
 
     static auto trim_right(std::string_view s) -> std::string;
 
-    static auto trim_surrounding(std::string_view s, const char_match_proc &proc) -> std::string;
+    static auto trim_surrounding(std::string_view s, const char_match_proc& proc) -> std::string;
 
-    static auto trim_surrounding(std::string_view s, const charset_type &charset) -> std::string;
+    static auto trim_surrounding(std::string_view s, const charset_type& charset) -> std::string;
 
     static auto trim_surrounding(std::string_view s, std::string_view charset) -> std::string;
 
     static auto trim_surrounding(std::string_view s) -> std::string;
 
     //
-    static auto trim_left_inplace(std::string &s, const char_match_proc &proc) -> std::string &;
+    static auto trim_left_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
 
-    static auto trim_left_inplace(std::string &s, const charset_type &charset) -> std::string &;
+    static auto trim_left_inplace(std::string& s, const charset_type& charset) -> std::string&;
 
-    static auto trim_left_inplace(std::string &s, std::string_view charset) -> std::string &;
+    static auto trim_left_inplace(std::string& s, std::string_view charset) -> std::string&;
 
-    static auto trim_left_inplace(std::string &s) -> std::string &;
+    static auto trim_left_inplace(std::string& s) -> std::string&;
 
-    static auto trim_right_inplace(std::string &s, const char_match_proc &proc) -> std::string &;
+    static auto trim_right_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
 
-    static auto trim_right_inplace(std::string &s, const charset_type &charset) -> std::string &;
+    static auto trim_right_inplace(std::string& s, const charset_type& charset) -> std::string&;
 
-    static auto trim_right_inplace(std::string &s, std::string_view charset) -> std::string &;
+    static auto trim_right_inplace(std::string& s, std::string_view charset) -> std::string&;
 
-    static auto trim_right_inplace(std::string &s) -> std::string &;
+    static auto trim_right_inplace(std::string& s) -> std::string&;
 
-    static auto trim_surrounding_inplace(std::string &s, const char_match_proc &proc) -> std::string &;
+    static auto trim_surrounding_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
 
-    static auto trim_surrounding_inplace(std::string &s, const charset_type &charset) -> std::string &;
+    static auto trim_surrounding_inplace(std::string& s, const charset_type& charset) -> std::string&;
 
-    static auto trim_surrounding_inplace(std::string &s, std::string_view charset) -> std::string &;
+    static auto trim_surrounding_inplace(std::string& s, std::string_view charset) -> std::string&;
 
-    static auto trim_surrounding_inplace(std::string &s) -> std::string &;
+    static auto trim_surrounding_inplace(std::string& s) -> std::string&;
 
     //
-    static auto trim_anywhere(std::string_view s, const char_match_proc &proc) -> std::string;
+    static auto trim_anywhere(std::string_view s, const char_match_proc& proc) -> std::string;
 
-    static auto trim_anywhere(std::string_view s, const charset_type &charset) -> std::string;
+    static auto trim_anywhere(std::string_view s, const charset_type& charset) -> std::string;
 
     static auto trim_anywhere(std::string_view s, std::string_view charset) -> std::string;
 
@@ -1619,15 +1594,15 @@ struct str {
     static auto trim_anywhere(std::string_view s) -> std::string;
 
     //
-    static auto trim_anywhere_inplace(std::string &s, const char_match_proc &proc) -> std::string &;
+    static auto trim_anywhere_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
 
-    static auto trim_anywhere_inplace(std::string &s, const charset_type &charset) -> std::string &;
+    static auto trim_anywhere_inplace(std::string& s, const charset_type& charset) -> std::string&;
 
-    static auto trim_anywhere_inplace(std::string &s, std::string_view charset) -> std::string &;
+    static auto trim_anywhere_inplace(std::string& s, std::string_view charset) -> std::string&;
 
-    static auto trim_anywhere_inplace(std::string &s, value_type charset) -> std::string &;
+    static auto trim_anywhere_inplace(std::string& s, value_type charset) -> std::string&;
 
-    static auto trim_anywhere_inplace(std::string &s) -> std::string &;
+    static auto trim_anywhere_inplace(std::string& s) -> std::string&;
 
     //! 化简
     ///
@@ -1643,23 +1618,23 @@ struct str {
     /// @param fill 如果可以化简，那么化简后改用什么填充
     /// @param proc 连续字符匹配条件
     /// @return 返回化简后的字符串
-    static auto simplified(std::string_view s, std::string_view sep, const char_match_proc &proc) -> std::string;
+    static auto simplified(std::string_view s, std::string_view sep, const char_match_proc& proc) -> std::string;
 
     static auto simplified(std::string_view s) -> std::string;
 
-    static auto simplified_inplace(std::string &s, std::string_view sep, const char_match_proc &proc) -> std::string &;
+    static auto simplified_inplace(std::string& s, std::string_view sep, const char_match_proc& proc) -> std::string&;
 
-    static auto simplified_inplace(std::string &s) -> std::string &;
+    static auto simplified_inplace(std::string& s) -> std::string&;
 
     //
     static auto simplified_integer(std::string_view s) -> std::string;
 
-    static auto simplified_integer_inplace(std::string &s) -> std::string &;
+    static auto simplified_integer_inplace(std::string& s) -> std::string&;
 
     //
     static auto simplified_real(std::string_view s) -> std::string;
 
-    static auto simplified_real_inplace(std::string &s) -> std::string &;
+    static auto simplified_real_inplace(std::string& s) -> std::string&;
 
     //! 拷贝
     ///
@@ -1684,29 +1659,29 @@ struct str {
     /// @param kvs 直接从一个指定的 map 中检索环境变量的值
     /// @param key, val 只将 key 替换为 val，其他的原样保留
     /// @return 返回替换后的新串。
-    static auto expand_envs(std::string_view s, bool keep_unexpanded, const string_mapping_proc &proc) -> std::string;
+    static auto expand_envs(std::string_view s, bool keep_unexpanded, const string_mapping_proc& proc) -> std::string;
 
     static auto expand_envs(std::string_view s, bool keep_unexpanded = false) -> std::string;
 
     static auto
-    expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string> &kvs) -> std::string;
+    expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string;
 
-    static auto expand_envs(std::string_view s, const std::map<std::string, std::string> &kvs) -> std::string;
+    static auto expand_envs(std::string_view s, const std::map<std::string, std::string>& kvs) -> std::string;
 
     static auto expand_envs(std::string_view s, std::string_view key, std::string_view val) -> std::string;
 
     //
     static auto
-    expand_envs_inplace(std::string &s, bool keep_unexpanded, const string_mapping_proc &proc) -> std::string &;
+    expand_envs_inplace(std::string& s, bool keep_unexpanded, const string_mapping_proc& proc) -> std::string&;
 
-    static auto expand_envs_inplace(std::string &s, bool keep_unexpanded = false) -> std::string &;
+    static auto expand_envs_inplace(std::string& s, bool keep_unexpanded = false) -> std::string&;
 
-    static auto expand_envs_inplace(std::string &s, bool keep_unexpanded,
-                                    const std::map<std::string, std::string> &kvs) -> std::string &;
+    static auto expand_envs_inplace(std::string& s, bool keep_unexpanded,
+        const std::map<std::string, std::string>& kvs) -> std::string&;
 
-    static auto expand_envs_inplace(std::string &s, const std::map<std::string, std::string> &kvs) -> std::string &;
+    static auto expand_envs_inplace(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string&;
 
-    static auto expand_envs_inplace(std::string &s, std::string_view key, std::string_view val) -> std::string &;
+    static auto expand_envs_inplace(std::string& s, std::string_view key, std::string_view val) -> std::string&;
 
     //! tab 扩展
     ///
@@ -1718,7 +1693,7 @@ struct str {
     /// @return 返回扩展后的字符串
     static auto expand_tabs(std::string_view s, size_type tab_size = 8) -> std::string;
 
-    static auto expand_tabs_inplace(std::string &s, size_type tab_size = 8) -> std::string &;
+    static auto expand_tabs_inplace(std::string& s, size_type tab_size = 8) -> std::string&;
 
     //! HOME 字符扩展
     //
@@ -1728,7 +1703,7 @@ struct str {
     /// @return 返回扩展后的字符串
     static auto expand_user(std::string_view s) -> std::string;
 
-    static auto expand_user_inplace(std::string &s) -> std::string &;
+    static auto expand_user_inplace(std::string& s) -> std::string&;
 
     //! 路径正常化
     ///
@@ -1736,7 +1711,7 @@ struct str {
     /// @return 返回正规化之后的路径
     static auto normpath(std::string_view s) -> std::string;
 
-    static auto normpath_inplace(std::string &s) -> std::string &;
+    static auto normpath_inplace(std::string& s) -> std::string&;
 
     //! 路径处理
     ///
@@ -1791,11 +1766,11 @@ struct str {
     static auto split_dirname(std::string_view s) -> std::tuple<std::string, std::string>;
 
     //
-    static auto dirname_inplace(std::string &s) -> std::string &;
+    static auto dirname_inplace(std::string& s) -> std::string&;
 
-    static auto remove_dirname_inplace(std::string &s) -> std::string &;
+    static auto remove_dirname_inplace(std::string& s) -> std::string&;
 
-    static auto replace_dirname_inplace(std::string &s, std::string_view new_name) -> std::string &;
+    static auto replace_dirname_inplace(std::string& s, std::string_view new_name) -> std::string&;
 
     //! 路径处理函数：文件名
     ///
@@ -1823,11 +1798,11 @@ struct str {
     static auto split_basename(std::string_view s) -> std::tuple<std::string, std::string>;
 
     //
-    static auto basename_inplace(std::string &s) -> std::string &;
+    static auto basename_inplace(std::string& s) -> std::string&;
 
-    static auto remove_basename_inplace(std::string &s) -> std::string &;
+    static auto remove_basename_inplace(std::string& s) -> std::string&;
 
-    static auto replace_basename_inplace(std::string &s, std::string_view new_name) -> std::string &;
+    static auto replace_basename_inplace(std::string& s, std::string_view new_name) -> std::string&;
 
     //! 路径处理函数：扩展名
     ///
@@ -1852,11 +1827,11 @@ struct str {
     static auto split_extname(std::string_view s) -> std::tuple<std::string, std::string>;
 
     //
-    static auto extname_inplace(std::string &s) -> std::string &;
+    static auto extname_inplace(std::string& s) -> std::string&;
 
-    static auto remove_extname_inplace(std::string &s) -> std::string &;
+    static auto remove_extname_inplace(std::string& s) -> std::string&;
 
-    static auto replace_extname_inplace(std::string &s, std::string_view new_name) -> std::string &;
+    static auto replace_extname_inplace(std::string& s, std::string_view new_name) -> std::string&;
 
     //! 路径处理函数：裸文件件名
     ///
@@ -1882,9 +1857,9 @@ struct str {
     static auto split_rawname(std::string_view s) -> std::tuple<std::string, std::string, std::string>;
 
     //
-    static auto rawname_inplace(std::string &s) -> std::string &;
+    static auto rawname_inplace(std::string& s) -> std::string&;
 
-    static auto replace_rawname_inplace(std::string &s, std::string_view name) -> std::string &;
+    static auto replace_rawname_inplace(std::string& s, std::string_view name) -> std::string&;
 
     //! 哈希算法 @anchor{hash, md5}
     ///
@@ -1898,7 +1873,7 @@ struct str {
     //
     static auto md5(std::string_view s) -> std::string;
 
-    static auto md5(void *data, size_type n) -> std::string;
+    static auto md5(void* data, size_type n) -> std::string;
 
     //! 转义：XML
     ///
@@ -1907,18 +1882,18 @@ struct str {
     /// @param s 被编码或者解码的字符串
     /// @param proc 用于接收转换后，生成的字符串
     /// @return 返回编码或者解码后的字符串
-    static auto encode_xml(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto encode_xml(std::string_view s, const view_consumer_proc& proc) -> void;
 
-    static auto decode_xml(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto decode_xml(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto encode_xml(std::string_view s) -> std::string;
 
     static auto decode_xml(std::string_view s) -> std::string;
 
     //
-    static auto encode_xml_inplace(std::string &s) -> std::string &;
+    static auto encode_xml_inplace(std::string& s) -> std::string&;
 
-    static auto decode_xml_inplace(std::string &s) -> std::string &;
+    static auto decode_xml_inplace(std::string& s) -> std::string&;
 
     //! 转义：URL
     ///
@@ -1927,18 +1902,18 @@ struct str {
     /// @param s 被编码或者解码的字符串
     /// @param proc 用于接收转换后，生成的字符串
     /// @return 返回编码或者解码后的字符串
-    static auto encode_url(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto encode_url(std::string_view s, const view_consumer_proc& proc) -> void;
 
-    static auto decode_url(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto decode_url(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto encode_url(std::string_view s) -> std::string;
 
     static auto decode_url(std::string_view s) -> std::string;
 
     //
-    static auto encode_url_inplace(std::string &s) -> std::string &;
+    static auto encode_url_inplace(std::string& s) -> std::string&;
 
-    static auto decode_url_inplace(std::string &s) -> std::string &;
+    static auto decode_url_inplace(std::string& s) -> std::string&;
 
     //! 转义：C语言字符串
     ///
@@ -1947,18 +1922,18 @@ struct str {
     /// @param s 被编码或者解码的字符串
     /// @param proc 用于接收转换后，生成的字符串
     /// @return 返回编码或者解码后的字符串
-    static auto encode_cstr(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto encode_cstr(std::string_view s) -> std::string;
 
-    static auto decode_cstr(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto decode_cstr(std::string_view s) -> std::string;
 
     //
-    static auto encode_cstr_inplace(std::string &s) -> std::string;
+    static auto encode_cstr_inplace(std::string& s) -> std::string;
 
-    static auto decode_cstr_inplace(std::string &s) -> std::string;
+    static auto decode_cstr_inplace(std::string& s) -> std::string;
 
     //! 编解码：base64
     ///
@@ -1967,18 +1942,18 @@ struct str {
     /// @param s 被编码或者解码的字符串
     /// @param proc 用于接收转换后，生成的字符串
     /// @return 返回编码或者解码后的字符串
-    static auto encode_base64(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto encode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto encode_base64(std::string_view s) -> std::string;
 
-    static auto decode_base64(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto decode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto decode_base64(std::string_view s) -> std::string;
 
     //
-    static auto encode_base64_inplace(std::string &s) -> std::string &;
+    static auto encode_base64_inplace(std::string& s) -> std::string&;
 
-    static auto decode_base64_inplace(std::string &s) -> std::string &;
+    static auto decode_base64_inplace(std::string& s) -> std::string&;
 
     // 编解码：base16
     ///
@@ -1988,18 +1963,18 @@ struct str {
     /// @param proc 用于接收转换后，生成的字符串
     /// @param upper 转换出来的十六进制是否采用大写形式
     /// @return 返回编码或者解码后的字符串
-    static auto encode_base16(std::string_view s, bool upper, const view_consumer_proc &proc) -> void;
+    static auto encode_base16(std::string_view s, bool upper, const view_consumer_proc& proc) -> void;
 
     static auto encode_base16(std::string_view s, bool upper = false) -> std::string;
 
-    static auto decode_base16(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto decode_base16(std::string_view s, const view_consumer_proc& proc) -> void;
 
     static auto decode_base16(std::string_view s) -> std::string;
 
     //
-    static auto encode_base16_inplace(std::string &s, bool upper = false) -> std::string &;
+    static auto encode_base16_inplace(std::string& s, bool upper = false) -> std::string&;
 
-    static auto decode_base16_inplace(std::string &s) -> std::string &;
+    static auto decode_base16_inplace(std::string& s) -> std::string&;
 
     //! 格式化
     ///
@@ -2010,7 +1985,9 @@ struct str {
     /// @param proc 用于接收格式化数据
     struct dump_hex_format {
         enum format : uint8_t {
-            show_offset = 0x01, show_ascii = 0x02, show_upper = 0x04,
+            show_offset = 0x01,
+            show_ascii = 0x02,
+            show_upper = 0x04,
         };
         uint8_t flags{0};                     ///< 可选标记位
         uint8_t offset_width{0};              ///< offset 的宽度
@@ -2021,24 +1998,24 @@ struct str {
         std::string_view ascii_margin{" "};   ///< 显示 ascii 时，在此之前显示的 margin 字符
     };
 
-    static auto dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, std::string &line) -> void;
+    static auto dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, std::string& line) -> void;
 
     static auto
-    dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc &proc) -> void;
+    dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void;
 
-    static auto dump_hex_ascii(const void *data, size_type len, value_type ascii_mask, std::string &line) -> void;
-
-    static auto
-    dump_hex_ascii(const void *data, size_type len, value_type ascii_mask, const view_consumer_proc &proc) -> void;
+    static auto dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, std::string& line) -> void;
 
     static auto
-    dump_hex_groups(const void *data, size_type len, uint8_t group_bytes, bool upper, std::string &line) -> size_type;
-
-    static auto dump_hex_groups(const void *data, size_type len, uint8_t group_bytes, bool upper,
-                                const view_consumer_proc &proc) -> size_type;
+    dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, const view_consumer_proc& proc) -> void;
 
     static auto
-    dump_hex(const void *data, size_type len, const dump_hex_format &format, const line_consumer_proc &proc) -> void;
+    dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, std::string& line) -> size_type;
+
+    static auto dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper,
+        const view_consumer_proc& proc) -> size_type;
+
+    static auto
+    dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void;
 
     //! 求和
     ///
@@ -2047,8 +2024,8 @@ struct str {
     /// @param s 被映射的字符串
     /// @param proc 映射函数
     /// @return 返回求和后的结果
-    template<typename T>
-    static auto sum(std::string_view s, const mapping_proc<T> &proc) -> T;
+    template <typename T>
+    static auto sum(std::string_view s, const mapping_proc<T>& proc) -> T;
 
     //! 字符集生成
     ///
@@ -2059,7 +2036,7 @@ struct str {
     /// @return 返回生成或者修改后的字符集
     static auto charset(std::string_view s) -> charset_type;
 
-    static auto charset(std::string_view s, charset_type &charset) -> charset_type &;
+    static auto charset(std::string_view s, charset_type& charset) -> charset_type&;
 
     //! 读取文件内容
     ///
@@ -2071,35 +2048,35 @@ struct str {
     /// @param keeo_ends 是否保留行尾的续行符
     /// @param max_n 最多读取多少行
     /// @param proc 通过 proc 函数接收行输出
-    static auto read_all(const std::string &filename) -> std::string;
+    static auto read_all(const std::string& filename) -> std::string;
 
-    static auto read_all(const char *filename) -> std::string;
-
-    //
-    static auto read_line(FILE *file, bool keep_ends = false) -> std::optional<std::string>;
-
-    static auto read_line(std::istream &file) -> std::optional<std::string>;
+    static auto read_all(const char* filename) -> std::string;
 
     //
-    static auto read_lines(FILE *file, const line_consumer_proc &proc) -> void;
+    static auto read_line(FILE* file, bool keep_ends = false) -> std::optional<std::string>;
 
-    static auto read_lines(FILE *file, size_type max_n = npos) -> std::vector<std::string>;
-
-    static auto read_lines(std::istream &file, const line_consumer_proc &proc) -> void;
-
-    static auto read_lines(std::istream &file, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_line(std::istream& file) -> std::optional<std::string>;
 
     //
-    static auto read_lines(const std::string &filename, const line_consumer_proc &proc) -> void;
+    static auto read_lines(FILE* file, const line_consumer_proc& proc) -> void;
 
-    static auto read_lines(const char *filename, const line_consumer_proc &proc) -> void;
+    static auto read_lines(FILE* file, size_type max_n = npos) -> std::vector<std::string>;
 
-    static auto read_lines(const std::string &filename, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(std::istream& file, const line_consumer_proc& proc) -> void;
 
-    static auto read_lines(const char *filename, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(std::istream& file, size_type max_n = npos) -> std::vector<std::string>;
+
+    //
+    static auto read_lines(const std::string& filename, const line_consumer_proc& proc) -> void;
+
+    static auto read_lines(const char* filename, const line_consumer_proc& proc) -> void;
+
+    static auto read_lines(const std::string& filename, size_type max_n = npos) -> std::vector<std::string>;
+
+    static auto read_lines(const char* filename, size_type max_n = npos) -> std::vector<std::string>;
 
     static auto
-    with_file(const std::string &filepath, const char *mode, const std::function<void(FILE *f)> &proc) -> void;
+    with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* f)>& proc) -> void;
 
     //! 选项识别
     ///
@@ -2130,17 +2107,17 @@ struct str {
     /// @param s 命令行字符串
     /// @param pos 从指定的位置开始读取下一个选项
     /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
-    static auto next_opt(int &next_index, int n, char *items[]) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt(int& next_index, int n, char* items[]) -> std::tuple<std::string_view, std::string_view>;
 
-    template<typename Container, typename SizeType = typename Container::size_type>
+    template <typename Container, typename SizeType = typename Container::size_type>
     static auto
-    next_opt(SizeType &next_index, const Container &items) -> std::tuple<std::string_view, std::string_view>;
+    next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view>;
 
-    template<typename Iterator>
-    static auto next_opt(Iterator &itr, Iterator end) -> std::tuple<std::string_view, std::string_view>;
+    template <typename Iterator>
+    static auto next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view>;
 
-    template<typename IterProc>
-    static auto next_opt(const IterProc &proc) -> std::tuple<std::string_view, std::string_view>;
+    template <typename IterProc>
+    static auto next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view>;
 
     //! 符号识别
     ///
@@ -2150,21 +2127,21 @@ struct str {
     /// @param pos 作为输入参数是表示指定识别的起始位置，作为输出参数时表示下一个还未被识别的字符的位置
     /// @return 如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值
     ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
-    static auto skip_spaces(std::string_view s, size_type &pos) -> void;
-    static auto accept_literal_integer(std::string_view s, size_type &pos) -> range_type;
-    static auto accept_literal_real(std::string_view s, size_type &pos) -> range_type;
-    static auto accept_literal_string(std::string_view s, size_type &pos) -> range_type;
-    static auto accept_identifier(std::string_view s, size_type &pos) -> range_type;
-    static auto accept_next_word(std::string_view s, size_type &pos) -> range_type;
-    static auto accept_email(std::string_view s, size_type &pos) -> range_type;
+    static auto skip_spaces(std::string_view s, size_type& pos) -> void;
+    static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
+    static auto accept_literal_real(std::string_view s, size_type& pos) -> range_type;
+    static auto accept_literal_string(std::string_view s, size_type& pos) -> range_type;
+    static auto accept_identifier(std::string_view s, size_type& pos) -> range_type;
+    static auto accept_next_word(std::string_view s, size_type& pos) -> range_type;
+    static auto accept_email(std::string_view s, size_type& pos) -> range_type;
     //
-    static auto accept_until(std::string_view s, size_type &pos, std::string_view sep_str) -> range_type;
-    static auto accept_until(std::string_view s, size_type &pos, const charset_type &sep_charset) -> range_type;
-    static auto accept_until(std::string_view s, size_type &pos, const char_match_proc &proc) -> range_type;
+    static auto accept_until(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
+    static auto accept_until(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
+    static auto accept_until(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
     //
-    static auto accept(std::string_view s, size_type &pos, std::string_view sep_str) -> range_type;
-    static auto accept(std::string_view s, size_type &pos, const charset_type &sep_charset) -> range_type;
-    static auto accept(std::string_view s, size_type &pos, const char_match_proc &proc) -> range_type;
+    static auto accept(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
+    static auto accept(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
+    static auto accept(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
 
     //! 符号分割
     ///
@@ -2178,20 +2155,20 @@ struct str {
     /// @param s 待拆分字符串
     /// @param proc 用于接收输出
     /// @return 返回拆分后的字符串
-    static auto split_email(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto split_email(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_email(std::string_view s) -> std::vector<std::string>;
     static auto split_email_view(std::string_view s) -> std::vector<std::string_view>;
     //
-    static auto split_real(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto split_real(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_real(std::string_view s) -> std::vector<std::string>;
     static auto split_real_view(std::string_view s) -> std::vector<std::string_view>;
 
     //
-    static auto split_uri(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto split_uri(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_uri(std::string_view s) -> std::vector<std::string>;
     static auto split_uri_view(std::string_view s) -> std::vector<std::string_view>;
     //
-    static auto split_ipv4(std::string_view s, const view_consumer_proc &proc) -> void;
+    static auto split_ipv4(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_ipv4(std::string_view s) -> std::vector<std::string>;
     static auto split_ipv4_view(std::string_view s) -> std::vector<std::string_view>;
 
@@ -2204,11 +2181,11 @@ struct str {
     ///
     /// @param s 被用来筛选或者分组的字符串
     /// @param proc 字符匹配条件
-    static auto grouping(std::string_view s, const char_match_proc &proc) -> std::tuple<std::string, std::string>;
-    static auto filter(std::string_view s, const char_match_proc &proc) -> std::string;
-    static auto filter(std::string_view s, const charset_type &charset) -> std::string;
-    static auto filter_inplace(std::string &s, const char_match_proc &proc) -> std::string &;
-    static auto filter_inplace(std::string &s, const charset_type &charset) -> std::string &;
+    static auto grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string>;
+    static auto filter(std::string_view s, const char_match_proc& proc) -> std::string;
+    static auto filter(std::string_view s, const charset_type& charset) -> std::string;
+    static auto filter_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
+    static auto filter_inplace(std::string& s, const charset_type& charset) -> std::string&;
 
     //! 映射
     ///
@@ -2220,10 +2197,10 @@ struct str {
     /// @param proc 将匹配的字符映射为其他字符集
     static auto
     mapping(std::string_view s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
-    static auto mapping(std::string_view s, const char_mapping_proc &proc) -> std::string;
+    static auto mapping(std::string_view s, const char_mapping_proc& proc) -> std::string;
     static auto
-    mapping_inplace(std::string &s, std::string_view match_charset, std::string_view replace_charset) -> std::string &;
-    static auto mapping_inplace(std::string &s, const char_mapping_proc &proc) -> std::string &;
+    mapping_inplace(std::string& s, std::string_view match_charset, std::string_view replace_charset) -> std::string&;
+    static auto mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std::string&;
 };
 
 // template <typename ViewProviderProc>
@@ -2238,8 +2215,8 @@ struct str {
 // return result;
 // }
 
-template<typename Sequence, typename>
-auto str::append(std::string_view s, const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::append(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return append(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2260,8 +2237,8 @@ auto str::append(std::string_view s, const Sequence &items) -> std::string {
 // return s;
 // }
 
-template<typename Sequence, typename>
-auto str::append_inplace(std::string &s, const Sequence &items) -> std::string & {
+template <typename Sequence, typename>
+auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     s = append(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2273,19 +2250,19 @@ auto str::append_inplace(std::string &s, const Sequence &items) -> std::string &
     return s;
 }
 
-//template<typename Sequence>
-//auto str::append_inplace(std::string &s, const Sequence &items) -> std::enable_if_t<std::is_array_v<Sequence>, std::string &> {
-//    size_t index = 0;
-//    size_t n = std::extent_v<Sequence>;
-//    s = append(s, [&index, n, &items]() -> std::optional<std::string_view> {
-//        if (index >= n) {
-//            return std::nullopt;
-//        }
+// template<typename Sequence>
+// auto str::append_inplace(std::string &s, const Sequence &items) -> std::enable_if_t<std::is_array_v<Sequence>, std::string &> {
+//     size_t index = 0;
+//     size_t n = std::extent_v<Sequence>;
+//     s = append(s, [&index, n, &items]() -> std::optional<std::string_view> {
+//         if (index >= n) {
+//             return std::nullopt;
+//         }
 //
-//        return items[index++];
-//    });
-//    return s;
-//}
+//         return items[index++];
+//     });
+//     return s;
+// }
 
 // template <typename ViewProviderProc, typename>
 // auto str::prepend(std::string_view s, const ViewProviderProc& proc) -> std::string {
@@ -2299,8 +2276,8 @@ auto str::append_inplace(std::string &s, const Sequence &items) -> std::string &
 //     return result;
 // }
 
-template<typename Sequence, typename>
-auto str::prepend(std::string_view s, const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return prepend(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2321,8 +2298,8 @@ auto str::prepend(std::string_view s, const Sequence &items) -> std::string {
 // return s;
 // }
 
-template<typename Sequence, typename>
-auto str::prepend_inplace(std::string &s, const Sequence &items) -> std::string & {
+template <typename Sequence, typename>
+auto str::prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     return prepend_inplace(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2352,8 +2329,8 @@ auto str::prepend_inplace(std::string &s, const Sequence &items) -> std::string 
 // return result;
 // }
 
-template<typename Sequence, typename>
-auto str::insert(std::string &s, size_type pos, const Sequence &items) -> std::string & {
+template <typename Sequence, typename>
+auto str::insert(std::string& s, size_type pos, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     return insert(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2374,8 +2351,8 @@ auto str::insert(std::string &s, size_type pos, const Sequence &items) -> std::s
 // return s;
 // }
 
-template<typename Sequence, typename>
-auto str::insert_inplace(std::string &s, size_type pos, const Sequence &items) -> std::string & {
+template <typename Sequence, typename>
+auto str::insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     return insert_inplace(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2402,52 +2379,51 @@ auto str::insert_inplace(std::string &s, size_type pos, const Sequence &items) -
 //     return count;
 // }
 
+// template<typename CharMatchProc>
+// auto str::next_char(std::string_view s, size_type &pos,
+//                       const CharMatchProc &proc) -> std::enable_if<std::is_invocable_v<CharMatchProc>, size_type> {
+//     if (pos >= s.size()) {
+//         pos = s.size();
+//         return npos;
+//     }
+//
+//     const_pointer ptr = s.data() + pos;
+//     while (ptr < (s.data() + s.size())) {
+//         if (proc(*ptr)) {
+//             pos = ptr - s.data();
+//             return pos++;
+//         }
+//         ptr++;
+//     }
+//
+//     return npos;
+// }
 
-//template<typename CharMatchProc>
-//auto str::next_char(std::string_view s, size_type &pos,
-//                      const CharMatchProc &proc) -> std::enable_if<std::is_invocable_v<CharMatchProc>, size_type> {
-//    if (pos >= s.size()) {
-//        pos = s.size();
-//        return npos;
-//    }
+// template<typename CharMatchProc, typename>
+// auto str::prev_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type {
+//     if (pos <= 0) {
+//         pos = 0;
+//         return 0;
+//     }
 //
-//    const_pointer ptr = s.data() + pos;
-//    while (ptr < (s.data() + s.size())) {
-//        if (proc(*ptr)) {
-//            pos = ptr - s.data();
-//            return pos++;
-//        }
-//        ptr++;
-//    }
+//     if (pos > s.size()) {
+//         pos = s.size();
+//     }
 //
-//    return npos;
-//}
+//     const_pointer ptr = s.data() + pos;
+//     while (ptr > s.data()) {
+//         if (proc(*(ptr - 1))) {
+//             pos = (ptr - 1) - s.data();
+//             return pos;
+//         }
+//     }
+//
+//     pos = 0;
+//     return 0;
+// }
 
-//template<typename CharMatchProc, typename>
-//auto str::prev_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type {
-//    if (pos <= 0) {
-//        pos = 0;
-//        return 0;
-//    }
-//
-//    if (pos > s.size()) {
-//        pos = s.size();
-//    }
-//
-//    const_pointer ptr = s.data() + pos;
-//    while (ptr > s.data()) {
-//        if (proc(*(ptr - 1))) {
-//            pos = (ptr - 1) - s.data();
-//            return pos;
-//        }
-//    }
-//
-//    pos = 0;
-//    return 0;
-//}
-
-template<typename RangeSearchProc, typename>
-auto str::next_proc_range(std::string_view s, size_type &pos, const RangeSearchProc &proc) -> range_type {
+template <typename RangeSearchProc, typename>
+auto str::next_proc_range(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type {
     if (pos >= s.size()) {
         pos = s.size();
         return range_type{};
@@ -2463,8 +2439,8 @@ auto str::next_proc_range(std::string_view s, size_type &pos, const RangeSearchP
     return range;
 }
 
-template<typename RangeSearchProc, typename>
-auto str::next_proc_view(std::string_view s, size_type &pos, const RangeSearchProc &proc) -> std::string_view {
+template <typename RangeSearchProc, typename>
+auto str::next_proc_view(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view {
     auto range = next_proc_range(s, pos, proc);
     if (range.empty()) {
         return {};
@@ -2473,8 +2449,8 @@ auto str::next_proc_view(std::string_view s, size_type &pos, const RangeSearchPr
     return {s.data() + range.pos, range.len};
 }
 
-template<typename RangeSearchProc, typename>
-auto str::next_proc(std::string_view s, size_type &pos, const RangeSearchProc &proc) -> std::string {
+template <typename RangeSearchProc, typename>
+auto str::next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string {
     return std::string{next_proc_view(s, pos, proc)};
 }
 
@@ -2482,8 +2458,8 @@ auto str::next_proc(std::string_view s, size_type &pos, const RangeSearchProc &p
 // static auto prev_proc_view(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string_view;
 // static auto prev_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
 
-template<typename CharMatchProc, typename>
-auto str::is_all(std::string_view s, const CharMatchProc &proc) -> bool {
+template <typename CharMatchProc, typename>
+auto str::is_all(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (!proc(*ptr)) {
             return false;
@@ -2492,8 +2468,8 @@ auto str::is_all(std::string_view s, const CharMatchProc &proc) -> bool {
     return true;
 }
 
-template<typename CharMatchProc, typename>
-auto str::has_any(std::string_view s, const CharMatchProc &proc) -> bool {
+template <typename CharMatchProc, typename>
+auto str::has_any(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (proc(*ptr)) {
             return true;
@@ -2502,8 +2478,8 @@ auto str::has_any(std::string_view s, const CharMatchProc &proc) -> bool {
     return false;
 }
 
-template<typename CharMatchProc, typename>
-auto str::drop(std::string_view s, const CharMatchProc &proc) -> std::string {
+template <typename CharMatchProc, typename>
+auto str::drop(std::string_view s, const CharMatchProc& proc) -> std::string {
     if (s.empty()) {
         return {};
     }
@@ -2518,8 +2494,8 @@ auto str::drop(std::string_view s, const CharMatchProc &proc) -> std::string {
     return result;
 }
 
-template<typename CharMatchProc, typename>
-auto str::drop_inplace(std::string &s, const CharMatchProc &proc) -> std::string & {
+template <typename CharMatchProc, typename>
+auto str::drop_inplace(std::string& s, const CharMatchProc& proc) -> std::string& {
     s = drop(s, proc);
     return s;
 }
@@ -2580,8 +2556,8 @@ auto str::drop_inplace(std::string &s, const CharMatchProc &proc) -> std::string
 //     });
 // }
 
-template<typename Sequence, typename>
-auto str::join(std::string_view s, const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join(std::string_view s, const Sequence& items) -> std::string {
     std::string result;
     auto itr = items.begin();
     return join(s, [&items, &itr]() -> std::optional<std::string_view> {
@@ -2593,37 +2569,37 @@ auto str::join(std::string_view s, const Sequence &items) -> std::string {
     });
 }
 
-template<typename Sequence, typename>
-auto str::join(const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join(const Sequence& items) -> std::string {
     return join("", items);
 }
 
-template<typename Sequence, typename>
-auto str::join_list(const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join_list(const Sequence& items) -> std::string {
     return join(",", items);
 }
 
-template<typename Map, typename>
-auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const Map &items) -> std::string {
+template <typename Map, typename>
+auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
     auto itr = items.cbegin();
     return str::join_map(sep_pair, sep_list,
-                         [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
-                             if (itr == end) {
-                                 return std::nullopt;
-                             }
+        [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
+            if (itr == end) {
+                return std::nullopt;
+            }
 
-                             auto &[key, val] = *(itr++);
-                             return std::tuple{key, val};
-                         });
+            auto& [key, val] = *(itr++);
+            return std::tuple{key, val};
+        });
 }
 
-template<typename Map, typename>
-auto str::join_map(const Map &items) -> std::string {
+template <typename Map, typename>
+auto str::join_map(const Map& items) -> std::string {
     return str::join_map("=", ",", items);
 }
 
-template<typename Sequence, typename>
-auto str::join_lines(std::string_view sep, const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join_lines(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.cbegin();
     return join_lines([&itr, &items]() -> std::optional<std::string_view> {
         if (itr == items.cend()) {
@@ -2634,13 +2610,13 @@ auto str::join_lines(std::string_view sep, const Sequence &items) -> std::string
     });
 }
 
-template<typename Sequence, typename>
-auto str::join_lines(const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join_lines(const Sequence& items) -> std::string {
     return join_lines(sep_line_ends, items);
 }
 
-template<typename Sequence, typename>
-auto str::join_path(std::string_view sep, const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join_path(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
         if (itr == end) {
@@ -2651,13 +2627,13 @@ auto str::join_path(std::string_view sep, const Sequence &items) -> std::string 
     });
 }
 
-template<typename Sequence, typename>
-auto str::join_path(const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join_path(const Sequence& items) -> std::string {
     return str::join_path(sep_path, items);
 }
 
-template<typename Sequence, typename>
-auto str::join_searchpath(std::string_view sep, const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join_searchpath(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return str::join_searchpath(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
         if (itr == end) {
@@ -2668,13 +2644,13 @@ auto str::join_searchpath(std::string_view sep, const Sequence &items) -> std::s
     });
 }
 
-template<typename Sequence, typename>
-auto str::join_searchpath(const Sequence &items) -> std::string {
+template <typename Sequence, typename>
+auto str::join_searchpath(const Sequence& items) -> std::string {
     return join_searchpath(":", items);
 }
 
-template<typename T>
-auto str::sum(std::string_view s, const mapping_proc<T> &proc) -> T {
+template <typename T>
+auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
     T result = 0;
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         result += proc(*ptr);
@@ -2682,8 +2658,8 @@ auto str::sum(std::string_view s, const mapping_proc<T> &proc) -> T {
     return result;
 }
 
-template<typename Container, typename SizeType>
-auto str::next_opt(SizeType &next_index, const Container &items) -> std::tuple<std::string_view, std::string_view> {
+template <typename Container, typename SizeType>
+auto str::next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view> {
     return next_opt([&next_index, &items]() -> std::optional<std::string_view> {
         if (next_index >= items.size()) {
             return std::nullopt;
@@ -2693,8 +2669,8 @@ auto str::next_opt(SizeType &next_index, const Container &items) -> std::tuple<s
     });
 }
 
-template<typename Iterator>
-auto str::next_opt(Iterator &itr, Iterator end) -> std::tuple<std::string_view, std::string_view> {
+template <typename Iterator>
+auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view> {
     return next_opt([&itr, &end]() {
         if (itr == end) {
             return std::nullopt;
@@ -2704,8 +2680,8 @@ auto str::next_opt(Iterator &itr, Iterator end) -> std::tuple<std::string_view, 
     });
 }
 
-template<typename IterProc>
-auto str::next_opt(const IterProc &proc) -> std::tuple<std::string_view, std::string_view> {
+template <typename IterProc>
+auto str::next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view> {
     /// * `-` 为选项识别符
     /// * `-key` 定义一个独立的、无 value 选项，常常用来定义开关型的选项
     /// * `-key=value` 定义一个名字为 key 值为 value 的选项

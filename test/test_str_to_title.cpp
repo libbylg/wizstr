@@ -12,10 +12,7 @@ TEST(test_str, title) {
     ASSERT_EQ(str::to_title(" q"), " Q");
     ASSERT_EQ(str::to_title("123456"), "123456");
     ASSERT_EQ(str::to_title("123Abc Def"), "123Abc Def");
-}
 
-
-TEST(test_str, is_title) {
     ASSERT_EQ(str::is_title("123456"), true);
     ASSERT_EQ(str::is_title(""), true);
     ASSERT_EQ(str::is_title("Abc 123DEF"), true);
@@ -26,3 +23,4 @@ TEST(test_str, is_title) {
     ASSERT_EQ(str::is_title("A"), true);
     ASSERT_EQ(str::is_title("  a"), false);
 }
+
