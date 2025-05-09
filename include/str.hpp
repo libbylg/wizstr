@@ -218,11 +218,15 @@ struct str {
         }
 
         inline auto end() const -> size_type {
-            return pos + len;
+            size_type result{};
+            if (__builtin_add_overflow(pos, len, &result)) {
+                return npos;
+            }
+            return result;
         }
 
         inline auto end_pos() const -> size_type {
-            return pos + len;
+            return end();
         }
 
         inline auto operator==(const range_type& range) const -> bool {
@@ -651,15 +655,10 @@ struct str {
     /// @param s 被测试的字符串
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
     static auto is_identifier(std::string_view s) -> bool;
-
     static auto is_literal_bool(std::string_view s) -> bool;
-
     static auto is_literal_true(std::string_view s) -> bool;
-
     static auto is_literal_false(std::string_view s) -> bool;
-
     static auto is_literal_integer(std::string_view s) -> bool;
-
     static auto is_literal_real(std::string_view s) -> bool;
 
     //! 特征测试：指定字符集类
@@ -669,9 +668,8 @@ struct str {
     /// @param charset 指定需要满足条件的字符集
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
     template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto is_all(std::string_view s, const CharMatchProc& proc) -> bool;
-
-    static auto is_all(std::string_view s, const charset_type& charset) -> bool;
+    static auto is_all_in(std::string_view s, const CharMatchProc& proc) -> bool;
+    static auto is_all_in(std::string_view s, const charset_type& charset) -> bool;
 
     //! 特征测试：单一条件类 @anchor{has}
     ///
@@ -681,9 +679,8 @@ struct str {
     /// @return 与 is_xxx 系列函数需要“所有字符必须全部满足指定特征”不同，has_xxx 系列函数只需要有任意一个字符满足特征，
     ///         立即返回 true。唯一的特例是空串总是返回 false。
     template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto has_any(std::string_view s, const CharMatchProc& proc) -> bool;
-
-    static auto has_any(std::string_view s, const charset_type& charset) -> bool;
+    static auto has_any_one(std::string_view s, const CharMatchProc& proc) -> bool;
+    static auto has_any_one(std::string_view s, const charset_type& charset) -> bool;
 
     //! 提取子串：基于位置 @anchor{take}
     ///
@@ -700,56 +697,32 @@ struct str {
     /// @param begin_pos, end_pos  用于提取字符串的提取范围。
     /// @param range  用于提取字符串的提取范围，一般用在可以替代 begin_pos 和 end_pos 的场景。
     static auto take_left_view(std::string_view s, size_type n) -> std::string_view;
-
     static auto take_right_view(std::string_view s, size_type n) -> std::string_view;
-
     static auto take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view;
-
     static auto take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view;
-
     static auto take_range_view(std::string_view s, range_type range) -> std::string_view;
-
     static auto take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
-
     static auto take_view(std::string_view s, size_type pos) -> std::string_view;
-
     //
     static auto take_left(std::string_view s, size_type n) -> std::string;
-
     static auto take_right(std::string_view s, size_type n) -> std::string;
-
     static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string;
-
     static auto take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
-
     static auto take_range(std::string_view s, range_type range) -> std::string;
-
     static auto take(std::string_view s, size_type pos, ssize_type offset) -> std::string;
-
     static auto take(std::string_view s, size_type pos) -> std::string;
-
     //
     static auto take_left_inplace(std::string& s, size_type n) -> std::string&;
-
     static auto take_right_inplace(std::string& s, size_type n) -> std::string&;
-
     static auto take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
-
     static auto take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
-
     static auto take_range_inplace(std::string& s, range_type range) -> std::string&;
-
     static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
-
     static auto take_inplace(std::string& s, size_type pos) -> std::string&;
-
     //
     static auto take_before_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
-
     static auto take_after_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
-
     static auto take_before(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string;
-
     static auto take_after(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string;
 
     //! 删除子串：基于位置 @anchor{drop}
@@ -2035,8 +2008,8 @@ struct str {
     /// @param charset 向 charset 中添加 s 中的字符，用于修改场景
     /// @return 返回生成或者修改后的字符集
     static auto charset(std::string_view s) -> charset_type;
-
     static auto charset(std::string_view s, charset_type& charset) -> charset_type&;
+    static auto range(size_type pos, size_type n) -> range_type;
 
     //! 读取文件内容
     ///
@@ -2459,7 +2432,7 @@ auto str::next_proc(std::string_view s, size_type& pos, const RangeSearchProc& p
 // static auto prev_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
 
 template <typename CharMatchProc, typename>
-auto str::is_all(std::string_view s, const CharMatchProc& proc) -> bool {
+auto str::is_all_in(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (!proc(*ptr)) {
             return false;
@@ -2469,7 +2442,7 @@ auto str::is_all(std::string_view s, const CharMatchProc& proc) -> bool {
 }
 
 template <typename CharMatchProc, typename>
-auto str::has_any(std::string_view s, const CharMatchProc& proc) -> bool {
+auto str::has_any_one(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (proc(*ptr)) {
             return true;

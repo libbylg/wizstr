@@ -1,0 +1,24 @@
+#include "testing.hpp"
+
+#include "str.hpp"
+
+TEST(test_str, is_all_in) {
+    SECTION("字符集") {
+        ASSERT_EQ(str::is_all_in("A", str::charset("ABC")), true);
+        ASSERT_EQ(str::is_all_in("ACAACABCBBCB", str::charset("ABC")), true);
+        ASSERT_EQ(str::is_all_in("ACM", str::charset("ABC")), false);
+        ASSERT_EQ(str::is_all_in("", str::charset("ABC")), true);
+        ASSERT_EQ(str::is_all_in("ABC", str::charset("")), false);
+        ASSERT_EQ(str::is_all_in("", str::charset("")), true);
+    }
+    SECTION("proc") {
+        // clang-format off
+        ASSERT_EQ(str::is_all_in("A", [](str::value_type ch) -> bool {return std::isupper(ch);}),true);
+        ASSERT_EQ(str::is_all_in("ACAACABCBBCB", [](str::value_type ch) -> bool {return std::isupper(ch);}), true);
+        ASSERT_EQ(str::is_all_in("Acm", [](str::value_type ch) -> bool {return std::isupper(ch);}), false);
+        ASSERT_EQ(str::is_all_in("123", [](str::value_type ch) -> bool {return std::isupper(ch);}), false);
+        ASSERT_EQ(str::is_all_in("1A2B3", [](str::value_type ch) -> bool {return std::isupper(ch);}), false);
+        ASSERT_EQ(str::is_all_in("", [](str::value_type ch) -> bool {return std::isupper(ch);}), true);
+        // clang-format on
+    }
+}

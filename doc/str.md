@@ -442,8 +442,8 @@ static auto append_inplace(std::string& s, const Sequence& items) -> std::string
     /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
     /// @param charset 指定需要满足条件的字符集
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
-    static auto is_all(std::string_view s, const char_match_proc& proc) -> bool;
-    static auto is_all(std::string_view s, const charset_type& charset) -> bool;
+    static auto is_all_in(std::string_view s, const char_match_proc& proc) -> bool;
+    static auto is_all_in(std::string_view s, const charset_type& charset) -> bool;
 
     //! 特征测试：单一条件类 @anchor{has}
     ///

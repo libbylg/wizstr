@@ -10,11 +10,9 @@
 namespace testing {
 //! 几个终端颜色助记符
 static constexpr auto tag_blue_enter = "\033[1;33m";
-static constexpr auto tag_blue_leave = "\033[0m";
 static constexpr auto tag_pass_enter = "\033[1;32m";
-static constexpr auto tag_pass_leave = "\033[0m";
 static constexpr auto tag_fail_enter = "\033[1;31m";
-static constexpr auto tag_fail_leave = "\033[0m";
+static constexpr auto tag_xxxx_leave = "\033[0m";
 
 //! 测试用例头
 struct testcase_head {
@@ -55,7 +53,8 @@ struct testcase : public testcase_head {
     //! 所有测试用例表
     static inline testcase_head all_testcases{};
     static inline testcase* curr_testcase{nullptr};
-    static jmp_buf curr_assertion_env;
+    static inline int32_t curr_assertion_fails{0};
+    static inline jmp_buf curr_assertion_env;
 
     //! 测试用例构造函数
     explicit testcase(testproc proc, const char* nsuite, const char* ncase, const char* file, size_t lineno)
@@ -68,23 +67,19 @@ struct testcase : public testcase_head {
     }
 
     //! 执行一个测试用例
-    static inline bool exec(testcase* tcase, jmp_buf& tenv, bool& abort) {
+    static inline void exec(testcase* tcase, jmp_buf& tenv, int32_t& fails) {
         // 每个用例执行前打印下当前正在执行那个任务
-        std::printf("%s[%s - %s] %s%s\n", tag_blue_enter, tcase->nsuite, tcase->ncase, "....", tag_blue_leave);
+        std::printf("%s[%s - %s] %s%s\n", tag_blue_enter, tcase->nsuite, tcase->ncase, "....", tag_xxxx_leave);
 
         // 设置 longjmp 的会跳点，以便于断言宏在必要时中断用例执行
-        if (setjmp(tenv)) {
-            std::printf("%s[%s - %s] %s%s\n", tag_fail_enter, tcase->nsuite, tcase->ncase, "fail", tag_fail_leave);
-            abort = true;
-            return false;
+        if (!setjmp(tenv)) {
+            // 执行用例
+            tcase->proc();
         }
 
-        // 执行用例
-        tcase->proc();
-
         // 如果执行成功，proc 函数会自动返回
-        std::printf("%s[%s - %s] %s%s\n", tag_pass_enter, tcase->nsuite, tcase->ncase, "pass", tag_pass_leave);
-        return true;
+        const char* tag_xxxx_enter = ((fails == 0) ? tag_pass_enter : tag_fail_enter);
+        std::printf("%s[%s - %s] %s%s\n", tag_xxxx_enter, tcase->nsuite, tcase->ncase, "pass", tag_xxxx_leave);
     }
 
     //! 断言处理函数
@@ -93,6 +88,9 @@ struct testcase : public testcase_head {
         if (pass) {
             return;
         }
+
+        // 断言失败次数递增
+        curr_assertion_fails++;
 
         // 如果断言的条件无法满足，输出行号（这里的格式大部分 IDE 能自动解析）
         std::printf("%s:%lu\n", file, lineno);
@@ -112,51 +110,34 @@ struct testcase : public testcase_head {
         }
     }
 
+    //! 输出总结报告
+    static inline bool print_report(size_t count_alln, size_t count_pass, size_t count_fail) {
+        std::printf("----------------------------\n");
+        const char* tag_xxxx_enter = ((count_fail == 0) ? tag_pass_enter : tag_fail_enter);
+        std::printf("%sTotal : %lu%s\n", tag_xxxx_enter, count_alln, tag_xxxx_leave);
+        std::printf("%sPass  : %lu%s\n", tag_xxxx_enter, count_pass, tag_xxxx_leave);
+        std::printf("%sFail  : %lu%s\n", tag_xxxx_enter, count_fail, tag_xxxx_leave);
+        return (count_fail == 0);
+    }
+
     //! 执行所有的测试用例
     static inline int exec_all(int argc, char* argv[]) {
         // 记录用例数量
-        size_t count_total = 0;
+        size_t count_alln = 0;
         size_t count_pass = 0;
         size_t count_fail = 0;
 
         // 按照注册顺序遍历用例
         for (testcase_head* ptr = testcase::all_testcases.next; ptr != &testcase::all_testcases; ptr = ptr->next) {
-            count_total++;
-            bool abort = false;
-
-            // 如果用例执行失败，需要特殊处理
+            count_alln++;
             curr_testcase = reinterpret_cast<testcase*>(ptr);
-            if (!exec(curr_testcase, curr_assertion_env, abort)) {
-
-                // 递增失败用例数量
-                count_fail++;
-
-                // 如果指定了退出标记，那么立即退出
-                if (abort) {
-                    break;
-                }
-
-                // 如果不需要退出，那么继续执行下一个用例
-                continue;
-            }
-
-            // 如果执行成功就继续执行下一个用例
-            count_pass++;
+            curr_assertion_fails = 0;
+            exec(curr_testcase, curr_assertion_env, curr_assertion_fails);
+            (curr_assertion_fails > 0) ? (count_fail++) : (count_pass++);
         }
 
-        // 输出用例总结报告
-        std::printf("----------------------------\n");
-        if (count_fail == 0) {
-            std::printf("%sTotal : %lu%s\n", tag_pass_enter, count_total, tag_pass_leave);
-            std::printf("%sPass  : %lu%s\n", tag_pass_enter, count_pass, tag_pass_leave);
-            std::printf("%sFail  : %lu%s\n", tag_pass_enter, count_fail, tag_pass_leave);
-            return 0;
-        } else {
-            std::printf("%sTotal : %lu%s\n", tag_fail_enter, count_total, tag_fail_leave);
-            std::printf("%sPass  : %lu%s\n", tag_fail_enter, count_pass, tag_fail_leave);
-            std::printf("%sFail  : %lu%s\n", tag_fail_enter, count_fail, tag_fail_leave);
-            return 1;
-        }
+        // 输出用例总结报告(全部成功返回0，否则返回-1)
+        return (print_report(count_alln, count_pass, count_fail) ? 0 : 1);
     }
 };
 

@@ -1125,23 +1125,36 @@ auto str::is_upper(std::string_view s) -> bool {
 }
 
 auto str::is_title(std::string_view s) -> bool {
-    bool result = true;
-    str::foreach_words(s, [&s, &result](std::string_view item) -> int {
-        const_pointer ptr = item.data();
-        while (ptr < (s.data() + s.size())) {
+    if (s.empty()) {
+        return false;
+    }
+
+    const_pointer ptr = s.data();
+    while ((ptr < (s.data() + s.size()))) {
+        for (; ptr < (s.data() + s.size()); ++ptr) {
             if (std::isalpha(*ptr)) {
                 if (std::islower(*ptr)) {
-                    result = false;
-                    return -1;
+                    return false;
                 }
                 break;
             }
-            ptr++;
         }
-        return 0;
-    });
 
-    return result;
+        if (ptr >= (s.data() + s.size())) {
+            break;
+        }
+
+        for (ptr++; ptr < (s.data() + s.size()); ++ptr) {
+            if (!std::isalpha(*ptr)) {
+                break;
+            }
+            if (std::isupper(*ptr)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 auto str::is_capitalize(std::string_view s) -> bool {
@@ -1224,7 +1237,7 @@ auto str::is_alnumul(std::string_view s) -> bool {
     }
 
     for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
-        if (!std::isalnum(*ptr) || (*ptr == '_')) {
+        if (!std::isalnum(*ptr) && (*ptr != '_')) {
             return false;
         }
     }
@@ -1557,7 +1570,7 @@ auto str::is_literal_real(std::string_view s) -> bool {
     return (p >= end);
 }
 
-auto str::is_all(std::string_view s, const charset_type& set) -> bool {
+auto str::is_all_in(std::string_view s, const charset_type& set) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (!set.get(*ptr)) {
             return false;
@@ -1566,7 +1579,7 @@ auto str::is_all(std::string_view s, const charset_type& set) -> bool {
     return true;
 }
 
-auto str::has_any(std::string_view s, const charset_type& set) -> bool {
+auto str::has_any_one(std::string_view s, const charset_type& set) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (set.get(*ptr)) {
             return true;
@@ -1616,7 +1629,7 @@ auto str::take_mid_view(std::string_view s, size_type pos, size_type n) -> std::
 }
 
 auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
-    return str::take_mid_view(s, begin_pos, begin_pos + end_pos);
+    return str::take_mid_view(s, begin_pos, (end_pos - begin_pos));
 }
 
 auto str::take_range_view(std::string_view s, range_type range) -> std::string_view {
@@ -1708,7 +1721,7 @@ auto str::take_right_inplace(std::string& s, size_type n) -> std::string& {
         return s;
     }
 
-    std::memmove(s.data() + (s.size() - n), s.data(), n);
+    std::memmove(s.data(), s.data() + (s.size() - n), n);
     s.resize(n);
     return s;
 }
@@ -3690,17 +3703,31 @@ auto str::to_upper_inplace(std::string& s) -> std::string& {
 }
 
 auto str::to_title_inplace(std::string& s) -> std::string& {
-    str::foreach_words(s, [&s](range_type range) -> int {
-        pointer ptr = s.data() + range.pos;
-        while (ptr < (s.data() + range.pos + range.len)) {
+
+    while (true) {
+        pointer ptr = s.data();
+        for (; ptr < (s.data() + s.size()); ++ptr) {
             if (std::isalpha(*ptr)) {
-                *ptr = static_cast<value_type>(std::toupper(*ptr));
+                *ptr = std::toupper(*ptr);
                 break;
             }
-            ptr++;
         }
-        return 0;
-    });
+
+        if (ptr < (s.data() + s.size())) {
+            break;
+        }
+
+        for (ptr++; ptr < (s.data() + s.size()); ++ptr) {
+            if (!std::isalpha(*ptr)) {
+                break;
+            }
+            *ptr = std::tolower(*ptr);
+        }
+
+        if (ptr < (s.data() + s.size())) {
+            break;
+        }
+    }
 
     return s;
 }
@@ -5568,6 +5595,10 @@ auto str::charset(std::string_view s, charset_type& set) -> charset_type& {
     return set;
 }
 
+auto str::range(size_type pos, size_type n) -> range_type {
+    return range_type{pos, n};
+}
+
 auto str::read_all(const std::string& filename) -> std::string {
     return read_all(filename.c_str());
 }
@@ -5582,7 +5613,7 @@ auto str::read_all(const char* filename) -> std::string {
         return result;
     }
 
-    struct stat buff {};
+    struct stat buff{};
     if (fstat(fileno(file), &buff) != 0) {
         return result;
     }
