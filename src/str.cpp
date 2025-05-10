@@ -1779,6 +1779,10 @@ auto str::take_range_inplace(std::string& s, range_type range) -> std::string& {
 }
 
 auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
     if (offset == 0) {
         s.resize(0);
         return s;
@@ -1788,7 +1792,15 @@ auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std:
         return take_mid_inplace(s, pos, offset);
     }
 
-    return take_mid_inplace(s, (pos + offset + 1), offset);
+    if (pos >= s.size()) {
+        pos = s.size() - 1;
+    }
+
+    if (-offset >= pos) {
+        return s;
+    }
+
+    return take_mid_inplace(s, (pos + offset + 1), -offset);
 }
 
 auto str::take_inplace(std::string& s, size_type pos) -> std::string& {
