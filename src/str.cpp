@@ -1612,7 +1612,7 @@ auto str::take_right_view(std::string_view s, size_type n) -> std::string_view {
     return std::string_view{s.substr(s.size() - n, n)};
 }
 
-auto str::take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view {
+auto str::take_view(std::string_view s, size_type pos, size_type n) -> std::string_view {
     if (s.empty()) {
         return s;
     }
@@ -1628,50 +1628,60 @@ auto str::take_mid_view(std::string_view s, size_type pos, size_type n) -> std::
     return {s.data() + pos, n};
 }
 
-auto str::take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view {
-    return str::take_mid_view(s, begin_pos, (end_pos - begin_pos));
-}
-
-auto str::take_range_view(std::string_view s, range_type range) -> std::string_view {
-    return take_range_view(s, range.begin_pos(), range.end_pos());
-}
-
-auto str::take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view {
-    if (s.empty() || (offset == 0)) {
-        return {};
-    }
-
-    if (offset > 0) {
-        if (pos >= s.size()) {
-            return {};
-        }
-        size_type n = offset;
-        return s.substr(pos, std::min(n, pos + n));
-    }
-
-    assert(offset < 0);
-    size_type n = -offset;
-
-    // 如果 rpos 太大
-    if (pos >= s.size()) {
-        pos = s.size() - 1;
-    }
-
-    // 如果n太大
-    if (n > pos) {
-        return s.substr(0, (pos + 1));
-    }
-
-    // 如果n较小
-    return s.substr(((pos + 1) - n), n);
-}
-
 auto str::take_view(std::string_view s, size_type pos) -> std::string_view {
     if (pos >= s.size()) {
         return {};
     }
 
     return s.substr(pos);
+}
+
+auto str::take_view(std::string_view s, range_type range) -> std::string_view {
+    return take_view(s, range.begin_pos(), range.size());
+}
+
+auto str::take_view(std::string_view s, interval_type inter) -> std::string_view {
+    if (s.empty() || inter.empty()) {
+        return {};
+    }
+
+    if (inter.begin > inter.end) {
+        std::swap(inter.begin, inter.end);
+    }
+
+    if (inter.begin >= s.size()) {
+        return {};
+    }
+
+    size_type end = (inter.end >= s.size()) ? s.size() : inter.end;
+    return s.substr(inter.begin, (end - inter.begin));
+}
+
+auto str::take_view(std::string_view s, shifter_type slider) -> std::string_view {
+    if (s.empty() || (slider.empty())) {
+        return {};
+    }
+
+    if (slider.offset > 0) {
+        if (slider.pos >= s.size()) {
+            return {};
+        }
+        size_type n = slider.offset;
+        return s.substr(slider.pos, std::min(n, slider.pos + n));
+    }
+
+    // 如果 rpos 太大
+    if (slider.pos >= s.size()) {
+        slider.pos = s.size();
+    }
+
+    // 如果n太大
+    if (-slider.offset >= slider.pos) {
+        return s.substr(0, slider.pos);
+    }
+
+    // 如果n较小
+    return s.substr((slider.pos + slider.offset), -slider.offset);
 }
 
 auto str::take_left(std::string_view s, size_type n) -> std::string {
@@ -1682,24 +1692,24 @@ auto str::take_right(std::string_view s, size_type n) -> std::string {
     return std::string{take_right_view(s, n)};
 }
 
-auto str::take_mid(std::string_view s, size_type pos, size_type n) -> std::string {
-    return std::string{take_mid_view(s, pos, n)};
-}
-
-auto str::take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
-    return std::string{take_range_view(s, begin_pos, end_pos)};
-}
-
-auto str::take_range(std::string_view s, range_type range) -> std::string {
-    return take_range(s, range.begin_pos(), range.end_pos());
-}
-
-auto str::take(std::string_view s, size_type pos, ssize_type offset) -> std::string {
-    return std::string{take_view(s, pos, offset)};
+auto str::take(std::string_view s, size_type pos, size_type n) -> std::string {
+    return std::string{take_view(s, pos, n)};
 }
 
 auto str::take(std::string_view s, size_type pos) -> std::string {
     return std::string{take_view(s, pos)};
+}
+
+auto str::take(std::string_view s, range_type range) -> std::string {
+    return std::string{take_view(s, range)};
+}
+
+auto str::take(std::string_view s, interval_type inter) -> std::string {
+    return std::string{take_view(s, inter)};
+}
+
+auto str::take(std::string_view s, shifter_type slider) -> std::string {
+    return std::string{take_view(s, slider)};
 }
 
 auto str::take_left_inplace(std::string& s, size_type n) -> std::string& {
@@ -1726,7 +1736,7 @@ auto str::take_right_inplace(std::string& s, size_type n) -> std::string& {
     return s;
 }
 
-auto str::take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
+auto str::take_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
     if (pos >= s.size()) {
         s.resize(0);
         return s;
@@ -1748,61 +1758,6 @@ auto str::take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::s
     return s;
 }
 
-auto str::take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
-    if (begin_pos == end_pos) [[unlikely]] {
-        s.resize(0);
-        return s;
-    }
-
-    if (begin_pos > end_pos) [[unlikely]] {
-        std::swap(begin_pos, end_pos);
-    }
-
-    if (begin_pos >= s.size()) [[unlikely]] {
-        s.resize(0);
-        return s;
-    }
-
-    if (end_pos >= s.size()) {
-        std::memmove(s.data(), (s.data() + begin_pos), (s.size() - begin_pos));
-        s.resize(s.size() - begin_pos);
-        return s;
-    }
-
-    std::memmove(s.data(), (s.data() + begin_pos), (end_pos - begin_pos));
-    s.resize(end_pos - begin_pos);
-    return s;
-}
-
-auto str::take_range_inplace(std::string& s, range_type range) -> std::string& {
-    return take_range_inplace(s, range.begin_pos(), range.end_pos());
-}
-
-auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
-    if (s.empty()) {
-        return s;
-    }
-
-    if (offset == 0) {
-        s.resize(0);
-        return s;
-    }
-
-    if (offset > 0) {
-        return take_mid_inplace(s, pos, offset);
-    }
-
-    if (pos >= s.size()) {
-        pos = s.size();
-    }
-
-    if (-offset >= pos) {
-        return s = s.substr(0, pos);
-    }
-
-    return s = s.substr((pos + offset + 1), -offset);
-}
-
 auto str::take_inplace(std::string& s, size_type pos) -> std::string& {
     if (pos >= s.size()) {
         s.resize(0);
@@ -1812,6 +1767,80 @@ auto str::take_inplace(std::string& s, size_type pos) -> std::string& {
     std::memmove(s.data(), s.data() + pos, (s.size() - pos));
     s.resize(s.size() - pos);
     return s;
+}
+
+auto str::take_inplace(std::string& s, range_type range) -> std::string& {
+    if (range.empty()) [[unlikely]] {
+        s.resize(0);
+        return s;
+    }
+
+    if (range.begin_pos() >= s.size()) [[unlikely]] {
+        s.resize(0);
+        return s;
+    }
+
+    if (range.end_pos() >= s.size()) {
+        std::memmove(s.data(), (s.data() + range.begin_pos()), (s.size() - range.begin_pos()));
+        s.resize(s.size() - range.begin_pos());
+        return s;
+    }
+
+    std::memmove(s.data(), (s.data() + range.begin_pos()), range.size());
+    s.resize(range.size());
+    return s;
+}
+
+auto str::take_inplace(std::string& s, interval_type inter) -> std::string& {
+    if (inter.begin == inter.end) [[unlikely]] {
+        s.resize(0);
+        return s;
+    }
+
+    if (inter.begin > inter.end) [[unlikely]] {
+        std::swap(inter.begin, inter.end);
+    }
+
+    if (inter.begin >= s.size()) [[unlikely]] {
+        s.resize(0);
+        return s;
+    }
+
+    if (inter.end >= s.size()) {
+        std::memmove(s.data(), (s.data() + inter.begin), (s.size() - inter.begin));
+        s.resize(s.size() - inter.begin);
+        return s;
+    }
+
+    std::memmove(s.data(), (s.data() + inter.begin), (inter.end - inter.begin));
+    s.resize(inter.end - inter.begin);
+    return s;
+}
+
+auto str::take_inplace(std::string& s, shifter_type slider) -> std::string& {
+    if (s.empty()) {
+        return s;
+    }
+
+    if (slider.empty()) {
+        s.clear();
+        return s;
+    }
+
+    if (slider.offset > 0) {
+        return take_inplace(s, slider.pos, slider.offset);
+    }
+
+    // Now pos is the end-pos
+    if (slider.pos >= s.size()) {
+        slider.pos = s.size();
+    }
+
+    if (-slider.offset >= slider.pos) {
+        return s = s.substr(0, slider.pos);
+    }
+
+    return s = s.substr((slider.pos + slider.offset), -slider.offset);
 }
 
 auto str::take_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1886,7 +1915,7 @@ auto str::drop_right(std::string_view s, size_type n) -> std::string {
     return std::string{drop_right_view(s, n)};
 }
 
-auto str::drop_mid(std::string_view s, size_type pos, size_type n) -> std::string {
+auto str::drop(std::string_view s, size_type pos, size_type n) -> std::string {
     if ((n == 0) || (pos > s.size())) {
         return std::string{s};
     }
@@ -1906,81 +1935,81 @@ auto str::drop_mid(std::string_view s, size_type pos, size_type n) -> std::strin
     return result;
 }
 
-auto str::drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
-    if (end_pos <= begin_pos) {
-        return {};
-    }
-
-    if (end_pos > s.size()) {
-        end_pos = s.size();
-    }
-
-    if (begin_pos >= s.size()) {
-        return {};
-    }
-
-    std::string result;
-    result.reserve(s.size() - (end_pos - begin_pos));
-
-    if (begin_pos > 0) {
-        result.append(s.data(), begin_pos);
-    }
-
-    if ((s.size() - end_pos) > 0) {
-        result.append(s.data() + end_pos, (s.size() - end_pos));
-    }
-    return result;
-}
-
-auto str::drop_range(std::string_view s, range_type range) -> std::string {
-    return drop_range(s, range.begin_pos(), range.end_pos());
-}
-
-auto str::drop(std::string_view s, size_type pos, ssize_type offset) -> std::string {
-    if (s.empty()) {
-        return std::string{s};
-    }
-
-    if (offset > 0) {
-        if (pos > s.size()) {
-            return std::string{s};
-        }
-
-        if (offset >= static_cast<ssize_t>(s.size() - pos)) {
-            return std::string{s.substr(0, pos)};
-        }
-
-        std::string result;
-        result.append(s.data(), pos);
-        result.append(s.data() + pos + offset, s.size() - (pos + offset));
-        return result;
-    }
-
-    if (offset < 0) {
-        size_type n = -offset;
-
-        if (pos >= s.size()) {
-            pos = s.size() - 1;
-        }
-
-        if (n > pos) {
-            return std::string{s.substr(pos + 1)};
-        }
-
-        std::string result;
-        result.append(s.substr(0, ((pos + 1) - n)));
-        if ((pos + 1) < s.size()) {
-            result.append(s.substr(pos + 1));
-        }
-        return result;
-    }
-
-    return std::string{s};
-}
-
 auto str::drop(std::string_view s, size_type pos) -> std::string {
     return str::drop(s, pos, s.size());
 }
+
+auto str::drop(std::string_view s, range_type range) -> std::string {
+    return drop(s, range.begin_pos(), range.size());
+}
+
+// auto str::drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
+//     if (end_pos <= begin_pos) {
+//         return {};
+//     }
+//
+//     if (end_pos > s.size()) {
+//         end_pos = s.size();
+//     }
+//
+//     if (begin_pos >= s.size()) {
+//         return {};
+//     }
+//
+//     std::string result;
+//     result.reserve(s.size() - (end_pos - begin_pos));
+//
+//     if (begin_pos > 0) {
+//         result.append(s.data(), begin_pos);
+//     }
+//
+//     if ((s.size() - end_pos) > 0) {
+//         result.append(s.data() + end_pos, (s.size() - end_pos));
+//     }
+//     return result;
+// }
+
+// auto str::drop(std::string_view s, size_type pos, ssize_type shifter) -> std::string {
+//     if (s.empty()) {
+//         return std::string{s};
+//     }
+//
+//     if (shifter > 0) {
+//         if (pos > s.size()) {
+//             return std::string{s};
+//         }
+//
+//         if (shifter >= static_cast<ssize_t>(s.size() - pos)) {
+//             return std::string{s.substr(0, pos)};
+//         }
+//
+//         std::string result;
+//         result.append(s.data(), pos);
+//         result.append(s.data() + pos + offset, s.size() - (pos + shifter));
+//         return result;
+//     }
+//
+//     if (shifter < 0) {
+//         size_type n = -shifter;
+//
+//         if (pos >= s.size()) {
+//             pos = s.size() - 1;
+//         }
+//
+//         if (n > pos) {
+//             return std::string{s.substr(pos + 1)};
+//         }
+//
+//         std::string result;
+//         result.append(s.substr(0, ((pos + 1) - n)));
+//         if ((pos + 1) < s.size()) {
+//             result.append(s.substr(pos + 1));
+//         }
+//         return result;
+//     }
+//
+//     return std::string{s};
+// }
 
 auto str::drop(std::string_view s, const charset_type& charset) -> std::string {
     if (s.empty()) {
@@ -2021,24 +2050,24 @@ auto str::drop_right_inplace(std::string& s, size_type n) -> std::string& {
     return s;
 }
 
-auto str::drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
-    s = drop_mid(s, pos, n);
+auto str::drop_inplace(std::string& s, size_type pos, size_type n) -> std::string& {
+    s = drop(s, pos, n);
     return s;
 }
 
-auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
-    s = drop_range(s, begin_pos, end_pos);
-    return s;
+// auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
+//     s = drop_range(s, begin_pos, end_pos);
+//     return s;
+// }
+
+auto str::drop_inplace(std::string& s, range_type range) -> std::string& {
+    return drop_inplace(s, range.begin_pos(), range.size());
 }
 
-auto str::drop_range_inplace(std::string& s, range_type range) -> std::string& {
-    return drop_range_inplace(s, range.begin_pos(), range.end_pos());
-}
-
-auto str::drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string& {
-    s = drop(s, pos, offset);
-    return s;
-}
+// auto str::drop_inplace(std::string& s, size_type pos, ssize_type shifter) -> std::string& {
+//     s = drop(s, pos, shifter);
+//     return s;
+// }
 
 auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
     s = drop(s, pos);
@@ -5543,7 +5572,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
     for (; line_index < full_line_num; line_index++) {
         line.clear();
 
-        // Dump offset
+        // Dump shifter
         if (format.flags & dump_hex_format::show_offset) {
             dump_hex_offset(line_index * line_bytes, upper, format.offset_width, line);
             line += format.offset_margin;
@@ -5573,7 +5602,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         const_pointer ptr_line = static_cast<const_pointer>(data) + line_index * line_bytes;
         size_type remain_len = len - (full_line_num * line_bytes);
 
-        // Dump offset
+        // Dump shifter
         if (format.flags & dump_hex_format::show_offset) {
             dump_hex_offset(line_index * line_bytes, format.offset_width, upper, line);
             line += format.offset_margin;
@@ -5609,6 +5638,14 @@ auto str::charset(std::string_view s, charset_type& set) -> charset_type& {
 
 auto str::range(size_type pos, size_type n) -> range_type {
     return range_type{pos, n};
+}
+
+auto str::interval(size_type begin, size_type end) -> interval_type {
+    return interval_type{begin, end};
+}
+
+auto str::shifter(size_type pos, ssize_type offset) -> shifter_type {
+    return shifter_type{pos, offset};
 }
 
 auto str::read_all(const std::string& filename) -> std::string {

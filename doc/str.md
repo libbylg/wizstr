@@ -459,38 +459,38 @@ static auto append_inplace(std::string& s, const Sequence& items) -> std::string
     ///
     /// * @ref take_left_view, take_left, take_left_inplace: 返回字符串 s 的最左边前 n 个字符的子串
     /// * @ref take_right_view, take_right, take_right_inplace: 返回字符串 s 的最右边前 n 个字符的子串
-    /// * @ref take_mid_view, take_mid, take_mid_inplace: 返回字符串 s 中，从pos 位置开始的 n个字符组成的子串
-    /// * @ref take_range_view, take_range, take_range_inplace: 返回字符串 s 中，range 范围的子串。
-    /// * @ref take_view, take, take_inplace: 返回字符串 s 中，从 pos 开始偏移 offset 的字符串。
+    /// * @ref take_view, take, take_inplace: 返回字符串 s 中，从pos 位置开始的 n个字符组成的子串
+    /// * @ref take_view, take, take_inplace: 返回字符串 s 中，range 范围的子串。
+    /// * @ref take_view, take, take_inplace: 返回字符串 s 中，从 pos 开始偏移 shifter 的字符串。
     ///
     /// @param s 原始字符串
     /// @param n 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度时，相关函数总是试图返回尽可能多的字符串。
-    /// @param offset 该参数是有符号整数，用于指定提取的字符串的长度和提取的方向。如果为负数，表示向左提取，如果为正表示向右提取。offset 的绝对值表示期望提取的数据的长度。
-    /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 offset 组合起来确定数据的提取范围
+    /// @param offset 该参数是有符号整数，用于指定提取的字符串的长度和提取的方向。如果为负数，表示向左提取，如果为正表示向右提取。shifter 的绝对值表示期望提取的数据的长度。
+    /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 shifter 组合起来确定数据的提取范围
     /// @param begin_pos, end_pos  用于提取字符串的提取范围。
     /// @param range  用于提取字符串的提取范围，一般用在可以替代 begin_pos 和 end_pos 的场景。
     static auto take_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto take_right_view(std::string_view s, size_type n) -> std::string_view;
-    static auto take_mid_view(std::string_view s, size_type pos, size_type n) -> std::string_view;
-    static auto take_range_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view;
-    static auto take_range_view(std::string_view s, range_type range) -> std::string_view;
-    static auto take_view(std::string_view s, size_type pos, ssize_type offset) -> std::string_view;
+    static auto take_view(std::string_view s, size_type pos, size_type n) -> std::string_view;
+    static auto take_view(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string_view;
+    static auto take_view(std::string_view s, range_type range) -> std::string_view;
+    static auto take_view(std::string_view s, size_type pos, ssize_type shifter) -> std::string_view;
     static auto take_view(std::string_view s, size_type pos) -> std::string_view;
     //
     static auto take_left(std::string_view s, size_type n) -> std::string;
     static auto take_right(std::string_view s, size_type n) -> std::string;
-    static auto take_mid(std::string_view s, size_type pos, size_type n) -> std::string;
-    static auto take_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
-    static auto take_range(std::string_view s, range_type range) -> std::string;
-    static auto take(std::string_view s, size_type pos, ssize_type offset) -> std::string;
+    static auto take(std::string_view s, size_type pos, size_type n) -> std::string;
+    static auto take(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
+    static auto take(std::string_view s, range_type range) -> std::string;
+    static auto take(std::string_view s, size_type pos, ssize_type shifter) -> std::string;
     static auto take(std::string_view s, size_type pos) -> std::string;
     //
     static auto take_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto take_right_inplace(std::string& s, size_type n) -> std::string&;
-    static auto take_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
-    static auto take_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
-    static auto take_range_inplace(std::string& s, range_type range) -> std::string&;
-    static auto take_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
+    static auto take_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
+    static auto take_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
+    static auto take_inplace(std::string& s, range_type range) -> std::string&;
+    static auto take_inplace(std::string& s, size_type pos, ssize_type shifter) -> std::string&;
     static auto take_inplace(std::string& s, size_type pos) -> std::string&;
     //
     static auto take_before_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
@@ -502,34 +502,34 @@ static auto append_inplace(std::string& s, const Sequence& items) -> std::string
     ///
     /// @ref drop_left_view, drop_left, drop_left_inplace 返回去掉字符串 s 的最左边前 n 个字符后的子串
     /// @ref drop_right_view, drop_right, drop_right_inplace 返回去掉字符串 s 的最右边的 n 个字符后的子串
-    /// @ref drop_mid, drop_mid_inplace 返回去掉字符串 s 中从 pos 开始的 n 的字符后的子串
-    /// @ref drop_range, drop_range_inplace 返回去掉字符串 s 中指定范围内的字符后的子串
+    /// @ref drop, drop_inplace 返回去掉字符串 s 中从 pos 开始的 n 的字符后的子串
+    /// @ref drop, drop_inplace 返回去掉字符串 s 中指定范围内的字符后的子串
     /// @ref drop, drop_inplace 返回去掉字符串 s 中特定的字符集后的子串
     ///
     /// @param s 原始字符串
     /// @param n 指定删除的子串的最大长度。
-    /// @param offset 该参数是有符号整数，用于指定删除字符串的长度和方向。如果为负数，表示向左删，如果为正表示向右删。offset 的绝对值表示期望提取的数据的长度。
-    /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 offset 组合起来确定删除子串范围
+    /// @param offset 该参数是有符号整数，用于指定删除字符串的长度和方向。如果为负数，表示向左删，如果为正表示向右删。shifter 的绝对值表示期望提取的数据的长度。
+    /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 shifter 组合起来确定删除子串范围
     /// @param begin_pos, end_pos  用于提取字符串的提取范围。
     /// @param range  用于提取字符串的提取范围，一般用在可以替代 begin_pos 和 end_pos 的场景。
     static auto drop_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_right_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_left(std::string_view s, size_type n) -> std::string;
     static auto drop_right(std::string_view s, size_type n) -> std::string;
-    static auto drop_mid(std::string_view s, size_type pos, size_type n) -> std::string;
-    static auto drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
-    static auto drop_range(std::string_view s, range_type range) -> std::string;
-    static auto drop(std::string_view s, size_type pos, ssize_type offset) -> std::string;
+    static auto drop(std::string_view s, size_type pos, size_type n) -> std::string;
+    static auto drop(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
+    static auto drop(std::string_view s, range_type range) -> std::string;
+    static auto drop(std::string_view s, size_type pos, ssize_type shifter) -> std::string;
     static auto drop(std::string_view s, size_type pos) -> std::string;
     static auto drop(std::string_view s, const char_match_proc& proc) -> std::string;
     static auto drop(std::string_view s, const charset_type& charset) -> std::string;
     //
     static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_right_inplace(std::string& s, size_type n) -> std::string&;
-    static auto drop_mid_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
-    static auto drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
-    static auto drop_range_inplace(std::string& s, range_type range) -> std::string&;
-    static auto drop_inplace(std::string& s, size_type pos, ssize_type offset) -> std::string&;
+    static auto drop_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
+    static auto drop_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
+    static auto drop_inplace(std::string& s, range_type range) -> std::string&;
+    static auto drop_inplace(std::string& s, size_type pos, ssize_type shifter) -> std::string&;
     static auto drop_inplace(std::string& s, size_type pos) -> std::string&;
     static auto drop_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
     static auto drop_inplace(std::string& s, const charset_type& charset) -> std::string&;
@@ -1386,7 +1386,7 @@ static auto append_inplace(std::string& s, const Sequence& items) -> std::string
         uint8_t group_size{1};                                   ///< 多少字节一组，如果大于 line_size，自动校正为 line_size
         value_type ascii_mask{'.'};                              ///< 显示 ascii 时，对不打印字符显示的掩码字符
         std::string_view ascii_margin{" "};                      ///< 显示 ascii 时，在此之前显示的 margin 字符
-        std::string_view offset_margin{":"};                     ///< 显示 offset 时，offset 右侧与文本段的分隔符
+        std::string_view offset_margin{":"};                     ///< 显示 offset 时，shifter 右侧与文本段的分隔符
     };
     static auto dump_hex(void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void;
 
