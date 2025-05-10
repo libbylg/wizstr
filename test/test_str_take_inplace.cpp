@@ -5,7 +5,7 @@
 TEST(test_str, take_inplace) {
     std::string s;
     SECTION("起始位置:一般场景") {
-        ASSERT_EQ(str::take_inplace(s = "abc1234", 3, str::npos), "1234");
+        ASSERT_EQ(str::take_inplace(s = "abc1234", 3, 9999), "1234");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 3, 5), "1234");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 3, 4), "1234");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 3, 2), "12");
@@ -27,7 +27,7 @@ TEST(test_str, take_inplace) {
         ASSERT_EQ(str::take_inplace(s = "abc1234", str::npos, -999), "abc1234");
     }
     SECTION("起始位置:左边界") {
-        ASSERT_EQ(str::take_inplace(s = "abc1234", 0, str::npos), "abc1234");
+        ASSERT_EQ(str::take_inplace(s = "abc1234", 0, 9999), "abc1234");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 0, 7), "abc1234");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 0, 3), "abc");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 0, 1), "a");
@@ -37,7 +37,7 @@ TEST(test_str, take_inplace) {
         ASSERT_EQ(str::take_inplace(s = "abc1234", 0, -999), "a");
     }
     SECTION("起始位置:右边界") {
-        ASSERT_EQ(str::take_inplace(s = "abc1234", 6, str::npos), "4");
+        ASSERT_EQ(str::take_inplace(s = "abc1234", 6, 9999), "4");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 6, 1), "4");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 6, 0), "");
         ASSERT_EQ(str::take_inplace(s = "abc1234", 6, -1), "4");
@@ -46,9 +46,9 @@ TEST(test_str, take_inplace) {
         ASSERT_EQ(str::take_inplace(s = "abc1234", 6, -999), "3bc1233");
     }
     SECTION("空串") {
+        ASSERT_EQ(str::take_inplace(s = "", 3, 9999), "");
         ASSERT_EQ(str::take_inplace(s = "", 0, 0), "");
         ASSERT_EQ(str::take_inplace(s = "", 2, -2), "");
-        ASSERT_EQ(str::take_inplace(s = "", 3, str::npos), "");
     }
     SECTION("无offset场景") {
         ASSERT_EQ(str::take_inplace(s = "3bc1233", 0), "3bc1233");

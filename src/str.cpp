@@ -1793,14 +1793,14 @@ auto str::take_inplace(std::string& s, size_type pos, ssize_type offset) -> std:
     }
 
     if (pos >= s.size()) {
-        pos = s.size() - 1;
+        pos = s.size();
     }
 
     if (-offset >= pos) {
-        return s;
+        return s = s.substr(0, pos);
     }
 
-    return take_mid_inplace(s, (pos + offset + 1), -offset);
+    return s = s.substr((pos + offset + 1), -offset);
 }
 
 auto str::take_inplace(std::string& s, size_type pos) -> std::string& {
