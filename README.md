@@ -1,3 +1,5 @@
+<a href='https://gitee.com/libbylg/str/stargazers'><img src='https://gitee.com/libbylg/str/badge/star.svg?theme=dark' alt='star'></img></a>
+
 # str
 
 #### 介绍
