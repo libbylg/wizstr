@@ -765,12 +765,16 @@ struct str {
     static auto drop_left(std::string_view s, size_type n) -> std::string;
     static auto drop_right(std::string_view s, size_type n) -> std::string;
     static auto drop(std::string_view s, size_type pos, size_type n) -> std::string;
-    // static auto drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string;
-    static auto drop(std::string_view s, range_type range) -> std::string;
-    // static auto drop(std::string_view s, size_type pos, ssize_type shifter) -> std::string;
     static auto drop(std::string_view s, size_type pos) -> std::string;
-    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto drop(std::string_view s, const CharMatchProc& proc) -> std::string;
+    static auto drop(std::string_view s, range_type range) -> std::string;
+    static auto drop(std::string_view s, interval_type inter) -> std::string;
+    static auto drop(std::string_view s, shifter_type shifter) -> std::string;
+
+    // static auto drop(std::string_view s, size_type pos, ssize_type shifter) -> std::string;
+
+//    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
+    //    static auto drop(std::string_view s, const CharMatchProc& proc) -> std::string;
+    static auto drop(std::string_view s, const char_match_proc& proc) -> std::string;
     static auto drop(std::string_view s, const charset_type& charset) -> std::string;
     //
     static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
@@ -2450,21 +2454,21 @@ auto str::has_any_one(std::string_view s, const CharMatchProc& proc) -> bool {
     return false;
 }
 
-template <typename CharMatchProc, typename>
-auto str::drop(std::string_view s, const CharMatchProc& proc) -> std::string {
-    if (s.empty()) {
-        return {};
-    }
-
-    std::string result;
-    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-        if (!proc(*ptr)) {
-            result.append(ptr, 1);
-        }
-    }
-
-    return result;
-}
+//template <typename CharMatchProc, typename>
+//auto str::drop(std::string_view s, const CharMatchProc& proc) -> std::string {
+//    if (s.empty()) {
+//        return {};
+//    }
+//
+//    std::string result;
+//    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+//        if (!proc(*ptr)) {
+//            result.append(ptr, 1);
+//        }
+//    }
+//
+//    return result;
+//}
 
 template <typename CharMatchProc, typename>
 auto str::drop_inplace(std::string& s, const CharMatchProc& proc) -> std::string& {

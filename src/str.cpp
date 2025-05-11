@@ -1943,73 +1943,93 @@ auto str::drop(std::string_view s, range_type range) -> std::string {
     return drop(s, range.begin_pos(), range.size());
 }
 
-// auto str::drop_range(std::string_view s, size_type begin_pos, size_type end_pos) -> std::string {
-//     if (end_pos <= begin_pos) {
-//         return {};
-//     }
-//
-//     if (end_pos > s.size()) {
-//         end_pos = s.size();
-//     }
-//
-//     if (begin_pos >= s.size()) {
-//         return {};
-//     }
-//
-//     std::string result;
-//     result.reserve(s.size() - (end_pos - begin_pos));
-//
-//     if (begin_pos > 0) {
-//         result.append(s.data(), begin_pos);
-//     }
-//
-//     if ((s.size() - end_pos) > 0) {
-//         result.append(s.data() + end_pos, (s.size() - end_pos));
-//     }
-//     return result;
-// }
+auto str::drop(std::string_view s, interval_type inter) -> std::string {
+    if (s.empty() || inter.empty()) {
+        return std::string{s};
+    }
 
-// auto str::drop(std::string_view s, size_type pos, ssize_type shifter) -> std::string {
-//     if (s.empty()) {
-//         return std::string{s};
-//     }
-//
-//     if (shifter > 0) {
-//         if (pos > s.size()) {
-//             return std::string{s};
-//         }
-//
-//         if (shifter >= static_cast<ssize_t>(s.size() - pos)) {
-//             return std::string{s.substr(0, pos)};
-//         }
-//
-//         std::string result;
-//         result.append(s.data(), pos);
-//         result.append(s.data() + pos + offset, s.size() - (pos + shifter));
-//         return result;
-//     }
-//
-//     if (shifter < 0) {
-//         size_type n = -shifter;
-//
-//         if (pos >= s.size()) {
-//             pos = s.size() - 1;
-//         }
-//
-//         if (n > pos) {
-//             return std::string{s.substr(pos + 1)};
-//         }
-//
-//         std::string result;
-//         result.append(s.substr(0, ((pos + 1) - n)));
-//         if ((pos + 1) < s.size()) {
-//             result.append(s.substr(pos + 1));
-//         }
-//         return result;
-//     }
-//
-//     return std::string{s};
-// }
+    if (inter.end < inter.begin) {
+        std::swap(inter.end, inter.begin);
+    }
+
+    if (inter.begin >= s.size()) {
+        return std::string{s};
+    }
+
+    if (inter.end > s.size()) {
+        inter.end = s.size();
+    }
+
+    std::string result;
+    result.reserve(s.size() - (inter.end - inter.begin));
+
+    if (inter.begin > 0) {
+        result.append(s.data(), inter.begin);
+    }
+
+    if (inter.end < s.size()) {
+        result.append(s.data() + inter.end, (s.size() - inter.end));
+    }
+
+    return result;
+}
+
+auto str::drop(std::string_view s, shifter_type shifter) -> std::string {
+    if (s.empty() || shifter.empty()) {
+        return std::string{s};
+    }
+
+    if (shifter.offset > 0) {
+        if (shifter.pos > s.size()) {
+            return std::string{s};
+        }
+
+        if (shifter.offset >= static_cast<ssize_t>(s.size() - shifter.pos)) {
+            return std::string{s.substr(0, shifter.pos)};
+        }
+
+        std::string result;
+        result.reserve(s.size() - shifter.offset);
+        if (shifter.pos > 0) {
+            result.append(s.data(), shifter.pos);
+        }
+        if ((shifter.pos + shifter.offset) < s.size()) {
+            result.append(s.data() + shifter.pos + shifter.offset, s.size() - (shifter.pos + shifter.offset));
+        }
+        return result;
+    }
+
+    if (shifter.pos >= s.size()) {
+        shifter.pos = s.size();
+    }
+
+    if (-shifter.offset > shifter.pos) {
+        return std::string{s.substr(shifter.pos)};
+    }
+
+    std::string result;
+    result.reserve(s.size() - shifter.offset);
+    result.append(s.substr(0, (shifter.pos + shifter.offset)));
+    if (shifter.pos < s.size()) {
+        result.append(s.substr(shifter.pos));
+    }
+    return result;
+}
+
+auto str::drop(std::string_view s, const char_match_proc& proc) -> std::string {
+    if (s.empty()) {
+        return {};
+    }
+
+    std::string result;
+    for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
+        if (!proc(*ptr)) {
+            result.append(ptr, 1);
+        }
+    }
+
+    return result;
+}
 
 auto str::drop(std::string_view s, const charset_type& charset) -> std::string {
     if (s.empty()) {
