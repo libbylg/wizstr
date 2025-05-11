@@ -36,4 +36,11 @@ TEST(test_str, trim_surrounding_view) {
             return ch == '3';
         }) == "c12");
     }
+
+    SECTION("指定字符集") {
+        ASSERT_EQ(str::trim_surrounding_view("1233ABC000", str::charset(str::all_digits)), "ABC");
+        ASSERT_EQ(str::trim_surrounding_view("1233ABC000", str::all_digits), "ABC");
+        ASSERT_EQ(str::trim_surrounding_view("1233ABC000", ""), "1233ABC000");
+        ASSERT_EQ(str::trim_surrounding_view("", ""), "");
+    }
 }

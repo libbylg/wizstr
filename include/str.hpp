@@ -1525,24 +1525,15 @@ struct str {
 
     //
     static auto trim_anywhere(std::string_view s, const char_match_proc& proc) -> std::string;
-
     static auto trim_anywhere(std::string_view s, const charset_type& charset) -> std::string;
-
     static auto trim_anywhere(std::string_view s, std::string_view charset) -> std::string;
-
     static auto trim_anywhere(std::string_view s, value_type charset) -> std::string;
-
     static auto trim_anywhere(std::string_view s) -> std::string;
-
     //
     static auto trim_anywhere_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
-
     static auto trim_anywhere_inplace(std::string& s, const charset_type& charset) -> std::string&;
-
     static auto trim_anywhere_inplace(std::string& s, std::string_view charset) -> std::string&;
-
     static auto trim_anywhere_inplace(std::string& s, value_type charset) -> std::string&;
-
     static auto trim_anywhere_inplace(std::string& s) -> std::string&;
 
     //! 化简

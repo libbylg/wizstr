@@ -40,7 +40,7 @@ TEST(test_str, trim_left_view) {
     SECTION("指定字符集") {
         ASSERT_EQ(str::trim_left_view("1233ABC\r  \t\n", str::charset(str::all_digits)), "ABC\r  \t\n");
         ASSERT_EQ(str::trim_left_view("1233ABC\r  \t\n", str::all_digits), "ABC\r  \t\n");
-        ASSERT_EQ(str::trim_left_view("1233ABC\r  \t\n", ""), "123ABC\r  \t\n");
+        ASSERT_EQ(str::trim_left_view("1233ABC\r  \t\n", ""), "1233ABC\r  \t\n");
         ASSERT_EQ(str::trim_left_view("", ""), "");
     }
 }

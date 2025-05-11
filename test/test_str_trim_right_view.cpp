@@ -36,4 +36,11 @@ TEST(test_str, trim_right_view) {
             return ch == '3';
         }) == "33c12");
     }
+
+    SECTION("指定字符集") {
+        ASSERT_EQ(str::trim_right_view("1234ABC", str::charset(str::all_uppers)), "1234");
+        ASSERT_EQ(str::trim_right_view("1234ABC", str::all_alphas), "1234");
+        ASSERT_EQ(str::trim_right_view("1234ABC", ""), "1234ABC");
+        ASSERT_EQ(str::trim_right_view("", ""), "");
+    }
 }
