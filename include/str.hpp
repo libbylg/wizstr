@@ -769,23 +769,17 @@ struct str {
     static auto drop(std::string_view s, range_type range) -> std::string;
     static auto drop(std::string_view s, interval_type inter) -> std::string;
     static auto drop(std::string_view s, shifter_type shifter) -> std::string;
-
-    // static auto drop(std::string_view s, size_type pos, ssize_type shifter) -> std::string;
-
-//    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    //    static auto drop(std::string_view s, const CharMatchProc& proc) -> std::string;
     static auto drop(std::string_view s, const char_match_proc& proc) -> std::string;
     static auto drop(std::string_view s, const charset_type& charset) -> std::string;
     //
     static auto drop_left_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_right_inplace(std::string& s, size_type n) -> std::string&;
     static auto drop_inplace(std::string& s, size_type pos, size_type n) -> std::string&;
-    // static auto drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string&;
-    static auto drop_inplace(std::string& s, range_type range) -> std::string&;
-    // static auto drop_inplace(std::string& s, size_type pos, ssize_type shifter) -> std::string&;
     static auto drop_inplace(std::string& s, size_type pos) -> std::string&;
-    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
-    static auto drop_inplace(std::string& s, const CharMatchProc& proc) -> std::string&;
+    static auto drop_inplace(std::string& s, range_type range) -> std::string&;
+    static auto drop_inplace(std::string& s, interval_type inter) -> std::string&;
+    static auto drop_inplace(std::string& s, shifter_type shifter) -> std::string&;
+    static auto drop_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
     static auto drop_inplace(std::string& s, const charset_type& charset) -> std::string&;
     //
     static auto drop_before_view(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string_view;
@@ -2470,11 +2464,11 @@ auto str::has_any_one(std::string_view s, const CharMatchProc& proc) -> bool {
 //    return result;
 //}
 
-template <typename CharMatchProc, typename>
-auto str::drop_inplace(std::string& s, const CharMatchProc& proc) -> std::string& {
-    s = drop(s, proc);
-    return s;
-}
+//template <typename CharMatchProc, typename>
+//auto str::drop_inplace(std::string& s, const CharMatchProc& proc) -> std::string& {
+//    s = drop(s, proc);
+//    return s;
+//}
 
 // template <typename LineConsumerProc, typename>
 // auto str::foreach_lines(std::string_view s, bool keep_ends, const LineConsumerProc& proc) -> void {

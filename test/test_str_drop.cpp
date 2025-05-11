@@ -2,7 +2,7 @@
 
 #include "str.hpp"
 
-TEST(test_str, take) {
+TEST(test_str, drop) {
     SECTION("pos+n模式") {
         // 左边界
         ASSERT_EQ(str::drop("abc1234", 0, str::npos), "");

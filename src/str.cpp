@@ -1990,12 +1990,8 @@ auto str::drop(std::string_view s, shifter_type shifter) -> std::string {
 
         std::string result;
         result.reserve(s.size() - shifter.offset);
-        if (shifter.pos > 0) {
-            result.append(s.data(), shifter.pos);
-        }
-        if ((shifter.pos + shifter.offset) < s.size()) {
-            result.append(s.data() + shifter.pos + shifter.offset, s.size() - (shifter.pos + shifter.offset));
-        }
+        result.append(s.data(), shifter.pos);
+        result.append(s.data() + shifter.pos + shifter.offset, s.size() - (shifter.pos + shifter.offset));
         return result;
     }
 
@@ -2010,9 +2006,7 @@ auto str::drop(std::string_view s, shifter_type shifter) -> std::string {
     std::string result;
     result.reserve(s.size() - shifter.offset);
     result.append(s.substr(0, (shifter.pos + shifter.offset)));
-    if (shifter.pos < s.size()) {
-        result.append(s.substr(shifter.pos));
-    }
+    result.append(s.substr(shifter.pos));
     return result;
 }
 
@@ -2075,22 +2069,76 @@ auto str::drop_inplace(std::string& s, size_type pos, size_type n) -> std::strin
     return s;
 }
 
-// auto str::drop_range_inplace(std::string& s, size_type begin_pos, size_type end_pos) -> std::string& {
-//     s = drop_range(s, begin_pos, end_pos);
-//     return s;
-// }
+auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
+    s = drop(s, pos);
+    return s;
+}
 
 auto str::drop_inplace(std::string& s, range_type range) -> std::string& {
     return drop_inplace(s, range.begin_pos(), range.size());
 }
 
-// auto str::drop_inplace(std::string& s, size_type pos, ssize_type shifter) -> std::string& {
-//     s = drop(s, pos, shifter);
-//     return s;
-// }
+auto str::drop_inplace(std::string& s, interval_type inter) -> std::string& {
+    if (s.empty() || inter.empty()) {
+        return s;
+    }
 
-auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
-    s = drop(s, pos);
+    if (inter.begin > inter.end) {
+        std::swap(inter.begin, inter.end);
+    }
+
+    if (inter.begin >= s.size()) {
+        return s;
+    }
+
+    if (inter.end >= s.size()) {
+        inter.end = s.size();
+        s.resize(inter.begin);
+        return s;
+    }
+
+    std::memmove((s.data() + inter.begin), (s.data() + inter.end), (s.size() - inter.end));
+    s.resize(s.size() - (inter.end - inter.begin));
+    return s;
+}
+
+auto str::drop_inplace(std::string& s, shifter_type shifter) -> std::string& {
+    if (s.empty() || (shifter.offset == 0)) {
+        return s;
+    }
+
+    if (shifter.offset > 0) {
+        if (shifter.pos >= s.size()) {
+            return s;
+        }
+
+        if ((s.size() - shifter.pos) <= shifter.offset) {
+            s.resize(shifter.pos);
+            return s;
+        }
+
+        std::memmove(s.data() + shifter.pos, (s.data() + (shifter.pos + shifter.offset)), (s.size() - (shifter.pos + shifter.offset)));
+        s.resize(s.size() - shifter.offset);
+        return s;
+    }
+
+    if (shifter.pos >= s.size()) {
+        shifter.pos = s.size();
+    }
+
+    if (-shifter.offset > shifter.pos) {
+        std::memmove(s.data(), (s.data() + shifter.pos), (s.size() - shifter.pos));
+        s.resize((s.size() - shifter.pos));
+        return s;
+    }
+
+    std::memmove(s.data() + (shifter.pos + shifter.offset), (s.data() + shifter.pos), (s.size() - shifter.pos));
+    s.resize((s.size() + shifter.offset));
+    return s;
+}
+
+auto str::drop_inplace(std::string& s, const char_match_proc& proc) -> std::string& {
+    s = drop(s, proc);
     return s;
 }
 

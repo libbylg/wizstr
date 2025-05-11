@@ -70,6 +70,7 @@ struct testcase : public testcase_head {
     static inline void exec(testcase* tcase, jmp_buf& tenv, int32_t& fails) {
         // 每个用例执行前打印下当前正在执行那个任务
         std::printf("%s[%s - %s] %s%s\n", tag_blue_enter, tcase->nsuite, tcase->ncase, "....", tag_xxxx_leave);
+        std::fflush(stdout);
 
         // 设置 longjmp 的会跳点，以便于断言宏在必要时中断用例执行
         if (!setjmp(tenv)) {
@@ -80,6 +81,7 @@ struct testcase : public testcase_head {
         // 如果执行成功，proc 函数会自动返回
         const char* tag_xxxx_enter = ((fails == 0) ? tag_pass_enter : tag_fail_enter);
         std::printf("%s[%s - %s] %s%s\n", tag_xxxx_enter, tcase->nsuite, tcase->ncase, "pass", tag_xxxx_leave);
+        std::fflush(stdout);
     }
 
     //! 断言处理函数
@@ -103,6 +105,7 @@ struct testcase : public testcase_head {
 
         // 补一个换行
         std::printf("\n");
+        std::fflush(stdout);
 
         // 如果指定了立即结束标记，那么通过 longjmp 回到 setjmp 的位置
         if (abort) {
@@ -117,6 +120,7 @@ struct testcase : public testcase_head {
         std::printf("%sTotal : %lu%s\n", tag_xxxx_enter, count_alln, tag_xxxx_leave);
         std::printf("%sPass  : %lu%s\n", tag_xxxx_enter, count_pass, tag_xxxx_leave);
         std::printf("%sFail  : %lu%s\n", tag_xxxx_enter, count_fail, tag_xxxx_leave);
+        std::fflush(stdout);
         return (count_fail == 0);
     }
 
