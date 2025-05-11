@@ -2,7 +2,6 @@
 
 #include "str.hpp"
 
-
 TEST(test_str, is_capitalize) {
     SECTION("一般情况") {
         ASSERT_EQ(str::is_capitalize("A"), true);
@@ -17,5 +16,13 @@ TEST(test_str, is_capitalize) {
     SECTION("空格") {
         ASSERT_EQ(str::is_capitalize(" \t\r\n\vA \t\r\n\v"), false);
         ASSERT_EQ(str::is_capitalize(" \t\r\n\v"), false);
+    }
+    SECTION("Extr") {
+        ASSERT_EQ(str::is_capitalize("1"), false);
+        ASSERT_EQ(str::is_capitalize(""), false);
+        ASSERT_EQ(str::is_capitalize("Abc123DEF"), true);
+        ASSERT_EQ(str::is_capitalize("abc123DEF"), false);
+        ASSERT_EQ(str::is_capitalize("  A"), false);
+        ASSERT_EQ(str::is_capitalize("A"), true);
     }
 }

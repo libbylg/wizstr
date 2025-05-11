@@ -2219,19 +2219,6 @@ auto str::align_right(std::string_view s, size_type width, value_type ch) -> std
     return result;
 }
 
-auto str::align_right(std::string_view s, size_type width, value_type ch, const view_consumer_proc& proc) -> void {
-    if (s.size() >= width) {
-        proc(s);
-        return;
-    }
-
-    std::string result;
-    result.resize(width);
-    std::fill(result.data(), result.data() + (width - s.size()), ch);
-    std::memcpy(result.data() + (width - s.size()), s.data(), s.size());
-    proc(result);
-}
-
 auto str::align_center(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
         return std::string{s};
@@ -2246,33 +2233,6 @@ auto str::align_center(std::string_view s, size_type width, value_type ch) -> st
     result.append(s);
     result.append(right_len, ch);
     return result;
-}
-
-auto str::align_zfill(std::string_view s, size_type width, const view_consumer_proc& proc) -> void {
-    if (s.empty()) {
-        std::string r;
-        r.resize(width, '0');
-        proc(r);
-        return;
-    }
-
-    if (s.size() >= width) {
-        proc(s);
-        return;
-    }
-
-    if ((s[0] != '+') && (s[0] != '-')) {
-        str::align_right(s, width, '0', proc);
-        return;
-    }
-
-    std::string result;
-    result.reserve(width);
-    result.append(s.data(), 1);
-    result.resize((width - s.size() + 1), '0');
-    result.append(s.data() + 1, static_cast<size_type>(s.size() - 1));
-
-    proc(result);
 }
 
 auto str::align_zfill(std::string_view s, size_type width) -> std::string {
@@ -3811,8 +3771,8 @@ auto str::to_upper_inplace(std::string& s) -> std::string& {
 
 auto str::to_title_inplace(std::string& s) -> std::string& {
 
+    pointer ptr = s.data();
     while (true) {
-        pointer ptr = s.data();
         for (; ptr < (s.data() + s.size()); ++ptr) {
             if (std::isalpha(*ptr)) {
                 *ptr = static_cast<value_type>(std::toupper(*ptr));
@@ -3820,7 +3780,7 @@ auto str::to_title_inplace(std::string& s) -> std::string& {
             }
         }
 
-        if (ptr < (s.data() + s.size())) {
+        if (ptr >= (s.data() + s.size())) {
             break;
         }
 
@@ -3831,7 +3791,7 @@ auto str::to_title_inplace(std::string& s) -> std::string& {
             *ptr = static_cast<value_type >(std::tolower(*ptr));
         }
 
-        if (ptr < (s.data() + s.size())) {
+        if (ptr >= (s.data() + s.size())) {
             break;
         }
     }
@@ -5539,9 +5499,13 @@ auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, st
 
 auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void {
     value_type offset_buffer[32];
-    int wlen = snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%lX" : "%lx"), offset);
+    int wlen = std::snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%lX" : "%lx"), offset);
     assert(wlen > 0);
-    str::align_zfill(std::string_view{offset_buffer, static_cast<size_type>(wlen)}, offset_width, proc);
+    if (wlen < offset_width) {
+        std::string zeros{str::repeat('0', offset_width - wlen)};
+        proc(zeros);
+    }
+    proc(std::string_view{offset_buffer, static_cast<size_type>(wlen)});
 }
 
 auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, std::string& line) -> void {

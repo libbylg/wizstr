@@ -798,23 +798,12 @@ struct str {
     /// @param widht 指定新生成的字符串的宽度，如果 width 小于或者等于 s 的长度，不会追加 ch，也即对齐前后字符串内容不变
     /// @param ch 当 width 大于 s 的长度时，所采用的填充字符
     static auto align_left(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
-
     static auto align_right(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
-
-    static auto align_right(std::string_view s, size_type width, value_type ch, const view_consumer_proc& proc) -> void;
-
     static auto align_center(std::string_view s, size_type width, value_type ch = ' ') -> std::string;
-
-    static auto align_zfill(std::string_view s, size_type width, const view_consumer_proc& proc) -> void;
-
     static auto align_zfill(std::string_view s, size_type width) -> std::string;
-
     static auto align_left_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
-
     static auto align_right_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
-
     static auto align_center_inplace(std::string& s, size_type width, value_type ch = ' ') -> std::string&;
-
     static auto align_zfill_inplace(std::string& s, size_type width) -> std::string&;
 
     //! 多行文本处理 @anchor{lines}
@@ -839,41 +828,27 @@ struct str {
     // template <typename LineConsumerProc, typename = std::enable_if<std::is_function<LineConsumerProc>::value>>
     // static auto foreach_lines(std::string_view s, bool keep_ends, const LineConsumerProc& proc) -> void;
     static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc& proc) -> void;
-
     static auto count_lines(std::string_view s) -> size_type;
-
     static auto lines_indentation(std::string_view s) -> size_type;
 
     //! 编号
     static auto numbering_lines(std::string_view s, size_type from_n) -> std::string;
-
     static auto unnumbering_lines(std::string_view s) -> std::string;
-
     //
     static auto numbering_lines_inplace(std::string& s, size_type from_n) -> std::string&;
-
     static auto unnumbering_lines_inplace(std::string& s) -> std::string&;
 
     //! 缩进
     static auto indent_lines(std::string_view s, size_type n) -> std::string;
-
     static auto dedent_lines(std::string_view s, size_type n) -> std::string;
-
     static auto align_indent_lines(std::string_view s, size_type n) -> std::string;
-
     static auto trim_indent_lines(std::string_view s) -> std::string;
-
     static auto simplify_indent_lines(std::string_view s) -> std::string;
-
     //
     static auto indent_lines_inplace(std::string& s, size_type n) -> std::string&;
-
     static auto dedent_lines_inplace(std::string& s, size_type n) -> std::string&;
-
     static auto align_indent_lines_inplace(std::string& s, size_type n) -> std::string&;
-
     static auto trim_indent_lines_inplace(std::string& s) -> std::string&;
-
     static auto simplify_indent_lines_inplace(std::string& s) -> std::string&;
 
     //! 留边
@@ -973,7 +948,6 @@ struct str {
     /// @param max_n 指定从 pos 位置开始最多反转多少字符
     /// @return 返回颠倒位置后的字符串
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
-
     static auto invert_inplace(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
 
     //! 生成
@@ -983,7 +957,6 @@ struct str {
     /// @param s 字符串模板
     /// @param ch 指定重复的字符
     static auto repeat(std::string_view s, size_type times) -> std::string;
-
     static auto repeat(value_type ch, size_type times) -> std::string;
 
     //! 生成：随机生成
