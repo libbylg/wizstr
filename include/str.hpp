@@ -722,7 +722,7 @@ struct str {
     static auto take_view(std::string_view s, size_type pos) -> std::string_view;
     static auto take_view(std::string_view s, range_type range) -> std::string_view;
     static auto take_view(std::string_view s, interval_type inter) -> std::string_view;
-    static auto take_view(std::string_view s, shifter_type slider) -> std::string_view;
+    static auto take_view(std::string_view s, shifter_type shifter) -> std::string_view;
     //
     static auto take_left(std::string_view s, size_type n) -> std::string;
     static auto take_right(std::string_view s, size_type n) -> std::string;

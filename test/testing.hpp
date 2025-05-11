@@ -125,7 +125,7 @@ struct testcase : public testcase_head {
     }
 
     //! 执行所有的测试用例
-    static inline int exec_all(int argc, char* argv[]) {
+    static inline int exec_all([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         // 记录用例数量
         size_t count_alln = 0;
         size_t count_pass = 0;

@@ -47,29 +47,65 @@ TEST(test_str, next_char) {
     }
     SECTION("查找满足下一个proc的字符的位置") {
         str::size_type pos = 0;
-        ASSERT_EQ(str::next_char("a12 e3", pos = 0, [](str::value_type ch) -> bool { return std::isdigit(ch); }), 1);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 0, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            1);
         ASSERT_EQ(pos, 2);
-        ASSERT_EQ(str::next_char("a12 e3", pos = 1, [](str::value_type ch) -> bool { return std::isdigit(ch); }), 1);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 1, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            1);
         ASSERT_EQ(pos, 2);
-        ASSERT_EQ(str::next_char("a12 e3", pos = 2, [](str::value_type ch) -> bool { return std::isdigit(ch); }), 2);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 2, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            2);
         ASSERT_EQ(pos, 3);
-        ASSERT_EQ(str::next_char("a12 e3", pos = 3, [](str::value_type ch) -> bool { return std::isdigit(ch); }), 5);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 3, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            5);
         ASSERT_EQ(pos, 6);
-        ASSERT_EQ(str::next_char("a12 e3", pos = 4, [](str::value_type ch) -> bool { return std::isdigit(ch); }), 5);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 4, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            5);
         ASSERT_EQ(pos, 6);
-        ASSERT_EQ(str::next_char("a12 e3", pos = 5, [](str::value_type ch) -> bool { return std::isdigit(ch); }), 5);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 5, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            5);
         ASSERT_EQ(pos, 6);
-        ASSERT_EQ(str::next_char("a12 e3", pos = 6, [](str::value_type ch) -> bool { return std::isdigit(ch); }), str::npos);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 6, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            str::npos);
         ASSERT_EQ(pos, 6);
-        ASSERT_EQ(str::next_char("a12 e3", pos = 7, [](str::value_type ch) -> bool { return std::isdigit(ch); }), str::npos);
+        ASSERT_EQ(str::next_char("a12 e3", pos = 7, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            str::npos);
         ASSERT_EQ(pos, 6);
-        ASSERT_EQ(str::next_char("a12 e3", pos = str::npos, [](str::value_type ch) -> bool { return std::isdigit(ch); }), str::npos);
+        ASSERT_EQ(str::next_char("a12 e3", pos = str::npos, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            str::npos);
         ASSERT_EQ(pos, 6);
-        ASSERT_EQ(str::next_char("", pos = 0, [](str::value_type ch) -> bool { return std::isdigit(ch); }), str::npos);
+        ASSERT_EQ(str::next_char("", pos = 0, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            str::npos);
         ASSERT_EQ(pos, 0);
-        ASSERT_EQ(str::next_char("", pos = str::npos, [](str::value_type ch) -> bool { return std::isdigit(ch); }), str::npos);
+        ASSERT_EQ(str::next_char("", pos = str::npos, [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            str::npos);
         ASSERT_EQ(pos, 0);
-        ASSERT_EQ(str::next_char("a12 e3", pos = str::npos, [](str::value_type ch) -> bool { return false; }), str::npos);
+        ASSERT_EQ(str::next_char("a12 e3", pos = str::npos, []([[maybe_unused]] str::value_type ch) -> bool {
+            return false;
+        }),
+            str::npos);
         ASSERT_EQ(pos, 6);
     }
 }

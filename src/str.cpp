@@ -1507,7 +1507,7 @@ auto str::is_literal_real(std::string_view s) -> bool {
         }
 
         p++;
-    };
+    }
 
     if (p >= end) {
         return (int_start != nullptr);
@@ -1657,31 +1657,31 @@ auto str::take_view(std::string_view s, interval_type inter) -> std::string_view
     return s.substr(inter.begin, (end - inter.begin));
 }
 
-auto str::take_view(std::string_view s, shifter_type slider) -> std::string_view {
-    if (s.empty() || (slider.empty())) {
+auto str::take_view(std::string_view s, shifter_type shifter) -> std::string_view {
+    if (s.empty() || (shifter.empty())) {
         return {};
     }
 
-    if (slider.offset > 0) {
-        if (slider.pos >= s.size()) {
+    if (shifter.offset > 0) {
+        if (shifter.pos >= s.size()) {
             return {};
         }
-        size_type n = slider.offset;
-        return s.substr(slider.pos, std::min(n, slider.pos + n));
+        size_type n = shifter.offset;
+        return s.substr(shifter.pos, std::min(n, shifter.pos + n));
     }
 
     // 如果 rpos 太大
-    if (slider.pos >= s.size()) {
-        slider.pos = s.size();
+    if (shifter.pos >= s.size()) {
+        shifter.pos = s.size();
     }
 
     // 如果n太大
-    if (-slider.offset >= slider.pos) {
-        return s.substr(0, slider.pos);
+    if (static_cast<size_type>(-shifter.offset) >= shifter.pos) {
+        return s.substr(0, shifter.pos);
     }
 
     // 如果n较小
-    return s.substr((slider.pos + slider.offset), -slider.offset);
+    return s.substr((shifter.pos + shifter.offset), -shifter.offset);
 }
 
 auto str::take_left(std::string_view s, size_type n) -> std::string {
@@ -1708,8 +1708,8 @@ auto str::take(std::string_view s, interval_type inter) -> std::string {
     return std::string{take_view(s, inter)};
 }
 
-auto str::take(std::string_view s, shifter_type slider) -> std::string {
-    return std::string{take_view(s, slider)};
+auto str::take(std::string_view s, shifter_type shifter) -> std::string {
+    return std::string{take_view(s, shifter)};
 }
 
 auto str::take_left_inplace(std::string& s, size_type n) -> std::string& {
@@ -1817,30 +1817,30 @@ auto str::take_inplace(std::string& s, interval_type inter) -> std::string& {
     return s;
 }
 
-auto str::take_inplace(std::string& s, shifter_type slider) -> std::string& {
+auto str::take_inplace(std::string& s, shifter_type shifter) -> std::string& {
     if (s.empty()) {
         return s;
     }
 
-    if (slider.empty()) {
+    if (shifter.empty()) {
         s.clear();
         return s;
     }
 
-    if (slider.offset > 0) {
-        return take_inplace(s, slider.pos, slider.offset);
+    if (shifter.offset > 0) {
+        return take_inplace(s, shifter.pos, shifter.offset);
     }
 
     // Now pos is the end-pos
-    if (slider.pos >= s.size()) {
-        slider.pos = s.size();
+    if (shifter.pos >= s.size()) {
+        shifter.pos = s.size();
     }
 
-    if (-slider.offset >= slider.pos) {
-        return s = s.substr(0, slider.pos);
+    if (static_cast<size_type>(-shifter.offset) >= shifter.pos) {
+        return s = s.substr(0, shifter.pos);
     }
 
-    return s = s.substr((slider.pos + slider.offset), -slider.offset);
+    return s = s.substr((shifter.pos + shifter.offset), static_cast<size_type>(-shifter.offset));
 }
 
 auto str::take_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
@@ -1999,7 +1999,7 @@ auto str::drop(std::string_view s, shifter_type shifter) -> std::string {
         shifter.pos = s.size();
     }
 
-    if (-shifter.offset > shifter.pos) {
+    if (static_cast<size_type>(-shifter.offset) > shifter.pos) {
         return std::string{s.substr(shifter.pos)};
     }
 
@@ -2112,7 +2112,7 @@ auto str::drop_inplace(std::string& s, shifter_type shifter) -> std::string& {
             return s;
         }
 
-        if ((s.size() - shifter.pos) <= shifter.offset) {
+        if ((s.size() - shifter.pos) <= static_cast<size_type>(shifter.offset)) {
             s.resize(shifter.pos);
             return s;
         }
@@ -2126,7 +2126,7 @@ auto str::drop_inplace(std::string& s, shifter_type shifter) -> std::string& {
         shifter.pos = s.size();
     }
 
-    if (-shifter.offset > shifter.pos) {
+    if (static_cast<size_type>(-shifter.offset) > shifter.pos) {
         std::memmove(s.data(), (s.data() + shifter.pos), (s.size() - shifter.pos));
         s.resize((s.size() - shifter.pos));
         return s;
@@ -2230,7 +2230,6 @@ auto str::align_right(std::string_view s, size_type width, value_type ch, const 
     std::fill(result.data(), result.data() + (width - s.size()), ch);
     std::memcpy(result.data() + (width - s.size()), s.data(), s.size());
     proc(result);
-    return;
 }
 
 auto str::align_center(std::string_view s, size_type width, value_type ch) -> std::string {
@@ -2274,7 +2273,6 @@ auto str::align_zfill(std::string_view s, size_type width, const view_consumer_p
     result.append(s.data() + 1, static_cast<size_type>(s.size() - 1));
 
     proc(result);
-    return;
 }
 
 auto str::align_zfill(std::string_view s, size_type width) -> std::string {
@@ -2640,7 +2638,7 @@ auto str::next_word(std::string_view s, size_type& pos) -> std::string {
 
 auto str::prev_word_view(std::string_view s, size_type& pos) -> std::string_view {
     auto range = prev_word_range(s, pos);
-    return std::string_view(s.data() + range.begin_pos(), range.size());
+    return std::string_view{s.data() + range.begin_pos(), range.size()};
 }
 
 auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
@@ -3701,7 +3699,7 @@ auto str::chunked(std::string_view s, size_type width, const view_consumer_proc&
 auto str::chunked(std::string_view s, size_type width) -> std::vector<std::string> {
     std::vector<std::string> result;
     chunked(s, width, [&result](std::string_view item) -> int {
-        result.emplace_back(std::move(item));
+        result.emplace_back(item);
         return 0;
     });
     return result;
@@ -3710,7 +3708,7 @@ auto str::chunked(std::string_view s, size_type width) -> std::vector<std::strin
 auto str::chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
     chunked(s, width, [&result](std::string_view item) -> int {
-        result.emplace_back(std::move(item));
+        result.emplace_back(item);
         return 0;
     });
     return result;
@@ -3817,7 +3815,7 @@ auto str::to_title_inplace(std::string& s) -> std::string& {
         pointer ptr = s.data();
         for (; ptr < (s.data() + s.size()); ++ptr) {
             if (std::isalpha(*ptr)) {
-                *ptr = std::toupper(*ptr);
+                *ptr = static_cast<value_type>(std::toupper(*ptr));
                 break;
             }
         }
@@ -3830,7 +3828,7 @@ auto str::to_title_inplace(std::string& s) -> std::string& {
             if (!std::isalpha(*ptr)) {
                 break;
             }
-            *ptr = std::tolower(*ptr);
+            *ptr = static_cast<value_type >(std::tolower(*ptr));
         }
 
         if (ptr < (s.data() + s.size())) {
@@ -5031,8 +5029,8 @@ auto str::encode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
 
     char buf[5]{};
 
-    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(s.data());
-    const uint8_t* end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
+    auto ptr = reinterpret_cast<const uint8_t*>(s.data());
+    auto end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
     while (ptr < end) {
         if (*ptr <= 0x7f) [[likely]] {
             if (proc(map[*ptr]) != 0) {
@@ -5068,8 +5066,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
         return;
     }
 
-    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(s.data());
-    const uint8_t* end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
+    auto ptr = reinterpret_cast<const uint8_t*>(s.data());
+    auto end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
 
     const char* w = s.data();
     const char* c = s.data();
@@ -5565,7 +5563,7 @@ auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask,
     std::string line;
     line.resize(len);
 
-    const_pointer ptr = static_cast<const_pointer>(data);
+    auto ptr = static_cast<const_pointer>(data);
     for (size_type index = 0; index < len; index++) {
         line += std::isprint(ptr[index]) ? ptr[index] : ascii_mask;
     }
@@ -5596,10 +5594,10 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
     std::string line;
 
     // 处理完整组
-    const_pointer ptr_group = static_cast<const_pointer>(data);
+    auto ptr_group = static_cast<const_pointer>(data);
     for (size_type group_index = 0; group_index < len / group_bytes; group_index++) {
         for (size_type byte_index = 0; byte_index < group_bytes; byte_index++) {
-            uint8_t ch = static_cast<uint8_t>(ptr_group[byte_index]);
+            auto ch = static_cast<uint8_t>(ptr_group[byte_index]);
             line += hex[(ch & 0xF0) >> 4];
             line += hex[(ch & 0x0F) >> 0];
         }
@@ -5610,7 +5608,7 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
 
     // 处理不完整的分组
     for (size_type byte_index = 0; byte_index < len % group_bytes; byte_index++) {
-        uint8_t ch = static_cast<uint8_t>(ptr_group[byte_index]);
+        auto ch = static_cast<uint8_t>(ptr_group[byte_index]);
         line += hex[(ch & 0xF0) >> 4];
         line += hex[(ch & 0x0F) >> 0];
     }
@@ -5636,7 +5634,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
 
     std::string line;
     size_type line_index = 0;
-    const_pointer ptr_line = static_cast<const_pointer>(data);
+    auto ptr_line = static_cast<const_pointer>(data);
     for (; line_index < full_line_num; line_index++) {
         line.clear();
 
@@ -5934,7 +5932,7 @@ public:
         assert(argc >= 0);
     }
 
-    inline auto size() const -> int {
+    [[nodiscard]] inline auto size() const -> int  {
         assert(argc_ >= 0);
         return argc_;
     }

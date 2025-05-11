@@ -99,7 +99,7 @@ TEST(test_str, prev_char) {
             return std::isdigit(ch);
         }));
         ASSERT_TRUE((pos == 5) && (*result == 5));
-        ASSERT_FALSE(result = str::prev_char("a12 e3", pos = str::npos, [](str::value_type ch) -> bool {
+        ASSERT_FALSE(result = str::prev_char("a12 e3", pos = str::npos, []([[maybe_unused]]str::value_type ch) -> bool {
             return false;
         }));
         ASSERT_EQ(pos, 0);
