@@ -6200,7 +6200,7 @@ auto str::foreach_lines(std::string_view s, bool keep_ends, const line_consumer_
         if (proc(line_index++, s.substr(line_start, endpos - line_start)) != 0) {
             return;
         }
-        line_start = endpos;
+        line_start = range->end_pos();
     }
 
     if (line_start < s.size()) {

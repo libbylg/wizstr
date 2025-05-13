@@ -870,28 +870,11 @@ struct str {
     // template <typename RangeConsumerProc, typename = std::enable_if<std::is_function<RangeConsumerProc>::value>>
     // static auto foreach_words(std::string_view s, size_type pos, const RangeConsumerProc& proc) -> void;
     static auto foreach_words(std::string_view s, size_type pos, const range_consumer_proc& proc) -> void;
-
-    // template <typename ViewConsumerProc, typename = std::enable_if<std::is_function<ViewConsumerProc>::value>>
-    // static auto foreach_words(std::string_view s, size_type pos, const ViewConsumerProc& proc) -> void;
     static auto foreach_words(std::string_view s, size_type pos, const view_consumer_proc& proc) -> void;
-
-    // template <typename RangeConsumerProc, typename = std::enable_if<std::is_function<RangeConsumerProc>::value>>
-    // static auto foreach_words(std::string_view s, const RangeConsumerProc& proc) -> void;
     static auto foreach_words(std::string_view s, const range_consumer_proc& proc) -> void;
-
-    // template <typename ViewConsumerProc, typename = std::enable_if<std::is_function<ViewConsumerProc>::value>>
-    // static auto foreach_words(std::string_view s, const ViewConsumerProc& proc) -> void;
     static auto foreach_words(std::string_view s, const view_consumer_proc& proc) -> void;
     //
     static auto count_words(std::string_view s) -> size_type;
-    //
-    // static auto first_word_view(std::string_view s) -> std::string_view;
-    // static auto first_word_range(std::string_view s) -> range_type;
-    // static auto first_word(std::string_view s) -> std::string;
-    // //
-    // static auto last_word_view(std::string_view s) -> std::string_view;
-    // static auto last_word_range(std::string_view s) -> range_type;
-    // static auto last_word(std::string_view s) -> std::string;
     //
     static auto next_word_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto next_word_range(std::string_view s, size_type& pos) -> range_type;
