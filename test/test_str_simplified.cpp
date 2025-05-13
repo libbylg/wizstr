@@ -2,7 +2,6 @@
 
 #include "str.hpp"
 
-
 TEST(test_str, simplified) {
     SECTION("一般场景") {
         ASSERT_EQ(str::simplified("\r\n\t   A abbCC中华人\r\n\t   民共\r\n\t   和 \t国\r\n\t   "), "A abbCC中华人 民共 和 国");
@@ -20,6 +19,10 @@ TEST(test_str, simplified) {
     }
 
     SECTION("全空白") {
+        ASSERT_EQ(str::simplified("   \t  \n \r \v"), "");
+    }
+
+    SECTION("proc模式") {
         ASSERT_EQ(str::simplified("   \t  \n \r \v"), "");
     }
 }

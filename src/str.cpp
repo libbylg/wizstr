@@ -3788,7 +3788,7 @@ auto str::to_title_inplace(std::string& s) -> std::string& {
             if (!std::isalpha(*ptr)) {
                 break;
             }
-            *ptr = static_cast<value_type >(std::tolower(*ptr));
+            *ptr = static_cast<value_type>(std::tolower(*ptr));
         }
 
         if (ptr >= (s.data() + s.size())) {
@@ -4183,26 +4183,34 @@ auto str::simplified_integer(std::string_view s) -> std::string {
         return {};
     }
 
+    std::string result;
     const_pointer ptr = s.data();
 
     // 如果是前导加号
-    if (*ptr == '+') {
+    if ((*ptr == '+') || (*ptr == '-')) {
+        result.append(ptr, 1);
         ptr++;
     }
 
-    while (ptr < (s.data() + s.size())) {
-        if (*ptr != '0') {
-            break;
-        }
-        ptr++;
-    }
-
-    // 如果遇到全0场景
+    // 已经没有更多数据了
     if (ptr >= (s.data() + s.size())) {
-        ptr--;
+        return result;
     }
 
-    return std::string{ptr, static_cast<size_type>((s.data() + s.size()) - ptr)};
+    if (*ptr == '0') {
+        // 超前识别一个字符
+        while ((ptr + 1) < (s.data() + s.size())) {
+            if (ptr[1] != '0') {
+                // 数字前面的0是多余的, 非数字前面的0需要保留
+                ptr += ((std::isdigit(ptr[1])) ? 1 : 0);
+                break;
+            }
+            ptr++;
+        }
+    }
+
+    result.append(ptr, (s.data() + s.size()) - ptr);
+    return result;
 }
 
 auto str::simplified_integer_inplace(std::string& s) -> std::string& {
@@ -5896,7 +5904,7 @@ public:
         assert(argc >= 0);
     }
 
-    [[nodiscard]] inline auto size() const -> int  {
+    [[nodiscard]] inline auto size() const -> int {
         assert(argc_ >= 0);
         return argc_;
     }
@@ -6192,9 +6200,10 @@ auto str::foreach_lines(std::string_view s, bool keep_ends, const line_consumer_
         if (proc(line_index++, s.substr(line_start, endpos - line_start)) != 0) {
             return;
         }
+        line_start = endpos;
     }
 
-    if (pos < s.size()) {
+    if (line_start < s.size()) {
         proc(line_index++, s.substr(line_start, (s.size() - line_start)));
     }
 }

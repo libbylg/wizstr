@@ -2,7 +2,7 @@
 
 #include "str.hpp"
 
-TEST(test_str, trim_anywhere_inplace_inplace) {
+TEST(test_str, trim_anywhere_inplace) {
     std::string s;
     SECTION("左右都没有空白") {
         ASSERT_EQ(str::trim_anywhere_inplace(s = "3bc1233"), "3bc1233");
@@ -33,6 +33,12 @@ TEST(test_str, trim_anywhere_inplace_inplace) {
     }
 
     SECTION("指定字符") {
+        ASSERT_TRUE(str::trim_anywhere_inplace(s = "", [](std::string::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }) == "");
+        ASSERT_TRUE(str::trim_anywhere_inplace(s = "3", [](std::string::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }) == "");
         ASSERT_TRUE(str::trim_anywhere_inplace(s = "33c1233", [](std::string::value_type ch) -> bool {
             return ch == '3';
         }) == "c12");
@@ -51,5 +57,19 @@ TEST(test_str, trim_anywhere_inplace_inplace) {
 
             return false;
         }) == "c123");
+    }
+    SECTION("指定字符集") {
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "Calc: 123 + 456 = 579!", str::charset("0123456789")), "Calc:  +  = !");
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "123", str::charset("")), "123");
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "", str::charset("")), "");
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "", str::charset("0123456789")), "");
+
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "Calc: 123 + 456 = 579!", "0123456789"), "Calc:  +  = !");
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "123", ""), "123");
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "", ""), "");
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "", "0123456789"), "");
+    }
+    SECTION("指定单个字符") {
+        ASSERT_EQ(str::trim_anywhere_inplace(s = "Calc: 123 + 456 = 579!", '5'), "Calc: 123 + 46 = 79!");
     }
 }

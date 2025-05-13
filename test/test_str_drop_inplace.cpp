@@ -210,4 +210,19 @@ TEST(test_str, drop_inplace) {
         ASSERT_EQ(str::drop_inplace(s = "", str::shifter(0, -1)), "");
         ASSERT_EQ(str::drop_inplace(s = "", str::shifter(0, -999)), "");
     }
+    SECTION("proc模式") {
+        ASSERT_EQ(str::drop_inplace(s="abc1de2f3h4", [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            "abcdefh");
+        ASSERT_EQ(str::drop_inplace(s="", [](str::value_type ch) -> bool {
+            return std::isdigit(ch);
+        }),
+            "");
+    }
+    SECTION("charset模式") {
+        ASSERT_EQ(str::drop_inplace(s="abc1de2f3h4", str::charset(str::all_digits)), "abcdefh");
+        ASSERT_EQ(str::drop_inplace(s="", str::charset(str::all_digits)), "");
+        ASSERT_EQ(str::drop_inplace(s="abc1de2f3h4", str::charset("")), "abc1de2f3h4");
+    }
 }
