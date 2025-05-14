@@ -2,7 +2,7 @@
 
 #include "str.hpp"
 
-TEST(test_str, next_words1) {
+TEST(test_str, next_word) {
     SECTION("不同起始位置") {
         str::size_type pos = 0;
         ASSERT_EQ(str::next_word("abc def", pos = 0), std::string("abc"));

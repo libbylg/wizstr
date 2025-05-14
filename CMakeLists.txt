@@ -87,6 +87,10 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prev_eol.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prev_eol_range.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prev_eol_view.cpp)
 
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prev_word.cpp)
+#list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prev_word.cpp)
+#list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prev_word.cpp)
+
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_ends_with_eol.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_has_eol_suffix.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_eol_suffix.cpp)

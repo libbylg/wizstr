@@ -2602,16 +2602,15 @@ auto str::prev_word_view(std::string_view s, size_type& pos) -> std::string_view
 }
 
 auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
-    if (pos == 0) {
-        return range_type{0, 0};
-    }
-
     if (pos > s.size()) {
         pos = s.size();
     }
 
-    const_pointer ptr_end = s.data() + pos - 1;
+    if (pos == 0) {
+        return range_type{0, 0};
+    }
 
+    const_pointer ptr_end = s.data() + pos;
     while (ptr_end > s.data()) {
         if (!std::isspace(*(ptr_end - 1))) {
             break;
@@ -2620,7 +2619,6 @@ auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
     }
 
     const_pointer ptr_begin = ptr_end;
-
     while (ptr_begin > s.data()) {
         if (std::isspace(*(ptr_begin - 1))) {
             break;
@@ -2628,6 +2626,7 @@ auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
         ptr_begin--;
     }
 
+    pos = ptr_begin - s.data();
     return range_type{size_type(ptr_begin - s.data()), size_type(ptr_end - ptr_begin)};
 }
 
