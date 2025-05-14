@@ -97,6 +97,8 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_remove_eol_suffix_vi
 
 #list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_regex.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_word.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_word_view.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_word_range.cpp)
 #list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_normpath.cpp)
 
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prefix.cpp)
