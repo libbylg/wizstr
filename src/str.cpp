@@ -2845,7 +2845,11 @@ auto str::after_skip_spaces_inplace(std::string& s, size_type pos) -> std::strin
 }
 
 auto str::cover(std::string_view s, std::string_view mask, size_type left_n, size_type right_n) -> std::string {
-    if (s.size() < (left_n + right_n)) {
+    if (s.empty() || (s.size() < left_n) || (s.size() < right_n)) {
+        return {};
+    }
+
+    if ((s.size() - left_n) < right_n) {
         return {};
     }
 
