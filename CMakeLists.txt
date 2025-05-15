@@ -70,6 +70,7 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_is_upper.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_is_xdigit.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_is_capitalize.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_is_title.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_make_spaces.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_char.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_prev_char.cpp)
 
@@ -165,6 +166,8 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_trim_surrounding_inp
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_trim_surrounding_view.cpp)
 #list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_title.cpp)
 #list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_translate_invert.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_unsurround.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_unsurround_inplace.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_wildcmp.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_iwildcmp.cpp)
 

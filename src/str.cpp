@@ -2781,6 +2781,12 @@ auto str::make_spaces(size_type width) -> std::string {
     return repeat(' ', width);
 }
 
+auto str::make_spaces_inplace(std::string& s, size_type width) -> std::string& {
+    s.resize(width);
+    std::fill_n(s.begin(), width, ' ');
+    return s;
+}
+
 auto str::after_skip_spaces_view(std::string_view s) -> std::string_view {
     size_type pos = 0;
     return after_skip_spaces_view(s, pos);

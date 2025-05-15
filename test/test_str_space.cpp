@@ -2,13 +2,6 @@
 
 #include "str.hpp"
 
-TEST(test_str, make_spaces) {
-    SECTION("简单字符串重复多次") {
-        ASSERT_EQ(str::make_spaces(5), "     ");
-        ASSERT_EQ(str::make_spaces(0), "");
-    }
-}
-
 TEST(test_str, skip_space_view) {
     size_t pos{0};
     ASSERT_EQ(str::after_skip_spaces_view("abc"), "abc");
