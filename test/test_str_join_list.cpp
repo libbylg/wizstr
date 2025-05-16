@@ -2,7 +2,6 @@
 
 #include "str.hpp"
 
-
 #include <array>
 #include <list>
 #include <vector>
@@ -10,21 +9,16 @@
 TEST(test_str, join_list) {
     SECTION("一般场景") {
         ASSERT_EQ(str::join_list(std::vector{"A", "B", "C"}), "A,B,C");
-        ASSERT_EQ(str::join(";", std::vector{"A", "B"}), "A;B");
-        ASSERT_EQ(str::join("#", std::vector{"A"}), "A");
-        ASSERT_EQ(str::join("|", std::vector{"A", "B", "C"}), "A|B|C");
-        ASSERT_EQ(str::join("", std::vector{"A", "B", "C"}), "ABC");
-        ASSERT_EQ(str::join("|", std::vector<str::const_pointer>{}), "");
-        ASSERT_EQ(str::join("|", std::vector{"A", "", "C"}), "A||C");
-        ASSERT_EQ(str::join("/", std::list{"A", "B", "C"}), "A/B/C");
-        ASSERT_EQ(str::join("*", std::array{"A", "B", "C"}), "A*B*C");
-        ASSERT_EQ(str::join("*", std::array{"", "", ""}), "**");
+        ASSERT_EQ(str::join_list(std::vector{"A", "B"}), "A,B");
+        ASSERT_EQ(str::join_list(std::vector{"A"}), "A");
+        ASSERT_EQ(str::join_list(std::list{"A", "", "C"}), "A,,C");
+        ASSERT_EQ(str::join_list(std::array{"", "", ""}), ",,");
     }
     SECTION("使用 initialize_list 形式") {
         ASSERT_EQ(str::join_list({"A", "B", "C"}), "A,B,C");
-        ASSERT_EQ(str::join(";", {"A", "B"}), "A;B");
+        ASSERT_EQ(str::join_list({"A", "B"}), "A,B");
     }
-    SECTION("proc使用供给数据") {
+    SECTION("proc使用供给数据:一般情况") {
         std::array items{"A", "B", "C"};
         size_t i = 0;
         ASSERT_TRUE(str::join_list([&i, &items]() -> std::optional<std::string_view> {
@@ -34,5 +28,13 @@ TEST(test_str, join_list) {
 
             return items[i++];
         }) == "A,B,C");
+    }
+    SECTION("proc使用供给数据:总是返回nullopt") {
+        ASSERT_TRUE(str::join_list([]() -> std::optional<std::string_view> {
+            return std::nullopt;
+        }) == "");
+    }
+    SECTION("空序列") {
+        ASSERT_EQ(str::join_list(std::vector<str::const_pointer>{}), "");
     }
 }

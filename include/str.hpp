@@ -1020,8 +1020,6 @@ struct str {
     static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join(std::string_view s, const Sequence& items) -> std::string;
-    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join(const Sequence& items) -> std::string;
 
     //! 拼接列表
     ///
@@ -2201,11 +2199,6 @@ auto str::join(std::string_view s, const Sequence& items) -> std::string {
 
         return *(itr++);
     });
-}
-
-template <typename Sequence, typename>
-auto str::join(const Sequence& items) -> std::string {
-    return join("", items);
 }
 
 template <typename Sequence, typename>
