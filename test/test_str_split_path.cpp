@@ -1,8 +1,7 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.h"
-
+#include "test-compares.hpp"
 
 TEST(test_str, split_path) {
     SECTION("绝对路径") {

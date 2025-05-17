@@ -1,8 +1,7 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.h"
-
+#include "test-compares.hpp"
 
 #include <map>
 

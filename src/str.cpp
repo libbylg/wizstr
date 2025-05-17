@@ -2913,13 +2913,10 @@ auto str::join_map(const view_pair_provider_proc& proc) -> std::string {
 }
 
 auto str::join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string {
-    assert(!line_ends.empty());
-
     std::string result;
-    auto item = proc();
-    while (!item) {
+    for (auto item = proc(); item; item = proc()) {
         result.append(item.value());
-        if (!ends_with(item.value(), line_ends)) {
+        if (!has_eol_suffix(item.value())) {
             result.append(line_ends);
         }
     }
@@ -3046,24 +3043,16 @@ auto str::split(std::string_view s, const char_match_proc& sepset, size_type max
 }
 
 auto str::split(std::string_view s, const charset_type& sepset, size_type max_n, const view_consumer_proc& proc) -> void {
-    split(
-        s, [&sepset](value_type ch) -> bool {
-            return sepset.get(ch);
-        },
-        max_n, proc);
+    split(s, [&sepset](value_type ch) -> bool { return sepset.get(ch); }, max_n, proc);
 }
 
-auto str::split(std::string_view s, const charset_type& sepset, const view_consumer_proc& proc) -> void {
-    split(
-        s, [&sepset](value_type ch) -> bool {
-            return sepset.get(ch);
-        },
-        npos, proc);
+auto str::split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void {
+    split(s, [&sep_charset](value_type ch) -> bool { return sep_charset.get(ch); }, npos, proc);
 }
 
-auto str::split(std::string_view s, const charset_type& sepset, size_type max_n) -> std::vector<std::string> {
+auto str::split(std::string_view s, const charset_type& sep_charset, size_type max_n) -> std::vector<std::string> {
     std::vector<std::string> result;
-    split(s, sepset, max_n, [&result](std::string_view item) -> int {
+    split(s, sep_charset, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });
@@ -3154,11 +3143,7 @@ auto str::split_view(std::string_view s, size_type max_n) -> std::vector<std::st
     return result;
 }
 
-auto str::split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void {
-    if (sep.empty()) {
-        sep = ",";
-    }
-
+auto str::split_list(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void {
     // 最大拆分次数如果为0，就不需要拆了
     if (max_n == 0) {
         proc(s);
@@ -3169,7 +3154,7 @@ auto str::split_list(std::string_view s, std::string_view sep, size_type max_n, 
     size_type pos_start = 0;
     while (pos_start < s.size()) {
         // 找到分隔符的位置
-        size_type pos_end = s.find(sep, pos_start);
+        size_type pos_end = s.find(",", pos_start);
         if (pos_end == std::string::npos) {
             break;
         }
@@ -3180,7 +3165,7 @@ auto str::split_list(std::string_view s, std::string_view sep, size_type max_n, 
         }
 
         // 准备好下次查找的起点
-        pos_start = pos_end + sep.size();
+        pos_start = pos_end + 1;
 
         // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
         n++;
@@ -3192,16 +3177,16 @@ auto str::split_list(std::string_view s, std::string_view sep, size_type max_n, 
     proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
 }
 
-auto str::split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void {
-    str::split_list(s, sep, str::npos, [&proc](std::string_view item) -> int {
+auto str::split_list(std::string_view s, const view_consumer_proc& proc) -> void {
+    str::split_list(s, str::npos, [&proc](std::string_view item) -> int {
         return proc(item);
     });
 }
 
-auto str::split_list(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string> {
+auto str::split_list(std::string_view s, size_type max_n) -> std::vector<std::string> {
     std::vector<std::string> result;
 
-    str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+    str::split_list(s, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });
@@ -3209,63 +3194,10 @@ auto str::split_list(std::string_view s, std::string_view sep, size_type max_n) 
     return result;
 }
 
-auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void {
-    if (max_n == 0) {
-        proc(s);
-        return;
-    }
-
-    size_type n = 0;
-
-    size_type last_pos = 0;
-    size_type pos = 0;
-    while (pos < s.size()) {
-        // 找到满足正则表达式的位置
-        range_type range = str::next_regex_range(s, pos, sep);
-        if (range.empty()) {
-            break;
-        }
-
-        // 将找到的数据输出给调用方
-        size_type start = range.begin_pos();
-        size_type stop = range.end_pos();
-        if (proc(std::string_view{s.data() + last_pos, (start - last_pos)}) != 0) {
-            return;
-        }
-
-        // 为下次查找做准备
-        last_pos = stop;
-
-        // 如果次数达到最大次数限制:中断循环，并将剩余的数据输出
-        n++;
-        if (n >= max_n) {
-            break;
-        }
-    }
-
-    // 最后一部分也需要单独拆出来
-    proc(std::string_view{s.data() + last_pos, (s.size() - last_pos)});
-}
-
-auto str::split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void {
-    str::split_list(s, sep, str::npos, proc);
-}
-
-auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string> {
-    std::vector<std::string> result;
-
-    str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
-        result.emplace_back(item);
-        return 0;
-    });
-
-    return result;
-}
-
-auto str::split_list_view(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
+auto str::split_list_view(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
 
-    str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+    str::split_list(s, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });
@@ -3273,21 +3205,85 @@ auto str::split_list_view(std::string_view s, const std::regex& sep, size_type m
     return result;
 }
 
-auto str::split_list_view(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
-    std::vector<std::string_view> result;
+// auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void {
+//     if (max_n == 0) {
+//         proc(s);
+//         return;
+//     }
+//
+//     size_type n = 0;
+//
+//     size_type last_pos = 0;
+//     size_type pos = 0;
+//     while (pos < s.size()) {
+//         // 找到满足正则表达式的位置
+//         range_type range = str::next_regex_range(s, pos, sep);
+//         if (range.empty()) {
+//             break;
+//         }
+//
+//         // 将找到的数据输出给调用方
+//         size_type start = range.begin_pos();
+//         size_type stop = range.end_pos();
+//         if (proc(std::string_view{s.data() + last_pos, (start - last_pos)}) != 0) {
+//             return;
+//         }
+//
+//         // 为下次查找做准备
+//         last_pos = stop;
+//
+//         // 如果次数达到最大次数限制:中断循环，并将剩余的数据输出
+//         n++;
+//         if (n >= max_n) {
+//             break;
+//         }
+//     }
+//
+//     // 最后一部分也需要单独拆出来
+//     proc(std::string_view{s.data() + last_pos, (s.size() - last_pos)});
+// }
 
-    str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
-        result.emplace_back(item);
-        return 0;
-    });
+// auto str::split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void {
+//     str::split_list(s, sep, str::npos, proc);
+// }
+//
+// auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string> {
+//     std::vector<std::string> result;
+//
+//     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+//         result.emplace_back(item);
+//         return 0;
+//     });
+//
+//     return result;
+// }
 
-    return result;
-}
+// auto str::split_list_view(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
+//     std::vector<std::string_view> result;
+//
+//     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+//         result.emplace_back(item);
+//         return 0;
+//     });
+//
+//     return result;
+// }
+
+// auto str::split_list_view(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
+//     std::vector<std::string_view> result;
+//
+//     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
+//         result.emplace_back(item);
+//         return 0;
+//     });
+//
+//     return result;
+// }
 
 auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string> {
     std::array<std::string, 2> pair;
     size_t n = 0;
-    str::split_list(s, sep, 1, [&n, &pair](std::string_view item) -> int {
+    str::split(s, sep, 1, [&n, &pair](std::string_view item) -> int {
         pair[n++] = item;
         return 0;
     });
@@ -3298,7 +3294,7 @@ auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std
 auto str::split_pair_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view> {
     std::array<std::string_view, 2> pair;
     size_t n = 0;
-    str::split_list(s, sep, 1, [&n, &pair](std::string_view item) -> int {
+    str::split(s, sep, 1, [&n, &pair](std::string_view item) -> int {
         pair[n++] = item;
         return 0;
     });
@@ -3320,7 +3316,7 @@ auto str::split_map(std::string_view s, std::string_view sep_list, std::string_v
         sep_pair = ":";
     }
 
-    str::split_list(s, sep_list, str::npos, [sep_pair, &proc](std::string_view item) -> int {
+    str::split(s, sep_list, str::npos, [sep_pair, &proc](std::string_view item) -> int {
         auto key_val = str::split_pair(item, sep_pair);
         return proc(std::get<0>(key_val), std::get<1>(key_val));
     });
@@ -3459,7 +3455,7 @@ auto str::split_path(std::string_view s) -> std::vector<std::string_view> {
 }
 
 auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void {
-    str::split_list(s, std::string_view{&sep, 1}, [keep_empty, &proc](std::string_view item) -> int {
+    str::split(s, std::string_view{&sep, 1}, [keep_empty, &proc](std::string_view item) -> int {
         if (!keep_empty && item.empty()) {
             return 0;
         }

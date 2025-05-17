@@ -184,5 +184,6 @@ struct testcase : public testcase_head {
 
 //! 用例分段宏（模仿 catch2）
 #define SECTION(Desc_) if (true)
+#define GROUP(Desc_) if (true)
 
 #endif // TESTING_H

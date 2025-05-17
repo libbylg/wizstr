@@ -8,6 +8,7 @@
 
 TEST(test_str, join_list) {
     SECTION("一般场景") {
+        ASSERT_EQ(str::join_list({"A", "B", "C"}), "A,B,C");
         ASSERT_EQ(str::join_list(std::vector{"A", "B", "C"}), "A,B,C");
         ASSERT_EQ(str::join_list(std::vector{"A", "B"}), "A,B");
         ASSERT_EQ(str::join_list(std::vector{"A"}), "A");

@@ -1060,10 +1060,8 @@ struct str {
     /// @param items
     static auto join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string;
     static auto join_lines(const view_provider_proc& proc) -> std::string;
-
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto join_lines(std::string_view sep, const Sequence& items) -> std::string;
-
+    static auto join_lines(std::string_view line_ends, const Sequence& items) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_lines(const Sequence& items) -> std::string;
 
@@ -1113,13 +1111,13 @@ struct str {
     /// @param max_n 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
     /// @param proc 指定如何接受拆分出来的字符串。
     /// @return 当未指定 proc 参数时，会返回字符串列表。
-    static auto split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, const charset_type& sepset, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, const charset_type& sepset, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string>;
-    static auto split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split(std::string_view s, const char_match_proc& sep_proc, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const charset_type& sep_charset, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const charset_type& sep_charset, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split(std::string_view s, std::string_view sep_str, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, std::string_view sep_str, size_type max_n = npos) -> std::vector<std::string>;
     static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string>;
     static auto split_view(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
@@ -1133,15 +1131,10 @@ struct str {
     /// @param max_n 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
     /// @param proc 指定如何接受拆分出来的字符串。
     /// @return 当未指定 proc 参数时，会返回字符串列表。
-    static auto split_list(std::string_view s, std::string_view sep, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, std::string_view sep, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, std::string_view sep = ",", size_type max_n = npos) -> std::vector<std::string>;
-    static auto split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void;
-    static auto split_list(std::string_view s, const std::regex& sep, size_type max_n = npos) -> std::vector<std::string>;
-    static auto split_list_view(std::string_view s, const std::regex& sep, size_type max_n = npos) -> std::vector<std::string_view>;
-    static auto split_list_view(std::string_view s, std::string_view sep = ",",
-        size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_list(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, const view_consumer_proc& proc) -> void;
+    static auto split_list(std::string_view s, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split_list_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
 
     //! 以指定的字符串为分隔符将字符串拆分为两个部分
     ///
@@ -2226,10 +2219,14 @@ auto str::join_map(const Map& items) -> std::string {
 }
 
 template <typename Sequence, typename>
-auto str::join_lines(std::string_view sep, const Sequence& items) -> std::string {
-    auto itr = items.cbegin();
-    return join_lines([&itr, &items]() -> std::optional<std::string_view> {
-        if (itr == items.cend()) {
+auto str::join_lines(std::string_view line_ends, const Sequence& items) -> std::string {
+    auto itr = items.begin();
+    if (itr == items.end()) {
+        return {};
+    }
+
+    return join_lines(line_ends, [&itr, &items]() -> std::optional<std::string_view> {
+        if (itr == items.end()) {
             return std::nullopt;
         }
 
@@ -2243,9 +2240,9 @@ auto str::join_lines(const Sequence& items) -> std::string {
 }
 
 template <typename Sequence, typename>
-auto str::join_path(std::string_view sep, const Sequence& items) -> std::string {
+auto str::join_path(std::string_view line_ends, const Sequence& items) -> std::string {
     auto itr = items.begin();
-    return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
+    return str::join_path(line_ends, [end = items.end(), &itr]() -> std::optional<std::string_view> {
         if (itr == end) {
             return std::nullopt;
         }
