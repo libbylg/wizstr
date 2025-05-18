@@ -1,4 +1,3 @@
-
 # 简介
 
 str 提供了一系列字符串处理函数算法库，
@@ -40,11 +39,8 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 通常意味着该函数的返回值是输入参数的一个（或多个）视图，该函数不会发生任何分配行为（返回存放
 容器的 `std::string_view`，如 `std::vector<std::string_view>` 类似的除外）。但这种形式的接口是**不安全**的
 
-
-
 时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些接口时，需要确保在使用
 前其输入参数的地址仍然是有效的。
-
 
 * `xxx_inplace` 形式：
 
@@ -62,42 +58,41 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 ## 常用类型
 
 *| class charset_type | 字符集 |
-*| struct range_type  | 基于位置的范围类型|
+*| struct range_type | 基于位置的范围类型|
 
 ## 常用函数
 
-*| @ref{view_provider_proc}       |   std::string_view 供给器：每次调用返回一个字符串，直到返回 std::nullopt  |
-*| @ref{view_pair_provider_proc}  |   键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 std::nullopt  |
-*| @ref{number_provider_proc}     |   整数供给器：每次调用返回一个 size_type 类型的整数，主要用于抽象随机函数     |
-*| @ref{view_consumer_proc}       |   std::string_view 消费器：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以返回 0  |
-*| @ref{view_pair_consumer_proc}  |   键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回 0     |
-*| @ref{range_consumer_proc}      |   range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回 0  |
-*| @ref{char_match_proc}          |   单字符匹配器：检查作为输入参数的字符是否满足特定的条件，常用基于字符的查找和搜索场景    |
-*| @ref{substr_search_proc}        |   字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt |
-*| @ref{line_consumer_proc}       |   行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0    |
-*| @ref{mapping_proc}             |   单字符映射：将单个字符映射为另一个数据类型的值  |
-*| @ref{char_mapping_proc}        |   单字符映射器：将一个字符映射为另一个字符    |
-*| @ref{string_mapping_proc}      |   字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt     |
+*| @ref{view_provider_proc} | std::string_view 供给器：每次调用返回一个字符串，直到返回 std::nullopt |
+*| @ref{view_pair_provider_proc} | 键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 std::nullopt |
+*| @ref{number_provider_proc} | 整数供给器：每次调用返回一个 size_type 类型的整数，主要用于抽象随机函数 |
+*| @ref{view_consumer_proc} | std::string_view 消费器：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以返回 0 |
+*| @ref{view_pair_consumer_proc} | 键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回 0 |
+*| @ref{range_consumer_proc} | range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回 0 |
+*| @ref{char_match_proc} | 单字符匹配器：检查作为输入参数的字符是否满足特定的条件，常用基于字符的查找和搜索场景 |
+*| @ref{substr_search_proc} | 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt |
+*| @ref{line_consumer_proc} | 行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0 |
+*| @ref{mapping_proc} | 单字符映射：将单个字符映射为另一个数据类型的值 |
+*| @ref{char_mapping_proc} | 单字符映射器：将一个字符映射为另一个字符 |
+*| @ref{string_mapping_proc} | 字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt |
 
 ## 常用常量：操作系统相关
 
-*| @ref{sep_search_path, sep_search_path_char}  |  搜索路径分隔符 |             
-*| @ref{sep_path, sep_path_char}                |  文件路径分隔符 |             
-*| @ref{sep_line_ends}                          |  行结束符       |         
+*| @ref{sep_search_path, sep_search_path_char} | 搜索路径分隔符 |             
+*| @ref{sep_path, sep_path_char} | 文件路径分隔符 |             
+*| @ref{sep_line_ends} | 行结束符 |
 
+## 常用常量：字符分类
 
-## 常用常量：字符分类   
-
-*| @ref{all_uppers}   | 所有大写字母集合    |
-*| @ref{all_lowers}   | 所有小写字母集合    |
-*| @ref{all_leters}   | 所有字母集合    |
-*| @ref{all_alphas}   | 所有字母集合    |
-*| @ref{all_digits}   | 所有数字字符    |
-*| @ref{all_xdigits}  | 所有十六进制数字表示的字符集合  |
-*| @ref{all_alnums}   | 所有的字母和数字集合    |
-*| @ref{all_alnumuls} | 所有的字母、数字、下划线的集合  |
-*| @ref{all_aluls}    | 所有字母和下滑线的集合  |
-*| @ref{all_spaces}   | 所有空白字符    |
+*| @ref{all_uppers} | 所有大写字母集合 |
+*| @ref{all_lowers} | 所有小写字母集合 |
+*| @ref{all_leters} | 所有字母集合 |
+*| @ref{all_alphas} | 所有字母集合 |
+*| @ref{all_digits} | 所有数字字符 |
+*| @ref{all_xdigits} | 所有十六进制数字表示的字符集合 |
+*| @ref{all_alnums} | 所有的字母和数字集合 |
+*| @ref{all_alnumuls} | 所有的字母、数字、下划线的集合 |
+*| @ref{all_aluls} | 所有字母和下滑线的集合 |
+*| @ref{all_spaces} | 所有空白字符 |
 
 ## 在尾部追加 @anchor{append}
 
@@ -107,11 +102,11 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 大量字符串拼接提供了相对简便的方法。
 对于 append_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
 
-*| @param{s}        |   指定向哪个字符串后添加新串。    |
-*| @param{other}    |   被追加的字符串。    |
-*| @param{n}        |   重复追加多少次，如果指定为 0，则实际不会做任何追加操作。    |
-*| @param{proc}     |   由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。 |
-*| @param{items}    |   从容器 items 中获取被追加的字符串。 |
+*| @param{s} | 指定向哪个字符串后添加新串。 |
+*| @param{other} | 被追加的字符串。 |
+*| @param{n} | 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。 |
+*| @param{proc} | 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。 |
+*| @param{items} | 从容器 items 中获取被追加的字符串。 |
 
 <table>
 <tr>
@@ -1545,6 +1540,7 @@ static auto append_inplace(std::string& s, const Sequence& items) -> std::string
     /// @param proc 将匹配的字符映射为其他字符集
     static auto mapping(std::string& s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
     static auto mapping(std::string& s, const char_mapping_proc& proc) -> std::string;
+
 };
 
 #endif // TINY_STR_H

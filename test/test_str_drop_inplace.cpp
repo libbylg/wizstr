@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2021-2024 libbylg@126.com
-* tiny is licensed under Mulan PSL v2.
-* You can use this software according to the terms and conditions of the Mulan PSL v2.
-* You may obtain a copy of Mulan PSL v2 at:
-*          http://license.coscl.org.cn/MulanPSL2
-* THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
-* FIT FOR A PARTICULAR PURPOSE.
-* See the Mulan PSL v2 for more details.
-*/
+ * Copyright (c) 2021-2024 libbylg@126.com
+ * tiny is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 #include "testing.hpp"
 
 #include "str.hpp"
@@ -222,18 +222,18 @@ TEST(test_str, drop_inplace) {
         ASSERT_EQ(str::drop_inplace(s = "", str::shifter(0, -999)), "");
     }
     SECTION("proc模式") {
-        ASSERT_EQ(str::drop_inplace(s="abc1de2f3h4", [](str::value_type ch) -> bool {
+        ASSERT_EQ(str::drop_inplace(s = "abc1de2f3h4", [](str::value_type ch) -> bool {
             return std::isdigit(ch);
         }),
             "abcdefh");
-        ASSERT_EQ(str::drop_inplace(s="", [](str::value_type ch) -> bool {
+        ASSERT_EQ(str::drop_inplace(s = "", [](str::value_type ch) -> bool {
             return std::isdigit(ch);
         }),
             "");
     }
     SECTION("charset模式") {
-        ASSERT_EQ(str::drop_inplace(s="abc1de2f3h4", str::charset(str::all_digits)), "abcdefh");
-        ASSERT_EQ(str::drop_inplace(s="", str::charset(str::all_digits)), "");
-        ASSERT_EQ(str::drop_inplace(s="abc1de2f3h4", str::charset("")), "abc1de2f3h4");
+        ASSERT_EQ(str::drop_inplace(s = "abc1de2f3h4", str::charset(str::all_digits)), "abcdefh");
+        ASSERT_EQ(str::drop_inplace(s = "", str::charset(str::all_digits)), "");
+        ASSERT_EQ(str::drop_inplace(s = "abc1de2f3h4", str::charset("")), "abc1de2f3h4");
     }
 }

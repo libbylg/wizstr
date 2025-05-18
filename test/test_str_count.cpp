@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2021-2024 libbylg@126.com
-* tiny is licensed under Mulan PSL v2.
-* You can use this software according to the terms and conditions of the Mulan PSL v2.
-* You may obtain a copy of Mulan PSL v2 at:
-*          http://license.coscl.org.cn/MulanPSL2
-* THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
-* FIT FOR A PARTICULAR PURPOSE.
-* See the Mulan PSL v2 for more details.
-*/
+ * Copyright (c) 2021-2024 libbylg@126.com
+ * tiny is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 #include "testing.hpp"
 
 #include "str.hpp"
@@ -41,13 +41,16 @@ TEST(test_str, count) {
     SECTION("指定字符范围") {
         ASSERT_EQ(str::count("3bc12def1233", [](str::value_type ch) -> bool {
             return std::isalpha(ch);
-        }), 5);
+        }),
+            5);
         ASSERT_EQ(str::count("3bc12def1233", [](str::value_type ch) -> bool {
             return std::isalnum(ch);
-        }), 12);
+        }),
+            12);
         ASSERT_EQ(str::count("3bc12def1233", [](str::value_type ch) -> bool {
             return std::isupper(ch);
-        }), 0);
+        }),
+            0);
     }
     SECTION("指定字符集") {
         ASSERT_EQ(str::count("3bc12def1233", str::charset_type{"abcd"}), 3);

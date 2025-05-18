@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2021-2024 libbylg@126.com
-* tiny is licensed under Mulan PSL v2.
-* You can use this software according to the terms and conditions of the Mulan PSL v2.
-* You may obtain a copy of Mulan PSL v2 at:
-*          http://license.coscl.org.cn/MulanPSL2
-* THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
-* FIT FOR A PARTICULAR PURPOSE.
-* See the Mulan PSL v2 for more details.
-*/
+ * Copyright (c) 2021-2024 libbylg@126.com
+ * tiny is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 #include "testing.hpp"
 
 #include "str.hpp"
@@ -29,7 +29,7 @@ TEST(test_str, contains) {
     SECTION("针对字符") {
         ASSERT_EQ(str::contains(std::string_view{"abc\0def", 7}, '\0'), true); // 指定长度时，\0 被包含在内
         ASSERT_EQ(str::contains("abc", '\0'),
-                  false);                          // "abc" 转换为 std::string_view 时，并不会包含 \0 字符
+            false); // "abc" 转换为 std::string_view 时，并不会包含 \0 字符
         ASSERT_EQ(str::contains("abc", 'a'), true);
         ASSERT_EQ(str::contains("abc", 'b'), true);
         ASSERT_EQ(str::contains("abc", 'c'), true);
@@ -54,9 +54,11 @@ TEST(test_str, contains) {
     SECTION("针对proc") {
         ASSERT_EQ(str::contains("abc123", [](str::value_type ch) -> bool {
             return std::isalpha(ch);
-        }), true);
+        }),
+            true);
         ASSERT_EQ(str::contains("abc", [](str::value_type ch) -> bool {
             return std::isupper(ch);
-        }), false);
+        }),
+            false);
     }
 }
