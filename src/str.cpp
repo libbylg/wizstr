@@ -1084,6 +1084,123 @@ auto str::next_regex(std::string_view s, size_type& pos, std::string_view patter
 // auto str::prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
 // auto str::prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
 
+auto str::next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
+    size_type start = next_spaces_pos(s, pos);
+    if (start == str::npos) {
+        return std::nullopt;
+    }
+
+    return range_type{start, (pos - start)};
+}
+
+auto str::next_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view> {
+    auto range = next_spaces_range(s, pos);
+    if (!range) {
+        return std::nullopt;
+    }
+
+    return s.substr(range->pos, range->len);
+}
+
+auto str::next_spaces(std::string_view s, size_type& pos) -> std::optional<std::string> {
+    auto view = next_spaces_view(s, pos);
+    if (!view) {
+        return std::nullopt;
+    }
+
+    return std::string{*view};
+}
+
+auto str::next_spaces_pos(std::string_view s, size_type& pos) -> size_type {
+    if (pos >= s.size()) {
+        pos = s.size();
+        return str::npos;
+    }
+
+    // 找到连续的空白块的起始位置
+    size_type start = pos;
+    while (start < s.size()) {
+        if (std::isspace(s[start])) {
+            break;
+        }
+        start++;
+    }
+
+    pos = start;
+
+    if (start >= s.size()) {
+        return str::npos;
+    }
+
+    // 找到连续的空白块的结束位置
+    while (pos < s.size()) {
+        if (!std::isspace(s[pos])) {
+            break;
+        }
+        pos++;
+    }
+
+    return start;
+}
+
+//
+auto str::prev_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
+    auto end = prev_spaces_pos(s, pos);
+    if (end == str::npos) {
+        return std::nullopt;
+    }
+
+    return range_type{pos, static_cast<size_type>(end - pos)};
+}
+
+auto str::prev_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view> {
+    auto range = prev_spaces_range(s, pos);
+    if (!range) {
+        return std::nullopt;
+    }
+
+    return s.substr(range->pos, range->len);
+}
+
+auto str::prev_spaces(std::string_view s, size_type& pos) -> std::optional<std::string> {
+    auto view = prev_spaces_view(s, pos);
+    if (!view) {
+        return std::nullopt;
+    }
+
+    return std::string{*view};
+}
+
+auto str::prev_spaces_pos(std::string_view s, size_type& pos) -> size_type {
+    if (s.empty()) {
+        pos = 0;
+        return str::npos;
+    }
+
+    if (pos >= s.size()) {
+        pos = s.size();
+    }
+
+    size_type end = pos;
+    while (end > 0) {
+        if (std::isspace(s[end - 1])) {
+            break;
+        }
+        end--;
+    }
+
+    pos = end;
+    while (pos > 0) {
+        if (!std::isspace(s[pos - 1])) {
+            pos--;
+            break;
+        }
+        pos--;
+    }
+
+    return pos;
+}
+
 // auto str::next_pathsep_range(std::string_view s, size_type& pos) -> range_type;
 // auto str::next_pathsep_view(std::string_view s, size_type& pos) -> std::string_view;
 // auto str::next_pathsep(std::string_view s, size_type& pos) -> std::string;
@@ -1092,9 +1209,9 @@ auto str::next_regex(std::string_view s, size_type& pos, std::string_view patter
 // auto str::next_searchpathsep_view(std::string_view s, size_type& pos) -> std::string_view;
 // auto str::next_searchpathsep(std::string_view s, size_type& pos) -> std::string;
 
-// auto str::prev_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;
-// auto str::prev_proc_view(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string_view;
-// auto str::prev_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
+// auto str::prev_proc_range(std::string_view s, size_type& pos, const substr_search_proc& proc) -> range_type;
+// auto str::prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
+// auto str::prev_proc(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string;
 
 auto str::is_lower(std::string_view s) -> bool {
     if (s.empty()) {
@@ -3000,8 +3117,45 @@ auto str::join_searchpath(const view_provider_proc& proc) -> std::string {
     return join_searchpath(":", proc);
 }
 
-auto str::split(std::string_view s, const char_match_proc& sepset, size_type max_n, const view_consumer_proc& proc) -> void {
-    assert(sepset);
+auto str::split(std::string_view s, const substr_search_proc& search_proc, size_type max_n, const range_consumer_proc& proc) -> void {
+    if (s.empty()) {
+        proc(range_type{});
+        return;
+    }
+
+    // 最大拆分次数如果为0，就不需要拆了
+    if (max_n == 0) {
+        proc(range_type{0, s.size()});
+        return;
+    }
+
+    size_type n = 0;
+    size_type start = 0;
+    while (start < s.size()) {
+        size_type end = start;
+        auto matched = search_proc(s, end);
+        if (matched == str::npos) {
+            break;
+        }
+
+        if (proc(range_type{start, (matched - start)}) != 0) {
+            return;
+        }
+
+        start = end;
+
+        // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
+        n++;
+        if (n >= max_n) {
+            break;
+        }
+    }
+
+    proc(range_type{start, (s.size() - start)});
+}
+
+auto str::split(std::string_view s, const char_match_proc& sep_proc, size_type max_n, const view_consumer_proc& proc) -> void {
+    assert(sep_proc);
 
     // 最大拆分次数如果为0，就不需要拆了
     if (max_n == 0) {
@@ -3016,8 +3170,8 @@ auto str::split(std::string_view s, const char_match_proc& sepset, size_type max
         auto itr_begin = s.begin();
         std::advance(itr_begin, pos_start);
         auto itr_pos = std::find_if(
-            itr_begin, s.end(), [&sepset](value_type ch) -> bool {
-                return sepset(ch);
+            itr_begin, s.end(), [&sep_proc](value_type ch) -> bool {
+                return sep_proc(ch);
             });
         size_type pos_end = std::distance(s.begin(), itr_pos);
         if (pos_end == std::string::npos) {
@@ -3042,8 +3196,8 @@ auto str::split(std::string_view s, const char_match_proc& sepset, size_type max
     proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
 }
 
-auto str::split(std::string_view s, const charset_type& sepset, size_type max_n, const view_consumer_proc& proc) -> void {
-    split(s, [&sepset](value_type ch) -> bool { return sepset.get(ch); }, max_n, proc);
+auto str::split(std::string_view s, const charset_type& sep_charset, size_type max_n, const view_consumer_proc& proc) -> void {
+    split(s, [&sep_charset](value_type ch) -> bool { return sep_charset.get(ch); }, max_n, proc);
 }
 
 auto str::split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void {
@@ -3059,8 +3213,39 @@ auto str::split(std::string_view s, const charset_type& sep_charset, size_type m
     return result;
 }
 
-auto str::split(std::string_view s, std::string_view sepset, size_type max_n, const view_consumer_proc& proc) -> void {
-    split(s, charset_type{sepset}, max_n, proc);
+auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, const view_consumer_proc& proc) -> void {
+    if (s.empty()) [[unlikely]] {
+        proc(s);
+        return;
+    }
+
+    if (sep_str.empty()) [[unlikely]] {
+    }
+
+    size_type n = 0;
+    size_type start = 0;
+    size_type pos = 0;
+    while (start < s.size()) {
+        pos = s.find(sep_str, start);
+        if (pos == str::npos) {
+            pos = s.size();
+            break;
+        }
+
+        if (proc(s.substr(start, (pos - start))) != 0) {
+            return;
+        }
+
+        start = pos + sep_str.size();
+
+        // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
+        n++;
+        if (n >= max_n) {
+            break;
+        }
+    }
+
+    proc(s.substr(pos));
 }
 
 auto str::split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void {
@@ -3076,34 +3261,25 @@ auto str::split(std::string_view s, std::string_view sepset, size_type max_n) ->
     return result;
 }
 
-auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
-    size_type pos = 0;
-    while (pos < s.size()) {
-        std::string_view word = str::next_word_view(s, pos);
-        if (word.empty()) {
-            assert(pos >= s.size());
-            continue;
-        }
+auto str::split(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void {
+    split(s, substr_search_proc{str::next_spaces_pos}, max_n, [s, &proc](range_type range) -> int {
+        return proc(s.substr(range.pos, range.len));
+    });
+}
 
-        if (proc(word) != 0) {
-            break;
-        }
-    }
+auto str::split(std::string_view s, const view_consumer_proc& proc) -> void {
+    split(s, npos, proc);
 }
 
 auto str::split(std::string_view s, size_type max_n) -> std::vector<std::string> {
     if (max_n == 0) {
-        return {};
+        return {std::string{s}};
     }
 
     std::vector<std::string> result;
 
-    str::split(s, [&result, max_n](std::string_view item) -> int {
-        assert(!item.empty());
+    str::split(s, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
-        if (result.size() >= max_n) {
-            return -1;
-        }
         return 0;
     });
 
@@ -3515,14 +3691,15 @@ auto str::partition_range(std::string_view s, const std::regex& pattern) -> std:
 }
 
 auto str::partition_range(std::string_view s,
-    const range_search_proc& proc) -> std::tuple<range_type, range_type, range_type> {
-    auto matched = proc(s, range_type{0, s.size()});
-    if (matched.empty()) {
+    const substr_search_proc& proc) -> std::tuple<range_type, range_type, range_type> {
+    size_type pos = 0;
+    auto matched = proc(s, pos);
+    if (matched == str::npos) {
         return {range_type{0, s.size()}, range_type{}, range_type{}};
     }
 
-    range_type right = range_type{(matched.begin_pos() + matched.size()), s.size() - matched.end_pos()};
-    return {range_type{0, matched.begin_pos()}, matched, right};
+    range_type right = range_type{pos, s.size() - pos};
+    return {range_type{0, matched}, range_type{matched, (pos - matched)}, right};
 }
 
 auto str::partition_view(std::string_view s, charset_type charset)

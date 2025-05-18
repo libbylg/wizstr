@@ -287,7 +287,7 @@ struct str {
     using view_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
 
     //! 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt
-    using range_search_proc = std::function<range_type(std::string_view text, range_type search_range)>;
+    using substr_search_proc = std::function<size_type(std::string_view text, size_type& pos)>;
 
     //! 行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0
     using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
@@ -610,6 +610,17 @@ struct str {
     static auto next_searchpathsep_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto next_searchpathsep(std::string_view s, size_type& pos) -> std::string;
 
+    //! 定位换行符
+    static auto next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
+    static auto next_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
+    static auto next_spaces(std::string_view s, size_type& pos) -> std::optional<std::string>;
+    static auto next_spaces_pos(std::string_view s, size_type& pos) -> size_type;
+    //
+    static auto prev_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
+    static auto prev_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
+    static auto prev_spaces(std::string_view s, size_type& pos) -> std::optional<std::string>;
+    static auto prev_spaces_pos(std::string_view s, size_type& pos) -> size_type;
+
     //! 定位过程
     template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
     static auto next_proc_range(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type;
@@ -618,9 +629,9 @@ struct str {
     template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
     static auto next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string;
     //
-    static auto prev_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;
-    static auto prev_proc_view(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string_view;
-    static auto prev_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
+    static auto prev_proc_range(std::string_view s, size_type& pos, const substr_search_proc& proc) -> range_type;
+    static auto prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
+    static auto prev_proc(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string;
 
     //! 特征测试：传统类 @anchor{is}
     ///
@@ -1111,6 +1122,7 @@ struct str {
     /// @param max_n 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
     /// @param proc 指定如何接受拆分出来的字符串。
     /// @return 当未指定 proc 参数时，会返回字符串列表。
+    static auto split(std::string_view s, const substr_search_proc& search_proc, size_type max_n, const range_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const char_match_proc& sep_proc, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sep_charset, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void;
@@ -1118,6 +1130,10 @@ struct str {
     static auto split(std::string_view s, std::string_view sep_str, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, std::string_view sep_str, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split(std::string_view s, const std::regex& sep_regex, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const std::regex& sep_regex, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const std::regex& sep_regex, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string>;
     static auto split_view(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
@@ -1208,8 +1224,7 @@ struct str {
     static auto partition_range(std::string_view s, const char_match_proc& proc) -> std::tuple<range_type, range_type, range_type>;
     static auto partition_range(std::string_view s, std::string_view sep) -> std::tuple<range_type, range_type, range_type>;
     static auto partition_range(std::string_view s, const std::regex& pattern) -> std::tuple<range_type, range_type, range_type>;
-    static auto partition_range(std::string_view s,
-        const range_search_proc& proc) -> std::tuple<range_type, range_type, range_type>;
+    static auto partition_range(std::string_view s, const substr_search_proc& proc) -> std::tuple<range_type, range_type, range_type>;
     //
     static auto partition_view(std::string_view s,
         charset_type charset) -> std::tuple<std::string_view, std::string_view, std::string_view>;
@@ -2079,9 +2094,9 @@ auto str::next_proc(std::string_view s, size_type& pos, const RangeSearchProc& p
     return std::string{next_proc_view(s, pos, proc)};
 }
 
-// static auto prev_proc_range(std::string_view s, size_type& pos, const range_search_proc& proc) -> range_type;
-// static auto prev_proc_view(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string_view;
-// static auto prev_proc(std::string_view s, size_type& pos, const range_search_proc& proc) -> std::string;
+// static auto prev_proc_range(std::string_view s, size_type& pos, const substr_search_proc& proc) -> range_type;
+// static auto prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
+// static auto prev_proc(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string;
 
 template <typename CharMatchProc, typename>
 auto str::is_all_in(std::string_view s, const CharMatchProc& proc) -> bool {

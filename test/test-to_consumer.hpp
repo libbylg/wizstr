@@ -23,8 +23,11 @@ public:
         , max_n_{max_n} {
     }
 
-    auto operator()(ElemType&& elem) -> int {
+    inline auto operator()(ElemType&& elem) -> int {
         result_.push_back(std::move(elem));
+        if (result_.size() >= max_n_) {
+            return -1;
+        }
         return 0;
     }
 

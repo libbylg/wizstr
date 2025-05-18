@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2021-2024 libbylg@126.com
+ * tiny is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
 #include "testing.hpp"
 
 #include "str.hpp"
@@ -104,7 +115,7 @@ TEST(test_str, next_eol_range) {
         std::optional<str::range_type> result;
 
         ASSERT_TRUE(result = str::next_eol_range(s, pos));
-        ASSERT_TRUE((pos == 1)&& (*result == str::range_type{0, 1}));
+        ASSERT_TRUE((pos == 1) && (*result == str::range_type{0, 1}));
         ASSERT_FALSE(result = str::next_eol_range(s, pos));
         ASSERT_TRUE((pos == 1));
     }
@@ -114,7 +125,7 @@ TEST(test_str, next_eol_range) {
         std::optional<str::range_type> result;
 
         ASSERT_TRUE(result = str::next_eol_range(s, pos));
-        ASSERT_TRUE((pos == 1)&& (*result == str::range_type{0, 1}));
+        ASSERT_TRUE((pos == 1) && (*result == str::range_type{0, 1}));
         ASSERT_FALSE(result = str::next_eol_range(s, pos));
         ASSERT_TRUE((pos == 1));
     }
@@ -124,15 +135,15 @@ TEST(test_str, next_eol_range) {
         std::optional<str::range_type> result;
 
         ASSERT_TRUE(result = str::next_eol_range(s, pos));
-        ASSERT_TRUE((pos == 1)&& (*result == str::range_type{0, 1}));
+        ASSERT_TRUE((pos == 1) && (*result == str::range_type{0, 1}));
         ASSERT_TRUE(result = str::next_eol_range(s, pos));
-        ASSERT_TRUE((pos == 3)&& (*result == str::range_type{1, 2}));
+        ASSERT_TRUE((pos == 3) && (*result == str::range_type{1, 2}));
         ASSERT_TRUE(result = str::next_eol_range(s, pos));
-        ASSERT_TRUE((pos == 4)&& (*result == str::range_type{3, 1}));
+        ASSERT_TRUE((pos == 4) && (*result == str::range_type{3, 1}));
         ASSERT_TRUE(result = str::next_eol_range(s, pos));
-        ASSERT_TRUE((pos == 5)&& (*result == str::range_type{4, 1}));
+        ASSERT_TRUE((pos == 5) && (*result == str::range_type{4, 1}));
         ASSERT_TRUE(result = str::next_eol_range(s, pos));
-        ASSERT_TRUE((pos == 7)&& (*result == str::range_type{5, 2}));
+        ASSERT_TRUE((pos == 7) && (*result == str::range_type{5, 2}));
         ASSERT_FALSE(result = str::next_eol_range(s, pos));
         ASSERT_TRUE((pos == 7));
         ASSERT_FALSE(result = str::next_eol_range(s, pos));

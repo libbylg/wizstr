@@ -73,7 +73,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 *| @ref{view_pair_consumer_proc}  |   键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回 0     |
 *| @ref{range_consumer_proc}      |   range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回 0  |
 *| @ref{char_match_proc}          |   单字符匹配器：检查作为输入参数的字符是否满足特定的条件，常用基于字符的查找和搜索场景    |
-*| @ref{range_search_proc}        |   字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt |
+*| @ref{substr_search_proc}        |   字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt |
 *| @ref{line_consumer_proc}       |   行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0    |
 *| @ref{mapping_proc}             |   单字符映射：将单个字符映射为另一个数据类型的值  |
 *| @ref{char_mapping_proc}        |   单字符映射器：将一个字符映射为另一个字符    |
@@ -968,31 +968,31 @@ static auto append_inplace(std::string& s, const Sequence& items) -> std::string
     /// * `charset_type` : 只要某个字符在字符集范围内，即表示找到分隔符
     /// * `char_match_proc` : 只要某个字符使得函数返回true，则表示找到分隔符
     /// * `std::string_view` : 表示子串作为分隔符
-    /// * `range_search_proc` : 同样以子串作为分隔符
+    /// * `substr_search_proc` : 同样以子串作为分隔符
     /// @return 返回依次由分隔符左侧的子串，分隔符自身，分隔符右侧子串组成的 tuple
     static auto partition_view(std::string_view s, charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto partition_view(std::string_view s, const std::regex& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto partition_view(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+    static auto partition_view(std::string_view s, const substr_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     //
     static auto partition(std::string_view s, charset_type sep) -> std::tuple<std::string, std::string, std::string>;
     static auto partition(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string, std::string, std::string>;
     static auto partition(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string, std::string>;
     static auto partition(std::string_view s, const std::regex& sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto partition(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
+    static auto partition(std::string_view s, const substr_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
     //
     static auto rpartition_view(std::string_view s, charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto rpartition_view(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto rpartition_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     static auto rpartition_view(std::string_view s, const std::regex& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto rpartition_view(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+    static auto rpartition_view(std::string_view s, const substr_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
     //
     static auto rpartition(std::string_view s, charset_type sep) -> std::tuple<std::string, std::string, std::string>;
     static auto rpartition(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string, std::string, std::string>;
     static auto rpartition(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string, std::string>;
     static auto rpartition(std::string_view s, const std::regex& sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto rpartition(std::string_view s, const range_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
+    static auto rpartition(std::string_view s, const substr_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
 
     //! 指定宽度拆分字符串
     ///

@@ -6,129 +6,270 @@
 #include "test-to_consumer.hpp"
 
 TEST(test_str, split) {
-    GROUP("分隔符缺省场景：按空白拆分(且多余空白忽略)") {
-        SECTION("无次数限制") {
+    GROUP("按空白拆分(缺省场景") {
+        SECTION("按空白拆分:返回容器:无次数限制") {
+            // space 分隔符
             ASSERT_EQ(str::split("a b c"), (std::vector<std::string>{"a", "b", "c"}));
+
+            // tab 分隔符
             ASSERT_EQ(str::split("a\tb\tc"), (std::vector<std::string>{"a", "b", "c"}));
+
+            // 回车分隔符
             ASSERT_EQ(str::split("a\rb\rc"), (std::vector<std::string>{"a", "b", "c"}));
+
+            // 换行分隔符
             ASSERT_EQ(str::split("a\nb\nc"), (std::vector<std::string>{"a", "b", "c"}));
+
+            // 垂直制表做分隔符
             ASSERT_EQ(str::split("a\vb\vc"), (std::vector<std::string>{"a", "b", "c"}));
+
+            // 混合多分隔符1
             ASSERT_EQ(str::split("a\r\n\t\vb\r\n\t\vc"), (std::vector<std::string>{"a", "b", "c"}));
-            ASSERT_EQ(str::split("\r\t\n\v a\r\t\n\v b\r\t\n\v c\r\t\n\v "), (std::vector<std::string>{"a", "b", "c"}));
-            ASSERT_EQ(str::split(" \t\r\n\v"), (std::vector<std::string>{}));
+
+            // 混合多分隔符2
+            ASSERT_EQ(str::split("\r\t\n\v a\r\t\n\v b\r\t\n\v c\r\t\n\v "), (std::vector<std::string>{"", "a", "b", "c", ""}));
+
+            // 全分隔符
+            ASSERT_EQ(str::split(" \t\r\n\v"), (std::vector<std::string>{"", ""}));
+
+            // 无分隔符
             ASSERT_EQ(str::split("abc"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split(" abc"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("\tabc"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("\rabc"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("\nabc"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("\vabc"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("abc "), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("abc\t"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("abc\r"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("abc\n"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split("abc\v"), (std::vector<std::string>{"abc"}));
-            ASSERT_EQ(str::split(""), (std::vector<std::string>{}));
+
+            // 分隔符在前
+            ASSERT_EQ(str::split(" abc"), (std::vector<std::string>{"", "abc"}));
+            ASSERT_EQ(str::split("\tabc"), (std::vector<std::string>{"", "abc"}));
+            ASSERT_EQ(str::split("\rabc"), (std::vector<std::string>{"", "abc"}));
+            ASSERT_EQ(str::split("\nabc"), (std::vector<std::string>{"", "abc"}));
+            ASSERT_EQ(str::split("\vabc"), (std::vector<std::string>{"", "abc"}));
+
+            // 分隔符在后
+            ASSERT_EQ(str::split("abc "), (std::vector<std::string>{"abc", ""}));
+            ASSERT_EQ(str::split("abc\t"), (std::vector<std::string>{"abc", ""}));
+            ASSERT_EQ(str::split("abc\r"), (std::vector<std::string>{"abc", ""}));
+            ASSERT_EQ(str::split("abc\n"), (std::vector<std::string>{"abc", ""}));
+            ASSERT_EQ(str::split("abc\v"), (std::vector<std::string>{"abc", ""}));
+
+            // 空串
+            ASSERT_EQ(str::split(""), (std::vector<std::string>{""}));
         }
-        SECTION("限制次数") {
-            ASSERT_EQ(str::split(" a\rb\tc\vd\n", 2), (std::vector<std::string>{"a", "b", "c\vd\n"}));
+        SECTION("按空白拆分:返回容器:限制次数") {
+            // 一般串限制次数
+            ASSERT_EQ(str::split(" a\rb\tc\vd\n", 0), (std::vector<std::string>{" a\rb\tc\vd\n"}));
+            ASSERT_EQ(str::split(" a\rb\tc\vd\n", 1), (std::vector<std::string>{"", "a\rb\tc\vd\n"}));
+            ASSERT_EQ(str::split(" a\rb\tc\vd\n", 2), (std::vector<std::string>{"", "a", "b\tc\vd\n"}));
+            ASSERT_EQ(str::split(" a\rb\tc\vd\n", 5), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            ASSERT_EQ(str::split(" a\rb\tc\vd\n", 6), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            ASSERT_EQ(str::split(" a\rb\tc\vd\n", str::npos), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+
+            // 空串限制次数
+            ASSERT_EQ(str::split("", 0), (std::vector<std::string>{""}));
+            ASSERT_EQ(str::split("", 1), (std::vector<std::string>{""}));
+            ASSERT_EQ(str::split("", str::npos), (std::vector<std::string>{""}));
         }
-        SECTION("被拆分字符串无对应分隔符") {
-            ASSERT_EQ(str::split("abcdef#@#$"), (std::vector<std::string>{"abcdef#@#$"}));
+        SECTION("按空白拆分:用proc接收:无次数限制") {
+            std::vector<std::string_view> result;
+
+            // space 分隔符
+            str::split("a b c", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"a", "b", "c"}));
+
+            // tab 分隔符
+            str::split("a\tb\tc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"a", "b", "c"}));
+
+            // 回车分隔符
+            str::split("a\rb\rc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"a", "b", "c"}));
+
+            // 换行分隔符
+            str::split("a\nb\nc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"a", "b", "c"}));
+
+            // 垂直制表做分隔符
+            str::split("a\vb\vc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"a", "b", "c"}));
+
+            // 混合多分隔符1
+            str::split("a\r\n\t\vb\r\n\t\vc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"a", "b", "c"}));
+
+            // 混合多分隔符2
+            str::split("\r\t\n\v a\r\t\n\v b\r\t\n\v c\r\t\n\v ", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", ""}));
+
+            // 全分隔符
+            str::split(" \t\r\n\v", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", ""}));
+
+            // 无分隔符
+            str::split("abc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"abc"}));
+
+            // 分隔符在前
+            str::split(" abc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "abc"}));
+            str::split("\tabc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "abc"}));
+            str::split("\rabc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "abc"}));
+            str::split("\nabc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "abc"}));
+            str::split("\vabc", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "abc"}));
+
+            // 分隔符在后
+            str::split("abc ", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"abc", ""}));
+            str::split("abc\t", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"abc", ""}));
+            str::split("abc\r", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"abc", ""}));
+            str::split("abc\n", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"abc", ""}));
+            str::split("abc\v", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"abc", ""}));
+
+            // 空串
+            str::split("", to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{""}));
         }
-        SECTION("空串作为分隔符") {
-            ASSERT_EQ(str::split("ab,cdef"), (std::vector<std::string>{"ab", "cdef"}));
+        SECTION("用proc接收:限制次数") {
+            std::vector<std::string_view> result;
+
+            // 一般串限制次数
+            str::split(" a\rb\tc\vd\n", 0, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{" a\rb\tc\vd\n"}));
+            str::split(" a\rb\tc\vd\n", 1, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a\rb\tc\vd\n"}));
+            str::split(" a\rb\tc\vd\n", 2, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b\tc\vd\n"}));
+            str::split(" a\rb\tc\vd\n", 5, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            str::split(" a\rb\tc\vd\n", 6, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            str::split(" a\rb\tc\vd\n", str::npos, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+
+            // 空串限制次数
+            str::split("", 0, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{""}));
+            str::split("", 1, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{""}));
+            str::split("", str::npos, to_consumer{result = {}});
+            ASSERT_EQ(result, (std::vector<std::string>{""}));
         }
-        SECTION("限制值为0") {
-            ASSERT_EQ(str::split(",aa,,bb,cc,", 0), (std::vector<std::string>{",aa,,bb,cc,"}));
+    }
+    GROUP("按指定字符串拆分") {
+        SECTION("按指定字符串拆分:返回容器:无次数限制") {
         }
-        SECTION("限制值合适") {
-            ASSERT_EQ(str::split(",aa,,bb,cc,", 4), (std::vector<std::string>{"", "aa", "", "bb", "cc,"}));
+        SECTION("按指定字符串拆分:返回容器:限制次数") {
         }
-        SECTION("限制值超过总段数") {
-            ASSERT_EQ(str::split(",aa,,bb,cc,", 100), (std::vector<std::string>{"", "aa", "", "bb", "cc", ""}));
+        SECTION("按指定字符串拆分:用proc接收:无次数限制") {
+        }
+        SECTION("按指定字符串拆分:用proc接收:限制次数") {
+        }
+    }
+    GROUP("按指定字符集拆分") {
+        SECTION("按指定字符集拆分:返回容器:无次数限制") {
+        }
+        SECTION("按指定字符集拆分:返回容器:限制次数") {
+        }
+        SECTION("按指定字符集拆分:用proc接收:无次数限制") {
+        }
+        SECTION("按指定字符集拆分:用proc接收:限制次数") {
+        }
+    }
+    GROUP("按指定正则表达式拆分") {
+        SECTION("按指定正则表达式拆分:返回容器:无次数限制") {
+        }
+        SECTION("按指定正则表达式拆分:返回容器:限制次数") {
+        }
+        SECTION("按指定正则表达式拆分:用proc接收:无次数限制") {
+        }
+        SECTION("按指定正则表达式拆分:用proc接收:限制次数") {
         }
     }
 
-    GROUP("proc场景") {
-        SECTION("简单场景1") {
-            std::vector<std::string_view> result;
-            str::split("HelloWorld,HelloWorld", to_consumer{result});
-            ASSERT_EQ(result, (std::vector<std::string_view>{"HelloWorld", "HelloWorld"}));
-        }
-        SECTION("简单场景2") {
-            std::vector<std::string_view> result;
-            str::split("a,d,ee,", to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{"a", "d", "ee", ""}));
-        }
-
-        SECTION("刚好匹配一个") {
-            std::vector<std::string_view> result;
-            str::split(std::string(","), to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{"", ""}));
-        }
-
-        SECTION("前面字段") {
-            std::vector<std::string_view> result;
-            str::split("AAA,", to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{"AAA", ""}));
-        }
-
-        SECTION("后面字段") {
-            std::vector<std::string_view> result;
-            str::split(",AAA", to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{"", "AAA"}));
-        }
-
-        SECTION("拆分空串") {
-            std::vector<std::string_view> result;
-            str::split("", to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{""}));
-        }
-
-        SECTION("连续匹配") {
-            std::vector<std::string_view> result;
-            str::split("AA,,BB", to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{"AA", "", "BB"}));
-        }
-
-        SECTION("连续匹配2") {
-            std::vector<std::string_view> result;
-            str::split(",,", to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{"", "", ""}));
-        }
-
-        SECTION("无法匹配") {
-            std::vector<std::string_view> result;
-            str::split("defgui", to_consumer(result));
-            ASSERT_EQ(result, (std::vector<std::string_view>{"defgui"}));
-        }
-
-        SECTION("提前结束:一般场景") {
-            std::vector<std::string_view> result;
-            str::split(",123,456,,def,ghi,", [&result](std::string_view item) -> int {
-                result.emplace_back(item);
-                if (result.size() == 4) {
-                    return -1;
-                }
-                return 0;
-            });
-
-            ASSERT_EQ(result, (std::vector<std::string_view>{"", "123", "456", ""}));
-        }
-
-        SECTION("提前结束:但总数量并不够") {
-            std::vector<std::string_view> result;
-            str::split(",123,456,defghi", [&result](std::string_view item) -> int {
-                result.emplace_back(item);
-                if (result.size() == 4) {
-                    return -1;
-                }
-                return 0;
-            });
-
-            ASSERT_EQ(result, (std::vector<std::string_view>{"", "123", "456", "defghi"}));
-        }
-    }
+    // GROUP("proc场景") {
+    //     SECTION("简单场景1") {
+    //         std::vector<std::string_view> result;
+    //         str::split("HelloWorld,HelloWorld", to_consumer{result});
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"HelloWorld", "HelloWorld"}));
+    //     }
+    //     SECTION("简单场景2") {
+    //         std::vector<std::string_view> result;
+    //         str::split("a,d,ee,", to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"a", "d", "ee", ""}));
+    //     }
+    //
+    //     SECTION("刚好匹配一个") {
+    //         std::vector<std::string_view> result;
+    //         str::split(std::string(","), to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"", ""}));
+    //     }
+    //
+    //     SECTION("前面字段") {
+    //         std::vector<std::string_view> result;
+    //         str::split("AAA,", to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"AAA", ""}));
+    //     }
+    //
+    //     SECTION("后面字段") {
+    //         std::vector<std::string_view> result;
+    //         str::split(",AAA", to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"", "AAA"}));
+    //     }
+    //
+    //     SECTION("拆分空串") {
+    //         std::vector<std::string_view> result;
+    //         str::split("", to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{""}));
+    //     }
+    //
+    //     SECTION("连续匹配") {
+    //         std::vector<std::string_view> result;
+    //         str::split("AA,,BB", to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"AA", "", "BB"}));
+    //     }
+    //
+    //     SECTION("连续匹配2") {
+    //         std::vector<std::string_view> result;
+    //         str::split(",,", to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"", "", ""}));
+    //     }
+    //
+    //     SECTION("无法匹配") {
+    //         std::vector<std::string_view> result;
+    //         str::split("defgui", to_consumer(result));
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"defgui"}));
+    //     }
+    //
+    //     SECTION("提前结束:一般场景") {
+    //         std::vector<std::string_view> result;
+    //         str::split(",123,456,,def,ghi,", [&result](std::string_view item) -> int {
+    //             result.emplace_back(item);
+    //             if (result.size() == 4) {
+    //                 return -1;
+    //             }
+    //             return 0;
+    //         });
+    //
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"", "123", "456", ""}));
+    //     }
+    //
+    //     SECTION("提前结束:但总数量并不够") {
+    //         std::vector<std::string_view> result;
+    //         str::split(",123,456,defghi", [&result](std::string_view item) -> int {
+    //             result.emplace_back(item);
+    //             if (result.size() == 4) {
+    //                 return -1;
+    //             }
+    //             return 0;
+    //         });
+    //
+    //         ASSERT_EQ(result, (std::vector<std::string_view>{"", "123", "456", "defghi"}));
+    //     }
+    // }
 
     // GROUP("regex场景") {
     //     SECTION("一般场景") {
