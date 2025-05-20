@@ -160,6 +160,8 @@ TEST(test_str, split) {
             ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
             str::split(" a\rb\tc\vd\n", str::npos, to_consumer{result = {}});
             ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            str::split(" a\rb\tc\vd\n", 4, to_consumer{result = {}, 3});
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b"}));
 
             // 空串限制次数
             str::split("", 0, to_consumer{result = {}});
@@ -172,16 +174,68 @@ TEST(test_str, split) {
     }
     GROUP("按指定字符串拆分") {
         SECTION("按指定字符串拆分:返回容器:无次数限制") {
+            ASSERT_EQ(str::split("a||b||c|| ", "||"), (std::vector<std::string>{"a", "b", "c", " "}));
+            ASSERT_EQ(str::split("abbbbbcbb", "bb"), (std::vector<std::string>{"a", "", "bc", ""}));
+            ASSERT_EQ(str::split("bbbbbb", "bb"), (std::vector<std::string>{"", "", "", ""}));
+            ASSERT_EQ(str::split("bbbbbb", "#"), (std::vector<std::string>{"bbbbbb"}));
+            ASSERT_EQ(str::split("::", "::"), (std::vector<std::string>{"", ""}));
+            ASSERT_EQ(str::split("", "::"), (std::vector<std::string>{""}));
+            ASSERT_EQ(str::split("", ""), (std::vector<std::string>{""}));
+            ASSERT_EQ(str::split("K", ""), (std::vector<std::string>{"K"}));
+            ASSERT_EQ(str::split("abcd", ""), (std::vector<std::string>{"abcd"}));
         }
         SECTION("按指定字符串拆分:返回容器:限制次数") {
+            ASSERT_EQ(str::split(",a,b,c,d,", ",", 0), (std::vector<std::string>{",a,b,c,d,"}));
+            ASSERT_EQ(str::split(",a,b,c,d,", ",", 1), (std::vector<std::string>{"", "a,b,c,d,"}));
+            ASSERT_EQ(str::split(",a,b,c,d,", ",", 2), (std::vector<std::string>{"", "a", "b,c,d,"}));
+            ASSERT_EQ(str::split(",a,b,c,d,", ",", 5), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            ASSERT_EQ(str::split(",a,b,c,d,", ",", 6), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            ASSERT_EQ(str::split(",a,b,c,d,", ",", str::npos), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
         }
         SECTION("按指定字符串拆分:用proc接收:无次数限制") {
+            std::vector<std::string_view> result;
+            result.clear();
+            str::split(",a,b,c,d,", ",", to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            result.clear();
+            str::split(",a,b,c,d,", ",", to_consumer(result, 2));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a"}));
         }
         SECTION("按指定字符串拆分:用proc接收:限制次数") {
+            std::vector<std::string_view> result;
+
+            result.clear();
+            str::split(",a,b,c,d,", ",", 0, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{",a,b,c,d,"}));
+
+            result.clear();
+            str::split(",a,b,c,d,", ",", 1, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a,b,c,d,"}));
+
+            result.clear();
+            str::split(",a,b,c,d,", ",", 2, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b,c,d,"}));
+
+            result.clear();
+            str::split(",a,b,c,d,", ",", 5, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+
+            result.clear();
+            str::split(",a,b,c,d,", ",", 6, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+
+            result.clear();
+            str::split(",a,b,c,d,", ",", str::npos, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+
+            result.clear();
+            str::split(",a,b,c,d,", ",", 3, to_consumer(result, 2));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a"}));
         }
     }
     GROUP("按指定字符集拆分") {
         SECTION("按指定字符集拆分:返回容器:无次数限制") {
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:")), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
         }
         SECTION("按指定字符集拆分:返回容器:限制次数") {
         }

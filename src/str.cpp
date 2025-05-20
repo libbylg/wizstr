@@ -2894,6 +2894,18 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
     return s;
 }
 
+auto str::spaces(uint8_t width) -> std::string_view {
+    // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    static const value_type spaces_cache[256] =                            //
+        "                                                                " //
+        "                                                                " //
+        "                                                                " //
+        "                                                               "  //
+        ;
+    // width 的取值范围是 0-255,
+    return std::string_view{spaces_cache + (sizeof(spaces_cache) - 1) - width, width};
+}
+
 auto str::make_spaces(size_type width) -> std::string {
     return repeat(' ', width);
 }
@@ -3138,6 +3150,8 @@ auto str::split(std::string_view s, const substr_search_proc& search_proc, size_
             break;
         }
 
+        assert(start != end);
+
         if (proc(range_type{start, (matched - start)}) != 0) {
             return;
         }
@@ -3145,8 +3159,7 @@ auto str::split(std::string_view s, const substr_search_proc& search_proc, size_
         start = end;
 
         // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
-        n++;
-        if (n >= max_n) {
+        if (++n >= max_n) {
             break;
         }
     }
@@ -3214,47 +3227,33 @@ auto str::split(std::string_view s, const charset_type& sep_charset, size_type m
 }
 
 auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, const view_consumer_proc& proc) -> void {
-    if (s.empty()) [[unlikely]] {
+    if (s.empty()) {
         proc(s);
         return;
     }
 
-    if (sep_str.empty()) [[unlikely]] {
+    if (sep_str.empty()) {
+        split(s, max_n, proc);
+        return;
     }
 
-    size_type n = 0;
-    size_type start = 0;
-    size_type pos = 0;
-    while (start < s.size()) {
-        pos = s.find(sep_str, start);
-        if (pos == str::npos) {
-            pos = s.size();
-            break;
-        }
-
-        if (proc(s.substr(start, (pos - start))) != 0) {
-            return;
-        }
-
-        start = pos + sep_str.size();
-
-        // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
-        n++;
-        if (n >= max_n) {
-            break;
-        }
-    }
-
-    proc(s.substr(pos));
+    split(s, [sep_str](std::string_view s, size_type& pos) -> size_type { //
+        size_type start = s.find(sep_str, pos);
+        pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
+        return start;
+    },
+        max_n, [s, &proc](range_type range) -> int { //
+            return proc(s.substr(range.pos, range.len));
+        });
 }
 
-auto str::split(std::string_view s, std::string_view sepset, const view_consumer_proc& proc) -> void {
-    split(s, charset_type{sepset}, npos, proc);
+auto str::split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void {
+    split(s, sep_str, npos, proc);
 }
 
-auto str::split(std::string_view s, std::string_view sepset, size_type max_n) -> std::vector<std::string> {
+auto str::split(std::string_view s, std::string_view sep_str, size_type max_n) -> std::vector<std::string> {
     std::vector<std::string> result;
-    split(s, sepset, max_n, [&result](std::string_view item) -> int {
+    split(s, sep_str, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });
@@ -3295,9 +3294,9 @@ auto str::split_view(std::string_view s, const charset_type& sepset, size_type m
     return result;
 }
 
-auto str::split_view(std::string_view s, std::string_view sepset, size_type max_n) -> std::vector<std::string_view> {
+auto str::split_view(std::string_view s, std::string_view sep_str, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
-    split(s, charset_type{sepset}, max_n, [&result](std::string_view item) -> int {
+    split(s, sep_str, max_n, [&result](std::string_view item) -> int {
         result.emplace_back(item);
         return 0;
     });

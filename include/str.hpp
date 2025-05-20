@@ -974,6 +974,7 @@ struct str {
     /// @param s 用于去除空白字符的串
     /// @param pos 从指定的位置开始找查找并跳过空白
     /// @return 总是返回跳过空白后，右侧的部分。当未指定 pos 时，表示从字符串 s 的首字符开始处理。
+    static auto spaces(uint8_t width) -> std::string_view;
     static auto make_spaces(size_type width) -> std::string;
     static auto make_spaces_inplace(std::string& s, size_type width) -> std::string&;
     static auto after_skip_spaces_view(std::string_view s) -> std::string_view;
