@@ -3167,54 +3167,27 @@ auto str::split(std::string_view s, const substr_search_proc& search_proc, size_
     proc(range_type{start, (s.size() - start)});
 }
 
-auto str::split(std::string_view s, const char_match_proc& sep_proc, size_type max_n, const view_consumer_proc& proc) -> void {
-    assert(sep_proc);
-
-    // 最大拆分次数如果为0，就不需要拆了
-    if (max_n == 0) {
-        proc(s);
-        return;
-    }
-
-    size_type n = 0;
-    size_type pos_start = 0;
-    while (pos_start < s.size()) {
-        // 找到分隔符的位置
-        auto itr_begin = s.begin();
-        std::advance(itr_begin, pos_start);
-        auto itr_pos = std::find_if(
-            itr_begin, s.end(), [&sep_proc](value_type ch) -> bool {
-                return sep_proc(ch);
-            });
-        size_type pos_end = std::distance(s.begin(), itr_pos);
-        if (pos_end == std::string::npos) {
-            break;
-        }
-
-        // 执行输出,如果用户希望提前结束就直接结束后续的部分不再理会
-        if (proc(std::string_view{s.data() + pos_start, (pos_end - pos_start)}) != 0) {
-            return;
-        }
-
-        // 准备好下次查找的起点
-        pos_start = pos_end + 1;
-
-        // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
-        n++;
-        if (n >= max_n) {
-            break;
-        }
-    }
-
-    proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
-}
-
 auto str::split(std::string_view s, const charset_type& sep_charset, size_type max_n, const view_consumer_proc& proc) -> void {
-    split(s, [&sep_charset](value_type ch) -> bool { return sep_charset.get(ch); }, max_n, proc);
+    split(s, //
+        [&sep_charset](std::string_view s, size_type& pos) -> size_type {
+            while (pos < s.size()) {
+                if (sep_charset.get(s[pos])) {
+                    return pos++;
+                }
+
+                pos++;
+            }
+
+            return str::npos;                            //
+        },                                               //
+        max_n,                                           //
+        [&proc, s](range_type range) -> int {            //
+            return proc(s.substr(range.pos, range.len)); //
+        });
 }
 
 auto str::split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void {
-    split(s, [&sep_charset](value_type ch) -> bool { return sep_charset.get(ch); }, npos, proc);
+    split(s, sep_charset, npos, proc);
 }
 
 auto str::split(std::string_view s, const charset_type& sep_charset, size_type max_n) -> std::vector<std::string> {
@@ -3237,12 +3210,14 @@ auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, c
         return;
     }
 
-    split(s, [sep_str](std::string_view s, size_type& pos) -> size_type { //
-        size_type start = s.find(sep_str, pos);
-        pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
-        return start;
-    },
-        max_n, [s, &proc](range_type range) -> int { //
+    split(s,                                                         //
+        [sep_str](std::string_view s, size_type& pos) -> size_type { //
+            size_type start = s.find(sep_str, pos);
+            pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
+            return start;
+        },                                    //
+        max_n,                                //
+        [s, &proc](range_type range) -> int { //
             return proc(s.substr(range.pos, range.len));
         });
 }
@@ -3305,51 +3280,15 @@ auto str::split_view(std::string_view s, std::string_view sep_str, size_type max
 
 auto str::split_view(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
-    split(
-        s,
-        [](value_type ch) -> bool {
-            return std::isspace(ch);
-        },
-        max_n,
-        [&result](std::string_view item) -> int {
-            result.emplace_back(item);
-            return 0;
-        });
+    split(s, max_n, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
     return result;
 }
 
 auto str::split_list(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void {
-    // 最大拆分次数如果为0，就不需要拆了
-    if (max_n == 0) {
-        proc(s);
-        return;
-    }
-
-    size_type n = 0;
-    size_type pos_start = 0;
-    while (pos_start < s.size()) {
-        // 找到分隔符的位置
-        size_type pos_end = s.find(",", pos_start);
-        if (pos_end == std::string::npos) {
-            break;
-        }
-
-        // 执行输出,如果用户希望提前结束就直接结束后续的部分不再理会
-        if (proc(std::string_view{s.data() + pos_start, (pos_end - pos_start)}) != 0) {
-            return;
-        }
-
-        // 准备好下次查找的起点
-        pos_start = pos_end + 1;
-
-        // 根据次数判定是否还需要继续找:如果不再需要找，就中断循环，将剩余的部分丢给用户
-        n++;
-        if (n >= max_n) {
-            break;
-        }
-    }
-
-    proc(std::string_view{s.data() + pos_start, s.size() - pos_start});
+    split(s, ",", max_n, proc);
 }
 
 auto str::split_list(std::string_view s, const view_consumer_proc& proc) -> void {

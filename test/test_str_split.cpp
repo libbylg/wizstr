@@ -236,12 +236,52 @@ TEST(test_str, split) {
     GROUP("按指定字符集拆分") {
         SECTION("按指定字符集拆分:返回容器:无次数限制") {
             ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:")), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(";:")), (std::vector<std::string>{",a", "b", "c,d,"}));
+            ASSERT_EQ(str::split("abcd", str::charset(";:")), (std::vector<std::string>{"abcd"}));
+            ASSERT_EQ(str::split("abbKbbd", str::charset("b")), (std::vector<std::string>{"a", "", "K", "", "d"}));
+            ASSERT_EQ(str::split("", str::charset("b")), (std::vector<std::string>{""}));
+            ASSERT_EQ(str::split("abcd", str::charset("")), (std::vector<std::string>{"abcd"}));
         }
         SECTION("按指定字符集拆分:返回容器:限制次数") {
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:"), 0), (std::vector<std::string>{",a;b:c,d,"}));
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:"), 1), (std::vector<std::string>{"", "a;b:c,d,"}));
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:"), 3), (std::vector<std::string>{"", "a", "b", "c,d,"}));
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:"), 5), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:"), 6), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+            ASSERT_EQ(str::split(",a;b:c,d,", str::charset(",;:"), str::npos), (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
         }
         SECTION("按指定字符集拆分:用proc接收:无次数限制") {
+            std::vector<std::string_view> result;
+
+            str::split(",a;b:c,d,", str::charset(",;:"), to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
         }
         SECTION("按指定字符集拆分:用proc接收:限制次数") {
+            std::vector<std::string_view> result;
+
+            result.clear();
+            str::split(",a;b:c,d,", str::charset(",;:"), 0, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{",a;b:c,d,"}));
+
+            result.clear();
+            str::split(",a;b:c,d,", str::charset(",;:"), 1, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a;b:c,d,"}));
+
+            result.clear();
+            str::split(",a;b:c,d,", str::charset(",;:"), 3, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c,d,"}));
+
+            result.clear();
+            str::split(",a;b:c,d,", str::charset(",;:"), 5, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+
+            result.clear();
+            str::split(",a;b:c,d,", str::charset(",;:"), 6, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
+
+            result.clear();
+            str::split(",a;b:c,d,", str::charset(",;:"), str::npos, to_consumer(result));
+            ASSERT_EQ(result, (std::vector<std::string>{"", "a", "b", "c", "d", ""}));
         }
     }
     GROUP("按指定正则表达式拆分") {

@@ -1124,7 +1124,7 @@ struct str {
     /// @param proc 指定如何接受拆分出来的字符串。
     /// @return 当未指定 proc 参数时，会返回字符串列表。
     static auto split(std::string_view s, const substr_search_proc& search_proc, size_type max_n, const range_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, const char_match_proc& sep_proc, size_type max_n, const view_consumer_proc& proc) -> void;
+    // static auto split(std::string_view s, const char_match_proc& sep_proc, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sep_charset, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sep_charset, size_type max_n = npos) -> std::vector<std::string>;
@@ -1137,8 +1137,8 @@ struct str {
     static auto split(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string>;
-    static auto split_view(std::string_view s, const charset_type& sepset, size_type max_n = npos) -> std::vector<std::string_view>;
-    static auto split_view(std::string_view s, std::string_view sepset, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_view(std::string_view s, const charset_type& sep_charset, size_type max_n = npos) -> std::vector<std::string_view>;
+    static auto split_view(std::string_view s, std::string_view sep_str, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_view(std::string_view s, size_type max_n = str::npos) -> std::vector<std::string_view>;
 
     //! 以字符串为分隔符拆分字符串
