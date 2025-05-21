@@ -2751,6 +2751,52 @@ auto str::prev_word(std::string_view s, size_type& pos) -> std::string {
     return std::string{prev_word_view(s, pos)};
 }
 
+auto str::split_words(std::string_view s, size_type max_n) -> std::vector<std::string> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string> result;
+    size_type pos = 0;
+    while (pos < s.size()) {
+        auto view = next_word_view(s, pos);
+        if (view.empty()) {
+            break;
+        }
+
+        result.emplace_back(view);
+
+        if (result.size() >= max_n) {
+            break;
+        }
+    }
+
+    return result;
+}
+
+auto str::split_words_view(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string_view> result;
+    size_type pos = 0;
+    while (pos < s.size()) {
+        auto view = next_word_view(s, pos);
+        if (view.empty()) {
+            break;
+        }
+
+        result.emplace_back(view);
+
+        if (result.size() >= max_n) {
+            break;
+        }
+    }
+
+    return result;
+}
+
 auto str::surround(std::string_view s, std::string_view left, std::string_view right) -> std::string {
     std::string result;
     result.reserve(s.size() + left.size() + right.size());

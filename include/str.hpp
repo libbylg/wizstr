@@ -894,6 +894,9 @@ struct str {
     static auto prev_word_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto prev_word_range(std::string_view s, size_type& pos) -> range_type;
     static auto prev_word(std::string_view s, size_type& pos) -> std::string;
+    //
+    static auto split_words(std::string_view s, size_type max_n = npos) -> std::vector<std::string>;
+    static auto split_words_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
 
     //! 用指定的模式串环绕字符串 @anchor{surround, unsurround}
     ///
