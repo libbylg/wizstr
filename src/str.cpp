@@ -3443,7 +3443,7 @@ auto str::split_list_view(std::string_view s, size_type max_n) -> std::vector<st
 auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string> {
     std::array<std::string, 2> pair;
     size_t n = 0;
-    str::split(s, sep, 1, [&n, &pair](std::string_view item) -> int {
+    str::split(s, (sep.empty() ? ":" : sep), 1, [&n, &pair](std::string_view item) -> int {
         pair[n++] = item;
         return 0;
     });
@@ -3454,7 +3454,7 @@ auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std
 auto str::split_pair_view(std::string_view s, std::string_view sep) -> std::tuple<std::string_view, std::string_view> {
     std::array<std::string_view, 2> pair;
     size_t n = 0;
-    str::split(s, sep, 1, [&n, &pair](std::string_view item) -> int {
+    str::split(s, (sep.empty() ? ":" : sep), 1, [&n, &pair](std::string_view item) -> int {
         pair[n++] = item;
         return 0;
     });
@@ -3815,6 +3815,7 @@ auto str::chunked(std::string_view s, size_type width, const view_consumer_proc&
         if (proc(s.substr(pos, width)) != 0) {
             return;
         }
+        pos += width;
     }
 
     if (pos < s.size()) {
