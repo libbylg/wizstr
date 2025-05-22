@@ -3841,9 +3841,28 @@ auto str::chunked_view(std::string_view s, size_type width) -> std::vector<std::
     return result;
 }
 
-auto str::next_chunk_view(std::string_view s, size_type& pos, size_type max_n) -> std::string_view {
+auto str::next_chunk_range(std::string_view s, size_type& pos, size_type max_n) -> std::optional<range_type> {
+    if (max_n == 0) {
+        max_n = npos;
+    }
+
     if (pos >= s.size()) {
-        return {};
+        pos = s.size();
+        return std::nullopt;
+    }
+
+    if ((s.size() - pos) < max_n) {
+        max_n = (s.size() - pos);
+    }
+
+    auto result = range_type{pos, max_n};
+    pos += max_n;
+    return result;
+}
+
+auto str::next_chunk_view(std::string_view s, size_type& pos, size_type max_n) -> std::optional<std::string_view> {
+    if (pos >= s.size()) {
+        return std::nullopt;
     }
 
     if ((s.size() - pos) < max_n) {
@@ -3855,17 +3874,25 @@ auto str::next_chunk_view(std::string_view s, size_type& pos, size_type max_n) -
     return result;
 }
 
-auto str::next_chunk(std::string_view s, size_type& pos, size_type max_n) -> std::string {
-    return std::string{next_chunk_view(s, pos, max_n)};
+auto str::next_chunk(std::string_view s, size_type& pos, size_type max_n) -> std::optional<std::string> {
+    auto view = next_chunk_view(s, pos, max_n);
+    if (!view) {
+        return std::nullopt;
+    }
+
+    return std::string{*view};
 }
 
 auto str::windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void {
-    size_type pos = 0;
-    while (pos < s.size()) {
-        if (proc(str::next_chunk_view(s, pos, width)) != 0) {
+    for (size_type pos = 0; true; pos += step) {
+        auto view = str::next_chunk_view(s, pos, width);
+        if (!view) {
             return;
         }
-        pos += step;
+
+        if (proc(*view) != 0) {
+            return;
+        }
     }
 }
 
