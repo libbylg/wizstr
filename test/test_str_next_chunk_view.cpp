@@ -59,7 +59,7 @@ TEST(test_str, next_chunk_view) {
 
         // max_n = 20
         result = str::next_chunk_view("abc-def-mnp-rst-uv", pos = 0, 20);
-        ASSERT_TRUE(!result && (*result == "abc-def-mnp-rst-uv") && (pos == 18));
+        ASSERT_TRUE(result && (*result == "abc-def-mnp-rst-uv") && (pos == 18));
 
         // max_n = str::npos
         result = str::next_chunk_view("abc-def-mnp-rst-uv", pos = 0, str::npos);
