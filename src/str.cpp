@@ -3803,7 +3803,7 @@ auto str::partition(std::string_view s, const view_search_proc& proc) -> std::tu
 // }
 
 auto str::chunked(std::string_view s, size_type width, const view_consumer_proc& proc) -> void {
-    if (width == 0) {
+    if (s.empty() || (width == 0)) {
         proc(s);
         return;
     }
@@ -3811,7 +3811,7 @@ auto str::chunked(std::string_view s, size_type width, const view_consumer_proc&
     std::vector<std::string_view> result;
 
     size_type pos = 0;
-    while ((pos + width) <= s.size()) {
+    while ((s.size() - pos) >= width) {
         if (proc(s.substr(pos, width)) != 0) {
             return;
         }
@@ -3841,7 +3841,7 @@ auto str::chunked_view(std::string_view s, size_type width) -> std::vector<std::
     return result;
 }
 
-auto str::take_window_view(std::string_view s, size_type& pos, size_type max_n) -> std::string_view {
+auto str::next_chunk_view(std::string_view s, size_type& pos, size_type max_n) -> std::string_view {
     if (pos >= s.size()) {
         return {};
     }
@@ -3855,14 +3855,14 @@ auto str::take_window_view(std::string_view s, size_type& pos, size_type max_n) 
     return result;
 }
 
-auto str::take_window(std::string_view s, size_type& pos, size_type max_n) -> std::string {
-    return std::string{take_window_view(s, pos, max_n)};
+auto str::next_chunk(std::string_view s, size_type& pos, size_type max_n) -> std::string {
+    return std::string{next_chunk_view(s, pos, max_n)};
 }
 
 auto str::windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void {
     size_type pos = 0;
     while (pos < s.size()) {
-        if (proc(str::take_window_view(s, pos, width)) != 0) {
+        if (proc(str::next_chunk_view(s, pos, width)) != 0) {
             return;
         }
         pos += step;

@@ -1264,6 +1264,11 @@ struct str {
     static auto rpartition(std::string_view s, const std::regex& sep) -> std::tuple<std::string, std::string, std::string>;
     static auto rpartition(std::string_view s, const view_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
 
+    //! 字符串分块
+    static auto next_chunk_range(std::string_view s, size_type& pos, size_type max_n) -> std::optional<range_type>;
+    static auto next_chunk_view(std::string_view s, size_type& pos, size_type max_n) -> std::optional<std::string_view>;
+    static auto next_chunk(std::string_view s, size_type& pos, size_type max_n) -> std::optional<std::string>;
+
     //! 指定宽度拆分字符串
     ///
     /// 将字符串 s 拆分成宽度为 width 的多个子串
@@ -1277,8 +1282,6 @@ struct str {
     static auto chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view>;
 
     // 基于窗口拆分字符串
-    static auto take_window_view(std::string_view s, size_type& pos, size_type max_n) -> std::string_view;
-    static auto take_window(std::string_view s, size_type& pos, size_type max_n) -> std::string;
     static auto windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void;
     static auto windowed_view(std::string_view s, size_type width, size_type step) -> std::vector<std::string_view>;
     static auto windowed(std::string_view s, size_type width, size_type step) -> std::vector<std::string>;

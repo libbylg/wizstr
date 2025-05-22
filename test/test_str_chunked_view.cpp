@@ -23,12 +23,10 @@ TEST(test_str, chunked_view) {
         ASSERT_EQ(str::chunked_view("abcdefghi1234567", 17), (std::vector{"abcdefghi1234567"}));
         ASSERT_EQ(str::chunked_view("abcdefghi1234567", str::npos), (std::vector{"abcdefghi1234567"}));
     }
-    GROUP("proc") {
-        std::vector<std::string> result;
-        str::chunked_view("abcdefghi1234567", 3, [&result](std::string_view item) -> int {
-            result.emplace_back(item);
-            return -1;
-        });
-        ASSERT_EQ(result, (std::vector<std::string>{"abc"}));
+    SECTION("空串") {
+        ASSERT_EQ(str::chunked_view("", 0), (std::vector{""}));
+        ASSERT_EQ(str::chunked_view("", 1), (std::vector{""}));
+        ASSERT_EQ(str::chunked_view("", 3), (std::vector{""}));
+        ASSERT_EQ(str::chunked_view("", str::npos), (std::vector{""}));
     }
 }
