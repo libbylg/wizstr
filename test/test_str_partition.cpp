@@ -17,5 +17,11 @@
 TEST(test_str, partition) {
     SECTION("") {
         ASSERT_EQ(str::partition("aaa::bbb", "::"), (std::array{"aaa", "::", "bbb"}));
+        ASSERT_EQ(str::partition("::bbb", "::"), (std::array{"", "::", "bbb"}));
+        ASSERT_EQ(str::partition("aaa::", "::"), (std::array{"aaa", "::", ""}));
+        ASSERT_EQ(str::partition("::", "::"), (std::array{"", "::", ""}));
+        ASSERT_EQ(str::partition("abc", "::"), (std::array{"abc", "", ""}));
+        ASSERT_EQ(str::partition("", "::"), (std::array{"", "", ""}));
+        // ASSERT_EQ(str::partition("aaa::bbb", ""), (std::array{"aaa", "::", "bbb"}));
     }
 }
