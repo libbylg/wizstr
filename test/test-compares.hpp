@@ -54,4 +54,19 @@ auto operator==(const std::vector<T>& a, const std::vector<Y>& b) -> bool {
     return true;
 }
 
+template <typename T, typename Y, size_t N>
+auto operator==(const std::array<T, N>& a, const std::array<Y, N>& b) -> bool {
+    if (a.size() != b.size()) {
+        return false;
+    }
+
+    for (size_t index = 0; index < a.size(); index++) {
+        if (a[index] != b[index]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 #endif // STR_TEST_COMPARES_H
