@@ -1281,10 +1281,15 @@ struct str {
     static auto chunked(std::string_view s, size_type width) -> std::vector<std::string>;
     static auto chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view>;
 
+    //! 字符串分块
+    static auto next_window_range(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<range_type>;
+    static auto next_window_view(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<std::string_view>;
+    static auto next_window(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<std::string>;
+
     // 基于窗口拆分字符串
     static auto windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void;
-    static auto windowed_view(std::string_view s, size_type width, size_type step) -> std::vector<std::string_view>;
     static auto windowed(std::string_view s, size_type width, size_type step) -> std::vector<std::string>;
+    static auto windowed_view(std::string_view s, size_type width, size_type step) -> std::vector<std::string_view>;
 
     //! 大小写转换
     ///
@@ -1423,8 +1428,7 @@ struct str {
     //
     static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const string_mapping_proc& proc) -> std::string&;
     static auto expand_envs_inplace(std::string& s, bool keep_unexpanded = false) -> std::string&;
-    static auto expand_envs_inplace(std::string& s, bool keep_unexpanded,
-        const std::map<std::string, std::string>& kvs) -> std::string&;
+    static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, std::string_view key, std::string_view val) -> std::string&;
 

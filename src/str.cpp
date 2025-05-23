@@ -3878,13 +3878,59 @@ auto str::next_chunk(std::string_view s, size_type& pos, size_type max_n) -> std
     return std::string{*view};
 }
 
-auto str::windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void {
-    if (width == 0) {
-        width = str::npos;
+auto str::next_window_range(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<range_type> {
+    if (max_n == 0) {
+        max_n = npos;
     }
 
-    for (size_type pos = 0; true; pos += step) {
-        auto view = str::next_chunk_view(s, pos, width);
+    if (pos >= s.size()) {
+        pos = s.size();
+        return std::nullopt;
+    }
+
+    range_type result;
+    if ((s.size() - pos) < max_n) {
+        result = range_type{pos, (s.size() - pos)};
+    } else {
+        result = range_type{pos, max_n};
+    }
+
+    // Start pos for next iteration
+    if (step == 0) {
+        step = 1;
+    }
+
+    if ((s.size() - pos) < step) {
+        pos = s.size();
+    } else {
+        pos += step;
+    }
+
+    return result;
+}
+
+auto str::next_window_view(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<std::string_view> {
+    auto range = next_window_range(s, pos, max_n, step);
+    if (!range) {
+        return std::nullopt;
+    }
+
+    return s.substr(range->pos, range->len);
+}
+
+auto str::next_window(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<std::string> {
+    auto view = next_window_view(s, pos, max_n, step);
+    if (!view) {
+        return std::nullopt;
+    }
+
+    return std::string{*view};
+}
+
+auto str::windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void {
+    size_type pos = 0;
+    while (pos < s.size()) {
+        auto view = str::next_window_view(s, pos, width, step);
         if (!view) {
             return;
         }
@@ -4527,9 +4573,7 @@ auto str::expand_envs(std::string_view s, bool keep_unexpanded) -> std::string {
     });
 }
 
-auto str::expand_envs(std::string_view s, bool keep_unexpanded,
-    const std::map<std::string, std::string>& kvs)
-    -> std::string {
+auto str::expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string {
     return str::expand_envs(s, keep_unexpanded, [&kvs](const std::string& key) -> std::optional<std::string> {
         auto itr = kvs.find(key);
         if (itr == kvs.cend()) {

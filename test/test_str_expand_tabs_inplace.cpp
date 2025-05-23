@@ -1,0 +1,52 @@
+/**
+ * Copyright (c) 2021-2024 libbylg@126.com
+ * tiny is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+#include "testing.hpp"
+
+#include "str.hpp"
+
+TEST(test_str, expand_tabs_inplace) {
+    SECTION("简单场景") {
+        std::string s;
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t123\t1234\t12345\t123456\t$", 4), "1   123 1234    12345   123456  $");
+    }
+    SECTION("空串") {
+        std::string s;
+        ASSERT_EQ(str::expand_tabs_inplace(s = "", 4), "");
+    }
+    SECTION("tab位于tab_size边界") {
+        std::string s;
+        ASSERT_EQ(str::expand_tabs_inplace(s = "\t12345678\t9", 8), "        12345678        9");
+    }
+    SECTION("不同位置的tab") {
+        std::string s;
+        // clang-format off
+        ASSERT_EQ(str::expand_tabs_inplace(s="1\t9", 4),     "1   9");
+        ASSERT_EQ(str::expand_tabs_inplace(s="12\t9", 4),    "12  9");
+        ASSERT_EQ(str::expand_tabs_inplace(s="123\t9", 4),   "123 9");
+        ASSERT_EQ(str::expand_tabs_inplace(s="1234\t9", 4),  "1234    9");
+        ASSERT_EQ(str::expand_tabs_inplace(s="12345\t9", 4), "12345   9");
+        // clang-format on
+    }
+    SECTION("不同宽度") {
+        std::string s;
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 0), "1       9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 1), "1 9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 2), "1 9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 3), "1  9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 4), "1   9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 5), "1    9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 6), "1     9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 7), "1      9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 8), "1       9");
+        ASSERT_EQ(str::expand_tabs_inplace(s = "1\t9", 9), "1        9");
+    }
+}

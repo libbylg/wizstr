@@ -17,5 +17,7 @@ TEST(test_str, spaces) {
     ASSERT_EQ(str::spaces(0), "");
     ASSERT_EQ(str::spaces(1), " ");
     ASSERT_EQ(str::spaces(32), "                                ");
+#pragma GCC diagnostic ignored "-Woverflow"
     ASSERT_EQ(str::spaces(str::npos), "                                                                                                                                                                                                                                                               ");
+#pragma GCC diagnostic pop
 }
