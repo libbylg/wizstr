@@ -69,4 +69,23 @@ TEST(test_str, expand_envs) {
     SECTION("通过key-value参数提供数据") {
         ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}", "HOME", "XXX"), "XXX/${NOTEXIST}");
     }
+
+    SECTION("通过proc提供数据") {
+        ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}/${HOME}", false, [](const std::string& key) -> std::optional<std::string> {
+            if (key == "HOME") {
+                return "xxxx";
+            }
+
+            return std::nullopt;
+        }),
+            "xxxx//xxxx");
+        ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}/${HOME}", true, [](const std::string& key) -> std::optional<std::string> {
+            if (key == "HOME") {
+                return "xxxx";
+            }
+
+            return std::nullopt;
+        }),
+            "xxxx/${NOTEXIST}/xxxx");
+    }
 }

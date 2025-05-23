@@ -4608,9 +4608,7 @@ auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded) -> std::stri
     return s;
 }
 
-auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded,
-    const std::map<std::string, std::string>& kvs)
-    -> std::string& {
+auto str::expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string& {
     s = expand_envs(s, keep_unexpanded, kvs);
     return s;
 }
