@@ -263,7 +263,7 @@ struct str {
     };
 
     template <typename T>
-    using partition_result = std::array<T, 3>;
+    using ternary = std::array<T, 3>;
 
     //! std::string_view 供给器：每次调用返回一个字符串，直到返回 std::nullopt
     using view_provider_proc
@@ -1228,35 +1228,35 @@ struct str {
     /// * `std::string_view` : 表示子串作为分隔符
     /// * `view_search_proc` : 同样以子串作为分隔符
     /// @return 返回依次由分隔符左侧的子串，分隔符自身，分隔符右侧子串组成的 tuple
-    static auto partition_range(std::string_view s, const charset_type& charset) -> partition_result<range_type>;
-    static auto partition_range(std::string_view s, const char_match_proc& proc) -> partition_result<range_type>;
-    static auto partition_range(std::string_view s, std::string_view sep) -> partition_result<range_type>;
-    static auto partition_range(std::string_view s, const std::regex& pattern) -> partition_result<range_type>;
-    static auto partition_range(std::string_view s, const substr_search_proc& proc) -> partition_result<range_type>;
+    static auto partition_range(std::string_view s, const charset_type& charset) -> ternary<range_type>;
+    static auto partition_range(std::string_view s, const char_match_proc& proc) -> ternary<range_type>;
+    static auto partition_range(std::string_view s, std::string_view sep) -> ternary<range_type>;
+    static auto partition_range(std::string_view s, const std::regex& pattern) -> ternary<range_type>;
+    static auto partition_range(std::string_view s, const substr_search_proc& proc) -> ternary<range_type>;
     //
-    static auto partition_view(std::string_view s, const charset_type& charset) -> partition_result<std::string_view>;
-    static auto partition_view(std::string_view s, const char_match_proc& proc) -> partition_result<std::string_view>;
-    static auto partition_view(std::string_view s, std::string_view sep) -> partition_result<std::string_view>;
-    static auto partition_view(std::string_view s, const std::regex& pattern) -> partition_result<std::string_view>;
-    static auto partition_view(std::string_view s, const view_search_proc& proc) -> partition_result<std::string_view>;
+    static auto partition_view(std::string_view s, const charset_type& charset) -> ternary<std::string_view>;
+    static auto partition_view(std::string_view s, const char_match_proc& proc) -> ternary<std::string_view>;
+    static auto partition_view(std::string_view s, std::string_view sep) -> ternary<std::string_view>;
+    static auto partition_view(std::string_view s, const std::regex& pattern) -> ternary<std::string_view>;
+    static auto partition_view(std::string_view s, const view_search_proc& proc) -> ternary<std::string_view>;
     //
-    static auto partition(std::string_view s, const charset_type& charset) -> partition_result<std::string>;
-    static auto partition(std::string_view s, const char_match_proc& proc) -> partition_result<std::string>;
-    static auto partition(std::string_view s, std::string_view sep) -> partition_result<std::string>;
-    static auto partition(std::string_view s, const std::regex& pattern) -> partition_result<std::string>;
-    static auto partition(std::string_view s, const view_search_proc& proc) -> partition_result<std::string>;
+    static auto partition(std::string_view s, const charset_type& charset) -> ternary<std::string>;
+    static auto partition(std::string_view s, const char_match_proc& proc) -> ternary<std::string>;
+    static auto partition(std::string_view s, std::string_view sep) -> ternary<std::string>;
+    static auto partition(std::string_view s, const std::regex& pattern) -> ternary<std::string>;
+    static auto partition(std::string_view s, const view_search_proc& proc) -> ternary<std::string>;
     //
-    static auto rpartition_view(std::string_view s, const charset_type& sep) -> partition_result<std::string_view>;
-    static auto rpartition_view(std::string_view s, const char_match_proc& sep) -> partition_result<std::string_view>;
-    static auto rpartition_view(std::string_view s, std::string_view sep) -> partition_result<std::string_view>;
-    static auto rpartition_view(std::string_view s, const std::regex& sep) -> partition_result<std::string_view>;
-    static auto rpartition_view(std::string_view s, const view_search_proc& sep) -> partition_result<std::string_view>;
+    static auto rpartition_view(std::string_view s, const charset_type& sep) -> ternary<std::string_view>;
+    static auto rpartition_view(std::string_view s, const char_match_proc& sep) -> ternary<std::string_view>;
+    static auto rpartition_view(std::string_view s, std::string_view sep) -> ternary<std::string_view>;
+    static auto rpartition_view(std::string_view s, const std::regex& sep) -> ternary<std::string_view>;
+    static auto rpartition_view(std::string_view s, const view_search_proc& sep) -> ternary<std::string_view>;
     //
-    static auto rpartition(std::string_view s, const charset_type& sep) -> partition_result<std::string>;
-    static auto rpartition(std::string_view s, const char_match_proc& sep) -> partition_result<std::string>;
-    static auto rpartition(std::string_view s, std::string_view sep) -> partition_result<std::string>;
-    static auto rpartition(std::string_view s, const std::regex& sep) -> partition_result<std::string>;
-    static auto rpartition(std::string_view s, const view_search_proc& sep) -> partition_result<std::string>;
+    static auto rpartition(std::string_view s, const charset_type& sep) -> ternary<std::string>;
+    static auto rpartition(std::string_view s, const char_match_proc& sep) -> ternary<std::string>;
+    static auto rpartition(std::string_view s, std::string_view sep) -> ternary<std::string>;
+    static auto rpartition(std::string_view s, const std::regex& sep) -> ternary<std::string>;
+    static auto rpartition(std::string_view s, const view_search_proc& sep) -> ternary<std::string>;
 
     //! 字符串分块
     static auto next_chunk_range(std::string_view s, size_type& pos, size_type max_n) -> std::optional<range_type>;
@@ -1554,8 +1554,8 @@ struct str {
     static auto rawname_view(std::string_view s) -> std::string_view;
     static auto rawname(std::string_view s) -> std::string;
     static auto replace_rawname(std::string_view s, std::string_view new_name) -> std::string;
-    static auto split_rawname_view(std::string_view s) -> partition_result<std::string_view>;
-    static auto split_rawname(std::string_view s) -> partition_result<std::string>;
+    static auto split_rawname_view(std::string_view s) -> ternary<std::string_view>;
+    static auto split_rawname(std::string_view s) -> ternary<std::string>;
     //
     static auto rawname_inplace(std::string& s) -> std::string&;
     static auto replace_rawname_inplace(std::string& s, std::string_view name) -> std::string&;

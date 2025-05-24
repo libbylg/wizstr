@@ -3636,13 +3636,13 @@ auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep) 
 // auto str::split_csv(std::string_view s) -> std::vector<std::string> {
 // }
 
-auto str::partition_range(std::string_view s, const charset_type& charset) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, const charset_type& charset) -> ternary<range_type> {
     return partition_range(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
     });
 }
 
-auto str::partition_range(std::string_view s, const char_match_proc& proc) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, const char_match_proc& proc) -> ternary<range_type> {
     auto itr = std::find_if(s.begin(), s.end(), proc);
     if (itr == s.cend()) {
         return {range_type{0, s.size()}, range_type{}, range_type{}};
@@ -3652,7 +3652,7 @@ auto str::partition_range(std::string_view s, const char_match_proc& proc) -> pa
     return {range_type{0, pos}, range_type{pos, 1}, range_type{(pos + 1), (s.size() - (pos + 1))}};
 }
 
-auto str::partition_range(std::string_view s, std::string_view sep) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, std::string_view sep) -> ternary<range_type> {
     if (s.empty() || sep.empty()) {
         return {range_type{0, s.size()}, range_type{}, range_type{}};
     }
@@ -3665,7 +3665,7 @@ auto str::partition_range(std::string_view s, std::string_view sep) -> partition
     return {range_type{0, pos}, range_type{pos, sep.size()}, range_type{(pos + sep.size()), (s.size() - (pos + sep.size()))}};
 }
 
-auto str::partition_range(std::string_view s, const std::regex& pattern) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, const std::regex& pattern) -> ternary<range_type> {
     std::match_results<std::string_view::const_iterator> match;
     bool ret = std::regex_search(s.begin(), s.end(), match, pattern);
     if (!ret) {
@@ -3677,7 +3677,7 @@ auto str::partition_range(std::string_view s, const std::regex& pattern) -> part
     return {range_type{0, pos}, range_type{pos, len}, range_type{(pos + len), (s.size() - (pos + len))}};
 }
 
-auto str::partition_range(std::string_view s, const substr_search_proc& proc) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, const substr_search_proc& proc) -> ternary<range_type> {
     size_type pos = 0;
     auto matched = proc(s, pos);
     if (matched == str::npos) {
@@ -3688,13 +3688,13 @@ auto str::partition_range(std::string_view s, const substr_search_proc& proc) ->
     return {range_type{0, matched}, range_type{matched, (pos - matched)}, right};
 }
 
-auto str::partition_view(std::string_view s, const charset_type& charset) -> partition_result<std::string_view> {
+auto str::partition_view(std::string_view s, const charset_type& charset) -> ternary<std::string_view> {
     return partition_view(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
     });
 }
 
-auto str::partition_view(std::string_view s, const char_match_proc& proc) -> partition_result<std::string_view> {
+auto str::partition_view(std::string_view s, const char_match_proc& proc) -> ternary<std::string_view> {
     auto itr = std::find_if(s.begin(), s.end(), proc);
     if (itr == s.cend()) {
         return {s, {}, {}};
@@ -3704,7 +3704,7 @@ auto str::partition_view(std::string_view s, const char_match_proc& proc) -> par
     return {s.substr(0, pos), s.substr(pos, 1), s.substr(pos + 1, (s.size() - (pos + 1)))};
 }
 
-auto str::partition_view(std::string_view s, std::string_view sep) -> partition_result<std::string_view> {
+auto str::partition_view(std::string_view s, std::string_view sep) -> ternary<std::string_view> {
     if (s.empty() || sep.empty()) {
         return {s, {}, {}};
     }
@@ -3717,7 +3717,7 @@ auto str::partition_view(std::string_view s, std::string_view sep) -> partition_
     return {s.substr(0, pos), s.substr(pos, sep.size()), s.substr(pos + sep.size(), (s.size() - (pos + sep.size())))};
 }
 
-auto str::partition_view(std::string_view s, const std::regex& pattern) -> partition_result<std::string_view> {
+auto str::partition_view(std::string_view s, const std::regex& pattern) -> ternary<std::string_view> {
     std::match_results<std::string_view::const_iterator> match;
     bool ret = std::regex_search(s.begin(), s.end(), match, pattern);
     if (!ret) {
@@ -3729,7 +3729,7 @@ auto str::partition_view(std::string_view s, const std::regex& pattern) -> parti
     return {s.substr(0, pos), s.substr(pos, len), s.substr(pos + len, (s.size() - pos - len))};
 }
 
-auto str::partition_view(std::string_view s, const view_search_proc& proc) -> partition_result<std::string_view> {
+auto str::partition_view(std::string_view s, const view_search_proc& proc) -> ternary<std::string_view> {
     auto result = proc(s);
     if (!result) {
         return {s, {}, {}};
@@ -3740,27 +3740,27 @@ auto str::partition_view(std::string_view s, const view_search_proc& proc) -> pa
     return {s.substr(0, static_cast<size_type>(matched.data() - s.data())), matched, right};
 }
 
-auto str::partition(std::string_view s, const charset_type& charset) -> partition_result<std::string> {
+auto str::partition(std::string_view s, const charset_type& charset) -> ternary<std::string> {
     auto abc = partition_view(s, charset);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
 
-auto str::partition(std::string_view s, const char_match_proc& proc) -> partition_result<std::string> {
+auto str::partition(std::string_view s, const char_match_proc& proc) -> ternary<std::string> {
     auto abc = partition_view(s, proc);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
 
-auto str::partition(std::string_view s, std::string_view sep) -> partition_result<std::string> {
+auto str::partition(std::string_view s, std::string_view sep) -> ternary<std::string> {
     auto abc = partition_view(s, sep);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
 
-auto str::partition(std::string_view s, const std::regex& pattern) -> partition_result<std::string> {
+auto str::partition(std::string_view s, const std::regex& pattern) -> ternary<std::string> {
     auto abc = partition_view(s, pattern);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
 
-auto str::partition(std::string_view s, const view_search_proc& proc) -> partition_result<std::string> {
+auto str::partition(std::string_view s, const view_search_proc& proc) -> ternary<std::string> {
     auto abc = partition_view(s, proc);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
@@ -5030,13 +5030,13 @@ auto str::replace_rawname(std::string_view s, std::string_view new_name) -> std:
     return result;
 }
 
-auto str::split_rawname_view(std::string_view s) -> partition_result<std::string_view> {
+auto str::split_rawname_view(std::string_view s) -> ternary<std::string_view> {
     auto [dirname, basename] = split_basename_view(s);
     auto [rawname, extname] = split_extname_view(basename);
     return {dirname, rawname, extname};
 }
 
-auto str::split_rawname(std::string_view s) -> partition_result<std::string> {
+auto str::split_rawname(std::string_view s) -> ternary<std::string> {
     auto items = split_rawname_view(s);
     return {std::string{items[0]}, std::string{items[1]}, std::string{items[2]}};
 }

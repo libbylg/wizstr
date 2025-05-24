@@ -33,4 +33,23 @@ private:
     typename ContainerType::const_iterator itr;
 };
 
+class to_search_proc {
+public:
+    explicit to_search_proc(std::string_view sep)
+        : sep_{sep} {
+    }
+
+    auto operator()(std::string_view search_range) -> std::optional<std::string_view> {
+        auto pos = search_range.find(sep_);
+        if (pos == std::string::npos) {
+            return std::nullopt;
+        }
+
+        return search_range.substr(pos, sep_.size());
+    }
+
+private:
+    std::string sep_;
+};
+
 #endif // STR_TEST_TO_PROC_HPP
