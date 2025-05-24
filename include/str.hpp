@@ -950,7 +950,7 @@ struct str {
     /// @param ch, charset 指生成的字符串中的字符的范围
     static auto random(size_type n, const number_provider_proc& proc) -> std::string;
     static auto random(size_type n, std::string_view charset, const number_provider_proc& proc) -> std::string;
-    static auto random(size_type n, charset_type charset, const number_provider_proc& proc) -> std::string;
+    static auto random(size_type n, const charset_type& charset, const number_provider_proc& proc) -> std::string;
 
     //! 生成：
     ///
@@ -960,7 +960,7 @@ struct str {
     /// @param charset 指定生成的字符串中的字符的范围
     /// @param proc 随机函数
     static auto random_fill(std::string& s, std::string_view charset, const number_provider_proc& proc) -> std::string&;
-    static auto random_fill(std::string& s, charset_type charset, const number_provider_proc& proc) -> std::string&;
+    static auto random_fill(std::string& s, const charset_type& charset, const number_provider_proc& proc) -> std::string&;
     static auto random_fill(std::string& s, const number_provider_proc& proc) -> std::string&;
 
     //! 重排：
@@ -1228,40 +1228,35 @@ struct str {
     /// * `std::string_view` : 表示子串作为分隔符
     /// * `view_search_proc` : 同样以子串作为分隔符
     /// @return 返回依次由分隔符左侧的子串，分隔符自身，分隔符右侧子串组成的 tuple
-    static auto partition_range(std::string_view s, charset_type charset) -> partition_result<range_type>;
+    static auto partition_range(std::string_view s, const charset_type& charset) -> partition_result<range_type>;
     static auto partition_range(std::string_view s, const char_match_proc& proc) -> partition_result<range_type>;
     static auto partition_range(std::string_view s, std::string_view sep) -> partition_result<range_type>;
     static auto partition_range(std::string_view s, const std::regex& pattern) -> partition_result<range_type>;
     static auto partition_range(std::string_view s, const substr_search_proc& proc) -> partition_result<range_type>;
     //
-    static auto partition_view(std::string_view s, charset_type charset) -> partition_result<std::string_view>;
+    static auto partition_view(std::string_view s, const charset_type& charset) -> partition_result<std::string_view>;
     static auto partition_view(std::string_view s, const char_match_proc& proc) -> partition_result<std::string_view>;
     static auto partition_view(std::string_view s, std::string_view sep) -> partition_result<std::string_view>;
     static auto partition_view(std::string_view s, const std::regex& pattern) -> partition_result<std::string_view>;
     static auto partition_view(std::string_view s, const view_search_proc& proc) -> partition_result<std::string_view>;
     //
-    static auto partition(std::string_view s, charset_type charset) -> partition_result<std::string>;
+    static auto partition(std::string_view s, const charset_type& charset) -> partition_result<std::string>;
     static auto partition(std::string_view s, const char_match_proc& proc) -> partition_result<std::string>;
     static auto partition(std::string_view s, std::string_view sep) -> partition_result<std::string>;
     static auto partition(std::string_view s, const std::regex& pattern) -> partition_result<std::string>;
     static auto partition(std::string_view s, const view_search_proc& proc) -> partition_result<std::string>;
     //
-    static auto rpartition_view(std::string_view s,
-        charset_type sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto rpartition_view(std::string_view s,
-        const char_match_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto rpartition_view(std::string_view s,
-        std::string_view sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto rpartition_view(std::string_view s,
-        const std::regex& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
-    static auto rpartition_view(std::string_view s,
-        const view_search_proc& sep) -> std::tuple<std::string_view, std::string_view, std::string_view>;
+    static auto rpartition_view(std::string_view s, const charset_type& sep) -> partition_result<std::string_view>;
+    static auto rpartition_view(std::string_view s, const char_match_proc& sep) -> partition_result<std::string_view>;
+    static auto rpartition_view(std::string_view s, std::string_view sep) -> partition_result<std::string_view>;
+    static auto rpartition_view(std::string_view s, const std::regex& sep) -> partition_result<std::string_view>;
+    static auto rpartition_view(std::string_view s, const view_search_proc& sep) -> partition_result<std::string_view>;
     //
-    static auto rpartition(std::string_view s, charset_type sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto rpartition(std::string_view s, const char_match_proc& sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto rpartition(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto rpartition(std::string_view s, const std::regex& sep) -> std::tuple<std::string, std::string, std::string>;
-    static auto rpartition(std::string_view s, const view_search_proc& sep) -> std::tuple<std::string, std::string, std::string>;
+    static auto rpartition(std::string_view s, const charset_type& sep) -> partition_result<std::string>;
+    static auto rpartition(std::string_view s, const char_match_proc& sep) -> partition_result<std::string>;
+    static auto rpartition(std::string_view s, std::string_view sep) -> partition_result<std::string>;
+    static auto rpartition(std::string_view s, const std::regex& sep) -> partition_result<std::string>;
+    static auto rpartition(std::string_view s, const view_search_proc& sep) -> partition_result<std::string>;
 
     //! 字符串分块
     static auto next_chunk_range(std::string_view s, size_type& pos, size_type max_n) -> std::optional<range_type>;

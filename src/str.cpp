@@ -2895,7 +2895,7 @@ auto str::random(size_type n, std::string_view charset, const number_provider_pr
     return result;
 }
 
-auto str::random(size_type n, charset_type charset, const number_provider_proc& proc) -> std::string {
+auto str::random(size_type n, const charset_type& charset, const number_provider_proc& proc) -> std::string {
     return random(n, charset.string(), proc);
 }
 
@@ -2911,7 +2911,7 @@ auto str::random_fill(std::string& s, std::string_view charset, const number_pro
     return s;
 }
 
-auto str::random_fill(std::string& s, charset_type charset, const number_provider_proc& proc) -> std::string& {
+auto str::random_fill(std::string& s, const charset_type& charset, const number_provider_proc& proc) -> std::string& {
     return random_fill(s, charset.string(), proc);
 }
 
@@ -3636,14 +3636,13 @@ auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep) 
 // auto str::split_csv(std::string_view s) -> std::vector<std::string> {
 // }
 
-auto str::partition_range(std::string_view s, charset_type charset) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, const charset_type& charset) -> partition_result<range_type> {
     return partition_range(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
     });
 }
 
-auto str::partition_range(std::string_view s,
-    const char_match_proc& proc) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, const char_match_proc& proc) -> partition_result<range_type> {
     auto itr = std::find_if(s.begin(), s.end(), proc);
     if (itr == s.cend()) {
         return {range_type{0, s.size()}, range_type{}, range_type{}};
@@ -3654,12 +3653,16 @@ auto str::partition_range(std::string_view s,
 }
 
 auto str::partition_range(std::string_view s, std::string_view sep) -> partition_result<range_type> {
+    if (s.empty() || sep.empty()) {
+        return {range_type{0, s.size()}, range_type{}, range_type{}};
+    }
+
     size_type pos = s.find(sep, 0);
     if (pos >= s.size()) {
         return {range_type{0, s.size()}, range_type{}, range_type{}};
     }
 
-    return {range_type{0, pos}, range_type{pos, 1}, range_type{(pos + 1), (s.size() - (pos + 1))}};
+    return {range_type{0, pos}, range_type{pos, sep.size()}, range_type{(pos + sep.size()), (s.size() - (pos + sep.size()))}};
 }
 
 auto str::partition_range(std::string_view s, const std::regex& pattern) -> partition_result<range_type> {
@@ -3671,11 +3674,10 @@ auto str::partition_range(std::string_view s, const std::regex& pattern) -> part
 
     size_type pos = match.position(0);
     size_type len = match.length(0);
-    return {range_type{0, pos}, range_type{pos, len}, range_type{(pos + len), (s.size() - pos - len)}};
+    return {range_type{0, pos}, range_type{pos, len}, range_type{(pos + len), (s.size() - (pos + len))}};
 }
 
-auto str::partition_range(std::string_view s,
-    const substr_search_proc& proc) -> partition_result<range_type> {
+auto str::partition_range(std::string_view s, const substr_search_proc& proc) -> partition_result<range_type> {
     size_type pos = 0;
     auto matched = proc(s, pos);
     if (matched == str::npos) {
@@ -3686,7 +3688,7 @@ auto str::partition_range(std::string_view s,
     return {range_type{0, matched}, range_type{matched, (pos - matched)}, right};
 }
 
-auto str::partition_view(std::string_view s, charset_type charset) -> partition_result<std::string_view> {
+auto str::partition_view(std::string_view s, const charset_type& charset) -> partition_result<std::string_view> {
     return partition_view(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
     });
@@ -3703,6 +3705,10 @@ auto str::partition_view(std::string_view s, const char_match_proc& proc) -> par
 }
 
 auto str::partition_view(std::string_view s, std::string_view sep) -> partition_result<std::string_view> {
+    if (s.empty() || sep.empty()) {
+        return {s, {}, {}};
+    }
+
     size_type pos = s.find(sep, 0);
     if (pos >= s.size()) {
         return {s, {}, {}};
@@ -3734,7 +3740,7 @@ auto str::partition_view(std::string_view s, const view_search_proc& proc) -> pa
     return {s.substr(0, static_cast<size_type>(matched.data() - s.data())), matched, right};
 }
 
-auto str::partition(std::string_view s, charset_type charset) -> partition_result<std::string> {
+auto str::partition(std::string_view s, const charset_type& charset) -> partition_result<std::string> {
     auto abc = partition_view(s, charset);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }

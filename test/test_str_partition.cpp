@@ -22,6 +22,7 @@ TEST(test_str, partition) {
         ASSERT_EQ(str::partition("::", "::"), (std::array{"", "::", ""}));
         ASSERT_EQ(str::partition("abc", "::"), (std::array{"abc", "", ""}));
         ASSERT_EQ(str::partition("", "::"), (std::array{"", "", ""}));
-        // ASSERT_EQ(str::partition("aaa::bbb", ""), (std::array{"aaa", "::", "bbb"}));
+        ASSERT_EQ(str::partition("aaa::bbb", ""), (std::array{"aaa::bbb", "", ""}));
+        ASSERT_EQ(str::partition("", ""), (std::array{"", "", ""}));
     }
 }
