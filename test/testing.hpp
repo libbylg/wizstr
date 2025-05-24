@@ -106,7 +106,7 @@ struct testcase : public testcase_head {
         curr_assertion_fails++;
 
         // 如果断言的条件无法满足，输出行号（这里的格式大部分 IDE 能自动解析）
-        std::printf("%s:%lu\n", file, lineno);
+        std::printf("%s:%zu\n", file, lineno);
 
         // 输出断言信息（这个实现得并不好，但是对于大多数项目来说够用了）
         va_list valist;
@@ -128,9 +128,9 @@ struct testcase : public testcase_head {
     static inline bool print_report(size_t count_alln, size_t count_pass, size_t count_fail) {
         std::printf("----------------------------\n");
         const char* tag_xxxx_enter = ((count_fail == 0) ? tag_pass_enter : tag_fail_enter);
-        std::printf("%sTotal : %lu%s\n", tag_xxxx_enter, count_alln, tag_xxxx_leave);
-        std::printf("%sPass  : %lu%s\n", tag_xxxx_enter, count_pass, tag_xxxx_leave);
-        std::printf("%sFail  : %lu%s\n", tag_xxxx_enter, count_fail, tag_xxxx_leave);
+        std::printf("%sTotal : %zu%s\n", tag_xxxx_enter, count_alln, tag_xxxx_leave);
+        std::printf("%sPass  : %zu%s\n", tag_xxxx_enter, count_pass, tag_xxxx_leave);
+        std::printf("%sFail  : %zu%s\n", tag_xxxx_enter, count_fail, tag_xxxx_leave);
         std::fflush(stdout);
         return (count_fail == 0);
     }

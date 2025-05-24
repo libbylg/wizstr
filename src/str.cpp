@@ -2445,7 +2445,7 @@ auto str::numbering_lines(std::string_view s, size_type from_n) -> std::string {
     result.reserve(s.size());
     foreach_lines(s, true, [&result, from_n](size_type line_index, std::string_view line_text) -> int {
         value_type buf[64]{0};
-        int len = snprintf(buf, sizeof(buf), "%lu ", from_n + line_index);
+        int len = snprintf(buf, sizeof(buf), "%zu ", from_n + line_index);
         assert(len >= 0);
         result.append(std::string{buf, static_cast<size_type>(len)});
         result.append(line_text);
@@ -5735,7 +5735,7 @@ auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, st
 
 auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void {
     value_type offset_buffer[32];
-    int wlen = std::snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%lX" : "%lx"), offset);
+    int wlen = std::snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%zX" : "%zx"), offset);
     assert(wlen > 0);
     if (wlen < offset_width) {
         std::string zeros{str::repeat('0', offset_width - wlen)};
