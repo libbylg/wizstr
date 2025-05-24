@@ -46,6 +46,8 @@ TEST(test_str, expand_envs) {
         ASSERT_EQ(str::expand_envs("${HOME aaa", true), "${HOME aaa");
         ASSERT_EQ(str::expand_envs("abc$"), "abc$");
         ASSERT_EQ(str::expand_envs("abc$", true), "abc$");
+        ASSERT_EQ(str::expand_envs("abc${}", true), "abc${}");
+        ASSERT_EQ(str::expand_envs("abc${}", false), "abc");
     }
 
     SECTION("空串") {
