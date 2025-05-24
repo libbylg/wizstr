@@ -43,8 +43,8 @@ TEST(test_str, partition_view) {
         ASSERT_EQ(str::partition_view("aaa,", [](str::value_type ch) -> int { return (ch == ','); }), (std::array{"aaa", ",", ""}));
         ASSERT_EQ(str::partition_view(":", [](str::value_type ch) -> int { return (ch == ':'); }), (std::array{"", ":", ""}));
         ASSERT_EQ(str::partition_view("", [](str::value_type ch) -> int { return (ch == ','); }), (std::array{"", "", ""}));
-        ASSERT_EQ(str::partition_view("abc", [](str::value_type ch) -> int { return false; }), (std::array{"abc", "", ""}));
-        ASSERT_EQ(str::partition_view("", [](str::value_type ch) -> int { return false; }), (std::array{"", "", ""}));
+        ASSERT_EQ(str::partition_view("abc", [](str::value_type) -> int { return false; }), (std::array{"abc", "", ""}));
+        ASSERT_EQ(str::partition_view("", [](str::value_type) -> int { return false; }), (std::array{"", "", ""}));
     }
     SECTION("view-proc分割") {
         ASSERT_EQ(str::partition_view("aaa::bbb", to_search_proc{"::"}), (std::array{"aaa", "::", "bbb"}));
