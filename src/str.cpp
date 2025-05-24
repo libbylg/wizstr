@@ -3605,7 +3605,16 @@ auto str::split_path(std::string_view s, const view_consumer_proc& proc) -> void
     }
 }
 
-auto str::split_path(std::string_view s) -> std::vector<std::string_view> {
+auto str::split_path(std::string_view s) -> std::vector<std::string> {
+    std::vector<std::string> result;
+    str::split_path(s, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
+}
+
+auto str::split_path_view(std::string_view s) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
     str::split_path(s, [&result](std::string_view item) -> int {
         result.emplace_back(item);
@@ -3624,7 +3633,16 @@ auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep, 
     });
 }
 
-auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep) -> std::vector<std::string_view> {
+auto str::split_searchpath(std::string_view s, bool keep_empty, value_type sep) -> std::vector<std::string> {
+    std::vector<std::string> result;
+    str::split_searchpath(s, keep_empty, sep, [&result](std::string_view item) -> int {
+        result.emplace_back(item);
+        return 0;
+    });
+    return result;
+}
+
+auto str::split_searchpath_view(std::string_view s, bool keep_empty, value_type sep) -> std::vector<std::string_view> {
     std::vector<std::string_view> result;
     str::split_searchpath(s, keep_empty, sep, [&result](std::string_view item) -> int {
         result.emplace_back(item);
@@ -4654,7 +4672,11 @@ auto str::expand_tabs_inplace(std::string& s, size_type tab_size) -> std::string
 
 auto str::expand_user(std::string_view s) -> std::string {
     if (((s.size() == 1) && (s[0] == '~')) || ((s.size() >= 2) && (s[0] == '~') && (s[1] == '/'))) {
+#ifdef _WIN32
+        const char* ptr_home = getenv("USERPROFILE");
+#else
         const char* ptr_home = getenv("HOME");
+#endif
         if (ptr_home == nullptr) {
             return std::string{s};
         }

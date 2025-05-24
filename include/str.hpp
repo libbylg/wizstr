@@ -1186,10 +1186,8 @@ struct str {
     ///              由于调用方无法感知是否有剩余数据未拆分完，因此，max_n 通常只用在舍弃剩余字符串是无关紧要的情况下。
     /// @param proc 输出拆分出来的每个键值对
     /// @return 返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
-    static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
-        const view_pair_consumer_proc& proc) -> void;
-    static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":",
-        size_type max_n = npos) -> std::map<std::string, std::string>;
+    static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
+    static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":", size_type max_n = npos) -> std::map<std::string, std::string>;
 
     //! 按照换行符将字符串 s，拆分成多行
     ///
@@ -1200,10 +1198,13 @@ struct str {
 
     // 将字符串 s 视作目录，按照路径分隔符，拆分成多个组成部分
     static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto split_path(std::string_view s) -> std::vector<std::string_view>;
+    static auto split_path(std::string_view s) -> std::vector<std::string>;
+    static auto split_path_view(std::string_view s) -> std::vector<std::string_view>;
+
+    // 将字符串 s 视作搜索目录，按照搜索路径分隔符，拆分成多个路径
     static auto split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
-    static auto split_searchpath(std::string_view s, bool keep_empty = false,
-        value_type sep = ':') -> std::vector<std::string_view>;
+    static auto split_searchpath(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string>;
+    static auto split_searchpath_view(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string_view>;
 
     // // 拆分 csv 数据
     // static auto split_csv(std::string_view s) -> std::vector<std::string>;

@@ -12,22 +12,7 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-
-#include <list>
-
-TEST(test_str, join_searchpath) {
-    SECTION("一般场景") {
-        ASSERT_EQ(str::join_searchpath({"A", "B", "C"}), "A:B:C");
-        ASSERT_EQ(str::join_searchpath({"A", "B"}), "A:B");
-        ASSERT_EQ(str::join_searchpath({"A"}), "A");
-    }
-    SECTION("空串") {
-        ASSERT_EQ(str::join_searchpath({""}), "");
-        ASSERT_EQ(str::join_searchpath({"", ""}), "");
-        ASSERT_EQ(str::join_searchpath({"", "", "AAA"}), "AAA");
-        ASSERT_EQ(str::join_searchpath({"", "A", "B", "", "C", ""}), "A:B:C");
-    }
-}
+#include "test-compares.hpp"
 
 TEST(test_str, split_searchpath) {
     SECTION("空串") {
