@@ -14,9 +14,32 @@
 #include "str.hpp"
 
 TEST(test_str, encode_base64) {
-    ASSERT_EQ(str::encode_base64(""), "");
-    ASSERT_EQ(str::encode_base64("a"), "YQ==");
-    ASSERT_EQ(str::encode_base64("ab"), "YWI=");
-    ASSERT_EQ(str::encode_base64("abc"), "YWJj");
-    ASSERT_EQ(str::encode_base64("abcdef"), "YWJjZGVm");
+    SECTION("一般情况") {
+        ASSERT_EQ(str::encode_base64(""), "");
+        ASSERT_EQ(str::encode_base64("a"), "YQ==");
+        ASSERT_EQ(str::encode_base64("ab"), "YWI=");
+        ASSERT_EQ(str::encode_base64("abc"), "YWJj");
+        ASSERT_EQ(str::encode_base64("abcdef"), "YWJjZGVm");
+    }
+    GROUP("proc") {
+        SECTION("proc:一般情况") {
+            std::string s;
+            str::encode_base64("abcdef", [&s](std::string_view item) -> int {
+                s.append(item);
+                return 0;
+            });
+            ASSERT_EQ(s, "YWJjZGVm");
+        }
+        SECTION("proc:提起终止") {
+            std::string s;
+            str::encode_base64("abcdef", [&s](std::string_view item) -> int {
+                s.append(item);
+                if (s.size() >= 3) {
+                    return -1;
+                }
+                return 0;
+            });
+            ASSERT_EQ(s, "YWJj");
+        }
+    }
 }
