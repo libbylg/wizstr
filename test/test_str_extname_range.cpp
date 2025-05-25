@@ -13,133 +13,133 @@
 
 #include "str.hpp"
 
-TEST(test_str, extname) {
+TEST(test_str, extname_range) {
     SECTION("简单裸名字") {
         std::string s;
         s = "abc";
-        ASSERT_EQ(str::extname(s), s.substr(3));
+        ASSERT_EQ(str::extname_range(s), str::range(3, 0));
     }
     SECTION("简单裸名字带扩展名") {
         std::string s;
         s = "abc.ext";
-        ASSERT_EQ(str::extname(s), s.substr(3));
+        ASSERT_EQ(str::extname_range(s), str::range(3, 4));
     }
     SECTION("裸名字带路径") {
         std::string s;
         s = "abc/def";
-        ASSERT_EQ(str::extname(s), s.substr(7));
+        ASSERT_EQ(str::extname_range(s), str::range(7, 0));
     }
     SECTION("只有路径无basename") {
         std::string s;
         s = "abc/";
-        ASSERT_EQ(str::extname(s), s.substr(4));
+        ASSERT_EQ(str::extname_range(s), str::range(4, 0));
     }
     SECTION("裸名字带路径路径中有点") {
         std::string s;
         s = "/abc.def/basename.ext";
-        ASSERT_EQ(str::extname(s), s.substr(17));
+        ASSERT_EQ(str::extname_range(s), str::range(17, 4));
     }
     SECTION("裸名字带路径路径中有点+") {
         std::string s;
         s = "/abc.def/";
-        ASSERT_EQ(str::extname(s), s.substr(9));
+        ASSERT_EQ(str::extname_range(s), str::range(9, 0));
     }
     SECTION("basename为隐藏文件，隐藏文件点开头不是只有扩展名") {
         std::string s;
         s = "abc/.hidefile";
-        ASSERT_EQ(str::extname(s), s.substr(13));
+        ASSERT_EQ(str::extname_range(s), str::range(13, 0));
     }
     SECTION("basename为隐藏文件，隐藏文件点开头，但是还有额外扩展名") {
         std::string s;
         s = "abc/.hidefile.ext";
-        ASSERT_EQ(str::extname(s), s.substr(13));
+        ASSERT_EQ(str::extname_range(s), str::range(13, 4));
     }
     SECTION("basename带多个点") {
         std::string s;
         s = "abc/normal-file.xxx.ext";
-        ASSERT_EQ(str::extname(s), s.substr(19));
+        ASSERT_EQ(str::extname_range(s), str::range(19, 4));
     }
     SECTION("basename位置只有点1") {
         std::string s;
         s = "abc/.";
-        ASSERT_EQ(str::extname(s), s.substr(5));
+        ASSERT_EQ(str::extname_range(s), str::range(5, 0));
     }
     SECTION("basename位置只有点2") {
         std::string s;
         s = "..";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 0));
         s = "/..";
-        ASSERT_EQ(str::extname(s), s.substr(3));
+        ASSERT_EQ(str::extname_range(s), str::range(3, 0));
         s = "abc/..";
-        ASSERT_EQ(str::extname(s), s.substr(6));
+        ASSERT_EQ(str::extname_range(s), str::range(6, 0));
     }
     SECTION("basename位置只有点3") {
         std::string s;
         s = "...";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 1));
         s = "/...";
-        ASSERT_EQ(str::extname(s), s.substr(3));
+        ASSERT_EQ(str::extname_range(s), str::range(3, 1));
         s = "abc/...";
-        ASSERT_EQ(str::extname(s), s.substr(6));
+        ASSERT_EQ(str::extname_range(s), str::range(6, 1));
     }
     SECTION("basename位置,点在最后") {
         std::string s;
         s = ".abc.";
-        ASSERT_EQ(str::extname(s), s.substr(4));
+        ASSERT_EQ(str::extname_range(s), str::range(4, 1));
         s = "abc.";
-        ASSERT_EQ(str::extname(s), s.substr(3));
+        ASSERT_EQ(str::extname_range(s), str::range(3, 1));
         s = ".abc..";
-        ASSERT_EQ(str::extname(s), s.substr(5));
+        ASSERT_EQ(str::extname_range(s), str::range(5, 1));
         s = "abc..";
-        ASSERT_EQ(str::extname(s), s.substr(4));
+        ASSERT_EQ(str::extname_range(s), str::range(4, 1));
     }
     SECTION("basename位置,多点前缀1") {
         std::string s;
         s = ".abc";
-        ASSERT_EQ(str::extname(s), s.substr(4));
+        ASSERT_EQ(str::extname_range(s), str::range(4, 0));
         s = "kkk/.abc";
-        ASSERT_EQ(str::extname(s), s.substr(8));
+        ASSERT_EQ(str::extname_range(s), str::range(8, 0));
     }
     SECTION("basename位置,多点前缀1") {
         std::string s;
         s = "..abc";
-        ASSERT_EQ(str::extname(s), s.substr(1));
+        ASSERT_EQ(str::extname_range(s), str::range(1, 4));
     }
     SECTION("basename位置,多点前缀1") {
         std::string s;
         s = "...abc";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 4));
     }
     SECTION("全空白字符") {
         std::string s;
         s = " \t ";
-        ASSERT_EQ(str::extname(s), s.substr(3));
+        ASSERT_EQ(str::extname_range(s), str::range(3, 0));
     }
     SECTION("几个特殊场景") {
         std::string s;
         s = "";
-        ASSERT_EQ(str::extname(s), s.substr(0));
+        ASSERT_EQ(str::extname_range(s), str::range(0, 0));
 
         s = "/";
-        ASSERT_EQ(str::extname(s), s.substr(1));
+        ASSERT_EQ(str::extname_range(s), str::range(1, 0));
         s = ".";
-        ASSERT_EQ(str::extname(s), s.substr(1));
+        ASSERT_EQ(str::extname_range(s), str::range(1, 0));
         s = "a";
-        ASSERT_EQ(str::extname(s), s.substr(1));
+        ASSERT_EQ(str::extname_range(s), str::range(1, 0));
 
         s = "ab";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 0));
         s = "a.";
-        ASSERT_EQ(str::extname(s), s.substr(1));
+        ASSERT_EQ(str::extname_range(s), str::range(1, 1));
         s = ".a";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 0));
         s = "..";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 0));
         s = "/.";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 0));
         s = "./";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 0));
         s = "//";
-        ASSERT_EQ(str::extname(s), s.substr(2));
+        ASSERT_EQ(str::extname_range(s), str::range(2, 0));
     }
 }

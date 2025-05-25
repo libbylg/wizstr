@@ -1460,6 +1460,10 @@ struct str {
     static auto is_absolute(std::string_view s) -> bool;
     static auto is_relative(std::string_view s) -> bool;
 
+    static auto basename_pos(std::string_view s) -> size_type;
+    static auto extname_pos(std::string_view s) -> size_type;
+    static auto dirname_pos(std::string_view s) -> size_type;
+    
     //! 路径处理函数：基础定位函数
     ///
     /// 将入参 s 视作文件路径：

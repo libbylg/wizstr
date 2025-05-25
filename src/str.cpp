@@ -4760,11 +4760,9 @@ auto str::normpath_inplace(std::string& s) -> std::string& {
 // auto str::is_absolute(std::string_view s) -> bool;
 // auto str::is_relative(std::string_view s) -> bool;
 
-// 处理路径中文件名的部分
-auto str::basename_ptr(std::string_view s) -> std::string::const_pointer {
-    // if (s.empty() || (s == ".") || (s == "..")) [[unlikely]] {
-    if (s.empty()) [[unlikely]] {
-        return (s.data() + s.size());
+auto str::basename_pos(std::string_view s) -> size_type {
+    if (s.empty() || (s == "/") || (s == ".") || (s == "..")) [[unlikely]] {
+        return s.size();
     }
 
     const_pointer ptr = s.data() + s.size();
@@ -4781,34 +4779,59 @@ auto str::basename_ptr(std::string_view s) -> std::string::const_pointer {
 #endif
     }
 
-    // auto base_view = std::string_view{ptr, s.size() - (ptr - s.data())};
-    // if ((base_view == "..") || (base_view == ".")) {
-    //     return ptr += base_view.size();
-    // }
-
-    return ptr;
-}
-
-// 扩展名相关操作
-auto str::extname_ptr(std::string_view s) -> std::string::const_pointer {
-    if (s.empty()) {
-        return (s.data() + s.size());
+    auto base_view = std::string_view{ptr, s.size() - (ptr - s.data())};
+    if ((base_view == "..") || (base_view == ".")) {
+        return (ptr - s.data()) + base_view.size();
     }
 
-    std::string::const_pointer base_ptr = basename_ptr(s);
-    std::string::const_pointer ptr = s.data() + s.size() - 1;
+    return ptr - s.data();
+}
 
-    while (ptr > base_ptr) {
-        if (*ptr == '.') {
-            return ptr;
+auto str::extname_pos(std::string_view s) -> size_type {
+    if (s.empty()) {
+        return 0;
+    }
+
+    size_type base_pos = basename_pos(s);
+    size_type base_len = (s.size() - base_pos);
+    // 场景："." or "a" or "" or "abc/"
+    if (base_len < 2) {
+        return s.size();
+    }
+
+    if (base_len == 2) {
+        // 场景："a."
+        if ((s[base_pos] != '.') && (s[base_pos + 1] == '.')) {
+            return s.size() - 1;
+        }
+
+        // 场景：".a" or ".." or "ab"
+        return s.size();
+    }
+
+    std::string::const_pointer base_ptr = s.data() + base_pos;
+    std::string::const_pointer ptr = s.data() + s.size() - 1;
+    while (ptr >= base_ptr) {
+        if (*ptr == '.') [[unlikely]] {
+            // 场景："xxx/."   "xxx/.abc"
+            if (ptr == base_ptr) {
+                return s.size();
+            }
+
+            // 场景："xxx/abc.xxx"
+            return (ptr - s.data());
         }
         ptr--;
     }
 
-    return s.data() + s.size();
+    return s.size();
 }
 
-auto str::dirname_ptr(std::string_view s) -> std::string::const_pointer {
+auto str::dirname_pos(std::string_view s) -> size_type {
+    if (s.empty() || (s == "/") || (s == ".") || (s == "..")) [[unlikely]] {
+        return s.size();
+    }
+
     auto ptr = basename_ptr(s);
     while (ptr > s.data()) {
         if (*(ptr - 1) != '/') {
@@ -4817,7 +4840,24 @@ auto str::dirname_ptr(std::string_view s) -> std::string::const_pointer {
 
         ptr--;
     }
-    return ptr;
+
+    if (ptr == s.data() && (*ptr == '/')) {
+        return 1;
+    }
+
+    return ptr - s.data();
+}
+
+auto str::basename_ptr(std::string_view s) -> std::string::const_pointer {
+    return s.data() + basename_pos(s);
+}
+
+auto str::extname_ptr(std::string_view s) -> std::string::const_pointer {
+    return s.data() + extname_pos(s);
+}
+
+auto str::dirname_ptr(std::string_view s) -> std::string::const_pointer {
+    return s.data() + dirname_pos(s);
 }
 
 auto str::dirname_range(std::string_view s) -> range_type {
@@ -4874,10 +4914,8 @@ auto str::replace_dirname(std::string_view s, std::string_view new_dir) -> std::
 }
 
 auto str::split_dirname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
-    auto base_ptr = str::basename_ptr(s);
-    auto dir_ptr = str::dirname_ptr({s.data(), static_cast<size_type>(base_ptr - s.data())});
-    return {{s.data(), static_cast<size_type>(dir_ptr - s.data())},
-        {base_ptr, static_cast<size_type>((s.data() + s.size()) - base_ptr)}};
+    auto pos = str::dirname_pos(s);
+    return {s.substr(0, pos), s.substr(pos)};
 }
 
 auto str::split_dirname(std::string_view s) -> std::tuple<std::string, std::string> {
@@ -4901,13 +4939,12 @@ auto str::replace_dirname_inplace(std::string& s, std::string_view new_name) -> 
 }
 
 auto str::basename_range(std::string_view s) -> range_type {
-    auto ptr = str::basename_ptr(s);
-    return range_type{static_cast<size_type>(ptr - s.data()), static_cast<size_type>(s.data() + s.size() - ptr)};
+    auto pos = str::basename_pos(s);
+    return range_type{pos, static_cast<size_type>(s.size() - pos)};
 }
 
 auto str::basename_view(std::string_view s) -> std::string_view {
-    auto ptr = str::basename_ptr(s);
-    return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
+    return s.substr(str::basename_pos(s));
 }
 
 auto str::basename(std::string_view s) -> std::string {
@@ -4915,8 +4952,7 @@ auto str::basename(std::string_view s) -> std::string {
 }
 
 auto str::remove_basename_view(std::string_view s) -> std::string_view {
-    auto ptr = str::basename_ptr(s);
-    return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
+    return std::string_view{s.data(), str::basename_pos(s)};
 }
 
 auto str::remove_basename(std::string_view s) -> std::string {
@@ -4924,18 +4960,16 @@ auto str::remove_basename(std::string_view s) -> std::string {
 }
 
 auto str::replace_basename(std::string_view s, std::string_view newname) -> std::string {
-    auto ptr = str::basename_ptr(s);
+    auto pos = str::basename_pos(s);
     std::string result;
-    result.reserve((ptr - s.data()) + newname.size());
-    result.append(s.data(), static_cast<size_type>(ptr - s.data()));
-    result.append(newname);
+    result.reserve(pos + newname.size());
+    result.append(s.data(), pos).append(newname);
     return result;
 }
 
 auto str::split_basename_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
-    auto ptr = str::basename_ptr(s);
-    return {{s.data(), static_cast<size_type>(ptr - s.data())},
-        {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+    auto pos = str::basename_pos(s);
+    return {{s.data(), pos}, s.substr(pos)};
 }
 
 auto str::split_basename(std::string_view s) -> std::tuple<std::string, std::string> {
@@ -4959,23 +4993,20 @@ auto str::replace_basename_inplace(std::string& s, std::string_view new_name) ->
 }
 
 auto str::extname_range(std::string_view s) -> range_type {
-    auto ptr = str::extname_ptr(s);
-    return range_type{static_cast<size_type>(ptr - s.data()), static_cast<size_type>(s.data() + s.size() - ptr)};
+    auto pos = str::extname_pos(s);
+    return range_type{pos, static_cast<size_type>(s.size() - pos)};
 }
 
 auto str::extname_view(std::string_view s) -> std::string_view {
-    auto range = str::extname_range(s);
-    return s.substr(range.begin_pos(), range.size());
+    return s.substr(str::extname_pos(s));
 }
 
 auto str::extname(std::string_view s) -> std::string {
-    auto ptr = str::extname_ptr(s);
-    return std::string{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
+    return std::string{extname_view(s)};
 }
 
 auto str::remove_extname_view(std::string_view s) -> std::string_view {
-    auto ptr = str::extname_ptr(s);
-    return std::string_view{s.data(), static_cast<size_type>(ptr - s.data())};
+    return s.substr(0, str::extname_pos(s));
 }
 
 auto str::remove_extname(std::string_view s) -> std::string {
