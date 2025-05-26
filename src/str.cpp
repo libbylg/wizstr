@@ -4861,16 +4861,12 @@ auto str::dirname_pos(std::string_view s) -> size_type {
 // }
 
 auto str::dirname_range(std::string_view s) -> range_type {
-    auto pos = str::dirname_pos(s);
-    if (!s.empty() && (pos == 0) && (s[pos] == '/')) {
-        return range_type{0, 1};
-    }
-    return range_type{0, pos};
+    return range_type{0, str::dirname_pos(s)};
 }
 
 auto str::dirname_view(std::string_view s) -> std::string_view {
     auto range = dirname_range(s);
-    return std::string_view{s.data() + range.begin_pos(), range.size()};
+    return s.substr(range.pos, range.len);
 }
 
 auto str::dirname(std::string_view s) -> std::string {

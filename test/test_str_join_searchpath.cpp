@@ -12,19 +12,49 @@
 #include "testing.hpp"
 
 #include "str.hpp"
+#include "test-to_proc.hpp"
 
 #include <list>
 
 TEST(test_str, join_searchpath) {
-    SECTION("一般场景") {
+    SECTION("容器+默认sep") {
         ASSERT_EQ(str::join_searchpath({"A", "B", "C"}), "A:B:C");
         ASSERT_EQ(str::join_searchpath({"A", "B"}), "A:B");
         ASSERT_EQ(str::join_searchpath({"A"}), "A");
-    }
-    SECTION("空串") {
+        ASSERT_EQ(str::join_searchpath({}), "");
         ASSERT_EQ(str::join_searchpath({""}), "");
         ASSERT_EQ(str::join_searchpath({"", ""}), "");
         ASSERT_EQ(str::join_searchpath({"", "", "AAA"}), "AAA");
         ASSERT_EQ(str::join_searchpath({"", "A", "B", "", "C", ""}), "A:B:C");
+    }
+    SECTION("容器+指定sep") {
+        ASSERT_EQ(str::join_searchpath(";", {"A", "B", "C"}), "A;B;C");
+        ASSERT_EQ(str::join_searchpath(";", {"A", "B"}), "A;B");
+        ASSERT_EQ(str::join_searchpath(";", {"A"}), "A");
+        ASSERT_EQ(str::join_searchpath(";", {}), "");
+        ASSERT_EQ(str::join_searchpath(";", {""}), "");
+        ASSERT_EQ(str::join_searchpath(";", {"", ""}), "");
+        ASSERT_EQ(str::join_searchpath(";", {"", "", "AAA"}), "AAA");
+        ASSERT_EQ(str::join_searchpath(";", {"", "A", "B", "", "C", ""}), "A;B;C");
+    }
+    SECTION("proc+默认sep") {
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list{"A", "B", "C"}}), "A:B:C");
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list{"A", "B"}}), "A:B");
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list{"A"}}), "A");
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list<std::string>{}}), "");
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list{""}}), "");
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list{"", ""}}), "");
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list{"", "", "AAA"}}), "AAA");
+        ASSERT_EQ(str::join_searchpath(to_proc{std::list{"", "A", "B", "", "C", ""}}), "A:B:C");
+    }
+    SECTION("proc+指定sep") {
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list{"A", "B", "C"}}), "A#B#C");
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list{"A", "B"}}), "A#B");
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list{"A"}}), "A");
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list<std::string>{}}), "");
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list{""}}), "");
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list{"", ""}}), "");
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list{"", "", "AAA"}}), "AAA");
+        ASSERT_EQ(str::join_searchpath("#", to_proc{std::list{"", "A", "B", "", "C", ""}}), "A#B#C");
     }
 }
