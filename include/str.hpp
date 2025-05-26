@@ -1463,24 +1463,24 @@ struct str {
     static auto basename_pos(std::string_view s) -> size_type;
     static auto extname_pos(std::string_view s) -> size_type;
     static auto dirname_pos(std::string_view s) -> size_type;
-    
-    //! 路径处理函数：基础定位函数
-    ///
-    /// 将入参 s 视作文件路径：
-    /// * @ref basename_ptr 返回文件名的基本名（basename）的起始位置
-    /// * @ref extname_ptr 返回文件的扩展名的起始位置
-    /// * @ref dirname_ptr 返回文件路径的尾部位置
-    ///
-    /// 为介绍三个函数之间的关系，假设 s 为字符串 "abc/def/ghi.txt"，那么：
-    /// * `str::basename_ptr(s)` 返回的是指向 `g` 的位置的指针
-    /// * `str::extname_ptr(s)` 返回的是指向 `.` 的位置的指针
-    /// * `str::dirname_ptr(s)` 返回的是指向 `f` 的位置的指针
-    ///
-    /// @param s 作为路径的字符串
-    /// @return 以指针的形式返回 s 中满足条件的位置
-    static auto basename_ptr(std::string_view s) -> std::string::const_pointer;
-    static auto extname_ptr(std::string_view s) -> std::string::const_pointer;
-    static auto dirname_ptr(std::string_view s) -> std::string::const_pointer;
+
+    // //! 路径处理函数：基础定位函数
+    // ///
+    // /// 将入参 s 视作文件路径：
+    // /// * @ref basename_ptr 返回文件名的基本名（basename）的起始位置
+    // /// * @ref extname_ptr 返回文件的扩展名的起始位置
+    // /// * @ref dirname_ptr 返回文件路径的尾部位置
+    // ///
+    // /// 为介绍三个函数之间的关系，假设 s 为字符串 "abc/def/ghi.txt"，那么：
+    // /// * `str::basename_ptr(s)` 返回的是指向 `g` 的位置的指针
+    // /// * `str::extname_ptr(s)` 返回的是指向 `.` 的位置的指针
+    // /// * `str::dirname_ptr(s)` 返回的是指向 `f` 的位置的指针
+    // ///
+    // /// @param s 作为路径的字符串
+    // /// @return 以指针的形式返回 s 中满足条件的位置
+    // static auto basename_ptr(std::string_view s) -> std::string::const_pointer;
+    // static auto extname_ptr(std::string_view s) -> std::string::const_pointer;
+    // static auto dirname_ptr(std::string_view s) -> std::string::const_pointer;
 
     //! 路径处理函数：目录
     ///

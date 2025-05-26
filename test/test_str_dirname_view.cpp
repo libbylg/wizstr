@@ -16,53 +16,73 @@
 TEST(test_str, dirname_view) {
     SECTION("全路径") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "/aaa/bbb/ccc"), s.substr(0, 8));
-        ASSERT_EQ(str::basename_view(s = "/aaa/bbb/ccc"), s.substr(9, 3));
+        s = "/aaa/bbb/ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 8));
+        s = "/aaa/bbb/ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(9, 3));
     }
     SECTION("相对路径[1]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "aaa/bbb/ccc"), s.substr(0, 7));
-        ASSERT_EQ(str::basename_view(s = "aaa/bbb/ccc"), s.substr(8, 3));
+        s = "aaa/bbb/ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 7));
+        s = "aaa/bbb/ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(8, 3));
     }
     SECTION("相对路径[2]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "../bbb/ccc"), s.substr(0, 6));
-        ASSERT_EQ(str::basename_view(s = "../bbb/ccc"), s.substr(7, 3));
+        s = "../bbb/ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 6));
+        s = "../bbb/ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(7, 3));
     }
     SECTION("相对路径[3]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "../ccc"), s.substr(0, 2));
-        ASSERT_EQ(str::basename_view(s = "../ccc"), s.substr(3, 3));
+        s = "../ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 2));
+        s = "../ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(3, 3));
     }
     SECTION("相对路径[4]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "./ccc"), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = "./ccc"), s.substr(2, 3));
+        s = "./ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = "./ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(2, 3));
     }
     SECTION("无路径分隔符") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "abc"), s.substr(0, 0));
-        ASSERT_EQ(str::basename_view(s = "abc"), s.substr(0, 3));
+        s = "abc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 0));
+        s = "abc";
+        ASSERT_EQ(str::basename_view(s), s.substr(0, 3));
     }
     SECTION("相对路径特殊表示(.)") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "."), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = "."), s.substr(1, 0));
+        s = ".";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = ".";
+        ASSERT_EQ(str::basename_view(s), s.substr(1, 0));
     }
     SECTION("相对路径特殊表示(..)") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = ".."), s.substr(0, 2));
-        ASSERT_EQ(str::basename_view(s = ".."), s.substr(2, 0));
+        s = "..";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 2));
+        s = "..";
+        ASSERT_EQ(str::basename_view(s), s.substr(2, 0));
     }
     SECTION("相对路径特殊表示( .. ):这种不符合一般认识的路径，就应该作为文件处理") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = " .. "), s.substr(0, 0));
-        ASSERT_EQ(str::basename_view(s = " .. "), s.substr(0, 4));
+        s = " .. ";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 0));
+        s = " .. ";
+        ASSERT_EQ(str::basename_view(s), s.substr(0, 4));
     }
     SECTION("相对路径特殊表示( . ):这种不符合一般认识的路径，就应该作为文件处理") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = " . "), s.substr(0, 0));
-        ASSERT_EQ(str::basename_view(s = " . "), s.substr(0, 3));
+        s = " . ";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 0));
+        s = " . ";
+        ASSERT_EQ(str::basename_view(s), s.substr(0, 3));
     }
     SECTION("相对路径特殊表示(./)") {
         // os.path.dirname(".")
@@ -74,8 +94,10 @@ TEST(test_str, dirname_view) {
         // os.path.basename("./")
         // ''
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "./"), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = "./"), s.substr(2, 0));
+        s = "./";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = "./";
+        ASSERT_EQ(str::basename_view(s), s.substr(2, 0));
     }
     SECTION("相对路径特殊表示(../)") {
         // os.path.basename("..")
@@ -87,57 +109,86 @@ TEST(test_str, dirname_view) {
         // os.path.basename("../")
         // ''
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "../"), s.substr(0, 2));
-        ASSERT_EQ(str::basename_view(s = "../"), s.substr(3, 0));
+        s = "../";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 2));
+        s = "../";
+        ASSERT_EQ(str::basename_view(s), s.substr(3, 0));
     }
     SECTION("./和../[3]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "./aa"), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = "./aa"), s.substr(2, 2));
+        s = "./aa";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = "./aa";
+        ASSERT_EQ(str::basename_view(s), s.substr(2, 2));
     }
     SECTION("./和../[4]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "../aa"), s.substr(0, 2));
-        ASSERT_EQ(str::basename_view(s = "../aa"), s.substr(3, 2));
+        s = "../aa";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 2));
+        s = "../aa";
+        ASSERT_EQ(str::basename_view(s), s.substr(3, 2));
     }
     SECTION("./和../[5]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "../aa/"), s.substr(0, 5));
-        ASSERT_EQ(str::basename_view(s = "../aa/"), s.substr(6, 0));
+        s = "../aa/";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 5));
+        s = "../aa/";
+        ASSERT_EQ(str::basename_view(s), s.substr(6, 0));
     }
     SECTION("./和../[5]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "../aa/.."), s.substr(0, 8));
-        ASSERT_EQ(str::basename_view(s = "../aa/.."), s.substr(8, 0));
+        s = "../aa/..";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 8));
+        s = "../aa/..";
+        ASSERT_EQ(str::basename_view(s), s.substr(8, 0));
     }
     SECTION("绝对路径 /") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "/"), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = "/"), s.substr(1, 0));
+        s = "/";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = "/";
+        ASSERT_EQ(str::basename_view(s), s.substr(1, 0));
+    }
+    SECTION("绝对路径 /") {
+        std::string s;
+        s = "/abc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = "/abc";
+        ASSERT_EQ(str::basename_view(s), s.substr(1, 3));
     }
     SECTION("空串") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = ""), s.substr(0, 0));
-        ASSERT_EQ(str::basename_view(s = ""), s.substr(0, 0));
+        s = "";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 0));
+        s = "";
+        ASSERT_EQ(str::basename_view(s), s.substr(0, 0));
     }
     SECTION("多余的路径元素[1]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = "///ccc"), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = "///ccc"), s.substr(3, 3));
+        s = "///ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = "///ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(3, 3));
     }
     SECTION("多余的路径元素[2]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = ".///ccc"), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = ".///ccc"), s.substr(4, 3));
+        s = ".///ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = ".///ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(4, 3));
     }
     SECTION("隐藏文件[1]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = ".///.ccc"), s.substr(0, 1));
-        ASSERT_EQ(str::basename_view(s = ".///.ccc"), s.substr(4, 4));
+        s = ".///.ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 1));
+        s = ".///.ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(4, 4));
     }
     SECTION("隐藏文件[2]") {
         std::string s;
-        ASSERT_EQ(str::dirname_view(s = ".ccc"), s.substr(0, 0));
-        ASSERT_EQ(str::basename_view(s = ".ccc"), s.substr(0, 4));
+        s = ".ccc";
+        ASSERT_EQ(str::dirname_view(s), s.substr(0, 0));
+        s = ".ccc";
+        ASSERT_EQ(str::basename_view(s), s.substr(0, 4));
     }
 }

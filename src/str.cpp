@@ -4832,7 +4832,7 @@ auto str::dirname_pos(std::string_view s) -> size_type {
         return s.size();
     }
 
-    auto ptr = basename_ptr(s);
+    auto ptr = s.data() + basename_pos(s);
     while (ptr > s.data()) {
         if (*(ptr - 1) != '/') {
             break;
@@ -4848,24 +4848,24 @@ auto str::dirname_pos(std::string_view s) -> size_type {
     return ptr - s.data();
 }
 
-auto str::basename_ptr(std::string_view s) -> std::string::const_pointer {
-    return s.data() + basename_pos(s);
-}
-
-auto str::extname_ptr(std::string_view s) -> std::string::const_pointer {
-    return s.data() + extname_pos(s);
-}
-
-auto str::dirname_ptr(std::string_view s) -> std::string::const_pointer {
-    return s.data() + dirname_pos(s);
-}
+// auto str::basename_ptr(std::string_view s) -> std::string::const_pointer {
+//     return s.data() + basename_pos(s);
+// }
+//
+// auto str::extname_ptr(std::string_view s) -> std::string::const_pointer {
+//     return s.data() + extname_pos(s);
+// }
+//
+// auto str::dirname_ptr(std::string_view s) -> std::string::const_pointer {
+//     return s.data() + dirname_pos(s);
+// }
 
 auto str::dirname_range(std::string_view s) -> range_type {
-    auto ptr = str::dirname_ptr(s);
-    if ((ptr == s.data()) && (*ptr == '/')) {
+    auto pos = str::dirname_pos(s);
+    if (!s.empty() && (pos == 0) && (s[pos] == '/')) {
         return range_type{0, 1};
     }
-    return range_type{0, static_cast<size_type>(ptr - s.data())};
+    return range_type{0, pos};
 }
 
 auto str::dirname_view(std::string_view s) -> std::string_view {
@@ -4882,8 +4882,8 @@ auto str::dirname(std::string_view s) -> std::string {
 }
 
 auto str::remove_dirname_view(std::string_view s) -> std::string_view {
-    auto ptr = str::dirname_ptr(s);
-    return std::string_view{ptr, static_cast<size_type>(s.data() + s.size() - ptr)};
+    auto pos = str::dirname_pos(s);
+    return s.substr(pos, static_cast<size_type>(s.size() - pos));
 }
 
 auto str::remove_dirname(std::string_view s) -> std::string {
@@ -4891,24 +4891,25 @@ auto str::remove_dirname(std::string_view s) -> std::string {
 }
 
 auto str::replace_dirname(std::string_view s, std::string_view new_dir) -> std::string {
-    auto ptr = str::dirname_ptr(s);
-
-    auto remain_len = (s.data() + s.size() - ptr);
-
-    assert(ptr >= s.data());
+    auto pos = str::dirname_pos(s);
+    auto remain_len = (s.size() - pos);
 
     std::string result;
     size_type result_len = new_dir.size() + remain_len;
-    if ((ptr < (s.data() + s.size())) && (*ptr == '/')) {
-        result.reserve(result_len);
-        result.append(new_dir);
-        result.append(ptr, remain_len);
-    } else {
-        result.reserve((result_len + 1));
-        result.append(new_dir);
-        result.append("/");
-        result.append(ptr, remain_len);
+    // if ((pos < s.size()) && (s[pos] == '/')) {
+    //     result.reserve(result_len);
+    //     result.append(new_dir);
+    //     result.append(s.substr(pos, remain_len));
+    // } else {
+    result.reserve((result_len + 1));
+    result.append(new_dir);
+    if (remain_len > 0) {
+        if (s[pos] != '/') {
+            result.append("/");
+        }
+        result.append(s.substr(pos, remain_len));
     }
+    // }
 
     return result;
 }
@@ -4961,9 +4962,17 @@ auto str::remove_basename(std::string_view s) -> std::string {
 
 auto str::replace_basename(std::string_view s, std::string_view newname) -> std::string {
     auto pos = str::basename_pos(s);
+    auto basename_len = s.size() - pos;
+
     std::string result;
     result.reserve(pos + newname.size());
-    result.append(s.data(), pos).append(newname);
+    if (pos > 0) {
+        result.append(s.data(), pos);
+        if (s[pos - 1] != '/') {
+            result.append("/");
+        }
+    }
+    result.append(newname);
     return result;
 }
 
@@ -5014,18 +5023,17 @@ auto str::remove_extname(std::string_view s) -> std::string {
 }
 
 auto str::replace_extname(std::string_view s, std::string_view new_name) -> std::string {
-    auto ptr = str::extname_ptr(s);
+    auto pos = str::extname_pos(s);
     std::string result;
-    result.reserve(ptr - s.data() + new_name.size());
-    result.append(s.data(), static_cast<size_type>(ptr - s.data()));
+    result.reserve(pos + new_name.size());
+    result.append(s.substr(0, pos));
     result.append(new_name);
     return result;
 }
 
 auto str::split_extname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view> {
-    auto ptr = str::extname_ptr(s);
-    return {{s.data(), static_cast<size_type>(ptr - s.data())},
-        {ptr, static_cast<size_type>(s.data() + s.size() - ptr)}};
+    auto pos = str::extname_pos(s);
+    return {s.substr(0, pos), s.substr(pos, static_cast<size_type>(s.size() - pos))};
 }
 
 auto str::split_extname(std::string_view s) -> std::tuple<std::string, std::string> {
@@ -5053,7 +5061,7 @@ auto str::rawname_range(std::string_view s) -> range_type {
         return range_type{};
     }
 
-    std::string::const_pointer base_ptr = basename_ptr(s);
+    std::string::const_pointer base_ptr = s.data() + basename_pos(s);
     std::string::const_pointer ptr = s.data() + s.size() - 1;
 
     while (ptr > base_ptr) {

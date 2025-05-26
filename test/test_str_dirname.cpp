@@ -115,19 +115,24 @@ TEST(test_str, dirname_view) {
         ASSERT_EQ(str::dirname(s = "/"), "/");
         ASSERT_EQ(str::basename(s = "/"), "");
     }
+    SECTION("绝对路径 /") {
+        ASSERT_EQ(str::dirname("/abc"), "/");
+        ASSERT_EQ(str::basename("/abc"), "abc");
+    }
+
     SECTION("空串") {
         std::string s;
-        ASSERT_EQ(str::dirname(s = ""), "");
+        ASSERT_EQ(str::dirname(s = ""), ".");
         ASSERT_EQ(str::basename(s = ""), "");
     }
     SECTION("多余的路径元素[1]") {
         std::string s;
         ASSERT_EQ(str::dirname(s = "///ccc"), "/");
-        ASSERT_EQ(str::basename(s = "///ccc"), "//ccc");
+        ASSERT_EQ(str::basename(s = "///ccc"), "ccc");
     }
     SECTION("多余的路径元素[2]") {
         std::string s;
-        ASSERT_EQ(str::dirname(s = ".///ccc"), "/");
+        ASSERT_EQ(str::dirname(s = ".///ccc"), ".");
         ASSERT_EQ(str::basename(s = ".///ccc"), "ccc");
     }
     SECTION("隐藏文件[1]") {

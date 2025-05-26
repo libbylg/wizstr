@@ -98,6 +98,10 @@ TEST(test_str, dirname_pos) {
         ASSERT_EQ(str::dirname_pos("/"), 1);
         ASSERT_EQ(str::basename_pos("/"), 1);
     }
+    SECTION("绝对路径 /") {
+        ASSERT_EQ(str::dirname_pos("/abc"), 1);
+        ASSERT_EQ(str::basename_pos("/abc"), 1);
+    }
     SECTION("空串") {
         ASSERT_EQ(str::dirname_pos(""), 0);
         ASSERT_EQ(str::basename_pos(""), 0);

@@ -98,6 +98,10 @@ TEST(test_str, dirname_range) {
         ASSERT_EQ(str::dirname_range("/"), str::range(0, 1));
         ASSERT_EQ(str::basename_range("/"), str::range(1, 0));
     }
+    SECTION("绝对路径 /") {
+        ASSERT_EQ(str::dirname_range("/abc"), str::range(0, 1));
+        ASSERT_EQ(str::basename_range("/abc"), str::range(1, 3));
+    }
     SECTION("空串") {
         ASSERT_EQ(str::dirname_range(""), str::range(0, 0));
         ASSERT_EQ(str::basename_range(""), str::range(0, 0));

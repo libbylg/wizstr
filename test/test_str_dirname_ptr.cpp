@@ -149,6 +149,13 @@ TEST(test_str, dirname_ptr) {
         s = "/";
         ASSERT_EQ(str::basename_ptr(s), (s.data() + 1));
     }
+    SECTION("绝对路径 /") {
+        std::string s;
+        s = "/abc";
+        ASSERT_EQ(str::dirname_ptr(s), (s.data() + 1));
+        s = "/abc";
+        ASSERT_EQ(str::basename_ptr(s), (s.data() + 1));
+    }
     SECTION("空串") {
         std::string s;
         s = "";

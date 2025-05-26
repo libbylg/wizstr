@@ -106,16 +106,16 @@ TEST(test_str, dirname_basename) {
         ASSERT_EQ(str::split_basename("."), (std::tuple{".", ""}));
     }
     SECTION("相对路径特殊表示(..)") {
-        ASSERT_EQ(str::dirname(".."), ".");
-        ASSERT_EQ(str::basename(".."), "..");
+        ASSERT_EQ(str::dirname(".."), "..");
+        ASSERT_EQ(str::basename(".."), "");
 
-        ASSERT_EQ(str::remove_dirname(".."), "..");
-        ASSERT_EQ(str::remove_basename(".."), "");
+        ASSERT_EQ(str::remove_dirname(".."), "");
+        ASSERT_EQ(str::remove_basename(".."), "..");
 
-        ASSERT_EQ(str::replace_dirname("..", "AAA"), "AAA/..");
-        ASSERT_EQ(str::replace_basename("..", "AAA"), "AAA");
+        ASSERT_EQ(str::replace_dirname("..", "AAA"), "AAA");
+        ASSERT_EQ(str::replace_basename("..", "AAA"), "../AAA");
 
-        ASSERT_EQ(str::split_dirname(".."), (std::tuple{".", ""}));
+        ASSERT_EQ(str::split_dirname(".."), (std::tuple{"..", ""}));
         ASSERT_EQ(str::split_basename(".."), (std::tuple{"..", ""}));
     }
     SECTION("相对路径特殊表示( .. ):这种不符合一般认识的路径，就应该作为文件处理") {
@@ -196,7 +196,7 @@ TEST(test_str, dirname_basename) {
         ASSERT_EQ(str::replace_dirname("./aa", "AAA"), "AAA/aa");
         ASSERT_EQ(str::replace_basename("./aa", "AAA"), "./AAA");
 
-        ASSERT_EQ(str::split_dirname("./aa"), (std::tuple{".", "./aa"}));
+        ASSERT_EQ(str::split_dirname("./aa"), (std::tuple{".", "/aa"}));
         ASSERT_EQ(str::split_basename("./aa"), (std::tuple{"./", "aa"}));
     }
     SECTION("./和../[4]") {
@@ -226,26 +226,26 @@ TEST(test_str, dirname_basename) {
         ASSERT_EQ(str::split_basename("../aa/"), (std::tuple{"../aa/", ""}));
     }
     SECTION("./和../[5]") {
-        ASSERT_EQ(str::dirname("../aa/.."), "../aa");
-        ASSERT_EQ(str::basename("../aa/.."), "..");
+        ASSERT_EQ(str::dirname("../aa/.."), "../aa/..");
+        ASSERT_EQ(str::basename("../aa/.."), "");
 
-        ASSERT_EQ(str::remove_dirname("../aa/.."), "/..");
-        ASSERT_EQ(str::remove_basename("../aa/.."), "../aa/");
+        ASSERT_EQ(str::remove_dirname("../aa/.."), "");
+        ASSERT_EQ(str::remove_basename("../aa/.."), "../aa/..");
 
-        ASSERT_EQ(str::replace_dirname("../aa/..", "AAA"), "AAA/..");
-        ASSERT_EQ(str::replace_basename("../aa/..", "AAA"), "../aa/AAA");
+        ASSERT_EQ(str::replace_dirname("../aa/..", "AAA"), "AAA");
+        ASSERT_EQ(str::replace_basename("../aa/..", "AAA"), "../aa/../AAA");
 
-        ASSERT_EQ(str::split_dirname("../aa/.."), (std::tuple{"../aa..", ""}));
-        ASSERT_EQ(str::split_basename("../aa/.."), (std::tuple{"../aa..", ""}));
+        ASSERT_EQ(str::split_dirname("../aa/.."), (std::tuple{"../aa/..", ""}));
+        ASSERT_EQ(str::split_basename("../aa/.."), (std::tuple{"../aa/..", ""}));
     }
     SECTION("绝对路径 /") {
         ASSERT_EQ(str::dirname("/"), "/");
         ASSERT_EQ(str::basename("/"), "");
 
-        ASSERT_EQ(str::remove_dirname("/"), "/");
+        ASSERT_EQ(str::remove_dirname("/"), "");
         ASSERT_EQ(str::remove_basename("/"), "/");
 
-        ASSERT_EQ(str::replace_dirname("/", "AAA"), "AAA/");
+        ASSERT_EQ(str::replace_dirname("/", "AAA"), "AAA");
         ASSERT_EQ(str::replace_basename("/", "AAA"), "/AAA");
 
         ASSERT_EQ(str::split_dirname("/"), (std::tuple{"/", ""}));
@@ -258,7 +258,7 @@ TEST(test_str, dirname_basename) {
         ASSERT_EQ(str::remove_dirname(""), "");
         ASSERT_EQ(str::remove_basename(""), "");
 
-        ASSERT_EQ(str::replace_dirname("", "AAA"), "AAA/");
+        ASSERT_EQ(str::replace_dirname("", "AAA"), "AAA");
         ASSERT_EQ(str::replace_basename("", "AAA"), "AAA");
 
         ASSERT_EQ(str::split_dirname(""), (std::tuple{"", ""}));
@@ -268,11 +268,11 @@ TEST(test_str, dirname_basename) {
         ASSERT_EQ(str::dirname("///ccc"), "/");
         ASSERT_EQ(str::basename("///ccc"), "ccc");
 
-        ASSERT_EQ(str::remove_dirname("///ccc"), "///ccc");
+        ASSERT_EQ(str::remove_dirname("///ccc"), "//ccc");
         ASSERT_EQ(str::remove_basename("///ccc"), "///");
 
-        ASSERT_EQ(str::remove_dirname("///ccc"), "///ccc");
-        ASSERT_EQ(str::remove_basename("///ccc"), "///");
+        ASSERT_EQ(str::replace_dirname("///ccc", "AAA"), "AAA//ccc");
+        ASSERT_EQ(str::replace_basename("///ccc", "AAA"), "///AAA");
 
         ASSERT_EQ(str::split_dirname("///ccc"), (std::tuple{"/", "//ccc"}));
         ASSERT_EQ(str::split_basename("///ccc"), (std::tuple{"///", "ccc"}));
