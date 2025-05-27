@@ -20,7 +20,7 @@ TEST(test_str, decode_cstr) {
         ASSERT_EQ(str::decode_cstr(R"()"), (std::tuple{0u, R"()"}));
         ASSERT_EQ(str::decode_cstr(R"(\'\"\?\a\b\f\n\r\t\v\\)"), (std::tuple{22, "\'\"\?\a\b\f\n\r\t\v\\"}));
         ASSERT_EQ(str::decode_cstr(R"(abc\77Kdef)"), (std::tuple{10, std::string_view{"abc\77Kdef", 8}}));
-        ASSERT_EQ(str::decode_cstr(R"(abc\7  Kdef)"), (std::tuple{10, std::string_view{"abc\77Kdef", 8}}));
+        ASSERT_EQ(str::decode_cstr(R"(abc\7  Kdef)"), (std::tuple{11, std::string_view{"abc\7  Kdef", 10}}));
         ASSERT_EQ(str::decode_cstr(R"(abc\x00Kdef)"), (std::tuple{11, std::string_view{"abc\0Kdef", 8}}));
         ASSERT_EQ(str::decode_cstr(R"(abc\xA1Kdef)"), (std::tuple{11, std::string_view{"abc\xA1Kdef", 8}}));
         ASSERT_EQ(str::decode_cstr(R"(abc\xf1Kdef)"), (std::tuple{11, std::string_view{"abc\xf1Kdef", 8}}));
