@@ -91,6 +91,7 @@ auto str::prepend_inplace(std::string& s, std::string_view other, size_type time
     return s;
 }
 
+#ifdef STR_UNTESTED
 auto str::insert(std::string_view s, size_type pos, std::string_view other, size_type times_n) -> std::string {
     if (other.empty() || (times_n == 0)) [[unlikely]] {
         return std::string{s};
@@ -170,6 +171,7 @@ auto str::insert_inplace(std::string& s, size_type pos, value_type ch, size_type
     s = std::move(result);
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::icompare(std::string_view s, std::string_view other) -> int {
     if (s.size() < other.size()) {
@@ -1042,6 +1044,7 @@ auto str::remove_eol_suffix_inplace(std::string& s) -> std::string& {
     return s;
 }
 
+#ifdef STR_UNTESTED
 auto str::next_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type {
     if (pos >= s.size()) {
         pos = s.size();
@@ -1078,12 +1081,14 @@ auto str::next_regex(std::string_view s, size_type& pos, const std::regex& patte
 auto str::next_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string {
     return std::string{next_regex_view(s, pos, std::regex{pattern.begin(), pattern.end()})};
 }
+#endif // STR_UNTESTED
 
 // auto str::prev_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
 // auto str::prev_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
 // auto str::prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
 // auto str::prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
 
+#ifdef STR_UNTESTED
 auto str::next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
     size_type start = next_spaces_pos(s, pos);
     if (start == str::npos) {
@@ -1110,6 +1115,7 @@ auto str::next_spaces(std::string_view s, size_type& pos) -> std::optional<std::
 
     return std::string{*view};
 }
+#endif // STR_UNTESTED
 
 auto str::next_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     if (pos >= s.size()) {
@@ -1143,7 +1149,7 @@ auto str::next_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     return start;
 }
 
-//
+#ifdef STR_UNTESTED
 auto str::prev_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
     auto end = prev_spaces_pos(s, pos);
     if (end == str::npos) {
@@ -1200,6 +1206,7 @@ auto str::prev_spaces_pos(std::string_view s, size_type& pos) -> size_type {
 
     return pos;
 }
+#endif // STR_UNTESTED
 
 // auto str::next_pathsep_range(std::string_view s, size_type& pos) -> range_type;
 // auto str::next_pathsep_view(std::string_view s, size_type& pos) -> std::string_view;
@@ -1960,6 +1967,7 @@ auto str::take_inplace(std::string& s, shifter_type shifter) -> std::string& {
     return s = s.substr((shifter.pos + shifter.offset), static_cast<size_type>(-shifter.offset));
 }
 
+#ifdef STR_UNTESTED
 auto str::take_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
     if (s.empty()) {
         return s;
@@ -2007,6 +2015,7 @@ auto str::take_before(std::string_view s, range_type sep_range, bool with_sep) -
 auto str::take_after(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
     return std::string{take_after_view(s, sep_range, with_sep)};
 }
+#endif // STR_UNTESTED
 
 auto str::drop_left_view(std::string_view s, size_type n) -> std::string_view {
     if (n > s.size()) {
@@ -2264,6 +2273,7 @@ auto str::drop_inplace(std::string& s, const charset_type& charset) -> std::stri
     return s;
 }
 
+#ifdef STR_UNTESTED
 auto str::drop_before_view(std::string_view s, range_type sep_range, bool with_sep) -> std::string_view {
     if (s.empty()) {
         return s;
@@ -2311,6 +2321,7 @@ auto str::drop_before(std::string_view s, range_type sep_range, bool with_sep) -
 auto str::drop_after(std::string_view s, range_type sep_range, bool with_sep) -> std::string {
     return std::string{drop_after_view(s, sep_range, with_sep)};
 }
+#endif // STR_UNTESTED
 
 auto str::align_left(std::string_view s, size_type width, value_type ch) -> std::string {
     if (s.size() >= width) {
@@ -2440,6 +2451,7 @@ auto str::lines_indentation(std::string_view s) -> size_type {
     return min_spaces;
 }
 
+#ifdef STR_UNTESTED
 auto str::numbering_lines(std::string_view s, size_type from_n) -> std::string {
     std::string result;
     result.reserve(s.size());
@@ -2489,7 +2501,9 @@ auto str::unnumbering_lines_inplace(std::string& s) -> std::string& {
     s = unnumbering_lines(s);
     return s;
 }
+#endif // STR_UNTESTED
 
+#ifdef STR_UNTESTED
 auto str::indent_lines(std::string_view s, size_type n) -> std::string {
     std::string result;
     result.reserve(s.size());
@@ -2587,7 +2601,9 @@ auto str::simplify_indent_lines_inplace(std::string& s) -> std::string& {
     s = simplify_indent_lines(s);
     return s;
 }
+#endif // STR_UNTESTED
 
+#ifdef STR_UNTESTED
 auto str::margin_lines(std::string_view s, size_type n, value_type margin_ch) -> std::string {
     std::string result;
     result.reserve(s.size());
@@ -2632,6 +2648,7 @@ auto str::trim_margin_lines_inplace(std::string& s, value_type margin_ch) -> std
     s = trim_margin_lines(s, margin_ch);
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::count_words(std::string_view s) -> size_type {
     size_type count = 0;
@@ -2774,6 +2791,7 @@ auto str::split_words(std::string_view s, size_type max_n) -> std::vector<std::s
     return result;
 }
 
+#ifdef STR_UNTESTED
 auto str::split_words_view(std::string_view s, size_type max_n) -> std::vector<std::string_view> {
     if (max_n == 0) {
         return {};
@@ -2796,6 +2814,7 @@ auto str::split_words_view(std::string_view s, size_type max_n) -> std::vector<s
 
     return result;
 }
+#endif // STR_UNTESTED
 
 auto str::surround(std::string_view s, std::string_view left, std::string_view right) -> std::string {
     std::string result;
@@ -2867,6 +2886,7 @@ auto str::repeat(value_type ch, size_type times) -> std::string {
     return result;
 }
 
+#ifdef STR_UNTESTED
 auto str::random(size_type n, const number_provider_proc& proc) -> std::string {
     if (n == 0) [[unlikely]] {
         return {};
@@ -2898,7 +2918,9 @@ auto str::random(size_type n, std::string_view charset, const number_provider_pr
 auto str::random(size_type n, const charset_type& charset, const number_provider_proc& proc) -> std::string {
     return random(n, charset.string(), proc);
 }
+#endif // STR_UNTESTED
 
+#ifdef STR_UNTESTED
 auto str::random_fill(std::string& s, std::string_view charset, const number_provider_proc& proc) -> std::string& {
     if (charset.empty()) {
         return s;
@@ -2926,7 +2948,9 @@ auto str::random_fill(std::string& s, const number_provider_proc& proc) -> std::
 
     return s;
 }
+#endif // STR_UNTESTED
 
+#ifdef STR_UNTESTED
 auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> std::string& {
     if (s.empty()) {
         return s;
@@ -2939,6 +2963,7 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
 
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::spaces(uint8_t width) -> std::string_view {
     // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
@@ -2962,6 +2987,7 @@ auto str::make_spaces_inplace(std::string& s, size_type width) -> std::string& {
     return s;
 }
 
+#ifdef STR_UNTESTED
 auto str::after_skip_spaces_view(std::string_view s) -> std::string_view {
     size_type pos = 0;
     return after_skip_spaces_view(s, pos);
@@ -3018,6 +3044,7 @@ auto str::after_skip_spaces_inplace(std::string& s, size_type pos) -> std::strin
     s.resize(remain.size());
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::cover(std::string_view s, std::string_view mask, size_type left_n, size_type right_n) -> std::string {
     if (s.empty() || (s.size() < left_n) || (s.size() < right_n)) {
@@ -3683,6 +3710,7 @@ auto str::partition_range(std::string_view s, std::string_view sep) -> ternary<r
     return {range_type{0, pos}, range_type{pos, sep.size()}, range_type{(pos + sep.size()), (s.size() - (pos + sep.size()))}};
 }
 
+#ifdef STR_UNTESTED
 auto str::partition_range(std::string_view s, const std::regex& pattern) -> ternary<range_type> {
     std::match_results<std::string_view::const_iterator> match;
     bool ret = std::regex_search(s.begin(), s.end(), match, pattern);
@@ -3705,6 +3733,7 @@ auto str::partition_range(std::string_view s, const substr_search_proc& proc) ->
     range_type right = range_type{pos, s.size() - pos};
     return {range_type{0, matched}, range_type{matched, (pos - matched)}, right};
 }
+#endif // STR_UNTESTED
 
 auto str::partition_view(std::string_view s, const charset_type& charset) -> ternary<std::string_view> {
     return partition_view(s, [&charset](value_type ch) -> bool {
@@ -3735,6 +3764,7 @@ auto str::partition_view(std::string_view s, std::string_view sep) -> ternary<st
     return {s.substr(0, pos), s.substr(pos, sep.size()), s.substr(pos + sep.size(), (s.size() - (pos + sep.size())))};
 }
 
+#ifdef STR_UNTESTED
 auto str::partition_view(std::string_view s, const std::regex& pattern) -> ternary<std::string_view> {
     std::match_results<std::string_view::const_iterator> match;
     bool ret = std::regex_search(s.begin(), s.end(), match, pattern);
@@ -3757,6 +3787,7 @@ auto str::partition_view(std::string_view s, const view_search_proc& proc) -> te
     std::string_view right = {(matched.data() + matched.size()), s.size() - (matched.data() + matched.size() - s.data())};
     return {s.substr(0, static_cast<size_type>(matched.data() - s.data())), matched, right};
 }
+#endif // STR_UNTESTED
 
 auto str::partition(std::string_view s, const charset_type& charset) -> ternary<std::string> {
     auto abc = partition_view(s, charset);
@@ -3773,6 +3804,7 @@ auto str::partition(std::string_view s, std::string_view sep) -> ternary<std::st
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
 
+#ifdef STR_UNTESTED
 auto str::partition(std::string_view s, const std::regex& pattern) -> ternary<std::string> {
     auto abc = partition_view(s, pattern);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
@@ -3782,6 +3814,7 @@ auto str::partition(std::string_view s, const view_search_proc& proc) -> ternary
     auto abc = partition_view(s, proc);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
+#endif // STR_UNTESTED
 
 // auto str::rpartition_view(std::string_view s, charset_type sep) -> partition_result<std::string_view>{
 // }
@@ -4958,7 +4991,6 @@ auto str::remove_basename(std::string_view s) -> std::string {
 
 auto str::replace_basename(std::string_view s, std::string_view newname) -> std::string {
     auto pos = str::basename_pos(s);
-    auto basename_len = s.size() - pos;
 
     std::string result;
     result.reserve(pos + newname.size());
@@ -6413,6 +6445,7 @@ auto str::prepend_inplace(std::string& s, const view_provider_proc& proc) -> std
     return s;
 }
 
+#ifdef STR_UNTESTED
 auto str::insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string {
     if (pos > s.size()) {
         pos = s.size();
@@ -6440,6 +6473,7 @@ auto str::insert_inplace(std::string& s, size_type pos, const view_provider_proc
 
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::foreach_words(std::string_view s, size_type pos, const range_consumer_proc& proc) -> void {
     while (pos < s.size()) {
