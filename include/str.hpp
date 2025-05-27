@@ -1652,11 +1652,11 @@ struct str {
     /// @return 返回编码或者解码后的字符串
     static auto encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_cstr(std::string_view s) -> std::string;
-    static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto decode_cstr(std::string_view s) -> std::string;
+    static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> size_type;
+    static auto decode_cstr(std::string_view s) -> std::tuple<size_type, std::string>;
     //
     static auto encode_cstr_inplace(std::string& s) -> std::string;
-    static auto decode_cstr_inplace(std::string& s) -> std::string;
+    static auto decode_cstr_inplace(std::string& s) -> size_type;
 
     //! 编解码：base64
     ///

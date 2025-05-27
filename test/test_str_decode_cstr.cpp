@@ -13,14 +13,21 @@
 
 #include "str.hpp"
 
-#include <array>
+#include <string>
 
 TEST(test_str, decode_cstr) {
     SECTION("一般情况") {
-        ASSERT_EQ(str::decode_cstr(R"()"), R"()");
-        ASSERT_EQ(str::decode_cstr(R"(\a\b\r\n\xf3)"), "\a\b\r\n\xf3");
-        ASSERT_EQ(str::decode_cstr(R"(abc\\\"\'?)"), R"(abc\"'?)");
-        ASSERT_EQ(str::decode_cstr(R"(abc\x00def)"), (std::string_view{"abc\0def", 7}));
+        ASSERT_EQ(str::decode_cstr(R"()"), (std::tuple{0u, R"()"}));
+        ASSERT_EQ(str::decode_cstr(R"(\'\"\?\a\b\f\n\r\t\v\\)"), (std::tuple{22, "\'\"\?\a\b\f\n\r\t\v\\"}));
+        ASSERT_EQ(str::decode_cstr(R"(abc\77Kdef)"), (std::tuple{10, std::string_view{"abc\77Kdef", 8}}));
+        ASSERT_EQ(str::decode_cstr(R"(abc\x00Kdef)"), (std::tuple{11, std::string_view{"abc\0Kdef", 8}}));
+        ASSERT_EQ(str::decode_cstr(R"(abc\xA1Kdef)"), (std::tuple{11, std::string_view{"abc\xA1Kdef", 8}}));
+        ASSERT_EQ(str::decode_cstr(R"(abc\xf1Kdef)"), (std::tuple{11, std::string_view{"abc\xf1Kdef", 8}}));
+        ASSERT_EQ(str::decode_cstr(R"(abc\x00000f1Kdef)"), (std::tuple{16, std::string_view{"abc\x00000f1Kdef", 8}}));
+        ASSERT_EQ(str::decode_cstr(R"(\aMNPc\)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
+        ASSERT_EQ(str::decode_cstr(R"(\aMNPc\777)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
+        ASSERT_EQ(str::decode_cstr(R"(\aMNPc\x)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
+        ASSERT_EQ(str::decode_cstr(R"(\aMNPc\x99999)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
     }
     // SECTION("proc形式:提前结束") {
     //     std::string s;

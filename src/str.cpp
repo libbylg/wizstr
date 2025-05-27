@@ -5358,24 +5358,23 @@ auto str::encode_cstr(std::string_view s) -> std::string {
     return result;
 }
 
-auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> void {
+auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> size_type {
     if (s.empty()) {
-        return;
+        return 0;
     }
 
     auto ptr = reinterpret_cast<const uint8_t*>(s.data());
     auto end = reinterpret_cast<const uint8_t*>(s.data() + s.size());
 
-    const char* w = s.data();
-    const char* c = s.data();
-    for (; ptr < end; ptr++) {
-        // clang-format off
+    auto w = ptr;
+    // const_pointer c = s.data();
+    while (ptr < end) {
         switch (*ptr) {
-            case 'A'...'Z':
+            case 'A' ... 'Z':
                 [[fallthrough]];
-            case 'a'...'z':
+            case 'a' ... 'z':
                 [[fallthrough]];
-            case '0'...'9':
+            case '0' ... '9':
                 [[fallthrough]];
             case ' ':
                 [[fallthrough]];
@@ -5436,92 +5435,156 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
             case '}':
                 [[fallthrough]];
             case '~':
-                c++;
+                // c++;
+                ptr++;
                 break;
-            case '\\':
-                if (w != c) {
-                    if (proc({w, static_cast<size_t>(c - w)}) != 0) {
-                        return;
+            case '\\': {
+                if (w < ptr) {
+                    if (proc({reinterpret_cast<const_pointer>(w), static_cast<size_t>(ptr - w)}) != 0) {
+                        return (reinterpret_cast<const_pointer>(ptr) - s.data());
                     }
 
-                    w = c;
+                    w = ptr;
                 }
                 ptr++;
-                if (ptr > end) {
-                    return;
+                if (ptr >= end) {
+                    return (reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
 
+                // Handle the escape chars
                 value_type ch = 0;
                 switch (*ptr) {
+                    case '\\':
+                        ch = '\\';
+                        ptr++;
+                        break;
                     case '\'':
                         ch = '\'';
+                        ptr++;
                         break;
                     case '\"':
                         ch = '\"';
+                        ptr++;
                         break;
                     case '?':
                         ch = '?';
+                        ptr++;
                         break;
                     case 'a':
                         ch = '\a';
+                        ptr++;
                         break;
                     case 'b':
                         ch = '\b';
+                        ptr++;
                         break;
                     case 'f':
                         ch = '\f';
+                        ptr++;
                         break;
                     case 'n':
                         ch = '\n';
+                        ptr++;
                         break;
                     case 'r':
                         ch = '\r';
+                        ptr++;
                         break;
                     case 't':
                         ch = '\t';
+                        ptr++;
                         break;
                     case 'v':
                         ch = '\v';
+                        ptr++;
                         break;
-                    case '0':
+                    case '0' ... '7': {
+                        uint32_t val = (*ptr - '0');
+
+                        // NOTE: 八进制字符表示最多识别三个字符
+                        auto sp = ptr + 1;
+                        while (sp < (ptr + 3)) {
+                            if (!((*sp >= '0') && (*sp <= '7'))) {
+                                break;
+                            }
+                            val = ((val << 3) | (*sp - '0'));
+                            sp++;
+                        }
+
+                        // NOTE: 数据值超出范围
+                        if (val > 0xFF) {
+                            return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                        }
+
+                        ch = static_cast<decltype(ch)>(val);
+                        ptr = sp;
+                    } break;
+                    case 'X':
                         [[fallthrough]];
-                    case '1':
-                        [[fallthrough]];
-                    case '2':
-                        [[fallthrough]];
-                    case '3':
-                        [[fallthrough]];
-                    case '4':
-                        [[fallthrough]];
-                    case '5':
-                        [[fallthrough]];
-                    case '6':
-                        [[fallthrough]];
-                    case '7':
-                        break;
-                    case 'x':
-                        break;
+                    case 'x': {
+                        uint32_t val = 0;
+
+                        auto sp = (ptr + 1);
+
+                        if (sp >= end) {
+                            return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                        }
+
+                        // NOTE: 十六进制字符表示可以识别任意长度的字符
+                        while (sp < end) {
+                            if ((*sp >= '0') && (*sp <= '9')) {
+                                val = ((val << 4) | (*sp - '0'));
+                            } else if ((*sp >= 'A') && (*sp <= 'F')) {
+                                val = ((val << 4) | ((*sp - 'A') + 10));
+                            } else if ((*sp >= 'a') && (*sp <= 'f')) {
+                                val = ((val << 4) | ((*sp - 'a') + 10));
+                            } else {
+                                // 如果 \x 后面没有十六进制数据，说明格式错误
+                                if (sp == (ptr + 1)) {
+                                    return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                                }
+                                break;
+                            }
+
+                            // 数据值超出范围
+                            if (val > 0xFF) {
+                                return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                            }
+
+                            sp++;
+                        }
+
+                        ch = static_cast<decltype(ch)>(val);
+                        ptr = sp;
+                    } break;
                 }
 
                 if (proc(std::string_view{&ch, 1}) != 0) {
-                    return;
+                    return (reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
 
-                w = c;
-                break;
+                w = ptr;
+            } break;
         }
-        // clang-format on
     }
+
+    if (w < ptr) {
+        if (proc({reinterpret_cast<const_pointer>(w), static_cast<size_t>(ptr - w)}) != 0) {
+            return (reinterpret_cast<const_pointer>(ptr) - s.data());
+        }
+    }
+
+    return (reinterpret_cast<const_pointer>(ptr) - s.data());
 }
 
-auto str::decode_cstr(std::string_view s) -> std::string {
+auto str::decode_cstr(std::string_view s) -> std::tuple<size_type, std::string> {
     std::string result;
     result.reserve(result.size() * 4 / 3);
-    str::decode_cstr(s, [&result](std::string_view item) -> int {
+    size_type pos = str::decode_cstr(s, [&result](std::string_view item) -> int {
         result.append(item);
         return 0;
     });
-    return result;
+    return {pos, result};
 }
 
 auto str::encode_cstr_inplace(std::string& s) -> std::string {
@@ -5529,9 +5592,10 @@ auto str::encode_cstr_inplace(std::string& s) -> std::string {
     return s;
 }
 
-auto str::decode_cstr_inplace(std::string& s) -> std::string {
-    s = decode_cstr(s);
-    return s;
+auto str::decode_cstr_inplace(std::string& s) -> size_type {
+    auto [pos, result] = decode_cstr(s);
+    s = std::move(result);
+    return pos;
 }
 
 auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> void {

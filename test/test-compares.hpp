@@ -69,4 +69,9 @@ auto operator==(const std::array<T, N>& a, const std::array<Y, N>& b) -> bool {
     return true;
 }
 
+template <typename A1, typename A2, typename B1, typename B2>
+auto operator==(const std::tuple<A1, A2>& a, const std::tuple<B1, B2>& b) -> bool {
+    return (std::get<0>(a) == std::get<0>(b)) && (std::get<1>(a) == std::get<1>(b));
+}
+
 #endif // STR_TEST_COMPARES_H
