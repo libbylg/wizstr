@@ -850,7 +850,9 @@ struct str {
     // static auto foreach_lines(std::string_view s, bool keep_ends, const LineConsumerProc& proc) -> void;
     static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc& proc) -> void;
     static auto count_lines(std::string_view s) -> size_type;
+#ifdef STR_UNTESTED
     static auto lines_indentation(std::string_view s) -> size_type;
+#endif // STR_UNTESTED
 
     //! 编号
 #ifdef STR_UNTESTED
@@ -1433,7 +1435,9 @@ struct str {
     /// @param size 缓冲区尺寸
     /// @param s 原始字符串
     /// @return 返回实际拷贝的字节数
+#ifdef STR_UNTESTED
     static auto copy(pointer buffer, size_type size, std::string_view s) -> size_type;
+#endif // STR_UNTESTED
 
     //! 展开 @anchor{expand}
     ///
@@ -1518,8 +1522,10 @@ struct str {
     static auto split_dirname(std::string_view s) -> std::tuple<std::string, std::string>;
     //
     static auto dirname_inplace(std::string& s) -> std::string&;
+#ifdef STR_UNTESTED
     static auto remove_dirname_inplace(std::string& s) -> std::string&;
     static auto replace_dirname_inplace(std::string& s, std::string_view new_name) -> std::string&;
+#endif // STR_UNTESTED
 
     //! 路径处理函数：文件名
     ///
@@ -1540,8 +1546,10 @@ struct str {
     static auto split_basename(std::string_view s) -> std::tuple<std::string, std::string>;
     //
     static auto basename_inplace(std::string& s) -> std::string&;
+#ifdef STR_UNTESTED
     static auto remove_basename_inplace(std::string& s) -> std::string&;
     static auto replace_basename_inplace(std::string& s, std::string_view new_name) -> std::string&;
+#endif // STR_UNTESTED
 
     //! 路径处理函数：扩展名
     ///
@@ -1552,15 +1560,19 @@ struct str {
     static auto extname_range(std::string_view s) -> range_type;
     static auto extname_view(std::string_view s) -> std::string_view;
     static auto extname(std::string_view s) -> std::string;
+#ifdef STR_UNTESTED
     static auto remove_extname_view(std::string_view s) -> std::string_view;
     static auto remove_extname(std::string_view s) -> std::string;
     static auto replace_extname(std::string_view s, std::string_view new_name) -> std::string;
     static auto split_extname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
     static auto split_extname(std::string_view s) -> std::tuple<std::string, std::string>;
+#endif // STR_UNTESTED
     //
+#ifdef STR_UNTESTED
     static auto extname_inplace(std::string& s) -> std::string&;
     static auto remove_extname_inplace(std::string& s) -> std::string&;
     static auto replace_extname_inplace(std::string& s, std::string_view new_name) -> std::string&;
+#endif // STR_UNTESTED
 
     //! 路径处理函数：裸文件件名
     ///
@@ -1575,12 +1587,14 @@ struct str {
     static auto rawname_range(std::string_view s) -> range_type;
     static auto rawname_view(std::string_view s) -> std::string_view;
     static auto rawname(std::string_view s) -> std::string;
+#ifdef STR_UNTESTED
     static auto replace_rawname(std::string_view s, std::string_view new_name) -> std::string;
     static auto split_rawname_view(std::string_view s) -> ternary<std::string_view>;
     static auto split_rawname(std::string_view s) -> ternary<std::string>;
     //
     static auto rawname_inplace(std::string& s) -> std::string&;
     static auto replace_rawname_inplace(std::string& s, std::string_view name) -> std::string&;
+#endif // STR_UNTESTED
 
     //! 哈希算法 @anchor{hash, md5}
     ///
@@ -1860,11 +1874,13 @@ struct str {
     ///
     /// @param s 被用来筛选或者分组的字符串
     /// @param proc 字符匹配条件
+#ifdef STR_UNTESTED
     static auto grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string>;
     static auto filter(std::string_view s, const char_match_proc& proc) -> std::string;
     static auto filter(std::string_view s, const charset_type& charset) -> std::string;
     static auto filter_inplace(std::string& s, const char_match_proc& proc) -> std::string&;
     static auto filter_inplace(std::string& s, const charset_type& charset) -> std::string&;
+#endif // STR_UNTESTED
 
     //! 映射
     ///
@@ -1874,10 +1890,12 @@ struct str {
     /// @param match_charset 匹配字符集
     /// @param replace_charset 替换字符集
     /// @param proc 将匹配的字符映射为其他字符集
+#ifdef STR_UNTESTED
     static auto mapping(std::string_view s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
     static auto mapping(std::string_view s, const char_mapping_proc& proc) -> std::string;
     static auto mapping_inplace(std::string& s, std::string_view match_charset, std::string_view replace_charset) -> std::string&;
     static auto mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std::string&;
+#endif // STR_UNTESTED
 };
 
 // template <typename ViewProviderProc>

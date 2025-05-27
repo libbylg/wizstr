@@ -2437,6 +2437,7 @@ auto str::count_lines(std::string_view s) -> size_type {
     return count;
 }
 
+#ifdef STR_UNTESTED
 auto str::lines_indentation(std::string_view s) -> size_type {
     size_type min_spaces = 0;
     foreach_lines(s, true, [&min_spaces](size_type, std::string_view line_text) -> int {
@@ -2450,6 +2451,7 @@ auto str::lines_indentation(std::string_view s) -> size_type {
     });
     return min_spaces;
 }
+#endif // STR_UNTESTED
 
 #ifdef STR_UNTESTED
 auto str::numbering_lines(std::string_view s, size_type from_n) -> std::string {
@@ -3776,6 +3778,7 @@ auto str::partition_view(std::string_view s, const std::regex& pattern) -> terna
     size_type len = match.length(0);
     return {s.substr(0, pos), s.substr(pos, len), s.substr(pos + len, (s.size() - pos - len))};
 }
+#endif // STR_UNTESTED
 
 auto str::partition_view(std::string_view s, const view_search_proc& proc) -> ternary<std::string_view> {
     auto result = proc(s);
@@ -3787,7 +3790,6 @@ auto str::partition_view(std::string_view s, const view_search_proc& proc) -> te
     std::string_view right = {(matched.data() + matched.size()), s.size() - (matched.data() + matched.size() - s.data())};
     return {s.substr(0, static_cast<size_type>(matched.data() - s.data())), matched, right};
 }
-#endif // STR_UNTESTED
 
 auto str::partition(std::string_view s, const charset_type& charset) -> ternary<std::string> {
     auto abc = partition_view(s, charset);
@@ -3809,12 +3811,12 @@ auto str::partition(std::string_view s, const std::regex& pattern) -> ternary<st
     auto abc = partition_view(s, pattern);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
+#endif // STR_UNTESTED
 
 auto str::partition(std::string_view s, const view_search_proc& proc) -> ternary<std::string> {
     auto abc = partition_view(s, proc);
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
-#endif // STR_UNTESTED
 
 // auto str::rpartition_view(std::string_view s, charset_type sep) -> partition_result<std::string_view>{
 // }
@@ -4505,6 +4507,7 @@ auto str::simplified_integer_inplace(std::string& s) -> std::string& {
 // auto str::simplified_real(std::string_view s) -> std::string;
 // auto str::simplified_real_inplace(std::string& s) -> std::string&;
 
+#ifdef STR_UNTESTED
 auto str::copy(pointer buffer, size_type size, std::string_view s) -> size_type {
     assert(buffer != nullptr);
     size_type len = std::min(size, s.size());
@@ -4515,6 +4518,7 @@ auto str::copy(pointer buffer, size_type size, std::string_view s) -> size_type 
     std::memcpy(buffer, s.data(), len);
     return len;
 }
+#endif // STR_UNTESTED
 
 auto str::expand_envs(std::string_view s, bool keep_unexpanded, const string_mapping_proc& proc) -> std::string {
     std::string result;
@@ -4958,6 +4962,7 @@ auto str::dirname_inplace(std::string& s) -> std::string& {
     return s;
 }
 
+#ifdef STR_UNTESTED
 auto str::remove_dirname_inplace(std::string& s) -> std::string& {
     s = remove_dirname_view(s);
     return s;
@@ -4967,6 +4972,7 @@ auto str::replace_dirname_inplace(std::string& s, std::string_view new_name) -> 
     s = replace_dirname(s, new_name);
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::basename_range(std::string_view s) -> range_type {
     auto pos = str::basename_pos(s);
@@ -5019,6 +5025,7 @@ auto str::basename_inplace(std::string& s) -> std::string& {
     return s;
 }
 
+#ifdef STR_UNTESTED
 auto str::remove_basename_inplace(std::string& s) -> std::string& {
     s = remove_basename_view(s);
     return s;
@@ -5028,6 +5035,7 @@ auto str::replace_basename_inplace(std::string& s, std::string_view new_name) ->
     s = replace_basename(s, new_name);
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::extname_range(std::string_view s) -> range_type {
     auto pos = str::extname_pos(s);
@@ -5042,6 +5050,7 @@ auto str::extname(std::string_view s) -> std::string {
     return std::string{extname_view(s)};
 }
 
+#ifdef STR_UNTESTED
 auto str::remove_extname_view(std::string_view s) -> std::string_view {
     return s.substr(0, str::extname_pos(s));
 }
@@ -5083,6 +5092,7 @@ auto str::replace_extname_inplace(std::string& s, std::string_view new_name) -> 
     s = replace_extname(s, new_name);
     return s;
 }
+#endif // STR_UNTESTED
 
 auto str::rawname_range(std::string_view s) -> range_type {
     if (s.empty()) {
@@ -5113,6 +5123,7 @@ auto str::rawname(std::string_view s) -> std::string {
     return std::string{rawname_view(s)};
 }
 
+#ifdef STR_UNTESTED
 auto str::replace_rawname(std::string_view s, std::string_view new_name) -> std::string {
     std::string result;
     result.append(remove_basename_view(s)).append(new_name).append(extname_view(s));
@@ -5150,6 +5161,7 @@ auto str::replace_rawname_inplace(std::string& s, std::string_view name) -> std:
     }
     return s;
 }
+#endif // STR_UNTESTED
 
 // auto str::hash(std::string_view s, uint32_t mod) -> uint32_t {
 // }
@@ -6280,6 +6292,7 @@ auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
 // auto str::split_ipv4(std::string_view s) -> std::vector<std::string>;
 // auto str::split_ipv4_view(std::string_view s) -> std::vector<std::string_view>;
 
+#ifdef STR_UNTESTED
 auto str::grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string> {
     std::string matched;
     std::string unmatched;
@@ -6400,6 +6413,7 @@ auto str::mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std:
 
     return s;
 }
+#endif // STR_UNTESTED
 
 //============================
 
