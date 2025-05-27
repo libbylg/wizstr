@@ -5557,6 +5557,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
                     } break;
+                    default:
+                        return (reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
 
                 if (proc(std::string_view{&ch, 1}) != 0) {
@@ -5760,7 +5762,7 @@ auto str::decode_base64(std::string_view s, const view_consumer_proc& proc) -> v
 
         size_t n = 3;
         if ((i + 4) >= s.size()) [[unlikely]] {
-            n = postfix_len;
+            n -= postfix_len;
         }
 
         if (proc(std::string_view{reinterpret_cast<const_pointer>(o), n}) != 0) {
@@ -5835,24 +5837,29 @@ auto str::decode_base16(std::string_view s, const view_consumer_proc& proc) -> v
     while (src < end) {
         switch (src[0]) {
             case '0' ... '9':
-                o[1] = static_cast<value_type>(src[0] - '0');
+                o[0] = static_cast<value_type>(src[0] - '0');
                 break;
             case 'A' ... 'F':
-                o[1] = static_cast<value_type>(src[0] - 'A' + 10);
+                o[0] = static_cast<value_type>(src[0] - 'A' + 10);
                 break;
             case 'a' ... 'f':
-                o[1] = static_cast<value_type>(src[0] - 'a' + 10);
+                o[0] = static_cast<value_type>(src[0] - 'a' + 10);
                 break;
             default:
                 assert(false);
                 break;
         }
+
+        if (src >= end) {
+            break;
+        }
+
         switch (*(src + 1)) {
             case '0' ... '9':
                 o[0] = static_cast<value_type>((o[0] << 4) | (src[1] - '0'));
                 break;
             case 'A' ... 'F':
-                o[0] = static_cast<value_type>((o[0] << 4) | (src[1] - '0' + 10));
+                o[0] = static_cast<value_type>((o[0] << 4) | (src[1] - 'A' + 10));
                 break;
             case 'a' ... 'f':
                 o[0] = static_cast<value_type>((o[0] << 4) | (src[1] - 'a' + 10));

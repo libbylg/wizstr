@@ -13,11 +13,10 @@
 
 #include "str.hpp"
 
-TEST(test_str, encode_base16) {
-    ASSERT_EQ(str::encode_base16(""), "");
-    ASSERT_EQ(str::encode_base16("a"), "61");
-    ASSERT_EQ(str::encode_base16("ab"), "6162");
-    ASSERT_EQ(str::encode_base16("abc"), "616263");
-    ASSERT_EQ(str::encode_base16("abcXYZ", true), "61626358595A");
-    ASSERT_EQ(str::encode_base16("abcXYZ"), "61626358595a");
+TEST(test_str, next_opt) {
+    SECTION("不同起始位置") {
+        str::size_type pos = 0;
+        auto argv = std::vector{"-a=va"};
+        ASSERT_EQ(str::next_opt(pos, argv), (std::tuple{"-a", "va"}));
+    }
 }

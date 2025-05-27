@@ -30,6 +30,7 @@ TEST(test_str, decode_cstr) {
         ASSERT_EQ(str::decode_cstr(R"(\aMNPc\x)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
         ASSERT_EQ(str::decode_cstr(R"(\aMNPc\xZZ)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
         ASSERT_EQ(str::decode_cstr(R"(\aMNPc\x99999)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
+        ASSERT_EQ(str::decode_cstr(R"(\q)"), (std::tuple{1, std::string_view{"", 0}}));
     }
     SECTION("proc形式:提前结束") {
         std::string s;

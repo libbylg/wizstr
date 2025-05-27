@@ -13,11 +13,19 @@
 
 #include "str.hpp"
 
-TEST(test_str, encode_base16) {
-    ASSERT_EQ(str::encode_base16(""), "");
-    ASSERT_EQ(str::encode_base16("a"), "61");
-    ASSERT_EQ(str::encode_base16("ab"), "6162");
-    ASSERT_EQ(str::encode_base16("abc"), "616263");
-    ASSERT_EQ(str::encode_base16("abcXYZ", true), "61626358595A");
-    ASSERT_EQ(str::encode_base16("abcXYZ"), "61626358595a");
+TEST(test_str, skip_spaces) {
+    size_t pos = 0;
+
+    str::skip_spaces("abc", pos = 0);
+    ASSERT_EQ(pos, 0);
+    str::skip_spaces(" abc", pos = 0);
+    ASSERT_EQ(pos, 1);
+    str::skip_spaces(" \r\n\tabc", pos = 0);
+    ASSERT_EQ(pos, 4);
+    str::skip_spaces(" \r\n\t", pos = 0);
+    ASSERT_EQ(pos, 4);
+    str::skip_spaces(" \r\n\t", pos = 9);
+    ASSERT_EQ(pos, 4);
+    str::skip_spaces("", pos = 0);
+    ASSERT_EQ(pos, 0);
 }

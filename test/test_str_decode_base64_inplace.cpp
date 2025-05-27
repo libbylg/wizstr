@@ -13,11 +13,13 @@
 
 #include "str.hpp"
 
-TEST(test_str, encode_base16) {
-    ASSERT_EQ(str::encode_base16(""), "");
-    ASSERT_EQ(str::encode_base16("a"), "61");
-    ASSERT_EQ(str::encode_base16("ab"), "6162");
-    ASSERT_EQ(str::encode_base16("abc"), "616263");
-    ASSERT_EQ(str::encode_base16("abcXYZ", true), "61626358595A");
-    ASSERT_EQ(str::encode_base16("abcXYZ"), "61626358595a");
+TEST(test_str, decode_base64_inplace) {
+    SECTION("一般情况") {
+        std::string s;
+        ASSERT_EQ(str::decode_base64_inplace(s = ""), "");
+        ASSERT_EQ(str::decode_base64_inplace(s = "YQ=="), "a");
+        ASSERT_EQ(str::decode_base64_inplace(s = "YWI="), "ab");
+        ASSERT_EQ(str::decode_base64_inplace(s = "YWJj"), "abc");
+        ASSERT_EQ(str::decode_base64_inplace(s = "YWJjZGVm"), "abcdef");
+    }
 }

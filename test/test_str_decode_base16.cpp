@@ -13,11 +13,10 @@
 
 #include "str.hpp"
 
-TEST(test_str, encode_base16) {
-    ASSERT_EQ(str::encode_base16(""), "");
-    ASSERT_EQ(str::encode_base16("a"), "61");
-    ASSERT_EQ(str::encode_base16("ab"), "6162");
-    ASSERT_EQ(str::encode_base16("abc"), "616263");
-    ASSERT_EQ(str::encode_base16("abcXYZ", true), "61626358595A");
-    ASSERT_EQ(str::encode_base16("abcXYZ"), "61626358595a");
+TEST(test_str, decode_base16) {
+    ASSERT_EQ(str::decode_base16(""), "");
+    ASSERT_EQ(str::decode_base16("61"), "a");
+    ASSERT_EQ(str::decode_base16("6162"), "ab");
+    ASSERT_EQ(str::decode_base16("616263"), "abc");
+    ASSERT_EQ(str::decode_base16("61626358595A"), "abcXYZ");
 }

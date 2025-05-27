@@ -1799,13 +1799,10 @@ struct str {
     /// @param pos 从指定的位置开始读取下一个选项
     /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
     static auto next_opt(int& next_index, int n, char* items[]) -> std::tuple<std::string_view, std::string_view>;
-
     template <typename Container, typename SizeType = typename Container::size_type>
     static auto next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view>;
-
     template <typename Iterator>
     static auto next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view>;
-
     template <typename IterProc>
     static auto next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view>;
 
