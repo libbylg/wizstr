@@ -20,6 +20,7 @@ TEST(test_str, decode_cstr) {
         ASSERT_EQ(str::decode_cstr(R"()"), (std::tuple{0u, R"()"}));
         ASSERT_EQ(str::decode_cstr(R"(\'\"\?\a\b\f\n\r\t\v\\)"), (std::tuple{22, "\'\"\?\a\b\f\n\r\t\v\\"}));
         ASSERT_EQ(str::decode_cstr(R"(abc\77Kdef)"), (std::tuple{10, std::string_view{"abc\77Kdef", 8}}));
+        ASSERT_EQ(str::decode_cstr(R"(abc\7  Kdef)"), (std::tuple{10, std::string_view{"abc\77Kdef", 8}}));
         ASSERT_EQ(str::decode_cstr(R"(abc\x00Kdef)"), (std::tuple{11, std::string_view{"abc\0Kdef", 8}}));
         ASSERT_EQ(str::decode_cstr(R"(abc\xA1Kdef)"), (std::tuple{11, std::string_view{"abc\xA1Kdef", 8}}));
         ASSERT_EQ(str::decode_cstr(R"(abc\xf1Kdef)"), (std::tuple{11, std::string_view{"abc\xf1Kdef", 8}}));
@@ -27,20 +28,45 @@ TEST(test_str, decode_cstr) {
         ASSERT_EQ(str::decode_cstr(R"(\aMNPc\)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
         ASSERT_EQ(str::decode_cstr(R"(\aMNPc\777)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
         ASSERT_EQ(str::decode_cstr(R"(\aMNPc\x)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
+        ASSERT_EQ(str::decode_cstr(R"(\aMNPc\xZZ)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
         ASSERT_EQ(str::decode_cstr(R"(\aMNPc\x99999)"), (std::tuple{7, std::string_view{"\aMNPc", 5}}));
     }
-    // SECTION("proc形式:提前结束") {
-    //     std::string s;
-    //     str::decode_cstr(R"(abc\"'?)", [&s](std::string_view seg) -> int {
-    //         s.append(seg);
-    //         if (s.size() >= 2) {
-    //             return -1;
-    //         }
-    //
-    //         return 0;
-    //     });
-    //     ASSERT_EQ(s, R"(ab)");
-    // }
+    SECTION("proc形式:提前结束") {
+        std::string s;
+        str::decode_cstr(R"(abc\ndef\nmnp)", [&s](std::string_view seg) -> int {
+            s.append(seg);
+            if (s.size() >= 5) {
+                return -1;
+            }
+
+            return 0;
+        });
+        ASSERT_EQ(s, "abc\ndef");
+    }
+    SECTION("proc形式:提前结束2") {
+        std::string s;
+        str::decode_cstr(R"(abc\ndef)", [&s](std::string_view seg) -> int {
+            s.append(seg);
+            if (s.size() >= 5) {
+                return -1;
+            }
+
+            return 0;
+        });
+        ASSERT_EQ(s, "abc\ndef");
+    }
+    SECTION("proc形式:提前结束3") {
+        std::string s;
+        str::decode_cstr(R"(abc\n\n\n\n\n\n)", [&s](std::string_view seg) -> int {
+            s.append(seg);
+            if (s.size() >= 5) {
+                return -1;
+            }
+
+            return 0;
+        });
+        ASSERT_EQ(s, "abc\n\n");
+    }
     // SECTION("proc形式:提前结束2") {
     //     std::string s;
     //     str::decode_cstr(R"(abc\"'?)", [&s](std::string_view seg) -> int {

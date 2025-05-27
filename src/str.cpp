@@ -5569,9 +5569,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
     }
 
     if (w < ptr) {
-        if (proc({reinterpret_cast<const_pointer>(w), static_cast<size_t>(ptr - w)}) != 0) {
-            return (reinterpret_cast<const_pointer>(ptr) - s.data());
-        }
+        proc({reinterpret_cast<const_pointer>(w), static_cast<size_t>(ptr - w)});
     }
 
     return (reinterpret_cast<const_pointer>(ptr) - s.data());
