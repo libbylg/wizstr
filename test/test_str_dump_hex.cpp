@@ -31,15 +31,15 @@ TEST(test_str, dump_hex) {
     // }
 
     SECTION("全量形式") {
-        std::string data{"Hello world!Hello world!Hello world!"};
+        std::string data{"Hello world!Hello world!Hello world!!"};
         std::vector expected{
             "0000: 48656C6C 6F20776F 726C6421 48656C6C : Hello world!Hell",
             "0010: 6F20776F 726C6421 48656C6C 6F20776F : o world!Hello wo",
-            "0020: 726C6421                            : rld!............",
+            "0020: 726C6421 21                         : rld!!...........",
         };
         std::vector<std::string> lines;
         str::dump_hex_format format{
-            .flags = str::dump_hex_format::show_ascii | str::dump_hex_format::show_offset | str::dump_hex_format::show_upper,
+            .flags = str::show_ascii | str::show_offset | str::show_upper,
             .offset_width = 4,
             .line_groups = 4,
             .group_bytes = 4,

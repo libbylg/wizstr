@@ -198,7 +198,7 @@ struct str {
 
         explicit range_type(size_type tpos, size_type tn)
             : pos{tpos}
-              , len{tn} {
+            , len{tn} {
         }
 
         inline auto size() const -> size_type {
@@ -262,15 +262,15 @@ struct str {
         }
     };
 
-    template<typename T>
+    template <typename T>
     using ternary = std::array<T, 3>;
 
     //! std::string_view 供给器：每次调用返回一个字符串，直到返回 std::nullopt
     using view_provider_proc
-    = std::function<std::optional<std::string_view>()>;
+        = std::function<std::optional<std::string_view>()>;
 
     //! 键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 std::nullopt
-    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view> >()>;
+    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
 
     //! 整数供给器：每次调用返回一个 size_type 类型的整数，主要用于抽象随机函数
     using number_provider_proc = std::function<size_type()>;
@@ -297,8 +297,8 @@ struct str {
     using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
 
     //! 单字符映射：将单个字符映射为另一个数据类型的值
-    template<typename MappedType>
-    using mapping_proc = std::function<auto(value_type) -> MappedType>;
+    template <typename MappedType>
+    using mapping_proc = std::function<auto(value_type)->MappedType>;
 
     //! 单字符映射器：将一个字符映射为另一个字符
     using char_mapping_proc = mapping_proc<value_type>;
@@ -357,12 +357,12 @@ struct str {
     /// @param items 从容器 items 中获取被追加的字符串。
     static auto append(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto append(std::string_view s, const Sequence& items) -> std::string;
     //
     static auto append_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
     static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
 
     //! 向头部追加 @anchor{prepend}
@@ -379,12 +379,12 @@ struct str {
     /// @param items 从容器 items 中获取被追加的字符串。
     static auto prepend(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto prepend(std::string_view s, const Sequence& items) -> std::string;
     //
     static auto prepend_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
     static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string&;
 
     //! 向字符串中间插入 @anchor{insert}
@@ -617,11 +617,11 @@ struct str {
 #endif // STR_UNTESTED
 
     //! 定位过程
-    template<typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value> >
+    template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
     static auto next_proc_range(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type;
-    template<typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value> >
+    template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
     static auto next_proc_view(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view;
-    template<typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value> >
+    template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
     static auto next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string;
     //
 #ifdef STR_UNIMPL
@@ -694,7 +694,7 @@ struct str {
     /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
     /// @param charset 指定需要满足条件的字符集
     /// @return 所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value> >
+    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
     static auto is_all_in(std::string_view s, const CharMatchProc& proc) -> bool;
     static auto is_all_in(std::string_view s, const charset_type& charset) -> bool;
 
@@ -705,7 +705,7 @@ struct str {
     /// @param charset 指定需要满足条件的字符集
     /// @return 与 is_xxx 系列函数需要“所有字符必须全部满足指定特征”不同，has_xxx 系列函数只需要有任意一个字符满足特征，
     ///         立即返回 true。唯一的特例是空串总是返回 false。
-    template<typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value> >
+    template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
     static auto has_any_one(std::string_view s, const CharMatchProc& proc) -> bool;
     static auto has_any_one(std::string_view s, const charset_type& charset) -> bool;
 
@@ -1052,7 +1052,7 @@ struct str {
     /// @param items 被字符串容器序列
     /// @return 返回合并后的字符串
     static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join(std::string_view s, const Sequence& items) -> std::string;
 
     //! 拼接列表
@@ -1064,7 +1064,7 @@ struct str {
     /// @return 返回合并后的字符串
     static auto join_list(const view_provider_proc& proc) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_list(const Sequence& items) -> std::string;
 
     //! 映射拼接
@@ -1079,10 +1079,10 @@ struct str {
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string;
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
 
-    template<typename Map, typename = typename Map::const_iterator>
+    template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string;
 
-    template<typename Map, typename = typename Map::const_iterator>
+    template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(const Map& items) -> std::string;
 
     //! 按行拼接
@@ -1094,9 +1094,9 @@ struct str {
     /// @param items
     static auto join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string;
     static auto join_lines(const view_provider_proc& proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_lines(std::string_view line_ends, const Sequence& items) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_lines(const Sequence& items) -> std::string;
 
     //! 拼接路径
@@ -1109,9 +1109,9 @@ struct str {
     /// @return 返回拼接后的路径
     static auto join_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_path(const view_provider_proc& proc) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_path(std::string_view sep, const Sequence& items) -> std::string;
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_path(const Sequence& items) -> std::string;
 
     //! 拼接搜索路径
@@ -1128,10 +1128,10 @@ struct str {
     static auto join_searchpath(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_searchpath(const view_provider_proc& proc) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_searchpath(std::string_view sep, const Sequence& items) -> std::string;
 
-    template<typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
+    template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_searchpath(const Sequence& items) -> std::string;
 
     //! 字符串拆分
@@ -1201,7 +1201,7 @@ struct str {
     /// @return 返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
     static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
     static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":",
-                          size_type max_n = npos) -> std::map<std::string, std::string>;
+        size_type max_n = npos) -> std::map<std::string, std::string>;
 
     //! 按照换行符将字符串 s，拆分成多行
     ///
@@ -1680,6 +1680,12 @@ struct str {
     static auto encode_base16_inplace(std::string& s, bool upper = false) -> std::string&;
     static auto decode_base16_inplace(std::string& s) -> std::string&;
 
+    enum dump_hex_flags : uint8_t {
+        show_offset = 0x01,
+        show_ascii = 0x02,
+        show_upper = 0x04,
+    };
+
     //! 格式化
     ///
     /// 按照十六进制编辑器的样式格式化数据
@@ -1688,19 +1694,13 @@ struct str {
     /// @param format 指定 dump_hex 时的格式化信息，参考 @ref{dump_hex_format}
     /// @param proc 用于接收格式化数据
     struct dump_hex_format {
-        enum format : uint8_t {
-            show_offset = 0x01,
-            show_ascii = 0x02,
-            show_upper = 0x04,
-        };
-
-        uint8_t flags{0}; ///< 可选标记位
-        uint8_t offset_width{0}; ///< shifter 的宽度
-        uint8_t line_groups{4}; ///< 每行格式化多少个字节
-        uint8_t group_bytes{4}; ///< 多少字节一组，如果大于 line_size，自动校正为 line_size
-        value_type ascii_mask{'.'}; ///< 显示 ascii 时，对不打印字符显示的掩码字符
+        uint8_t flags{0};                     ///< 可选标记位
+        uint8_t offset_width{0};              ///< shifter 的宽度
+        uint8_t line_groups{4};               ///< 每行格式化多少个字节
+        uint8_t group_bytes{4};               ///< 多少字节一组，如果大于 line_size，自动校正为 line_size
+        value_type ascii_mask{'.'};           ///< 显示 ascii 时，对不打印字符显示的掩码字符
         std::string_view offset_margin{": "}; ///< 显示 offset 时，shifter 右侧与文本段的分隔符
-        std::string_view ascii_margin{" "}; ///< 显示 ascii 时，在此之前显示的 margin 字符
+        std::string_view ascii_margin{" "};   ///< 显示 ascii 时，在此之前显示的 margin 字符
     };
 
     static auto dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, std::string& line) -> void;
@@ -1709,7 +1709,7 @@ struct str {
     static auto dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, const view_consumer_proc& proc) -> void;
     static auto dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, std::string& line) -> size_type;
     static auto dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper,
-                                const view_consumer_proc& proc) -> size_type;
+        const view_consumer_proc& proc) -> size_type;
     static auto dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void;
 
     //! 求和
@@ -1719,7 +1719,7 @@ struct str {
     /// @param s 被映射的字符串
     /// @param proc 映射函数
     /// @return 返回求和后的结果
-    template<typename T>
+    template <typename T>
     static auto sum(std::string_view s, const mapping_proc<T>& proc) -> T;
 
     //! 字符集生成
@@ -1792,11 +1792,11 @@ struct str {
     /// @param pos 从指定的位置开始读取下一个选项
     /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
     static auto next_opt(int& next_index, int n, char* items[]) -> std::tuple<std::string_view, std::string_view>;
-    template<typename Container, typename SizeType = typename Container::size_type>
+    template <typename Container, typename SizeType = typename Container::size_type>
     static auto next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view>;
-    template<typename Iterator>
+    template <typename Iterator>
     static auto next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view>;
-    template<typename IterProc>
+    template <typename IterProc>
     static auto next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view>;
 
     //! 符号识别
@@ -1902,7 +1902,7 @@ struct str {
 // return result;
 // }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::append(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return append(s, [&items, &itr]() -> std::optional<std::string_view> {
@@ -1924,7 +1924,7 @@ auto str::append(std::string_view s, const Sequence& items) -> std::string {
 // return s;
 // }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     s = append(s, [&items, &itr]() -> std::optional<std::string_view> {
@@ -1963,7 +1963,7 @@ auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& 
 //     return result;
 // }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return prepend(s, [&items, &itr]() -> std::optional<std::string_view> {
@@ -1985,7 +1985,7 @@ auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
 // return s;
 // }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     return prepend_inplace(s, [&items, &itr]() -> std::optional<std::string_view> {
@@ -2113,7 +2113,7 @@ auto str::insert_inplace(std::string& s, size_type pos, const Sequence& items) -
 //     return 0;
 // }
 
-template<typename RangeSearchProc, typename>
+template <typename RangeSearchProc, typename>
 auto str::next_proc_range(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type {
     if (pos >= s.size()) {
         pos = s.size();
@@ -2130,7 +2130,7 @@ auto str::next_proc_range(std::string_view s, size_type& pos, const RangeSearchP
     return range;
 }
 
-template<typename RangeSearchProc, typename>
+template <typename RangeSearchProc, typename>
 auto str::next_proc_view(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view {
     auto range = next_proc_range(s, pos, proc);
     if (range.empty()) {
@@ -2140,7 +2140,7 @@ auto str::next_proc_view(std::string_view s, size_type& pos, const RangeSearchPr
     return {s.data() + range.pos, range.len};
 }
 
-template<typename RangeSearchProc, typename>
+template <typename RangeSearchProc, typename>
 auto str::next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string {
     return std::string{next_proc_view(s, pos, proc)};
 }
@@ -2149,7 +2149,7 @@ auto str::next_proc(std::string_view s, size_type& pos, const RangeSearchProc& p
 // static auto prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
 // static auto prev_proc(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string;
 
-template<typename CharMatchProc, typename>
+template <typename CharMatchProc, typename>
 auto str::is_all_in(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (!proc(*ptr)) {
@@ -2159,7 +2159,7 @@ auto str::is_all_in(std::string_view s, const CharMatchProc& proc) -> bool {
     return true;
 }
 
-template<typename CharMatchProc, typename>
+template <typename CharMatchProc, typename>
 auto str::has_any_one(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (proc(*ptr)) {
@@ -2247,7 +2247,7 @@ auto str::has_any_one(std::string_view s, const CharMatchProc& proc) -> bool {
 //     });
 // }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join(std::string_view s, const Sequence& items) -> std::string {
     std::string result;
     auto itr = items.begin();
@@ -2260,31 +2260,31 @@ auto str::join(std::string_view s, const Sequence& items) -> std::string {
     });
 }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join_list(const Sequence& items) -> std::string {
     return join(",", items);
 }
 
-template<typename Map, typename>
+template <typename Map, typename>
 auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
     auto itr = items.cbegin();
     return str::join_map(sep_pair, sep_list,
-                         [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view> > {
-                             if (itr == end) {
-                                 return std::nullopt;
-                             }
+        [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
+            if (itr == end) {
+                return std::nullopt;
+            }
 
-                             auto& [key, val] = *(itr++);
-                             return std::tuple{key, val};
-                         });
+            auto& [key, val] = *(itr++);
+            return std::tuple{key, val};
+        });
 }
 
-template<typename Map, typename>
+template <typename Map, typename>
 auto str::join_map(const Map& items) -> std::string {
     return str::join_map("=", ",", items);
 }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join_lines(std::string_view line_ends, const Sequence& items) -> std::string {
     auto itr = items.begin();
     if (itr == items.end()) {
@@ -2300,12 +2300,12 @@ auto str::join_lines(std::string_view line_ends, const Sequence& items) -> std::
     });
 }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join_lines(const Sequence& items) -> std::string {
     return join_lines(sep_line_ends, items);
 }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join_path(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
@@ -2317,12 +2317,12 @@ auto str::join_path(std::string_view sep, const Sequence& items) -> std::string 
     });
 }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join_path(const Sequence& items) -> std::string {
     return str::join_path(sep_path, items);
 }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join_searchpath(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return str::join_searchpath(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
@@ -2334,12 +2334,12 @@ auto str::join_searchpath(std::string_view sep, const Sequence& items) -> std::s
     });
 }
 
-template<typename Sequence, typename>
+template <typename Sequence, typename>
 auto str::join_searchpath(const Sequence& items) -> std::string {
     return join_searchpath(":", items);
 }
 
-template<typename T>
+template <typename T>
 auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
     T result = 0;
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
@@ -2348,7 +2348,7 @@ auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
     return result;
 }
 
-template<typename Container, typename SizeType>
+template <typename Container, typename SizeType>
 auto str::next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view> {
     return next_opt([&next_index, &items]() -> std::optional<std::string_view> {
         if (next_index >= items.size()) {
@@ -2359,7 +2359,7 @@ auto str::next_opt(SizeType& next_index, const Container& items) -> std::tuple<s
     });
 }
 
-template<typename Iterator>
+template <typename Iterator>
 auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view> {
     return next_opt([&itr, &end]() {
         if (itr == end) {
@@ -2370,7 +2370,7 @@ auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, 
     });
 }
 
-template<typename IterProc>
+template <typename IterProc>
 auto str::next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view> {
     /// * `-` 为选项识别符
     /// * `-key` 定义一个独立的、无 value 选项，常常用来定义开关型的选项

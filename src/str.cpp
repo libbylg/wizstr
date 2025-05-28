@@ -5981,7 +5981,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         return;
     }
 
-    bool upper = (format.flags & dump_hex_format::show_upper) != 0;
+    bool upper = (format.flags & str::show_upper) != 0;
 
     // 每行多少字节
     size_type line_bytes = format.line_groups * format.group_bytes;
@@ -5997,7 +5997,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         line.clear();
 
         // Dump shifter
-        if (format.flags & dump_hex_format::show_offset) {
+        if (format.flags & str::show_offset) {
             dump_hex_offset(line_index * line_bytes, format.offset_width, upper, line);
             line += format.offset_margin;
         }
@@ -6007,7 +6007,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         assert(dumped_groups_len == groups_len);
 
         // Dump ascii
-        if (format.flags & dump_hex_format::show_ascii) {
+        if (format.flags & str::show_ascii) {
             line += format.ascii_margin;
             dump_hex_ascii(ptr_line, line_bytes, format.ascii_mask, line);
         }
@@ -6027,7 +6027,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         size_type remain_len = len - (full_line_num * line_bytes);
 
         // Dump shifter
-        if (format.flags & dump_hex_format::show_offset) {
+        if (format.flags & str::show_offset) {
             dump_hex_offset(line_index * line_bytes, format.offset_width, upper, line);
             line += format.offset_margin;
         }
@@ -6039,7 +6039,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         }
 
         // Dump ascii
-        if (format.flags & dump_hex_format::show_ascii) {
+        if (format.flags & str::show_ascii) {
             line += format.ascii_margin;
             dump_hex_ascii(ptr_line, line_bytes, format.ascii_mask, line);
         }
