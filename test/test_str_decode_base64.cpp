@@ -20,6 +20,7 @@ TEST(test_str, decode_base64) {
         ASSERT_EQ(str::decode_base64("YWI="), "ab");
         ASSERT_EQ(str::decode_base64("YWJj"), "abc");
         ASSERT_EQ(str::decode_base64("YWJjZGVm"), "abcdef");
+        ASSERT_EQ(str::decode_base64("VGhpcyBpcyBiYXNlNjQgZm9ybWF0IQ=="), "This is base64 format!");
     }
     GROUP("proc") {
         SECTION("proc:一般情况") {

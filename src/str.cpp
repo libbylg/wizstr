@@ -5358,74 +5358,6 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
     // const_pointer c = s.data();
     while (ptr < end) {
         switch (*ptr) {
-            case 'A' ... 'Z':
-                [[fallthrough]];
-            case 'a' ... 'z':
-                [[fallthrough]];
-            case '0' ... '9':
-                [[fallthrough]];
-            case ' ':
-                [[fallthrough]];
-            case '!':
-                [[fallthrough]];
-            case '#':
-                [[fallthrough]];
-            case '$':
-                [[fallthrough]];
-            case '%':
-                [[fallthrough]];
-            case '&':
-                [[fallthrough]];
-            case '(':
-                [[fallthrough]];
-            case ')':
-                [[fallthrough]];
-            case '*':
-                [[fallthrough]];
-            case '+':
-                [[fallthrough]];
-            case ',':
-                [[fallthrough]];
-            case '-':
-                [[fallthrough]];
-            case '.':
-                [[fallthrough]];
-            case '/':
-                [[fallthrough]];
-            case ':':
-                [[fallthrough]];
-            case ';':
-                [[fallthrough]];
-            case '<':
-                [[fallthrough]];
-            case '=':
-                [[fallthrough]];
-            case '>':
-                [[fallthrough]];
-            case '?':
-                [[fallthrough]];
-            case '@':
-                [[fallthrough]];
-            case '[':
-                [[fallthrough]];
-            case ']':
-                [[fallthrough]];
-            case '^':
-                [[fallthrough]];
-            case '_':
-                [[fallthrough]];
-            case '`':
-                [[fallthrough]];
-            case '{':
-                [[fallthrough]];
-            case '|':
-                [[fallthrough]];
-            case '}':
-                [[fallthrough]];
-            case '~':
-                // c++;
-                ptr++;
-                break;
             case '\\': {
                 if (w < ptr) {
                     if (proc({reinterpret_cast<const_pointer>(w), static_cast<size_t>(ptr - w)}) != 0) {
@@ -5558,6 +5490,76 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                 w = ptr;
             }
             break;
+
+            case 'A' ... 'Z':
+                [[fallthrough]];
+            case 'a' ... 'z':
+                [[fallthrough]];
+            case '0' ... '9':
+                [[fallthrough]];
+            case ' ':
+                [[fallthrough]];
+            case '!':
+                [[fallthrough]];
+            case '#':
+                [[fallthrough]];
+            case '$':
+                [[fallthrough]];
+            case '%':
+                [[fallthrough]];
+            case '&':
+                [[fallthrough]];
+            case '(':
+                [[fallthrough]];
+            case ')':
+                [[fallthrough]];
+            case '*':
+                [[fallthrough]];
+            case '+':
+                [[fallthrough]];
+            case ',':
+                [[fallthrough]];
+            case '-':
+                [[fallthrough]];
+            case '.':
+                [[fallthrough]];
+            case '/':
+                [[fallthrough]];
+            case ':':
+                [[fallthrough]];
+            case ';':
+                [[fallthrough]];
+            case '<':
+                [[fallthrough]];
+            case '=':
+                [[fallthrough]];
+            case '>':
+                [[fallthrough]];
+            case '?':
+                [[fallthrough]];
+            case '@':
+                [[fallthrough]];
+            case '[':
+                [[fallthrough]];
+            case ']':
+                [[fallthrough]];
+            case '^':
+                [[fallthrough]];
+            case '_':
+                [[fallthrough]];
+            case '`':
+                [[fallthrough]];
+            case '{':
+                [[fallthrough]];
+            case '|':
+                [[fallthrough]];
+            case '}':
+                [[fallthrough]];
+            case '~':
+                [[fallthrough]];
+            default:
+                ptr++;
+                break;
         }
     }
 
@@ -5742,7 +5744,7 @@ auto str::decode_base64(std::string_view s, const view_consumer_proc& proc) -> v
     auto src = reinterpret_cast<const uint8_t*>(s.data());
     for (size_t i = 0; i < s.size() / 4; i++) {
         uint8_t t[4]{};
-        t[0] = table[src[i * 4]];
+        t[0] = table[src[i * 4 + 0]];
         t[1] = table[src[i * 4 + 1]];
         t[2] = table[src[i * 4 + 2]];
         t[3] = table[src[i * 4 + 3]];
@@ -5752,7 +5754,7 @@ auto str::decode_base64(std::string_view s, const view_consumer_proc& proc) -> v
         o[2] = ((t[2] & 0x03) << 6) | ((t[3] & 0x3f) >> 0);
 
         size_t n = 3;
-        if ((i + 4) >= s.size()) [[unlikely]] {
+        if (((i + 1) * 4) >= s.size()) [[unlikely]] {
             n -= postfix_len;
         }
 
@@ -5772,13 +5774,11 @@ auto str::decode_base64(std::string_view s) -> std::string {
 }
 
 auto str::encode_base64_inplace(std::string& s) -> std::string& {
-    s = encode_base64(s);
-    return s;
+    return s = encode_base64(s);
 }
 
 auto str::decode_base64_inplace(std::string& s) -> std::string& {
-    s = decode_base64(s);
-    return s;
+    return s = decode_base64(s);
 }
 
 auto str::encode_base16(std::string_view s, bool upper, const view_consumer_proc& proc) -> void {
@@ -5838,6 +5838,7 @@ auto str::decode_base16(std::string_view s, const view_consumer_proc& proc) -> v
                 break;
             default:
                 assert(false);
+                o[0] = 0;
                 break;
         }
 
@@ -5857,10 +5858,11 @@ auto str::decode_base16(std::string_view s, const view_consumer_proc& proc) -> v
                 break;
             default:
                 assert(false);
+                o[0] = 0;
                 break;
         }
 
-        if (proc(std::string{o, 1}) != 0) {
+        if (proc(std::string_view{o, 1}) != 0) {
             return;
         }
 
@@ -6612,4 +6614,3 @@ auto str::home() -> std::string {
 
     return ((ptr_home == nullptr) ? "" : ptr_home);
 }
-

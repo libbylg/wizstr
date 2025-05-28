@@ -19,4 +19,7 @@ TEST(test_str, decode_base16) {
     ASSERT_EQ(str::decode_base16("6162"), "ab");
     ASSERT_EQ(str::decode_base16("616263"), "abc");
     ASSERT_EQ(str::decode_base16("61626358595A"), "abcXYZ");
+    ASSERT_EQ(str::decode_base16("61626358595a"), "abcXYZ");
+    ASSERT_EQ(str::decode_base16("78797AFF807C414243"), "xyz\xFF\x80|ABC");
+    ASSERT_EQ(str::decode_base16("78797aff807c414243"), "xyz\xFF\x80|ABC");
 }

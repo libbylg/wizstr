@@ -15,12 +15,13 @@
 #include <limits>
 #include <utility>
 
-template <typename ContainerType, typename ElemType = typename ContainerType::value_type>
+template<typename ContainerType, typename ElemType = typename ContainerType::value_type>
 class to_consumer {
 public:
-    explicit to_consumer(ContainerType& result, typename ContainerType::size_type max_n = std::numeric_limits<typename ContainerType::size_type>::max())
+    explicit to_consumer(ContainerType& result,
+                         typename ContainerType::size_type max_n = std::numeric_limits<typename ContainerType::size_type>::max())
         : result_{result}
-        , max_n_{max_n} {
+          , max_n_{max_n} {
     }
 
     inline auto operator()(ElemType&& elem) -> int {
