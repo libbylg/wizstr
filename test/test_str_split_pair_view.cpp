@@ -12,7 +12,8 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.hpp"
+
+#include "test-utils.hpp"
 
 #include <map>
 

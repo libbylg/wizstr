@@ -12,7 +12,8 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.hpp"
+
+#include "test-utils.hpp"
 
 TEST(test_str, split_path_view) {
     SECTION("绝对路径") {

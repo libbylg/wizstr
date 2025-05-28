@@ -12,8 +12,8 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.hpp"
-#include "test-to_consumer.hpp"
+
+#include "test-utils.hpp"
 
 TEST(test_str, windowed_view) {
     SECTION("max_n") {

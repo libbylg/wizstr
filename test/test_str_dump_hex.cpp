@@ -12,7 +12,8 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.hpp"
+
+#include "test-utils.hpp"
 
 TEST(test_str, dump_hex) {
     // SECTION("缺省形式") {

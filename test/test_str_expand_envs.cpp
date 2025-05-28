@@ -13,12 +13,16 @@
 
 #include "str.hpp"
 
+#include "test-utils.hpp"
+
 TEST(test_str, expand_envs) {
     std::string ENV_XYZ = "/home/xyz";
     std::string ENV_XYZ_KV{"ENV_XYZ=/home/xyz"};
-    putenv(ENV_XYZ_KV.c_str());
+    putenv(ENV_XYZ_KV.data());
 #ifndef WIN32
-    unsetenv("ENV_XYZ");
+    scope_guard guardEnv([] {
+        unsetenv("ENV_XYZ");
+    });
 #endif
 
     SECTION("${xxx}形式") {
@@ -81,20 +85,20 @@ TEST(test_str, expand_envs) {
 
     SECTION("通过proc提供数据") {
         ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}/${HOME}", false, [](const std::string& key) -> std::optional<std::string> {
-                      if (key == "HOME") {
-                      return "xxxx";
-                      }
+            if (key == "HOME") {
+                return "xxxx";
+            }
 
-                      return std::nullopt;
-                      }),
-                  "xxxx//xxxx");
+            return std::nullopt;
+        }),
+            "xxxx//xxxx");
         ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}/${HOME}", true, [](const std::string& key) -> std::optional<std::string> {
-                      if (key == "HOME") {
-                      return "xxxx";
-                      }
+            if (key == "HOME") {
+                return "xxxx";
+            }
 
-                      return std::nullopt;
-                      }),
-                  "xxxx/${NOTEXIST}/xxxx");
+            return std::nullopt;
+        }),
+            "xxxx/${NOTEXIST}/xxxx");
     }
 }

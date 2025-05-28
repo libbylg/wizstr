@@ -20,7 +20,7 @@
 TEST(test_str, expand_envs_inplace) {
     std::string ENV_XYZ = "/home/xyz";
     std::string ENV_XYZ_KV{"ENV_XYZ=/home/xyz"};
-    putenv(ENV_XYZ_KV.c_str());
+    putenv(ENV_XYZ_KV.data());
 #ifndef WIN32
     unsetenv("ENV_XYZ");
 #endif

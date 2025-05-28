@@ -12,7 +12,8 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.hpp"
+
+#include "test-utils.hpp"
 
 TEST(test_str, split_chunked) {
     SECTION("返回容器") {

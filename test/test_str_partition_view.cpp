@@ -12,8 +12,8 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-compares.hpp"
-#include "test-to_proc.hpp"
+
+#include "test-utils.hpp"
 
 TEST(test_str, partition_view) {
     SECTION("以字符串分割") {

@@ -12,7 +12,8 @@
 #include "testing.hpp"
 
 #include "str.hpp"
-#include "test-to_proc.hpp"
+
+#include "test-utils.hpp"
 
 #include <list>
 

@@ -13,8 +13,7 @@
 
 #include "str.hpp"
 
-#include "test-compares.hpp"
-#include "test-to_consumer.hpp"
+#include "test-utils.hpp"
 
 TEST(test_str, split_view) {
     GROUP("按空白拆分(缺省场景") {
