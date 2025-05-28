@@ -16,9 +16,9 @@
 TEST(test_str, expand_user_inplace) {
     SECTION("简单场景") {
         std::string s;
-        ASSERT_EQ(str::expand_user_inplace(s = "~"), std::string{getenv("HOME")});
-        ASSERT_EQ(str::expand_user_inplace(s = "~/"), std::string{getenv("HOME")} + "/");
-        ASSERT_EQ(str::expand_user_inplace(s = "~/abc"), std::string{getenv("HOME")} + "/abc");
+        ASSERT_EQ(str::expand_user_inplace(s = "~"), std::string{str::home()});
+        ASSERT_EQ(str::expand_user_inplace(s = "~/"), std::string{str::home()} + "/");
+        ASSERT_EQ(str::expand_user_inplace(s = "~/abc"), std::string{str::home()} + "/abc");
     }
     SECTION("空串") {
         std::string s;

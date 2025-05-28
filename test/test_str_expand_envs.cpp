@@ -14,29 +14,36 @@
 #include "str.hpp"
 
 TEST(test_str, expand_envs) {
+    std::string ENV_XYZ = "/home/xyz";
+    std::string ENV_XYZ_KV{"ENV_XYZ=/home/xyz"};
+    putenv(ENV_XYZ_KV.c_str());
+#ifndef WIN32
+    unsetenv("ENV_XYZ");
+#endif
+
     SECTION("${xxx}形式") {
-        ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}"), std::string(getenv("HOME")) + "/");
-        ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}", true), std::string(getenv("HOME")) + "/${NOTEXIST}");
+        ASSERT_EQ(str::expand_envs("${ENV_XYZ}/${NOTEXIST}"), ENV_XYZ + "/");
+        ASSERT_EQ(str::expand_envs("${ENV_XYZ}/${NOTEXIST}", true), ENV_XYZ + "/${NOTEXIST}");
     }
 
     SECTION("$xxx形式") {
-        ASSERT_EQ(str::expand_envs("$HOME/$NOTEXIST"), std::string(getenv("HOME")) + "/");
-        ASSERT_EQ(str::expand_envs("$HOME/$NOTEXIST", true), std::string(getenv("HOME")) + "/$NOTEXIST");
+        ASSERT_EQ(str::expand_envs("$ENV_XYZ/$NOTEXIST"), ENV_XYZ + "/");
+        ASSERT_EQ(str::expand_envs("$ENV_XYZ/$NOTEXIST", true), ENV_XYZ + "/$NOTEXIST");
     }
 
     SECTION("字符串中间") {
-        ASSERT_EQ(str::expand_envs("abcd$HOME/${NOTEXIST}"), "abcd" + std::string(getenv("HOME")) + "/");
-        ASSERT_EQ(str::expand_envs("abcd$HOME/${NOTEXIST}", true), "abcd" + std::string(getenv("HOME")) + "/${NOTEXIST}");
+        ASSERT_EQ(str::expand_envs("abcd$ENV_XYZ/${NOTEXIST}"), "abcd" + ENV_XYZ + "/");
+        ASSERT_EQ(str::expand_envs("abcd$ENV_XYZ/${NOTEXIST}", true), "abcd" + ENV_XYZ + "/${NOTEXIST}");
     }
 
     SECTION("${xxx}在字符串尾部") {
-        ASSERT_EQ(str::expand_envs("abcd${HOME}"), "abcd" + std::string(getenv("HOME")));
-        ASSERT_EQ(str::expand_envs("abcd${HOME}", true), "abcd" + std::string(getenv("HOME")));
+        ASSERT_EQ(str::expand_envs("abcd${ENV_XYZ}"), "abcd" + ENV_XYZ);
+        ASSERT_EQ(str::expand_envs("abcd${ENV_XYZ}", true), "abcd" + ENV_XYZ);
     }
 
     SECTION("一个字符串只有 $xxx") {
-        ASSERT_EQ(str::expand_envs("$HOME"), std::string(getenv("HOME")));
-        ASSERT_EQ(str::expand_envs("$HOME", true), std::string(getenv("HOME")));
+        ASSERT_EQ(str::expand_envs("$ENV_XYZ"), ENV_XYZ);
+        ASSERT_EQ(str::expand_envs("$ENV_XYZ", true), ENV_XYZ);
     }
 
     SECTION("错误变量") {
@@ -74,20 +81,20 @@ TEST(test_str, expand_envs) {
 
     SECTION("通过proc提供数据") {
         ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}/${HOME}", false, [](const std::string& key) -> std::optional<std::string> {
-            if (key == "HOME") {
-                return "xxxx";
-            }
+                      if (key == "HOME") {
+                      return "xxxx";
+                      }
 
-            return std::nullopt;
-        }),
-            "xxxx//xxxx");
+                      return std::nullopt;
+                      }),
+                  "xxxx//xxxx");
         ASSERT_EQ(str::expand_envs("${HOME}/${NOTEXIST}/${HOME}", true, [](const std::string& key) -> std::optional<std::string> {
-            if (key == "HOME") {
-                return "xxxx";
-            }
+                      if (key == "HOME") {
+                      return "xxxx";
+                      }
 
-            return std::nullopt;
-        }),
-            "xxxx/${NOTEXIST}/xxxx");
+                      return std::nullopt;
+                      }),
+                  "xxxx/${NOTEXIST}/xxxx");
     }
 }

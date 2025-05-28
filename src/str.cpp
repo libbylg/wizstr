@@ -338,7 +338,6 @@ auto str::wildcmp(std::string_view s, std::string_view pattern) -> bool {
 }
 
 auto str::iwildcmp(const_pointer s, const_pointer pattern) -> bool {
-
     const_pointer cp = nullptr;
     const_pointer mp = nullptr;
 
@@ -531,7 +530,7 @@ auto str::count(std::string_view s, std::string_view other) -> size_type {
 
 auto str::count(std::string_view s, const char_match_proc& proc) -> size_type {
     size_type count = 0;
-    for (value_type ch : s) {
+    for (value_type ch: s) {
         if (proc(ch)) {
             count++;
         }
@@ -541,7 +540,7 @@ auto str::count(std::string_view s, const char_match_proc& proc) -> size_type {
 
 auto str::count(std::string_view s, value_type ch) -> size_type {
     size_type count = 0;
-    for (auto elem_ch : s) {
+    for (auto elem_ch: s) {
         count += ((elem_ch == ch) ? 1 : 0);
     }
     return count;
@@ -2969,11 +2968,11 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
 
 auto str::spaces(uint8_t width) -> std::string_view {
     // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-    static const value_type spaces_cache[256] =                            //
-        "                                                                " //
-        "                                                                " //
-        "                                                                " //
-        "                                                               "  //
+    static const value_type spaces_cache[256] = //
+            "                                                                " //
+            "                                                                " //
+            "                                                                " //
+            "                                                               " //
         ;
     // width 的取值范围是 0-255,
     return std::string_view{spaces_cache + (sizeof(spaces_cache) - 1) - width, width};
@@ -3096,7 +3095,7 @@ auto str::join_list(const view_provider_proc& proc) -> std::string {
 }
 
 auto str::join_map(std::string_view sep_pair, std::string_view sep_list,
-    const view_pair_provider_proc& proc) -> std::string {
+                   const view_pair_provider_proc& proc) -> std::string {
     std::string result;
     bool suffix = false;
     for (auto item = proc(); item; item = proc()) {
@@ -3244,21 +3243,22 @@ auto str::split(std::string_view s, const substr_search_proc& search_proc, size_
 
 auto str::split(std::string_view s, const charset_type& sep_charset, size_type max_n, const view_consumer_proc& proc) -> void {
     split(s, //
-        [&sep_charset](std::string_view s, size_type& pos) -> size_type {
-            while (pos < s.size()) {
-                if (sep_charset.get(s[pos])) {
-                    return pos++;
-                }
+          [&sep_charset](std::string_view s, size_type& pos) -> size_type {
+              while (pos < s.size()) {
+                  if (sep_charset.get(s[pos])) {
+                      return pos++;
+                  }
 
-                pos++;
-            }
+                  pos++;
+              }
 
-            return str::npos;                            //
-        },                                               //
-        max_n,                                           //
-        [&proc, s](range_type range) -> int {            //
-            return proc(s.substr(range.pos, range.len)); //
-        });
+              return str::npos; //
+          }, //
+          max_n, //
+          [&proc, s](range_type range) -> int {
+              //
+              return proc(s.substr(range.pos, range.len)); //
+          });
 }
 
 auto str::split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void {
@@ -3285,16 +3285,18 @@ auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, c
         return;
     }
 
-    split(s,                                                         //
-        [sep_str](std::string_view s, size_type& pos) -> size_type { //
-            size_type start = s.find(sep_str, pos);
-            pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
-            return start;
-        },                                    //
-        max_n,                                //
-        [s, &proc](range_type range) -> int { //
-            return proc(s.substr(range.pos, range.len));
-        });
+    split(s, //
+          [sep_str](std::string_view s, size_type& pos) -> size_type {
+              //
+              size_type start = s.find(sep_str, pos);
+              pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
+              return start;
+          }, //
+          max_n, //
+          [s, &proc](range_type range) -> int {
+              //
+              return proc(s.substr(range.pos, range.len));
+          });
 }
 
 auto str::split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void {
@@ -3492,7 +3494,7 @@ auto str::split_pair_view(std::string_view s, std::string_view sep) -> std::tupl
 }
 
 auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
-    const view_pair_consumer_proc& proc) -> void {
+                    const view_pair_consumer_proc& proc) -> void {
     if (s.empty()) [[unlikely]] {
         return;
     }
@@ -3512,7 +3514,7 @@ auto str::split_map(std::string_view s, std::string_view sep_list, std::string_v
 }
 
 auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
-    size_type max_n) -> std::map<std::string, std::string> {
+                    size_type max_n) -> std::map<std::string, std::string> {
     if (max_n == 0) {
         return {};
     }
@@ -3603,7 +3605,6 @@ auto str::split_path(std::string_view s, const view_consumer_proc& proc) -> void
 
     const_pointer endptr = s.data() + s.size();
     while (ptr < endptr) {
-
         // 跳过多余的斜杠，定位到起始位置
         const_pointer start = ptr;
         while (start < endptr) {
@@ -4040,7 +4041,7 @@ auto str::swap_case(std::string_view s) -> std::string {
 }
 
 auto str::to_lower_inplace(std::string& s) -> std::string& {
-    for (value_type& ch : s) {
+    for (value_type& ch: s) {
         ch = static_cast<value_type>(std::tolower(ch));
     }
 
@@ -4048,7 +4049,7 @@ auto str::to_lower_inplace(std::string& s) -> std::string& {
 }
 
 auto str::to_upper_inplace(std::string& s) -> std::string& {
-    for (value_type& ch : s) {
+    for (value_type& ch: s) {
         ch = static_cast<value_type>(std::toupper(ch));
     }
 
@@ -4056,7 +4057,6 @@ auto str::to_upper_inplace(std::string& s) -> std::string& {
 }
 
 auto str::to_title_inplace(std::string& s) -> std::string& {
-
     pointer ptr = s.data();
     while (true) {
         for (; ptr < (s.data() + s.size()); ++ptr) {
@@ -4095,7 +4095,7 @@ auto str::to_capitalize_inplace(std::string& s) -> std::string& {
 }
 
 auto str::swap_case_inplace(std::string& s) -> std::string& {
-    for (value_type& ch : s) {
+    for (value_type& ch: s) {
         if (std::islower(ch)) {
             ch = static_cast<value_type>(std::toupper(ch));
             continue;
@@ -4709,16 +4709,10 @@ auto str::expand_tabs_inplace(std::string& s, size_type tab_size) -> std::string
 
 auto str::expand_user(std::string_view s) -> std::string {
     if (((s.size() == 1) && (s[0] == '~')) || ((s.size() >= 2) && (s[0] == '~') && (s[1] == '/'))) {
-#ifdef _WIN32
-        const char* ptr_home = getenv("USERPROFILE");
-#else
-        const char* ptr_home = getenv("HOME");
-#endif
-        if (ptr_home == nullptr) {
+        std::string home = str::home();
+        if (home.empty()) {
             return std::string{s};
         }
-
-        std::string_view home{ptr_home};
 
         std::string result;
         result.reserve(home.size() + s.size() - 1);
@@ -4804,16 +4798,10 @@ auto str::basename_pos(std::string_view s) -> size_type {
 
     const_pointer ptr = s.data() + s.size();
     while (ptr > s.data()) {
-#ifdef WIN32
-        if ((*(ptr - 1) == '/') || (*(ptr - 1) == '\\')) {
-            break;
-        }
-#else
         if (*(ptr - 1) == '/') {
             break;
         }
         ptr--;
-#endif
     }
 
     auto base_view = std::string_view{ptr, s.size() - (ptr - s.data())};
@@ -5197,13 +5185,13 @@ auto str::encode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
         "\\x04", // 4	4	04	EOT (end of transmission)
         "\\x05", // 5	5	05	ENQ (enquiry)
         "\\x06", // 6	6	06	ACK (acknowledge)
-        "\\a",   // 7	7	07	BEL (bell)
-        "\\b",   // 8	10	08	BS (backspace)
-        "\\t",   // 9	11	09	HT (horizontal tab)
-        "\\n",   // 10	12	0a	LF (line feed - new line)
-        "\\b",   // 11	13	0b	VT (vertical tab)
-        "\\f",   // 12	14	0c	FF (form feed - new page)
-        "\\r",   // 13	15	0d	CR (carriage return)
+        "\\a", // 7	7	07	BEL (bell)
+        "\\b", // 8	10	08	BS (backspace)
+        "\\t", // 9	11	09	HT (horizontal tab)
+        "\\n", // 10	12	0a	LF (line feed - new line)
+        "\\b", // 11	13	0b	VT (vertical tab)
+        "\\f", // 12	14	0c	FF (form feed - new page)
+        "\\r", // 13	15	0d	CR (carriage return)
         "\\x0e", // 14	16	0e	SO (shift out)
         "\\x0f", // 15	17	0f	SI (shift in)
         "\\x10", // 16	20	10	DLE (data link escape)
@@ -5222,101 +5210,101 @@ auto str::encode_cstr(std::string_view s, const view_consumer_proc& proc) -> voi
         "\\x1d", // 29	35	1d	GS (group separator)
         "\\x1e", // 30	36	1e	RS (record separator)
         "\\x1f", // 31	37	1f	US (unit separator)
-        " ",     // 32	40	20	(space)
-        "!",     // 33	41	21	!
-        "\\\"",  // 34	42	22	"
-        "#",     // 35	43	23	#
-        "$",     // 36	44	24	$
-        "%",     // 37	45	25	%
-        "&",     // 38	46	26	&
-        "\\'",   // 39	47	27	'
-        "(",     // 40	50	28	(
-        ")",     // 41	51	29	)
-        "*",     // 42	52	2a	*
-        "+",     // 43	53	2b	+
-        ",",     // 44	54	2c	,
-        "-",     // 45	55	2d	-
-        ".",     // 46	56	2e	.
-        "/",     // 47	57	2f	/
-        "0",     // 48	60	30	0
-        "1",     // 49	61	31	1
-        "2",     // 50	62	32	2
-        "3",     // 51	63	33	3
-        "4",     // 52	64	34	4
-        "5",     // 53	65	35	5
-        "6",     // 54	66	36	6
-        "7",     // 55	67	37	7
-        "8",     // 56	70	38	8
-        "9",     // 57	71	39	9
-        ":",     // 58	72	3a	:
-        ";",     // 59	73	3b	;
-        "<",     // 60	74	3c	<
-        "=",     // 61	75	3d	=
-        ">",     // 62	76	3e	>
-        "?",     // 63	77	3f	?
-        "@",     // 64	100	40	@
-        "A",     // 65	101	41	A
-        "B",     // 66	102	42	B
-        "C",     // 67	103	43	C
-        "D",     // 68	104	44	D
-        "E",     // 69	105	45	E
-        "F",     // 70	106	46	F
-        "G",     // 71	107	47	G
-        "H",     // 72	110	48	H
-        "I",     // 73	111	49	I
-        "J",     // 74	112	4a	J
-        "K",     // 75	113	4b	K
-        "L",     // 76	114	4c	L
-        "M",     // 77	115	4d	M
-        "N",     // 78	116	4e	N
-        "O",     // 79	117	4f	O
-        "P",     // 80	120	50	P
-        "Q",     // 81	121	51	Q
-        "R",     // 82	122	52	R
-        "S",     // 83	123	53	S
-        "T",     // 84	124	54	T
-        "U",     // 85	125	55	U
-        "V",     // 86	126	56	V
-        "W",     // 87	127	57	W
-        "X",     // 88	130	58	X
-        "Y",     // 89	131	59	Y
-        "Z",     // 90	132	5a	Z
-        "[",     // 91	133	5b	[
-        "\\\\",  // 92	134	5c	\ <---
-        "]",     // 93	135	5d	]
-        "^",     // 94	136	5e	^
-        "_",     // 95	137	5f	_
-        "`",     // 96	140	60	`
-        "a",     // 97	141	61	a
-        "b",     // 98	142	62	b
-        "c",     // 99	143	63	c
-        "d",     // 100	144	64	d
-        "e",     // 101	145	65	e
-        "f",     // 102	146	66	f
-        "g",     // 103	147	67	g
-        "h",     // 104	150	68	h
-        "i",     // 105	151	69	i
-        "j",     // 106	152	6a	j
-        "k",     // 107	153	6b	k
-        "l",     // 108	154	6c	l
-        "m",     // 109	155	6d	m
-        "n",     // 110	156	6e	n
-        "o",     // 111	157	6f	o
-        "p",     // 112	160	70	p
-        "q",     // 113	161	71	q
-        "r",     // 114	162	72	r
-        "s",     // 115	163	73	s
-        "t",     // 116	164	74	t
-        "u",     // 117	165	75	u
-        "v",     // 118	166	76	v
-        "w",     // 119	167	77	w
-        "x",     // 120	170	78	x
-        "y",     // 121	171	79	y
-        "z",     // 122	172	7a	z
-        "{",     // 123	173	7b	{
-        "|",     // 124	174	7c	|
-        "}",     // 125	175	7d	}
-        "~",     // 126	176	7e	~
+        " ", // 32	40	20	(space)
+        "!", // 33	41	21	!
+        "\\\"", // 34	42	22	"
+        "#", // 35	43	23	#
+        "$", // 36	44	24	$
+        "%", // 37	45	25	%
+        "&", // 38	46	26	&
+        "\\'", // 39	47	27	'
+        "(", // 40	50	28	(
+        ")", // 41	51	29	)
+        "*", // 42	52	2a	*
+        "+", // 43	53	2b	+
+        ",", // 44	54	2c	,
+        "-", // 45	55	2d	-
+        ".", // 46	56	2e	.
+        "/", // 47	57	2f	/
+        "0", // 48	60	30	0
+        "1", // 49	61	31	1
+        "2", // 50	62	32	2
+        "3", // 51	63	33	3
+        "4", // 52	64	34	4
+        "5", // 53	65	35	5
+        "6", // 54	66	36	6
+        "7", // 55	67	37	7
+        "8", // 56	70	38	8
+        "9", // 57	71	39	9
+        ":", // 58	72	3a	:
+        ";", // 59	73	3b	;
+        "<", // 60	74	3c	<
+        "=", // 61	75	3d	=
+        ">", // 62	76	3e	>
+        "?", // 63	77	3f	?
+        "@", // 64	100	40	@
+        "A", // 65	101	41	A
+        "B", // 66	102	42	B
+        "C", // 67	103	43	C
+        "D", // 68	104	44	D
+        "E", // 69	105	45	E
+        "F", // 70	106	46	F
+        "G", // 71	107	47	G
+        "H", // 72	110	48	H
+        "I", // 73	111	49	I
+        "J", // 74	112	4a	J
+        "K", // 75	113	4b	K
+        "L", // 76	114	4c	L
+        "M", // 77	115	4d	M
+        "N", // 78	116	4e	N
+        "O", // 79	117	4f	O
+        "P", // 80	120	50	P
+        "Q", // 81	121	51	Q
+        "R", // 82	122	52	R
+        "S", // 83	123	53	S
+        "T", // 84	124	54	T
+        "U", // 85	125	55	U
+        "V", // 86	126	56	V
+        "W", // 87	127	57	W
+        "X", // 88	130	58	X
+        "Y", // 89	131	59	Y
+        "Z", // 90	132	5a	Z
+        "[", // 91	133	5b	[
+        "\\\\", // 92	134	5c	\ <---
+        "]", // 93	135	5d	]
+        "^", // 94	136	5e	^
+        "_", // 95	137	5f	_
+        "`", // 96	140	60	`
+        "a", // 97	141	61	a
+        "b", // 98	142	62	b
+        "c", // 99	143	63	c
+        "d", // 100	144	64	d
+        "e", // 101	145	65	e
+        "f", // 102	146	66	f
+        "g", // 103	147	67	g
+        "h", // 104	150	68	h
+        "i", // 105	151	69	i
+        "j", // 106	152	6a	j
+        "k", // 107	153	6b	k
+        "l", // 108	154	6c	l
+        "m", // 109	155	6d	m
+        "n", // 110	156	6e	n
+        "o", // 111	157	6f	o
+        "p", // 112	160	70	p
+        "q", // 113	161	71	q
+        "r", // 114	162	72	r
+        "s", // 115	163	73	s
+        "t", // 116	164	74	t
+        "u", // 117	165	75	u
+        "v", // 118	166	76	v
+        "w", // 119	167	77	w
+        "x", // 120	170	78	x
+        "y", // 121	171	79	y
+        "z", // 122	172	7a	z
+        "{", // 123	173	7b	{
+        "|", // 124	174	7c	|
+        "}", // 125	175	7d	}
+        "~", // 126	176	7e	~
         "\\x7f", // 127	177	7f	DEL (delete)
     };
 
@@ -5518,7 +5506,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    } break;
+                    }
+                    break;
                     case 'X':
                         [[fallthrough]];
                     case 'x': {
@@ -5556,7 +5545,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    } break;
+                    }
+                    break;
                     default:
                         return (reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
@@ -5566,7 +5556,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                 }
 
                 w = ptr;
-            } break;
+            }
+            break;
         }
     }
 
@@ -5622,7 +5613,7 @@ auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> v
     str::size_type pos = 0;
     for (pos = 0; pos < mod_len; pos += 3) {
         // 将3字节组合在一起(总共24bit)
-        uint32_t cache = ((uint32_t)(src[pos]) << 16) + ((uint32_t)(src[pos + 1]) << 8) + (uint32_t)(src[pos + 2]);
+        uint32_t cache = ((uint32_t) (src[pos]) << 16) + ((uint32_t) (src[pos + 1]) << 8) + (uint32_t) (src[pos + 2]);
 
         // 拆分成4字节(每个字节实际只有6bit，对应0x3f的掩码)
         out[0] = table[static_cast<uint8_t>((cache >> 18) & 0x3f)];
@@ -5638,14 +5629,14 @@ auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> v
 
     // 输出最后一部分
     if (mod == 1) {
-        uint32_t cache = (uint32_t)src[pos] << 16;
+        uint32_t cache = (uint32_t) src[pos] << 16;
         out[0] = table[(cache >> 18) & 0x3f];
         out[1] = table[(cache >> 12) & 0x3f];
         out[2] = '=';
         out[3] = '=';
         proc(std::string_view(reinterpret_cast<const_pointer>(out), 4));
     } else if (mod == 2) {
-        uint32_t cache = ((uint32_t)(src[pos]) << 16) + ((uint32_t)(src[pos + 1]) << 8);
+        uint32_t cache = ((uint32_t) (src[pos]) << 16) + ((uint32_t) (src[pos + 1]) << 8);
         out[0] = table[(cache >> 18) & 0x3f];
         out[1] = table[(cache >> 12) & 0x3f];
         out[2] = table[(cache >> 6) & 0x3f];
@@ -5953,7 +5944,7 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
 }
 
 auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper,
-    const view_consumer_proc& proc)
+                          const view_consumer_proc& proc)
     -> size_type {
     if ((data == nullptr) || (len == 0)) {
         return 0;
@@ -6277,12 +6268,14 @@ auto str::read_lines(const char* filename, size_type max_n) -> std::vector<std::
 }
 
 auto str::with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* file)>& proc) -> void {
-    std::unique_ptr<FILE, void (*)(FILE* file)> file{fopen(filepath.c_str(), mode), //
+    std::unique_ptr<FILE, void (*)(FILE* file)> file{
+        fopen(filepath.c_str(), mode), //
         [](FILE* file) -> void {
             if (file != nullptr) {
                 fclose(file);
             }
-        }};
+        }
+    };
     if (file == nullptr) {
         return;
     }
@@ -6298,7 +6291,7 @@ public:
 
     argv_view(int argc, char* argv[])
         : argc_{argc}
-        , argv_{argv} {
+          , argv_{argv} {
         assert(argc >= 0);
     }
 
@@ -6609,3 +6602,14 @@ auto str::foreach_lines(std::string_view s, bool keep_ends, const line_consumer_
         proc(line_index++, s.substr(line_start, (s.size() - line_start)));
     }
 }
+
+auto str::home() -> std::string {
+#ifdef _WIN32
+    const char* ptr_home = getenv("USERPROFILE");
+#else
+    const char* ptr_home = getenv("HOME");
+#endif
+
+    return ((ptr_home == nullptr) ? "" : ptr_home);
+}
+

@@ -9,47 +9,59 @@
  * FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
+#include <variant>
+
 #include "testing.hpp"
 
 #include "str.hpp"
 
+#include <cstdlib>
+
 TEST(test_str, expand_envs_inplace) {
+    std::string ENV_XYZ = "/home/xyz";
+    std::string ENV_XYZ_KV{"ENV_XYZ=/home/xyz"};
+    putenv(ENV_XYZ_KV.c_str());
+#ifndef WIN32
+    unsetenv("ENV_XYZ");
+#endif
+
     SECTION("${xxx}形式") {
         std::string s;
-        ASSERT_EQ(str::expand_envs_inplace(s = "${HOME}/${NOTEXIST}"), std::string(getenv("HOME")) + "/");
-        ASSERT_EQ(str::expand_envs_inplace(s = "${HOME}/${NOTEXIST}", true), std::string(getenv("HOME")) + "/${NOTEXIST}");
+        str::expand_envs_inplace(s = "${ENV_XYZ}/${NOTEXIST}");
+        ASSERT_EQ(s, ENV_XYZ + "/");
+        ASSERT_EQ(str::expand_envs_inplace(s = "${ENV_XYZ}/${NOTEXIST}", true), ENV_XYZ + "/${NOTEXIST}");
     }
 
     SECTION("$xxx形式") {
         std::string s;
-        ASSERT_EQ(str::expand_envs_inplace(s = "$HOME/$NOTEXIST"), std::string(getenv("HOME")) + "/");
-        ASSERT_EQ(str::expand_envs_inplace(s = "$HOME/$NOTEXIST", true), std::string(getenv("HOME")) + "/$NOTEXIST");
+        ASSERT_EQ(str::expand_envs_inplace(s = "$ENV_XYZ/$NOTEXIST"), ENV_XYZ + "/");
+        ASSERT_EQ(str::expand_envs_inplace(s = "$ENV_XYZ/$NOTEXIST", true), ENV_XYZ + "/$NOTEXIST");
     }
 
     SECTION("字符串中间") {
         std::string s;
-        ASSERT_EQ(str::expand_envs_inplace(s = "abcd$HOME/${NOTEXIST}"), "abcd" + std::string(getenv("HOME")) + "/");
-        ASSERT_EQ(str::expand_envs_inplace(s = "abcd$HOME/${NOTEXIST}", true), "abcd" + std::string(getenv("HOME")) + "/${NOTEXIST}");
+        ASSERT_EQ(str::expand_envs_inplace(s = "abcd$ENV_XYZ/${NOTEXIST}"), "abcd" + ENV_XYZ + "/");
+        ASSERT_EQ(str::expand_envs_inplace(s = "abcd$ENV_XYZ/${NOTEXIST}", true), "abcd" + ENV_XYZ + "/${NOTEXIST}");
     }
 
     SECTION("${xxx}在字符串尾部") {
         std::string s;
-        ASSERT_EQ(str::expand_envs_inplace(s = "abcd${HOME}"), "abcd" + std::string(getenv("HOME")));
-        ASSERT_EQ(str::expand_envs_inplace(s = "abcd${HOME}", true), "abcd" + std::string(getenv("HOME")));
+        ASSERT_EQ(str::expand_envs_inplace(s = "abcd${ENV_XYZ}"), "abcd" + ENV_XYZ);
+        ASSERT_EQ(str::expand_envs_inplace(s = "abcd${ENV_XYZ}", true), "abcd" + ENV_XYZ);
     }
 
     SECTION("一个字符串只有 $xxx") {
         std::string s;
-        ASSERT_EQ(str::expand_envs_inplace(s = "$HOME"), std::string(getenv("HOME")));
-        ASSERT_EQ(str::expand_envs_inplace(s = "$HOME", true), std::string(getenv("HOME")));
+        ASSERT_EQ(str::expand_envs_inplace(s = "$ENV_XYZ"), ENV_XYZ);
+        ASSERT_EQ(str::expand_envs_inplace(s = "$ENV_XYZ", true), ENV_XYZ);
     }
 
     SECTION("错误变量") {
         std::string s;
         ASSERT_EQ(str::expand_envs_inplace(s = "$$$"), "$$$");
         ASSERT_EQ(str::expand_envs_inplace(s = "$$$", true), "$$$");
-        ASSERT_EQ(str::expand_envs_inplace(s = "${HOME aaa"), "${HOME aaa");
-        ASSERT_EQ(str::expand_envs_inplace(s = "${HOME aaa", true), "${HOME aaa");
+        ASSERT_EQ(str::expand_envs_inplace(s = "${ENV_XYZ aaa"), "${ENV_XYZ aaa");
+        ASSERT_EQ(str::expand_envs_inplace(s = "${ENV_XYZ aaa", true), "${ENV_XYZ aaa");
         ASSERT_EQ(str::expand_envs_inplace(s = "abc$"), "abc$");
         ASSERT_EQ(str::expand_envs_inplace(s = "abc$", true), "abc$");
     }
@@ -83,20 +95,20 @@ TEST(test_str, expand_envs_inplace) {
     SECTION("通过proc提供数据") {
         std::string s;
         ASSERT_EQ(str::expand_envs_inplace(s = "${HOME}/${NOTEXIST}/${HOME}", false, [](const std::string& key) -> std::optional<std::string> {
-            if (key == "HOME") {
-                return "xxxx";
-            }
+                      if (key == "HOME") {
+                      return "xxxx";
+                      }
 
-            return std::nullopt;
-        }),
-            "xxxx//xxxx");
+                      return std::nullopt;
+                      }),
+                  "xxxx//xxxx");
         ASSERT_EQ(str::expand_envs_inplace(s = "${HOME}/${NOTEXIST}/${HOME}", true, [](const std::string& key) -> std::optional<std::string> {
-            if (key == "HOME") {
-                return "xxxx";
-            }
+                      if (key == "HOME") {
+                      return "xxxx";
+                      }
 
-            return std::nullopt;
-        }),
-            "xxxx/${NOTEXIST}/xxxx");
+                      return std::nullopt;
+                      }),
+                  "xxxx/${NOTEXIST}/xxxx");
     }
 }

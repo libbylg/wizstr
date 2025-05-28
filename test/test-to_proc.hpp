@@ -12,7 +12,22 @@
 #ifndef STR_TEST_TO_PROC_HPP
 #define STR_TEST_TO_PROC_HPP
 
-template <typename ContainerType>
+class scope_guard {
+public:
+    explicit scope_guard(const std::function<void()>& proc): proc_{proc} {
+    }
+
+    ~scope_guard() {
+        if (proc_) {
+            proc_();
+        }
+    }
+
+private:
+    const std::function<void()>& proc_;
+};
+
+template<typename ContainerType>
 class to_proc {
 public:
     explicit to_proc(const ContainerType& container)
