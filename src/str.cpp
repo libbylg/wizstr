@@ -6041,7 +6041,10 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         // Dump ascii
         if (format.flags & str::show_ascii) {
             line += format.ascii_margin;
-            dump_hex_ascii(ptr_line, line_bytes, format.ascii_mask, line);
+            dump_hex_ascii(ptr_line, remain_len, format.ascii_mask, line);
+            for (size_type index = remain_len; index < line_bytes; index++) {
+                line += ' ';
+            }
         }
 
         // 输出当前行
