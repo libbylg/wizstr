@@ -6129,6 +6129,7 @@ auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::strin
     std::string result;
 
     char buffer[512];
+    buffer[0] = '\0';
 
     do {
         char* ptr = fgets(buffer, sizeof(buffer), file);
