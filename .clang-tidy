@@ -1,0 +1,61 @@
+Checks: '-*,readability-identifier-naming,readability-function-size,
+         readability-braces-around-statements,
+         misc-unused-parameters,modernize-use-nullptr,modernize-replace-auto-ptr,
+         modernize-use-noexcept,performance-move-const-arg,
+         cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-reinterpret-cast,
+         cppcoreguidelines-pro-type-const-cast'
+
+CheckOptions:
+  # 类名
+  - key: readability-identifier-naming.ClassCase
+    value: lower_case
+
+  # 结构体名
+  - key: readability-identifier-naming.StructCase
+    value: lower_case
+
+  # typedef 名
+  - key: readability-identifier-naming.TypedefCase
+    value: lower_case
+
+  # 枚举名
+  - key: readability-identifier-naming.EnumCase
+    value: lower_case
+
+  # 枚举项
+  - key: readability-identifier-naming.EnumConstantCase
+    value: lower_case
+
+  # 联合体
+  - key: readability-identifier-naming.UnionCase
+    value: lower_case
+
+  # 名字空间
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+
+  # 函数
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+
+  # 变量命名
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+
+  # 成员变量
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  #MemberPrefix, MemberSuffix, MemberIgnoredRegexp, MemberHungarianPrefix
+
+  # 私有成员变量
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: lower_case
+
+  # 私有成员变量后缀
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: _
+
+  # 宏定义
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: lower_case
+
