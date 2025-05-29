@@ -6132,9 +6132,7 @@ auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::strin
     buffer[0] = '\0';
 
     do {
-        errno = 0;
         char* ptr = fgets(buffer, sizeof(buffer), file);
-        int err = errno;
         if (ptr == nullptr) {
             if (result.empty()) {
                 return std::nullopt;
@@ -6173,6 +6171,7 @@ auto str::read_next_line(std::istream& file) -> std::optional<std::string> {
 
     std::string line_text;
     std::getline(file, line_text);
+
     return line_text;
 }
 
