@@ -5892,6 +5892,10 @@ auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, st
 }
 
 auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void {
+    if (proc == nullptr) {
+        return;
+    }
+
     value_type offset_buffer[32];
     int wlen = std::snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%zX" : "%zx"), offset);
     assert(wlen > 0);
@@ -5914,7 +5918,7 @@ auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask,
 }
 
 auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, const view_consumer_proc& proc) -> void {
-    if ((data == nullptr) || (len == 0)) {
+    if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
         return;
     }
 
@@ -5941,7 +5945,7 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
 }
 
 auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, const view_consumer_proc& proc) -> size_type {
-    if ((data == nullptr) || (len == 0)) {
+    if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
         return 0;
     }
 
