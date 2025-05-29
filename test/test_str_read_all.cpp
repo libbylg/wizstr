@@ -24,4 +24,9 @@ TEST(test_str, read_all) {
         std::string expected{};
         ASSERT_EQ(str::read_all(filename), expected);
     }
+    SECTION("EmptyFile") {
+        std::string filename{str::dirname(__FILE__) + "/data/test-empty.txt"};
+        std::string expected{};
+        ASSERT_EQ(str::read_all(filename), expected);
+    }
 }
