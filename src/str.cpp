@@ -6117,7 +6117,7 @@ auto str::read_all(const char* filename) -> std::string {
     return result;
 }
 
-auto str::read_line(FILE* file, bool keep_ends) -> std::optional<std::string> {
+auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::string> {
     if (file == nullptr) {
         return std::nullopt;
     }
@@ -6158,7 +6158,7 @@ auto str::read_line(FILE* file, bool keep_ends) -> std::optional<std::string> {
     return result;
 }
 
-auto str::read_line(std::istream& file) -> std::optional<std::string> {
+auto str::read_next_line(std::istream& file) -> std::optional<std::string> {
     if (file.eof() || file.bad()) {
         return std::nullopt;
     }
