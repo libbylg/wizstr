@@ -5940,9 +5940,7 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
     });
 }
 
-auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper,
-    const view_consumer_proc& proc)
-    -> size_type {
+auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, const view_consumer_proc& proc) -> size_type {
     if ((data == nullptr) || (len == 0)) {
         return 0;
     }
@@ -5964,11 +5962,16 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
         ptr_group += group_bytes;
     }
 
-    // 处理不完整的分组
-    for (size_type byte_index = 0; byte_index < len % group_bytes; byte_index++) {
-        auto ch = static_cast<uint8_t>(ptr_group[byte_index]);
-        line += hex[(ch & 0xF0) >> 4];
-        line += hex[(ch & 0x0F) >> 0];
+    if ((len % group_bytes) != 0) {
+        // 处理不完整的分组
+        for (size_type byte_index = 0; byte_index < len % group_bytes; byte_index++) {
+            auto ch = static_cast<uint8_t>(ptr_group[byte_index]);
+            line += hex[(ch & 0xF0) >> 4];
+            line += hex[(ch & 0x0F) >> 0];
+        }
+    } else {
+        // 去掉最后的空白字符
+        line.resize(line.size() - 1);
     }
 
     proc(line);
@@ -5977,15 +5980,23 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
 }
 
 auto str::dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void {
-    if ((data == nullptr) || (len == 0)) {
+    if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
         return;
     }
 
+    // 十六进制表示形式
     bool upper = (format.flags & str::show_upper) != 0;
 
-    // 每行多少字节
+    // 每行多少字节，分组区域多长
     size_type line_bytes = format.line_groups * format.group_bytes;
-    size_type groups_len = (line_bytes * 2) + format.line_groups;
+    size_type groups_len = (line_bytes * 2) + format.line_groups - 1; // 1:最后一组不需要空白
+
+    // 校正偏移量宽度(0xFF 表示自适应)
+    uint8_t opt_offset_width = format.offset_width;
+    if (opt_offset_width == 0) {
+        char buf[32];
+        opt_offset_width = snprintf(buf, sizeof(buf), "%zx", len);
+    }
 
     // 完整行的数量
     size_type full_line_num = len / line_bytes;
@@ -5996,9 +6007,9 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
     for (; line_index < full_line_num; line_index++) {
         line.clear();
 
-        // Dump shifter
+        // Dump offset
         if (format.flags & str::show_offset) {
-            dump_hex_offset(line_index * line_bytes, format.offset_width, upper, line);
+            dump_hex_offset(line_index * line_bytes, opt_offset_width, upper, line);
             line += format.offset_margin;
         }
 
@@ -6048,19 +6059,12 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
         }
 
         // 输出当前行
-        if (proc(line_index, line) != 0) {
-            return;
-        }
+        proc(line_index, line);
     }
 }
 
 auto str::charset(std::string_view s) -> charset_type {
     return charset_type{s};
-}
-
-auto str::charset(std::string_view s, charset_type& set) -> charset_type& {
-    set.set(s);
-    return set;
 }
 
 auto str::range(size_type pos, size_type n) -> range_type {
