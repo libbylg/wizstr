@@ -15,7 +15,7 @@
 
 TEST(test_str, read_all) {
     SECTION("Gernial") {
-        std::string filename{str::dirname(__FILE__) + "/data/test-gernial.txt"};
+        std::string filename{str::dirname(__FILE__) + "/data/test-general.txt"};
         std::string expected{"ABCDE12345\nABCDE\n12345"};
         ASSERT_EQ(str::read_all(filename), expected);
     }

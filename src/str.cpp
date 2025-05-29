@@ -6143,11 +6143,13 @@ auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::strin
         assert(len < sizeof(buffer));
 
         // 缓冲区没填充满，说明结束了
-        if (len >= (sizeof(buffer) - 1)) {
-            // 如果缓冲区结尾刚好就是换行符号，说明遇到结束符了: [\n][\0]$
-            if (buffer[sizeof(buffer) - 2] == '\n') [[unlikely]] {
-                break;
-            }
+        if (len < (sizeof(buffer) - 1)) {
+            break;
+        }
+
+        // 如果缓冲区结尾刚好就是换行符号，说明遇到结束符了: [\n][\0]$
+        if (buffer[sizeof(buffer) - 2] == '\n') [[unlikely]] {
+            break;
         }
     } while (!feof(file) && !ferror(file));
 
