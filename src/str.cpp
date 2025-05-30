@@ -6117,16 +6117,14 @@ auto str::read_all(const char* filename) -> std::string {
     return result;
 }
 
-auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::string> {
+auto str::read_next_line(FILE* file, bool keep_ends, std::string& line_text) -> bool {
     if (file == nullptr) {
-        return std::nullopt;
+        return false;
     }
 
     if (feof(file) || ferror(file)) {
-        return std::nullopt;
+        return false;
     }
-
-    std::string result;
 
     char buffer[512];
     buffer[0] = '\0';
@@ -6134,19 +6132,18 @@ auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::strin
     do {
         char* ptr = fgets(buffer, sizeof(buffer), file);
         if (ptr == nullptr) {
-            if (result.empty()) {
-                return std::nullopt;
-            }
             break;
         }
 
-        size_type len = strlen(ptr);
-        result.append(buffer, len);
+        size_type len = strlen(ptr); // NOTE: 性能太低或许fgets应该提供长度
+
+        // 保存读出来的部分数据
+        line_text.append(buffer, len);
 
         // fgets 会自动补字符串尾部的\0，所以长度一定小于缓冲区长度
         assert(len < sizeof(buffer));
 
-        // 缓冲区没填充满，说明结束了
+        // 缓冲区没填充满，说明结束了: [\n][\0]$
         if (len < (sizeof(buffer) - 1)) {
             break;
         }
@@ -6157,50 +6154,55 @@ auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::strin
         }
     } while (!feof(file) && !ferror(file));
 
+    // 如果不需要行尾结束符，尝试去掉行尾符号
     if (!keep_ends) {
-        return remove_eol_suffix(result);
+        line_text.resize(line_text.size() - str::eol_suffix(line_text));
     }
 
-    return result;
+    return true;
 }
 
-auto str::read_next_line(std::istream& file) -> std::optional<std::string> {
-    if (file.eof() || file.bad()) {
+auto str::read_next_line(FILE* file, bool keep_ends) -> std::optional<std::string> {
+    std::string line_text;
+    auto ok = str::read_next_line(file, keep_ends, line_text);
+    if (!ok) {
         return std::nullopt;
     }
-
-    std::string line_text;
-    std::getline(file, line_text);
 
     return line_text;
 }
 
-auto str::read_lines(FILE* file, const line_consumer_proc& proc) -> void {
-    assert(file != nullptr);
+auto str::read_next_line(std::istream& file, std::string& line_text) -> bool {
+    if (!file.good()) {
+        return false;
+    }
+
+    std::getline(file, line_text);
+
+    return true;
+}
+
+auto str::read_next_line(std::istream& file) -> std::optional<std::string> {
+    std::string line_text;
+    auto ok = str::read_next_line(file, line_text);
+    if (!ok) {
+        return std::nullopt;
+    }
+
+    return {std::move(line_text)};
+}
+
+auto str::read_lines(FILE* file, bool keep_ends, const line_consumer_proc& proc) -> void {
+    if (file == nullptr) {
+        return;
+    }
 
     size_type line_index = 0;
     std::string line_text;
 
-    char buffer[512];
     while (!feof(file) || !ferror(file)) {
-        char* ptr = fgets(buffer, sizeof(buffer), file);
-        if (ptr == nullptr) {
-            proc(line_index, line_text);
+        if (!str::read_next_line(file, keep_ends, line_text)) {
             return;
-        }
-
-        size_type len = strlen(ptr);
-        line_text.append(buffer, len);
-
-        // "fgets 会自动补字符串尾部的\\0，所以长度一定小于缓冲区长度"
-        assert(len < sizeof(buffer));
-
-        // 缓冲区已经填满，需要看尾部换行以裁定是否遇到行尾
-        if (len >= (sizeof(buffer) - 1)) {
-            // 缓冲区已经填满，需要看尾部换行以裁定是否遇到行尾
-            if (buffer[sizeof(buffer) - 2] != '\n') [[unlikely]] {
-                continue;
-            }
         }
 
         if (proc(line_index, line_text) != 0) {
@@ -6212,13 +6214,17 @@ auto str::read_lines(FILE* file, const line_consumer_proc& proc) -> void {
     }
 }
 
-auto str::read_lines(FILE* file, size_type max_n) -> std::vector<std::string> {
+auto str::read_lines(FILE* file, bool keep_ends, size_type max_n) -> std::vector<std::string> {
+    if (file == nullptr) {
+        return {};
+    }
+
     if (max_n == 0) {
         return {};
     }
 
     std::vector<std::string> result;
-    read_lines(file, [max_n, &result](size_type line_index [[maybe_unused]], std::string_view line_text) -> int {
+    read_lines(file, keep_ends, [max_n, &result](size_type line_index [[maybe_unused]], std::string_view line_text) -> int {
         result.emplace_back(line_text);
         if (result.size() == max_n) {
             return 1;
@@ -6233,11 +6239,16 @@ auto str::read_lines(FILE* file, size_type max_n) -> std::vector<std::string> {
 auto str::read_lines(std::istream& file, const line_consumer_proc& proc) -> void {
     size_type line_index = 0;
     std::string line_text;
-    while (!file.bad() && !file.eof()) {
-        std::getline(file, line_text);
+    while (file.good()) {
+        auto ok = str::read_next_line(file, line_text);
+        if (!ok) {
+            return;
+        }
+
         if (proc(line_index, line_text) != 0) {
             return;
         }
+
         line_index++;
         line_text.clear();
     }
@@ -6261,25 +6272,44 @@ auto str::read_lines(std::istream& file, size_type max_n) -> std::vector<std::st
     return result;
 }
 
-auto str::read_lines(const std::string& filename, const line_consumer_proc& proc) -> void {
-    read_lines(filename.c_str(), proc);
+auto str::read_lines(const std::string& filename, bool keep_ends, const line_consumer_proc& proc) -> void {
+    return str::read_lines(filename.c_str(), keep_ends, proc);
 }
 
-auto str::read_lines(const char* filename, const line_consumer_proc& proc) -> void {
-    assert(filename != nullptr);
+auto str::read_lines(const char* filename, bool keep_ends, const line_consumer_proc& proc) -> void {
+    if (filename == nullptr) {
+        return;
+    }
 
-    std::ifstream file{filename};
-    str::read_lines(file, proc);
+    str::with_file(std::string{filename}, "r", [keep_ends, &proc](FILE* file) {
+        read_lines(file, keep_ends, proc);
+    });
 }
 
-auto str::read_lines(const std::string& filename, size_type max_n) -> std::vector<std::string> {
-    return read_lines(filename.c_str(), max_n);
+auto str::read_lines(const std::string& filename, bool keep_ends, size_type max_n) -> std::vector<std::string> {
+    return str::read_lines(filename.c_str(), keep_ends, max_n);
 }
 
-auto str::read_lines(const char* filename, size_type max_n) -> std::vector<std::string> {
-    assert(filename != nullptr);
-    std::ifstream file{filename};
-    return str::read_lines(file, max_n);
+auto str::read_lines(const char* filename, bool keep_ends, size_type max_n) -> std::vector<std::string> {
+    if (filename == nullptr) {
+        return {};
+    }
+
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::vector<std::string> result;
+    str::read_lines(filename, keep_ends, [max_n, &result](size_type line_index [[maybe_unused]], std::string_view line_text) -> int {
+        result.emplace_back(line_text);
+        if (result.size() == max_n) {
+            return 1;
+        }
+
+        return 0;
+    });
+
+    return result;
 }
 
 auto str::with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* file)>& proc) -> void {

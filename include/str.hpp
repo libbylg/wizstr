@@ -1748,18 +1748,20 @@ struct str {
     static auto read_all(const std::string& filename) -> std::string;
     static auto read_all(const char* filename) -> std::string;
     //
+    static auto read_next_line(FILE* file, bool keep_ends, std::string& line_text) -> bool;
     static auto read_next_line(FILE* file, bool keep_ends = false) -> std::optional<std::string>;
+    static auto read_next_line(std::istream& file, std::string& line_text) -> bool;
     static auto read_next_line(std::istream& file) -> std::optional<std::string>;
     //
-    static auto read_lines(FILE* file, const line_consumer_proc& proc) -> void;
-    static auto read_lines(FILE* file, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(FILE* file, bool keep_ends, const line_consumer_proc& proc) -> void;
+    static auto read_lines(FILE* file, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
     static auto read_lines(std::istream& file, const line_consumer_proc& proc) -> void;
     static auto read_lines(std::istream& file, size_type max_n = npos) -> std::vector<std::string>;
     //
-    static auto read_lines(const std::string& filename, const line_consumer_proc& proc) -> void;
-    static auto read_lines(const char* filename, const line_consumer_proc& proc) -> void;
-    static auto read_lines(const std::string& filename, size_type max_n = npos) -> std::vector<std::string>;
-    static auto read_lines(const char* filename, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(const std::string& filename, bool keep_ends, const line_consumer_proc& proc) -> void;
+    static auto read_lines(const char* filename, bool keep_ends, const line_consumer_proc& proc) -> void;
+    static auto read_lines(const std::string& filename, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
+    static auto read_lines(const char* filename, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
     static auto with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* f)>& proc) -> void;
 
     //! 选项识别

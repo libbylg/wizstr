@@ -18,6 +18,22 @@
 
 TEST(test_str, read_next_line) {
     GROUP("FILE") {
+        SECTION("invalid-file-ptr") {
+            std::optional<std::string> line;
+            FILE* file = nullptr;
+            ASSERT_FALSE((line = str::read_next_line(file, true)));
+        }
+        SECTION("empty") {
+            std::string filename{str::dirname(__FILE__) + "/data/test-empty.txt"};
+            FILE* file = fopen(filename.c_str(), "r");
+            assert(file != nullptr);
+            scope_guard file_guard([file] { fclose(file); });
+            std::optional<std::string> line;
+            ASSERT_TRUE((line = str::read_next_line(file, true)));
+            ASSERT_EQ(line.value(), "");
+            ASSERT_FALSE((line = str::read_next_line(file, true)));
+            ASSERT_FALSE((line = str::read_next_line(file, true)));
+        }
         SECTION("general") {
             std::string filename{str::dirname(__FILE__) + "/data/test-general.txt"};
             FILE* file = fopen(filename.c_str(), "r");
@@ -25,11 +41,11 @@ TEST(test_str, read_next_line) {
             scope_guard file_guard([file] { fclose(file); });
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file, true)));
-            ASSERT_EQ(line, "ABCDE12345\n");
+            ASSERT_EQ(line.value(), "ABCDE12345\n");
             ASSERT_TRUE((line = str::read_next_line(file, true)));
-            ASSERT_EQ(line, "ABCDE\n");
+            ASSERT_EQ(line.value(), "ABCDE\n");
             ASSERT_TRUE((line = str::read_next_line(file, true)));
-            ASSERT_EQ(line, "12345");
+            ASSERT_EQ(line.value(), "12345");
             ASSERT_FALSE((line = str::read_next_line(file, true)));
             ASSERT_FALSE((line = str::read_next_line(file, true)));
         }
@@ -40,11 +56,13 @@ TEST(test_str, read_next_line) {
             scope_guard file_guard([file] { fclose(file); });
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file, false)));
-            ASSERT_EQ(line, "");
+            ASSERT_EQ(line.value(), "");
             ASSERT_TRUE((line = str::read_next_line(file, false)));
-            ASSERT_EQ(line, "");
+            ASSERT_EQ(line.value(), "");
             ASSERT_TRUE((line = str::read_next_line(file, false)));
-            ASSERT_EQ(line, "");
+            ASSERT_EQ(line.value(), "");
+            ASSERT_TRUE((line = str::read_next_line(file, false)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file, false)));
             ASSERT_FALSE((line = str::read_next_line(file, false)));
         }
@@ -60,6 +78,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file, true)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file, true)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file, true)));
             ASSERT_FALSE((line = str::read_next_line(file, true)));
         }
@@ -75,6 +95,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file, true)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file, true)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file, true)));
             ASSERT_FALSE((line = str::read_next_line(file, true)));
         }
@@ -90,6 +112,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file, true)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file, true)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file, true)));
             ASSERT_FALSE((line = str::read_next_line(file, true)));
         }
@@ -105,6 +129,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file, true)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file, true)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file, true)));
             ASSERT_FALSE((line = str::read_next_line(file, true)));
         }
@@ -120,6 +146,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file, true)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file, true)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file, true)));
             ASSERT_FALSE((line = str::read_next_line(file, true)));
         }
@@ -139,22 +167,39 @@ TEST(test_str, read_next_line) {
             ASSERT_EQ(line.value(), expected);
             ASSERT_TRUE((line = str::read_next_line(file, true)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file, true)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file, true)));
             ASSERT_FALSE((line = str::read_next_line(file, true)));
         }
     }
     GROUP("fstream") {
+        SECTION("invalid-fstream-obj") {
+            std::string filename{str::dirname(__FILE__) + "/data/test-NOT-EXIST.txt"};
+            std::fstream file(filename, std::ios::in);
+            std::optional<std::string> line;
+            ASSERT_FALSE((line = str::read_next_line(file)));
+        }
+        SECTION("empty") {
+            std::string filename{str::dirname(__FILE__) + "/data/test-empty.txt"};
+            std::fstream file(filename, std::ios::in);
+            std::optional<std::string> line;
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
+            ASSERT_FALSE((line = str::read_next_line(file)));
+            ASSERT_FALSE((line = str::read_next_line(file)));
+        }
         SECTION("general") {
             std::string filename{str::dirname(__FILE__) + "/data/test-general.txt"};
             std::fstream file(filename, std::ios::in);
             scope_guard file_guard([&file] { file.close(); });
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file)));
-            ASSERT_EQ(line, "ABCDE12345");
+            ASSERT_EQ(line.value(), "ABCDE12345");
             ASSERT_TRUE((line = str::read_next_line(file)));
-            ASSERT_EQ(line, "ABCDE");
+            ASSERT_EQ(line.value(), "ABCDE");
             ASSERT_TRUE((line = str::read_next_line(file)));
-            ASSERT_EQ(line, "12345");
+            ASSERT_EQ(line.value(), "12345");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
@@ -164,11 +209,13 @@ TEST(test_str, read_next_line) {
             scope_guard file_guard([&file] { file.close(); });
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file)));
-            ASSERT_EQ(line, "");
+            ASSERT_EQ(line.value(), "");
             ASSERT_TRUE((line = str::read_next_line(file)));
-            ASSERT_EQ(line, "");
+            ASSERT_EQ(line.value(), "");
             ASSERT_TRUE((line = str::read_next_line(file)));
-            ASSERT_EQ(line, "");
+            ASSERT_EQ(line.value(), "");
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
@@ -182,6 +229,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
@@ -196,6 +245,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
@@ -210,6 +261,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
@@ -224,6 +277,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
@@ -238,6 +293,8 @@ TEST(test_str, read_next_line) {
             std::optional<std::string> line;
             ASSERT_TRUE((line = str::read_next_line(file)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
@@ -256,6 +313,8 @@ TEST(test_str, read_next_line) {
             ASSERT_EQ(line.value(), expected);
             ASSERT_TRUE((line = str::read_next_line(file)));
             ASSERT_EQ(line.value(), expected);
+            ASSERT_TRUE((line = str::read_next_line(file)));
+            ASSERT_EQ(line.value(), "");
             ASSERT_FALSE((line = str::read_next_line(file)));
             ASSERT_FALSE((line = str::read_next_line(file)));
         }
