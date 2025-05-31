@@ -14,9 +14,28 @@
 #include "str.hpp"
 
 TEST(test_str, next_opt) {
-    SECTION("不同起始位置") {
+    SECTION("一般情况") {
         str::size_type pos = 0;
-        auto argv = std::vector{"-a=va"};
+        auto argv = std::vector{"-a=va", "-b", "--", "-vvv", "ccc"};
         ASSERT_EQ(str::next_opt(pos, argv), (std::tuple{"-a", "va"}));
+        ASSERT_EQ(pos, 1);
+        ASSERT_EQ(str::next_opt(pos, argv), (std::tuple{"-b", ""}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt(pos, argv), (std::tuple{"", "-vvv"}));
+        ASSERT_EQ(pos, 4);
+        ASSERT_EQ(str::next_opt(pos, argv), (std::tuple{"", "ccc"}));
+        ASSERT_EQ(pos, 5);
+    }
+    SECTION("一般情况") {
+        int pos = 0;
+        const char* argv[5] = {"-a=va", "-b", "--", "-vvv", "ccc"};
+        ASSERT_EQ(str::next_opt(pos, sizeof(argv) / sizeof(argv[0]), argv), (std::tuple{"-a", "va"}));
+        ASSERT_EQ(pos, 1);
+        ASSERT_EQ(str::next_opt(pos, sizeof(argv) / sizeof(argv[0]), argv), (std::tuple{"-b", ""}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt(pos, sizeof(argv) / sizeof(argv[0]), argv), (std::tuple{"", "-vvv"}));
+        ASSERT_EQ(pos, 4);
+        ASSERT_EQ(str::next_opt(pos, sizeof(argv) / sizeof(argv[0]), argv), (std::tuple{"", "ccc"}));
+        ASSERT_EQ(pos, 5);
     }
 }

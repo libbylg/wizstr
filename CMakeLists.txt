@@ -243,6 +243,8 @@ list(APPEND QUALITY_OPTIONS -Wall)
 list(APPEND QUALITY_OPTIONS -Wextra)
 list(APPEND QUALITY_OPTIONS -Werror=return-type)
 list(APPEND QUALITY_OPTIONS -Werror=sign-compare)
+list(APPEND QUALITY_OPTIONS -Werror=conversion)
+list(APPEND QUALITY_OPTIONS -Werror=return-type)
 #list(APPEND QUALITY_OPTIONS -Wno-unused-parameter)
 
 #   Define the building target

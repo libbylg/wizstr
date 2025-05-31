@@ -1082,11 +1082,6 @@ auto str::next_regex(std::string_view s, size_type& pos, std::string_view patter
 }
 #endif // STR_UNTESTED
 
-// auto str::prev_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
-// auto str::prev_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
-// auto str::prev_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
-// auto str::prev_regex(std::string_view s, size_type& pos, std::string_view pattern) -> std::string;
-
 #ifdef STR_UNTESTED
 auto str::next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
     size_type start = next_spaces_pos(s, pos);
@@ -1206,18 +1201,6 @@ auto str::prev_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     return pos;
 }
 #endif // STR_UNTESTED
-
-// auto str::next_pathsep_range(std::string_view s, size_type& pos) -> range_type;
-// auto str::next_pathsep_view(std::string_view s, size_type& pos) -> std::string_view;
-// auto str::next_pathsep(std::string_view s, size_type& pos) -> std::string;
-
-// auto str::next_searchpathsep_range(std::string_view s, size_type& pos) -> range_type;
-// auto str::next_searchpathsep_view(std::string_view s, size_type& pos) -> std::string_view;
-// auto str::next_searchpathsep(std::string_view s, size_type& pos) -> std::string;
-
-// auto str::prev_proc_range(std::string_view s, size_type& pos, const substr_search_proc& proc) -> range_type;
-// auto str::prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
-// auto str::prev_proc(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string;
 
 auto str::is_lower(std::string_view s) -> bool {
     if (s.empty()) {
@@ -1661,7 +1644,6 @@ auto str::is_literal_real(std::string_view s) -> bool {
         return false;
     }
 
-    const_pointer pow_start = nullptr;
     if ((*p == 'e') || (*p == 'E')) {
         p++;
 
@@ -1673,6 +1655,7 @@ auto str::is_literal_real(std::string_view s) -> bool {
             p++;
         }
 
+        const_pointer pow_start = nullptr;
         while (p < end) {
             if (!std::isdigit(*p)) {
                 break;
@@ -2341,7 +2324,7 @@ auto str::align_right(std::string_view s, size_type width, value_type ch) -> std
 
     std::string result;
     result.resize(width);
-    std::fill(result.data(), result.data() + (width - s.size()), ch);
+    std::fill_n(result.data(), (width - s.size()), ch);
     std::memcpy(result.data() + (width - s.size()), s.data(), s.size());
     return result;
 }
@@ -2405,27 +2388,6 @@ auto str::align_zfill_inplace(std::string& s, size_type width) -> std::string& {
     s = align_zfill(s, width);
     return s;
 }
-
-// auto str::foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc& proc) -> void {
-//     size_type line_index = 0;
-//     size_type line_start = 0;
-//     size_type pos = 0;
-//     while (pos < s.size()) {
-//         range_type range = next_eol_range(s, pos);
-//         if (range.empty()) {
-//             break;
-//         }
-//
-// size_type endpos = keep_ends ? range.end_pos() : range.begin_pos();
-// if (proc(line_index++, s.substr(line_start, endpos - line_start)) != 0) {
-//     return;
-// }
-// }
-//
-// if (pos < s.size()) {
-//     proc(line_index++, s.substr(line_start, (s.size() - line_start)));
-// }
-// }
 
 auto str::count_lines(std::string_view s) -> size_type {
     size_type count = 0;
@@ -2659,34 +2621,6 @@ auto str::count_words(std::string_view s) -> size_type {
     });
     return count;
 }
-
-// auto str::first_word_view(std::string_view s) -> std::string_view {
-//     size_type pos = 0;
-//     return next_word_view(s, pos);
-// }
-
-// auto str::first_word_range(std::string_view s) -> range_type {
-//     size_type pos = 0;
-//     return next_word_range(s, pos);
-// }
-
-// auto str::first_word(std::string_view s) -> std::string {
-//     return std::string{first_word_view(s)};
-// }
-
-// auto str::last_word_view(std::string_view s) -> std::string_view {
-//     auto range = last_word_range(s);
-//     return std::string_view{s.data() + range.begin_pos(), range.size()};
-// }
-
-// auto str::last_word_range(std::string_view s) -> range_type {
-//     auto pos = s.size();
-//     return prev_word_range(s, pos);
-// }
-
-// auto str::last_word(std::string_view s) -> std::string {
-//     return std::string{last_word_view(s)};
-// }
 
 auto str::next_word_view(std::string_view s, size_type& pos) -> std::string_view {
     auto range = next_word_range(s, pos);
@@ -3276,7 +3210,7 @@ auto str::split(std::string_view s, const charset_type& sep_charset, size_type m
 
 auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
-        proc(s);
+        (void)proc(s);
         return;
     }
 
@@ -3393,81 +3327,6 @@ auto str::split_list_view(std::string_view s, size_type max_n) -> std::vector<st
 
     return result;
 }
-
-// auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n, const view_consumer_proc& proc) -> void {
-//     if (max_n == 0) {
-//         proc(s);
-//         return;
-//     }
-//
-//     size_type n = 0;
-//
-//     size_type last_pos = 0;
-//     size_type pos = 0;
-//     while (pos < s.size()) {
-//         // 找到满足正则表达式的位置
-//         range_type range = str::next_regex_range(s, pos, sep);
-//         if (range.empty()) {
-//             break;
-//         }
-//
-//         // 将找到的数据输出给调用方
-//         size_type start = range.begin_pos();
-//         size_type stop = range.end_pos();
-//         if (proc(std::string_view{s.data() + last_pos, (start - last_pos)}) != 0) {
-//             return;
-//         }
-//
-//         // 为下次查找做准备
-//         last_pos = stop;
-//
-//         // 如果次数达到最大次数限制:中断循环，并将剩余的数据输出
-//         n++;
-//         if (n >= max_n) {
-//             break;
-//         }
-//     }
-//
-//     // 最后一部分也需要单独拆出来
-//     proc(std::string_view{s.data() + last_pos, (s.size() - last_pos)});
-// }
-
-// auto str::split_list(std::string_view s, const std::regex& sep, const view_consumer_proc& proc) -> void {
-//     str::split_list(s, sep, str::npos, proc);
-// }
-//
-// auto str::split_list(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string> {
-//     std::vector<std::string> result;
-//
-//     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
-//         result.emplace_back(item);
-//         return 0;
-//     });
-//
-//     return result;
-// }
-
-// auto str::split_list_view(std::string_view s, const std::regex& sep, size_type max_n) -> std::vector<std::string_view> {
-//     std::vector<std::string_view> result;
-//
-//     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
-//         result.emplace_back(item);
-//         return 0;
-//     });
-//
-//     return result;
-// }
-
-// auto str::split_list_view(std::string_view s, std::string_view sep, size_type max_n) -> std::vector<std::string_view> {
-//     std::vector<std::string_view> result;
-//
-//     str::split_list(s, sep, max_n, [&result](std::string_view item) -> int {
-//         result.emplace_back(item);
-//         return 0;
-//     });
-//
-//     return result;
-// }
 
 auto str::split_pair(std::string_view s, std::string_view sep) -> std::tuple<std::string, std::string> {
     std::array<std::string, 2> pair;
@@ -3679,9 +3538,6 @@ auto str::split_searchpath_view(std::string_view s, bool keep_empty, value_type 
     return result;
 }
 
-// auto str::split_csv(std::string_view s) -> std::vector<std::string> {
-// }
-
 auto str::partition_range(std::string_view s, const charset_type& charset) -> ternary<range_type> {
     return partition_range(s, [&charset](value_type ch) -> bool {
         return charset.get(ch);
@@ -3817,40 +3673,9 @@ auto str::partition(std::string_view s, const view_search_proc& proc) -> ternary
     return {std::string{abc[0]}, std::string{abc[1]}, std::string{abc[2]}};
 }
 
-// auto str::rpartition_view(std::string_view s, charset_type sep) -> partition_result<std::string_view>{
-// }
-//
-// auto str::rpartition_view(std::string_view s, const char_match_proc& sep) -> partition_result<std::string_view>{
-// }
-//
-// auto str::rpartition_view(std::string_view s, std::string_view sep) -> partition_result<std::string_view>{
-// }
-//
-// auto str::rpartition_view(std::string_view s, const std::regex& sep) -> partition_result<std::string_view>{
-// }
-//
-// auto str::rpartition_view(std::string_view s, const view_search_proc& sep) -> partition_result<std::string_view>{
-// }
-//
-////
-// auto str::rpartition(std::string_view s, charset_type sep) -> partition_result<std::string> {
-// }
-//
-// auto str::rpartition(std::string_view s, const char_match_proc& sep) -> partition_result<std::string> {
-// }
-//
-// auto str::rpartition(std::string_view s, std::string_view sep) -> partition_result<std::string> {
-// }
-//
-// auto str::rpartition(std::string_view s, const std::regex& sep) -> partition_result<std::string> {
-// }
-//
-// auto str::rpartition(std::string_view s, const view_search_proc& sep) -> partition_result<std::string> {
-// }
-
 auto str::chunked(std::string_view s, size_type width, const view_consumer_proc& proc) -> void {
     if (s.empty() || (width == 0)) {
-        proc(s);
+        (void)proc(s);
         return;
     }
 
@@ -3865,7 +3690,7 @@ auto str::chunked(std::string_view s, size_type width, const view_consumer_proc&
     }
 
     if (pos < s.size()) {
-        proc(s.substr(pos));
+        (void)proc(s.substr(pos));
     }
 }
 
@@ -4502,9 +4327,6 @@ auto str::simplified_integer_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-// auto str::simplified_real(std::string_view s) -> std::string;
-// auto str::simplified_real_inplace(std::string& s) -> std::string&;
-
 #ifdef STR_UNTESTED
 auto str::copy(pointer buffer, size_type size, std::string_view s) -> size_type {
     assert(buffer != nullptr);
@@ -4786,9 +4608,6 @@ auto str::normpath_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-// auto str::is_absolute(std::string_view s) -> bool;
-// auto str::is_relative(std::string_view s) -> bool;
-
 auto str::basename_pos(std::string_view s) -> size_type {
     if (s.empty() || (s == "/") || (s == ".") || (s == "..")) [[unlikely]] {
         return s.size();
@@ -4870,18 +4689,6 @@ auto str::dirname_pos(std::string_view s) -> size_type {
 
     return ptr - s.data();
 }
-
-// auto str::basename_ptr(std::string_view s) -> std::string::const_pointer {
-//     return s.data() + basename_pos(s);
-// }
-//
-// auto str::extname_ptr(std::string_view s) -> std::string::const_pointer {
-//     return s.data() + extname_pos(s);
-// }
-//
-// auto str::dirname_ptr(std::string_view s) -> std::string::const_pointer {
-//     return s.data() + dirname_pos(s);
-// }
 
 auto str::dirname_range(std::string_view s) -> range_type {
     return range_type{0, str::dirname_pos(s)};
@@ -5148,31 +4955,6 @@ auto str::replace_rawname_inplace(std::string& s, std::string_view name) -> std:
     return s;
 }
 #endif // STR_UNTESTED
-
-// auto str::hash(std::string_view s, uint32_t mod) -> uint32_t {
-// }
-
-// auto str::hash(std::string_view s, uint64_t mod) -> uint64_t {
-// }
-
-// auto str::md5(std::string_view s) -> std::string {
-// }
-
-// auto str::md5(void* data, size_type n) -> std::string {
-// }
-
-// auto str::encode_xml(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::decode_xml(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::encode_xml(std::string_view s) -> std::string;
-// auto str::decode_xml(std::string_view s) -> std::string;
-// auto str::encode_xml_inplace(std::string& s) -> std::string&;
-// auto str::decode_xml_inplace(std::string& s) -> std::string&;
-// auto str::encode_url(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::decode_url(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::encode_url(std::string_view s) -> std::string;
-// auto str::decode_url(std::string_view s) -> std::string;
-// auto str::encode_url_inplace(std::string& s) -> std::string&;
-// auto str::decode_url_inplace(std::string& s) -> std::string&;
 
 auto str::encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void {
     static std::string_view map[256]{
@@ -5588,7 +5370,7 @@ auto str::decode_cstr_inplace(std::string& s) -> size_type {
 
 auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
-        proc({});
+        (void)proc({});
         return;
     }
 
@@ -5778,7 +5560,7 @@ auto str::decode_base64_inplace(std::string& s) -> std::string& {
 
 auto str::encode_base16(std::string_view s, bool upper, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
-        proc({});
+        (void)proc({});
         return;
     }
 
@@ -5813,7 +5595,7 @@ auto str::decode_base16(std::string_view s, const view_consumer_proc& proc) -> v
     assert((s.size() % 2) == 0);
 
     if (s.empty()) {
-        proc({});
+        (void)proc({});
         return;
     }
 
@@ -5996,10 +5778,11 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
     size_type groups_len = (line_bytes * 2) + format.line_groups - 1; // 1:最后一组不需要空白
 
     // 校正偏移量宽度(0xFF 表示自适应)
-    uint8_t opt_offset_width = format.offset_width;
+    int opt_offset_width = format.offset_width;
     if (opt_offset_width == 0) {
         char buf[32];
         opt_offset_width = snprintf(buf, sizeof(buf), "%zx", len);
+        assert((opt_offset_width > 0) && (opt_offset_width < static_cast<int>(sizeof(buf))));
     }
 
     // 完整行的数量
@@ -6013,7 +5796,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
 
         // Dump offset
         if (format.flags & str::show_offset) {
-            dump_hex_offset(line_index * line_bytes, opt_offset_width, upper, line);
+            dump_hex_offset(line_index * line_bytes, static_cast<uint8_t>(opt_offset_width), upper, line);
             line += format.offset_margin;
         }
 
@@ -6038,7 +5821,7 @@ auto str::dump_hex(const void* data, size_type len, const dump_hex_format& forma
     // 处理不完整行
     if ((full_line_num * line_bytes) < len) {
         line.clear();
-        const_pointer ptr_line = static_cast<const_pointer>(data) + line_index * line_bytes;
+        ptr_line = static_cast<const_pointer>(data) + line_index * line_bytes;
         size_type remain_len = len - (full_line_num * line_bytes);
 
         // Dump shifter
@@ -6193,18 +5976,10 @@ auto str::read_next_line(std::istream& file) -> std::optional<std::string> {
 }
 
 auto str::read_lines(FILE* file, bool keep_ends, const line_consumer_proc& proc) -> void {
-    if (file == nullptr) {
-        return;
-    }
-
     size_type line_index = 0;
     std::string line_text;
 
-    while (!feof(file) || !ferror(file)) {
-        if (!str::read_next_line(file, keep_ends, line_text)) {
-            return;
-        }
-
+    while (str::read_next_line(file, keep_ends, line_text)) {
         if (proc(line_index, line_text) != 0) {
             return;
         }
@@ -6226,7 +6001,7 @@ auto str::read_lines(FILE* file, bool keep_ends, size_type max_n) -> std::vector
     std::vector<std::string> result;
     read_lines(file, keep_ends, [max_n, &result](size_type line_index [[maybe_unused]], std::string_view line_text) -> int {
         result.emplace_back(line_text);
-        if (result.size() == max_n) {
+        if (result.size() >= max_n) {
             return 1;
         }
 
@@ -6239,12 +6014,7 @@ auto str::read_lines(FILE* file, bool keep_ends, size_type max_n) -> std::vector
 auto str::read_lines(std::istream& file, const line_consumer_proc& proc) -> void {
     size_type line_index = 0;
     std::string line_text;
-    while (file.good()) {
-        auto ok = str::read_next_line(file, line_text);
-        if (!ok) {
-            return;
-        }
-
+    while (read_next_line(file, line_text)) {
         if (proc(line_index, line_text) != 0) {
             return;
         }
@@ -6262,7 +6032,7 @@ auto str::read_lines(std::istream& file, size_type max_n) -> std::vector<std::st
     std::vector<std::string> result;
     read_lines(file, [max_n, &result](size_type line_index [[maybe_unused]], std::string_view line_text) -> int {
         result.emplace_back(line_text);
-        if (result.size() == max_n) {
+        if (result.size() >= max_n) {
             return 1;
         }
 
@@ -6327,19 +6097,20 @@ auto str::with_file(const std::string& filepath, const char* mode, const std::fu
     proc(file.get());
 }
 
+template <typename T = const char*, typename S = int>
 class argv_view {
 public:
-    using size_type = int;
-    using value_type = char*;
-    using const_iterator = const char**;
+    using size_type = S;
+    using value_type = T;
+    using iterator = value_type*;
 
-    argv_view(int argc, char* argv[])
+    argv_view(size_type argc, value_type argv[])
         : argc_{argc}
         , argv_{argv} {
         assert(argc >= 0);
     }
 
-    [[nodiscard]] inline auto size() const -> int {
+    [[nodiscard]] inline auto size() const -> size_type {
         assert(argc_ >= 0);
         return argc_;
     }
@@ -6350,11 +6121,11 @@ public:
 
 private:
     int argc_;
-    char** argv_;
+    value_type* argv_;
 };
 
-auto str::next_opt(int& next_index, int n, char* items[]) -> std::tuple<std::string_view, std::string_view> {
-    return next_opt(next_index, argv_view{n, items});
+auto str::next_opt(int& next_index, int argc, const char* argv[]) -> std::tuple<std::string_view, std::string_view> {
+    return next_opt(next_index, argv_view{argc, argv});
 }
 
 auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
@@ -6369,34 +6140,6 @@ auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
         }
     }
 }
-
-// auto str::accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
-// auto str::accept_literal_real(std::string_view s, size_type& pos) -> range_type;
-// auto str::accept_literal_string(std::string_view s, size_type& pos) -> range_type;
-// auto str::accept_identifier(std::string_view s, size_type& pos) -> range_type;
-// auto str::accept_next_word(std::string_view s, size_type& pos) -> range_type;
-// auto str::accept_email(std::string_view s, size_type& pos) -> range_type;
-
-// auto str::accept_until(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
-// auto str::accept_until(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
-// auto str::accept_until(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
-
-// auto str::accept(std::string_view s, size_type& pos, std::string_view sep_str) -> range_type;
-// auto str::accept(std::string_view s, size_type& pos, const charset_type& sep_charset) -> range_type;
-// auto str::accept(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
-
-// auto str::split_email(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::split_email(std::string_view s) -> std::vector<std::string>;
-// auto str::split_email_view(std::string_view s) -> std::vector<std::string_view>;
-// auto str::split_real(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::split_real(std::string_view s) -> std::vector<std::string>;
-// auto str::split_real_view(std::string_view s) -> std::vector<std::string_view>;
-// auto str::split_uri(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::split_uri(std::string_view s) -> std::vector<std::string>;
-// auto str::split_uri_view(std::string_view s) -> std::vector<std::string_view>;
-// auto str::split_ipv4(std::string_view s, const view_consumer_proc& proc) -> void;
-// auto str::split_ipv4(std::string_view s) -> std::vector<std::string>;
-// auto str::split_ipv4_view(std::string_view s) -> std::vector<std::string_view>;
 
 #ifdef STR_UNTESTED
 auto str::grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string> {
@@ -6520,8 +6263,6 @@ auto str::mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std:
     return s;
 }
 #endif // STR_UNTESTED
-
-//============================
 
 auto str::append(std::string_view s, const view_provider_proc& proc) -> std::string {
     std::string result{s};

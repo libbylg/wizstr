@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2021-2024 libbylg@126.com
- * tiny is licensed under Mulan PSL v2.
+ * str is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *          http://license.coscl.org.cn/MulanPSL2
@@ -12,22 +12,18 @@
 #ifndef TINY_STR_H
 #define TINY_STR_H
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <limits>
 #include <map>
-#include <numeric>
 #include <optional>
 #include <regex>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <vector>
-
-#include <array>
-#include <cstring>
-#include <regex>
 
 //! str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
 ///
@@ -91,16 +87,17 @@ struct str {
     //! 字符集
     class charset_type {
     public:
+        //! 构造空的字符集对象
         explicit charset_type() {
         }
 
-        //! 支持自动转换
+        //! 构造只有只有字符 ch 的字符集
         explicit charset_type(value_type ch)
             : charset_type() {
             set(ch);
         }
 
-        //! 支持自动转换
+        //! 构造包含 s 中的所有字符的字符集
         explicit charset_type(std::string_view s)
             : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
@@ -108,77 +105,90 @@ struct str {
             }
         }
 
+        //! 将 s 中的字符加入本字符集或者从本字符集中剔除
         inline auto set(std::string_view s, bool val = true) -> void {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 set(*ptr, val);
             }
         }
 
+        //! 将字符 ch 加入本字符集或者从本字符集中剔除
         inline auto set(value_type c, bool val = true) -> void {
             uint8_t ch = static_cast<value_type>(c);
             size_type index = ch / 64;
             size_type mask = uint64_t{1} << (ch % 64);
             if (val) {
-                bits[index] |= mask;
+                bits_[index] |= mask;
             } else {
-                bits[index] ^= ~mask;
+                bits_[index] ^= ~mask;
             }
         }
 
+        //! 将字符串 s 中的所有字符从本字符集中剔除
         inline auto clr(std::string_view s) -> void {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 clr(*ptr);
             }
         }
 
+        //! 将字符 ch 从本字符集中剔除
         inline auto clr(value_type c) -> void {
             uint8_t ch = static_cast<value_type>(c);
             size_type index = ch / 64;
             size_type mask = uint64_t{1} << (ch % 64);
-            bits[index] ^= ~mask;
+            bits_[index] ^= ~mask;
         }
 
+        //! 清空本字符集中的所有字符
         inline auto clr() -> void {
-            bits[0] = 0;
-            bits[1] = 0;
-            bits[2] = 0;
-            bits[3] = 0;
+            bits_[0] = 0;
+            bits_[1] = 0;
+            bits_[2] = 0;
+            bits_[3] = 0;
         }
 
-        inline auto get(value_type c) const -> bool {
-            uint8_t ch = static_cast<value_type>(c);
-            size_type index = ch / 64;
-            size_type mask = uint64_t{1} << (ch % 64);
-            return !!(bits[index] & mask);
+        //! 查询字符 ch 是否在本字符集中
+        inline auto get(value_type ch) const -> bool {
+            uint8_t c = static_cast<value_type>(ch);
+            size_type index = c / 64;
+            size_type mask = uint64_t{1} << (c % 64);
+            return !!(bits_[index] & mask);
         }
 
+        //! 查询字符 ch 是否在本字符集中，与 get(ch) 等价
         inline auto contains(value_type c) const -> bool {
             return get(c);
         }
 
-        inline auto invert() {
-            bits[0] = ~bits[0];
-            bits[1] = ~bits[1];
-            bits[2] = ~bits[2];
-            bits[3] = ~bits[3];
+        //! 根据 ASCII 码表，生成本字符集的补集
+        inline auto invert() -> void {
+            bits_[0] = ~bits_[0];
+            bits_[1] = ~bits_[1];
+            bits_[2] = ~bits_[2];
+            bits_[3] = ~bits_[3];
         }
 
-        inline auto operator()(value_type c) const -> bool {
-            return get(c);
+        //! 查询字符 ch 是否在本字符集中，等价于 get(ch) 或者 contains(ch)
+        inline auto operator()(value_type ch) const -> bool {
+            return get(ch);
         }
 
+        //! 获取内部存储指针，需要注意每个 bit 位代表字符集中的一个字符
         inline auto data() const -> const uint64_t* {
-            return bits;
+            return bits_;
         }
 
+        //! 获取内部存储指针，需要注意每个 bit 位代表字符集中的一个字符
         inline auto data() -> uint64_t* {
-            return bits;
+            return bits_;
         }
 
+        //! 将本字符集中所包含的所有字符提取出来。
         inline auto string() const -> std::string {
             std::string result;
             for (size_type ch = 0; ch <= std::numeric_limits<value_type>::max(); ch++) {
-                if (get(ch)) {
+                static_assert(sizeof(ch) > sizeof(value_type));
+                if (get(static_cast<value_type>(ch))) {
                     result.push_back(static_cast<value_type>(ch));
                 }
             }
@@ -186,25 +196,33 @@ struct str {
         }
 
     private:
-        uint64_t bits[4]{0, 0, 0, 0};
+        //! 用于表示字符集中哪些字符在本字符集中，每个 bit 位代表字符集中的一个字符。
+        uint64_t bits_[4]{0, 0, 0, 0};
     };
 
     //! 基于位置的范围类型
     struct range_type {
+        //! 起始位置
         size_type pos{0};
+
+        //! 长度
         size_type len{0};
 
+        //! 空范围，长度为0
         explicit range_type() = default;
 
+        //! 指定起始位置和长度构造范围对象
         explicit range_type(size_type tpos, size_type tn)
             : pos{tpos}
             , len{tn} {
         }
 
+        //! 获得范围的长度（即 len）
         inline auto size() const -> size_type {
             return len;
         }
 
+        //! 判断范围是否为空。需要注意，不管 pos 如何，只要 len 长度为 0，范围都为空
         inline auto empty() const -> bool {
             return len == 0;
         }
@@ -262,12 +280,12 @@ struct str {
         }
     };
 
+    //! 三元类型（相同类型的 3 个字段）
     template <typename T>
     using ternary = std::array<T, 3>;
 
     //! std::string_view 供给器：每次调用返回一个字符串，直到返回 std::nullopt
-    using view_provider_proc
-        = std::function<std::optional<std::string_view>()>;
+    using view_provider_proc = std::function<std::optional<std::string_view>()>;
 
     //! 键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 std::nullopt
     using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
@@ -290,7 +308,7 @@ struct str {
     //! 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt
     using view_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
 
-    //! 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt
+    //! 字符串视图检索器：在指定的范围内查找，返回找到的子串，或者为找到时 std::nullopt
     using substr_search_proc = std::function<size_type(std::string_view text, size_type& pos)>;
 
     //! 行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0
@@ -306,10 +324,10 @@ struct str {
     //! 字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt
     using string_mapping_proc = std::function<std::optional<std::string>(const std::string& key)>;
 
-    //! 用于表示代替无效位置的值
+    //! 用于表示无效位置的值，等价于 std::string 和 std::string_view 的同名常量
     static inline constexpr size_type npos = std::string::npos;
 
-    //! 定义了一些操作系统强相关的常量
+    //! 定义了几个操作系统强相关的常量
     /// * @ref{sep_searchpath, sep_searchpath_char} 搜索路径分隔符
     /// * @ref{sep_path, sep_path_char} 文件路径分隔符
     /// * @ref{sep_line_ends} 行结束符
@@ -331,6 +349,9 @@ struct str {
     /// * @ref{all_alnumuls} 所有的字母、数字、下划线的集合
     /// * @ref{all_aluls} 所有字母和下滑线的集合
     /// * @ref{all_spaces} 所有空白字符
+    /// * @ref{all_hex_upper} 所有大写字母形式的十六进制字符集
+    /// * @ref{all_hex_lower} 所有小写字母形式的十六进制字符集
+    /// * @ref{all_puncts} 所有标点符号
     static constexpr std::string_view all_uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     static constexpr std::string_view all_lowers = "abcdefghijklmnopqrstuvwxyz";
     static constexpr std::string_view all_leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -343,6 +364,8 @@ struct str {
     static constexpr std::string_view all_spaces = "\x09\x0A\x0B\x0C\x0d\x20";
     static constexpr std::string_view all_hex_upper = "0123456789ABCDEF";
     static constexpr std::string_view all_hex_lower = "0123456789abcdef";
+    static constexpr std::string_view all_puncts = R"(!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~)";
+    /// $
 
     //! 在尾部追加 @anchor{append}
     ///
@@ -352,18 +375,19 @@ struct str {
     ///
     /// @param s 指定向哪个字符串后添加新串。
     /// @param other 被追加的字符串。
-    /// @param n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
+    /// @param times_n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
     /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
     /// @param items 从容器 items 中获取被追加的字符串。
     static auto append(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto append(std::string_view s, const Sequence& items) -> std::string;
-    //
+    /// -
     static auto append_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
     static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
+    /// $
 
     //! 向头部追加 @anchor{prepend}
     ///
@@ -374,19 +398,21 @@ struct str {
     ///
     /// @param s 所有字符串都追加到该字符串之前
     /// @param other 被追加的字符串
-    /// @param n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
+    /// @param times_n 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
     /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
     /// @param items 从容器 items 中获取被追加的字符串。
     static auto prepend(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
     static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto prepend(std::string_view s, const Sequence& items) -> std::string;
-    //
+    /// -
     static auto prepend_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
     static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string&;
+    /// $
 
+#ifdef STR_UNTESTED
     //! 向字符串中间插入 @anchor{insert}
     ///
     /// 向字符串指定的位置插入新的字符串或者字符。
@@ -399,7 +425,6 @@ struct str {
     /// @param n 重复插入次数
     /// @param proc 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
     /// @param items 从容器 items 中获取被插入的字符串。
-#ifdef STR_UNTESTED
     static auto insert(std::string_view s, size_type pos, std::string_view other, size_type times_n = 1) -> std::string;
     static auto insert(std::string_view s, size_type pos, value_type ch, size_type times_n = 1) -> std::string;
     static auto insert(std::string_view s, size_type pos, const view_provider_proc& proc) -> std::string;
@@ -437,18 +462,19 @@ struct str {
     static auto iequals(std::string_view s, std::string_view other) -> bool;
     static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
 
-    //! 基于通配符的匹配检测 @anchor{wildcmp}}
+    //! 基于通配符的匹配检测 @anchor{wildcmp}
     ///
-    /// 测试字符串 s 是否匹配通配符 pattern。
+    /// 测试字符串 s 是否匹配通配符 pattern，@ref{wildcmp} 表示区分大小写，@ref{iwildcmp} 表示不区分大小写。
     ///
     /// @param s 被测试的字符串
     /// @param pattern 通配串
     /// @return 如果 s 字符串匹配 pattern，返回 true，否则返回 false。
     static auto wildcmp(const_pointer s, const_pointer pattern) -> bool;
     static auto wildcmp(std::string_view s, std::string_view pattern) -> bool;
-    //
+    /// -
     static auto iwildcmp(const_pointer s, const_pointer pattern) -> bool;
     static auto iwildcmp(std::string_view s, std::string_view pattern) -> bool;
+    /// $
 
     //! 判断两个字符串的包含关系 @anchor{contains}
     ///
@@ -467,9 +493,10 @@ struct str {
     static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
     static auto contains(std::string_view s, const charset_type& charset) -> bool;
     static auto contains(std::string_view s, const std::regex& pattern) -> bool;
-    //
+
     static auto icontains(std::string_view s, std::string_view other) -> bool;
     static auto icontains(std::string_view s, value_type ch) -> bool;
+    /// $
 
     //! 子串统计 @anchor{count}
     ///
@@ -477,9 +504,8 @@ struct str {
     ///
     /// @param s 在该字符串中查找
     /// @param other, ch, charset 被统计的子串或者字符或者字符集
-    /// @param proc 用于表示满足特定条件字符
-    /// @param pattern 用于统计满足表达式的子串的数量
-    /// @param ignore_case 如果为 true，表示忽略大小写差异，否则，表示采用大小写敏感的方式查找。
+    /// @param proc 用于表示满足特定条件字符，是更抽象的字符查找形式
+    /// @param pattern 用于统计满足表达式的子串的数量，多个子串之间可以重叠。
     /// @return 返回满足条件的子串或者字符的数量。特别的，当 s 或者 other 为空时，总是返回 0
     static auto count(std::string_view s, std::string_view other) -> size_type;
     static auto count(std::string_view s, value_type ch) -> size_type;
@@ -507,7 +533,7 @@ struct str {
     static auto remove_prefix_view(std::string_view s, value_type prefix) -> std::string_view;
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string;
     static auto remove_prefix(std::string_view s, value_type prefix) -> std::string;
-    //
+
     static auto remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string&;
     static auto remove_prefix_inplace(std::string& s, value_type prefix) -> std::string&;
 
@@ -515,11 +541,12 @@ struct str {
     ///
     /// 本组函数提供了常见的前缀操作:
     ///
-    /// * @ref{suffix} 提供了计算两个字符串的公共前缀的能力；
+    /// * @ref{suffix} 提供了计算两个字符串 s 和 other 的公共前缀的长度，返回 0 表示无前缀；
     /// * @ref{has_suffix, ends_with} 功能一致，都用于测试字符串 s 是否有指定的后缀。
     /// * @ref{remove_suffix_view, remove_suffix, remove_suffix_inplace} 会返回从字符串 s 中去除两个字符串的共同后剩余的部分。
     ///
     /// @param s 目标字符串
+    /// @param other 参与公共前缀计算的另一个字符串，用于 @ref{suffix}
     /// @param suffix, ch 后缀字符串或者字符
     static auto suffix(std::string_view s, std::string_view other) -> size_type;
     static auto has_suffix(std::string_view s, value_type ch) -> bool;
@@ -530,25 +557,40 @@ struct str {
     static auto remove_suffix_view(std::string_view s, value_type ch) -> std::string_view;
     static auto remove_suffix(std::string_view s, std::string_view suffix) -> std::string;
     static auto remove_suffix(std::string_view s, value_type ch) -> std::string;
-    //
+
     static auto remove_suffix_inplace(std::string& s, std::string_view suffix) -> std::string&;
     static auto remove_suffix_inplace(std::string& s, value_type ch) -> std::string&;
 
-    //! 是否以特定的模式开头和结束
+    //! 检测是否以特定的模式开头和结束
+    ///
+    /// * @ref{starts_with_spaces} 如果字符串 s 是否以空白开头，返回 true，否则返回false
+    /// * @ref{ends_with_spaces} 如果字符串 s 是否以空白结尾，返回 true，否则返回false
+    /// * @ref{starts_with_margin} 如果字符串 s 是否的首个非空白字母为 margin 字符，返回 true，否则返回false
+    ///
+    /// @param s 被检查的参数
+    /// @param margin 边界字符
     static auto starts_with_spaces(std::string_view s) -> bool;
     static auto ends_with_spaces(std::string_view s) -> bool;
     static auto starts_with_margin(std::string_view s, value_type margin) -> bool;
 
     //! 定位字符/字符集
+    ///
+    /// 在字符串 s 从特定的位置 pos 开始查找特定的字符；如果找到，返回该字符在字符串中的位置；
+    /// 否则返回 std::nullopt 。
+    ///
+    /// @param s 在该字符串中查找
+    /// @param pos 查找的起始位置，当 pos 大于或者等于字符串 s 的长度时，总是返回 std::nullopt。
+    /// @param ch, charset, proc 分别表示
     static auto next_char(std::string_view s, size_type& pos, value_type ch) -> std::optional<size_type>;
     static auto next_char(std::string_view s, size_type& pos, const charset_type& charset) -> std::optional<size_type>;
     static auto next_char(std::string_view s, size_type& pos, std::string_view charset) -> std::optional<size_type>;
     static auto next_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> std::optional<size_type>;
-    //
+
     static auto prev_char(std::string_view s, size_type& pos, value_type ch) -> std::optional<size_type>;
     static auto prev_char(std::string_view s, size_type& pos, const charset_type& charset) -> std::optional<size_type>;
     static auto prev_char(std::string_view s, size_type& pos, std::string_view charset) -> std::optional<size_type>;
     static auto prev_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> std::optional<size_type>;
+    //$
 
     //! 定位子串
     static auto next_string_range(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<range_type>;
@@ -836,8 +878,6 @@ struct str {
     /// @param num_format 指定整数的格式
     /// @param pad 指定缩进时的填充字符
     /// @param margin 指定一个边缘字符
-    // template <typename LineConsumerProc, typename = std::enable_if<std::is_function<LineConsumerProc>::value>>
-    // static auto foreach_lines(std::string_view s, bool keep_ends, const LineConsumerProc& proc) -> void;
     static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc& proc) -> void;
     static auto count_lines(std::string_view s) -> size_type;
 #ifdef STR_UNTESTED
@@ -1766,34 +1806,11 @@ struct str {
 
     //! 选项识别
     ///
-    /// 将字符串 s 看做一个命令行选项序列，通过迭代的方式连续从 s 中拆分并识别出选项。需要注意 read_opt_view 和 read_opt
-    /// 采用的是固定格式的方式解析的，不依赖于选项定义。其语法定义如下：
-    ///
-    /// * `-` 为选项识别符
-    /// * `-key` 定义一个独立的、无 value 选项，常常用来定义开关型的选项
-    /// * `-key=value` 定义一个名字为 key 值为 value 的选项
-    /// * `value` 定义一个没有 key，但是有 value 的参数
-    /// * `-- value` 用于对选项识别符号进行转义，用于处理位置参数本身已以 `-` 开头的情况
-    ///
-    /// ```
-    /// std::string cmdline{"create_dirs -- workdir -when_exist=quit -i"};
-    /// str::size_type pos = 0;
-    /// while (pos >= cmdline.size()) {
-    ///     auto [key, val] = str::read_opt_view(cmdline, pos);
-    ///     std::cout << "{" << key << ":" << value << "}"<< std::endl;
-    /// }
-    ///
-    /// //The output is:
-    /// //{:create_dirs}
-    /// //{:./workdir}
-    /// //{-when_exist:quit}
-    /// //{-i:}
-    /// ```
-    ///
     /// @param s 命令行字符串
     /// @param pos 从指定的位置开始读取下一个选项
     /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
-    static auto next_opt(int& next_index, int n, char* items[]) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt(int& next_index, int argc, const char* argv[]) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt(int& next_index, int argc, char* argv[]) -> std::tuple<std::string_view, std::string_view>;
     template <typename Container, typename SizeType = typename Container::size_type>
     static auto next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view>;
     template <typename Iterator>
@@ -1892,18 +1909,6 @@ struct str {
     static auto home() -> std::string;
 };
 
-// template <typename ViewProviderProc>
-// auto str::append(std::string_view s, const ViewProviderProc& proc) -> std::enable_if<std::is_invocable<ViewProviderProc>::value, std::string> {
-//     std::string result{s};
-//     auto item = proc();
-//     while (item) {
-//         result.append(item.value());
-//         item = proc();
-//     }
-
-// return result;
-// }
-
 template <typename Sequence, typename>
 auto str::append(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
@@ -1915,16 +1920,6 @@ auto str::append(std::string_view s, const Sequence& items) -> std::string {
         return *(itr++);
     });
 }
-
-// template <typename ViewProviderProc, typename>
-// auto str::append_inplace(std::string& s, const ViewProviderProc& proc) -> std::string& {
-//     const auto item = proc();
-//     while (item) {
-//         s.append(item.value());
-//     }
-
-// return s;
-// }
 
 template <typename Sequence, typename>
 auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& {
@@ -1939,32 +1934,6 @@ auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& 
     return s;
 }
 
-// template<typename Sequence>
-// auto str::append_inplace(std::string &s, const Sequence &items) -> std::enable_if_t<std::is_array_v<Sequence>, std::string &> {
-//     size_t index = 0;
-//     size_t n = std::extent_v<Sequence>;
-//     s = append(s, [&index, n, &items]() -> std::optional<std::string_view> {
-//         if (index >= n) {
-//             return std::nullopt;
-//         }
-//
-//         return items[index++];
-//     });
-//     return s;
-// }
-
-// template <typename ViewProviderProc, typename>
-// auto str::prepend(std::string_view s, const ViewProviderProc& proc) -> std::string {
-//     std::string result;
-//     auto item = proc();
-//     while (item) {
-//         result.insert(0, item.value());
-//         item = proc();
-//     }
-//     result.append(s);
-//     return result;
-// }
-
 template <typename Sequence, typename>
 auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
@@ -1977,16 +1946,6 @@ auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
     });
 }
 
-// template <typename ViewProviderProc, typename>
-// auto str::prepend_inplace(std::string& s, const ViewProviderProc& proc) -> std::string& {
-//     const auto item = proc();
-//     while (item) {
-//         prepend_inplace(s, item.value(), 1);
-//     }
-//
-// return s;
-// }
-
 template <typename Sequence, typename>
 auto str::prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
     auto itr = items.begin();
@@ -1998,25 +1957,6 @@ auto str::prepend_inplace(std::string& s, const Sequence& items) -> std::string&
         return *(itr++);
     });
 }
-
-// template <typename ViewProviderProc, typename>
-// auto str::insert(std::string_view s, size_type pos, const ViewProviderProc& proc) -> std::string {
-//     if (pos > s.size()) {
-//         pos = s.size();
-//     }
-
-// std::string result;
-// result.append(s.data(), pos);
-
-// auto item = proc();
-// while (item) {
-//     result.append(item.value());
-//     item = proc();
-// }
-
-// result.append(std::string_view{s.data() + pos, s.size() - pos});
-// return result;
-// }
 
 #ifdef STR_UNIMPL
 template <typename Sequence, typename>
@@ -2032,16 +1972,6 @@ auto str::insert(std::string& s, size_type pos, const Sequence& items) -> std::s
 }
 #endif // STR_UNIMPL
 
-// template <typename ViewProviderProc, typename>
-// auto str::insert_inplace(std::string& s, size_type pos, const ViewProviderProc& proc) -> std::string& {
-//     auto item = proc();
-//     while (item) {
-//         str::insert_inplace(s, pos, item.value(), 1); // TODO 不是最优的，会导致多次扩容
-//     }
-//
-// return s;
-// }
-
 #ifdef STR_UNIMPL
 template <typename Sequence, typename>
 auto str::insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string& {
@@ -2055,65 +1985,6 @@ auto str::insert_inplace(std::string& s, size_type pos, const Sequence& items) -
     });
 }
 #endif // STR_UNIMPL
-
-// template <typename CharMatchProc, typename>
-// auto str::contains(std::string_view s, const CharMatchProc& proc) -> bool {
-//     return std::find_if(s.begin(), s.end(), proc) != s.cend();
-// }
-
-// template <typename CharMatchProc, typename>
-// auto str::count(std::string_view s, const CharMatchProc& proc) -> size_type {
-//     size_type count = 0;
-//     for (value_type ch : s) {
-//         if (proc(ch)) {
-//             count++;
-//         }
-//     }
-//     return count;
-// }
-
-// template<typename CharMatchProc>
-// auto str::next_char(std::string_view s, size_type &pos,
-//                       const CharMatchProc &proc) -> std::enable_if<std::is_invocable_v<CharMatchProc>, size_type> {
-//     if (pos >= s.size()) {
-//         pos = s.size();
-//         return npos;
-//     }
-//
-//     const_pointer ptr = s.data() + pos;
-//     while (ptr < (s.data() + s.size())) {
-//         if (proc(*ptr)) {
-//             pos = ptr - s.data();
-//             return pos++;
-//         }
-//         ptr++;
-//     }
-//
-//     return npos;
-// }
-
-// template<typename CharMatchProc, typename>
-// auto str::prev_char(std::string_view s, size_type &pos, const CharMatchProc &proc) -> size_type {
-//     if (pos <= 0) {
-//         pos = 0;
-//         return 0;
-//     }
-//
-//     if (pos > s.size()) {
-//         pos = s.size();
-//     }
-//
-//     const_pointer ptr = s.data() + pos;
-//     while (ptr > s.data()) {
-//         if (proc(*(ptr - 1))) {
-//             pos = (ptr - 1) - s.data();
-//             return pos;
-//         }
-//     }
-//
-//     pos = 0;
-//     return 0;
-// }
 
 template <typename RangeSearchProc, typename>
 auto str::next_proc_range(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type {
@@ -2147,10 +2018,6 @@ auto str::next_proc(std::string_view s, size_type& pos, const RangeSearchProc& p
     return std::string{next_proc_view(s, pos, proc)};
 }
 
-// static auto prev_proc_range(std::string_view s, size_type& pos, const substr_search_proc& proc) -> range_type;
-// static auto prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
-// static auto prev_proc(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string;
-
 template <typename CharMatchProc, typename>
 auto str::is_all_in(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
@@ -2170,84 +2037,6 @@ auto str::has_any_one(std::string_view s, const CharMatchProc& proc) -> bool {
     }
     return false;
 }
-
-// template <typename CharMatchProc, typename>
-// auto str::drop(std::string_view s, const CharMatchProc& proc) -> std::string {
-//     if (s.empty()) {
-//         return {};
-//     }
-//
-//     std::string result;
-//     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-//         if (!proc(*ptr)) {
-//             result.append(ptr, 1);
-//         }
-//     }
-//
-//     return result;
-// }
-
-// template <typename CharMatchProc, typename>
-// auto str::drop_inplace(std::string& s, const CharMatchProc& proc) -> std::string& {
-//     s = drop(s, proc);
-//     return s;
-// }
-
-// template <typename LineConsumerProc, typename>
-// auto str::foreach_lines(std::string_view s, bool keep_ends, const LineConsumerProc& proc) -> void {
-//     size_type line_index = 0;
-//     size_type line_start = 0;
-//     size_type pos = 0;
-//     while (pos < s.size()) {
-//         range_type range = next_eol_range(s, pos);
-//         if (range.empty()) {
-//             break;
-//         }
-//
-// size_type endpos = keep_ends ? range.end_pos() : range.begin_pos();
-// if (proc(line_index++, s.substr(line_start, endpos - line_start)) != 0) {
-//     return;
-// }
-// }
-//
-// if (pos < s.size()) {
-//     proc(line_index++, s.substr(line_start, (s.size() - line_start)));
-// }
-// }
-
-// template <typename RangeConsumerProc, typename>
-// auto str::foreach_words(std::string_view s, size_type pos, const RangeConsumerProc& proc) -> void {
-//     while (pos < s.size()) {
-//         range_type r = str::next_word_range(s, pos);
-//         if (r.empty()) {
-//             assert(pos >= s.size());
-//             break;
-//         }
-//
-// if (proc(r) != 0) {
-//     return;
-// }
-// }
-// }
-
-// template <typename ViewConsumerProc, typename>
-// auto str::foreach_words(std::string_view s, size_type pos, const ViewConsumerProc& proc) -> void {
-//     str::foreach_words(s, pos, [&s, &proc](range_type range) -> int {
-//         return proc(std::string_view{s.data() + range.pos, range.len});
-//     });
-// }
-
-// template <typename RangeConsumerProc, typename>
-// auto str::foreach_words(std::string_view s, const RangeConsumerProc& proc) -> void {
-//     str::foreach_words(s, 0, proc);
-// }
-
-// template <typename ViewConsumerProc, typename>
-// auto str::foreach_words(std::string_view s, const ViewConsumerProc& proc) -> void {
-//     str::foreach_words(s, 0, [&s, &proc](range_type range) -> int {
-//         return proc(std::string_view{s.data() + range.pos, range.len});
-//     });
-// }
 
 template <typename Sequence, typename>
 auto str::join(std::string_view s, const Sequence& items) -> std::string {
