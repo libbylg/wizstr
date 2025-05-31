@@ -293,7 +293,8 @@ struct str {
     //! 整数供给器：每次调用返回一个 size_type 类型的整数，主要用于抽象随机函数
     using number_provider_proc = std::function<size_type()>;
 
-    //! std::string_view 消费器：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以返回非 0 值
+    //! std::string_view 消费器：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以
+    /// 返回非 0 值
     using view_consumer_proc = std::function<int(std::string_view item)>;
 
     //! 键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回非 0 值
@@ -390,8 +391,8 @@ struct str {
     //! 向头部追加 @anchor{prepend}
     ///
     /// 將一个或者多个字符串追加到指定字符串的前面。实际上，STL 中已经提供了比较丰富的字符串插入函数，这里针对
-    /// 大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒序的方式被追加。
-    /// 比如，`str::prepend("abc", {"123", "456", "789"})` 返回的结果是 "789456123abc"。
+    /// 大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒
+    /// 序的方式被追加。比如，`str::prepend("abc", {"123", "456", "789"})` 返回的结果是 "789456123abc"。
     /// 对于 prepend_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
     ///
     /// @param s 所有字符串都追加到该字符串之前
@@ -437,7 +438,7 @@ struct str {
 
     //! 不区分大小写的比较 @anchor{icompare}
     ///
-    /// icompare 提供了不区分大小写比较的能力，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，icompare 总是
+    /// icompare 提供了不区分大小写比较的能力，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，
     /// 返回 0；
     ///
     /// @param s 参与比较的字符串
@@ -449,8 +450,8 @@ struct str {
 
     //! 不区分大小写的相等測試 @anchor{iequals}
     ///
-    /// iequals 提供了不区分大小写的相等比较，，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，icompare 总是
-    /// 返回 true；
+    /// iequals 提供了不区分大小写的相等比较，，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，
+    /// icompare 总是返回 true；
     ///
     /// @param s 参与比较的字符串
     /// @param other 另一个参与比较的字符串
@@ -514,7 +515,8 @@ struct str {
     ///
     /// * @ref{prefix} 提供了计算两个字符串的公共前缀的能力；
     /// * @ref{has_prefix, starts_with} 功能一致，都用于测试字符串 s 是否有指定的前缀。
-    /// * @ref{remove_prefix_view, remove_prefix, remove_prefix_inplace} 会返回从字符串 s 中去除两个字符串的共同前缀后剩余的部分。
+    /// * @ref{remove_prefix_view, remove_prefix, remove_prefix_inplace} 会返回从字符串 s 中去除两个字符串的共同前
+    /// 缀后剩余的部分。
     ///
     /// @param s 目标字符串
     /// @param other 参与公共前缀计算的另一个字符串，用于 @ref{prefix}
@@ -538,7 +540,8 @@ struct str {
     ///
     /// * @ref{suffix} 提供了计算两个字符串 s 和 other 的公共前缀的长度，返回 0 表示无前缀；
     /// * @ref{has_suffix, ends_with} 功能一致，都用于测试字符串 s 是否有指定的后缀。
-    /// * @ref{remove_suffix_view, remove_suffix, remove_suffix_inplace} 会返回从字符串 s 中去除两个字符串的共同后剩余的部分。
+    /// * @ref{remove_suffix_view, remove_suffix, remove_suffix_inplace} 会返回从字符串 s 中去除两个字符串的共同后剩
+    /// 余的部分。
     ///
     /// @param s 目标字符串
     /// @param other 参与公共前缀计算的另一个字符串，用于 @ref{suffix}
@@ -576,14 +579,14 @@ struct str {
     /// * @ref{next_char} 总是从 `pos` 开始向字符串尾部查找特定的字符，并返回找到的该字符的位置
     /// * @ref{prev_char} 总是从 `pos - 1` 开始向字符串首部查找特定的字符，并返回找到的该字符的位置
     ///
-    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从 `pos` 开始
-    /// 向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。当调用 @ref{prev_xxx}
-    /// 系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，此时将返回 `std::nullopt`。
-    /// 同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，@ref{prev_xxx} 系列函数同样无法继续查找，
-    /// 此时也将返回 `std::nullopt`。
+    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从
+    /// `pos` 开始向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。
+    /// 当调用 @ref{prev_xxx} 系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，
+    /// 此时将返回 `std::nullopt`。同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，
+    /// @ref{prev_xxx} 系列函数同样无法继续查找，此时也将返回 `std::nullopt`。
     ///
-    /// @notice{2} 当找到特定的字符时，@ref{next_char} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_char} 的 `pos` 总是指向
-    /// 该字符所在的位置。这个设计使得 @ref{next_char} 和 @ref{prev_char} 可以配合使用。
+    /// @notice{2} 当找到特定的字符时，@ref{next_char} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_char} 的
+    /// `pos` 总是指向该字符所在的位置。这个设计使得 @ref{next_char} 和 @ref{prev_char} 可以配合使用。
     ///
     /// @param s 在该字符串中查找
     /// @param pos 查找的起始位置，需要注意该字段对于 `next_xxx` 和 `prev_xxx` 具有不同的含义（参见 @ref{notice{2}}）。
@@ -604,17 +607,19 @@ struct str {
     /// 在字符串 `s` 中，查找（定位）子串 `substr` 的位置。如果找到返回找到的该子串的位置（`range_type`）、
     /// 视图（`std::string_view`）、或者子串本身（`std::string`）；否则，返回 `std::nullopt`。
     ///
-    /// * @ref{next_string_range, next_string_view, next_string} 从字符串 `s` 的 `pos` 位置开始向字符串尾部，查找 `substr`。
-    /// * @ref{prev_string_range, prev_string_view, prev_string} 从字符串 `s` 的 `pos - 1` 位置开始向字符串首部，查找 `substr`。
+    /// * @ref{next_string_range, next_string_view, next_string} 从字符串 `s` 的 `pos` 位置开始向字符串尾部，
+    /// 查找 `substr`。
+    /// * @ref{prev_string_range, prev_string_view, prev_string} 从字符串 `s` 的 `pos - 1` 位置开始向字符串首部，
+    /// 查找 `substr`。
     ///
-    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从 `pos` 开始
-    /// 向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。当调用 @ref{prev_xxx}
-    /// 系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，此时将返回 `std::nullopt`。
-    /// 同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，@ref{prev_xxx} 系列函数同样无法继续查找，
-    /// 此时也将返回 `std::nullopt`。
+    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从
+    /// `pos` 开始向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。
+    /// 当调用 @ref{prev_xxx}系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，此时
+    /// 将返回 `std::nullopt`。同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，
+    /// @ref{prev_xxx} 系列函数同样无法继续查找，此时也将返回 `std::nullopt`。
     ///
-    /// @notice{2} 当找到特定的字符时，@ref{next_xxx} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_xxx} 的 `pos` 总是指向
-    /// 该字符所在的位置。这个设计使得 @ref{next_xxx} 和 @ref{prev_xxx} 可以配合使用。
+    /// @notice{2} 当找到特定的字符时，@ref{next_xxx} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_xxx} 的 `pos`
+    /// 总是指向该字符所在的位置。这个设计使得 @ref{next_xxx} 和 @ref{prev_xxx} 可以配合使用。
     ///
     /// @param s 在该字符串中查找（定位）子串
     /// @param pos 查找的起始位置，需要注意该字段对于 `next_xxx` 和 `prev_xxx` 具有不同的含义（参见 @ref{notice{2}}）。
@@ -646,15 +651,19 @@ struct str {
     static auto prev_eol_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
     static auto prev_eol(std::string_view s, size_type& pos) -> std::optional<std::string>;
 
-    ///! 行结束符的相关操作
+    //! 行结束符检测
     ///
     /// * @ref{ends_with_eol、has_eol_suffix} 检查字符串 `s` 是否具有行结束符
     /// * @ref{eol_suffix} 检查字符串 `s` 是否以行结束符结尾，如果有返回行结束符的长度，否则返回 0
-    /// * @ref{remove_eol_suffix_range、remove_eol_suffix_view、remove_eol_suffix、remove_eol_suffix_inplace} 返回
-    ///     去除字符串 `s` 尾部的行结束符后的新串（不同函数返回的数据类型有差别）
+    ///
+    /// @param s 被检测的字符
     static auto ends_with_eol(std::string_view s) -> bool;
     static auto has_eol_suffix(std::string_view s) -> bool;
     static auto eol_suffix(std::string_view s) -> size_type;
+
+    //! 移除行结束符
+    ///
+    /// *  返回去除字符串 `s` 尾部的行结束符后的新串。需要注意，不同函数返回的数据类型有差别。
     static auto remove_eol_suffix_range(std::string_view s) -> range_type;
     static auto remove_eol_suffix_view(std::string_view s) -> std::string_view;
     static auto remove_eol_suffix(std::string_view s) -> std::string;
@@ -685,6 +694,7 @@ struct str {
     static auto next_searchpathsep(std::string_view s, size_type& pos) -> std::string;
 #endif // STR_UNIMPL
 
+#ifdef STR_UNTESTED
     //! 定位空白块
     ///
     /// * @ref{next_spaces_pos} 在字符串 `s` 中，从 `pos` 位置开始查找下一个空白块的位置，并返回该空白块的起始位置。
@@ -695,13 +705,12 @@ struct str {
     /// @param s 在该字符串中查找空白块
     /// @param pos 作为输入参数时，表示查找空白块的起始位置；作为输出参数时，表示找到的空白块最后一个空白字符的
     /// 之后的位置。
-#ifdef STR_UNTESTED
     static auto next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
     static auto next_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
     static auto next_spaces(std::string_view s, size_type& pos) -> std::optional<std::string>;
 #endif // STR_UNTESTED
     static auto next_spaces_pos(std::string_view s, size_type& pos) -> size_type;
-    //
+    /// -
 #ifdef STR_UNTESTED
     static auto prev_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
     static auto prev_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
@@ -714,14 +723,14 @@ struct str {
     ///
     /// next_proc_xxx 和 prev_proc_xxx 系列函数提供了更通用的子串查找（定位）算法。
     ///
-    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从 `pos` 开始
-    /// 向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。当调用 @ref{prev_xxx}
-    /// 系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，此时将返回 `std::nullopt`。
-    /// 同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，@ref{prev_xxx} 系列函数同样无法继续查找，
-    /// 此时也将返回 `std::nullopt`。
+    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从
+    /// `pos` 开始向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。
+    /// 当调用 @ref{prev_xxx}系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，此时
+    /// 将返回 `std::nullopt`。同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，
+    /// @ref{prev_xxx} 系列函数同样无法继续查找，此时也将返回 `std::nullopt`。
     ///
-    /// @notice{2} 当找到特定的字符时，@ref{next_xxx} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_xxx} 的 `pos` 总是指向
-    /// 该字符所在的位置。这个设计使得 @ref{next_xxx} 和 @ref{prev_xxx} 可以配合使用。
+    /// @notice{2} 当找到特定的字符时，@ref{next_xxx} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_xxx} 的 `pos`
+    /// 总是指向该字符所在的位置。这个设计使得 @ref{next_xxx} 和 @ref{prev_xxx} 可以配合使用。
     ///
     /// @param s 在该字符串内查找
     /// @param pos 查找的起始位置，需要注意该字段对于 `next_xxx` 和 `prev_xxx` 具有不同的含义（参见 @ref{notice{2}}）。
@@ -732,8 +741,8 @@ struct str {
     static auto next_proc_view(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view;
     template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
     static auto next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string;
-#endif // STR_UNTESTED
     /// -
+#endif // STR_UNTESTED
 #ifdef STR_UNIMPL
     static auto prev_proc_range(std::string_view s, size_type& pos, const substr_search_proc& proc) -> range_type;
     static auto prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
@@ -745,7 +754,8 @@ struct str {
     /// @ref is_lower 检测 s 中的所有字母都是小写（参考 std::islower）
     /// @ref is_upper 检测 s 中的所有字母都是大写字母（参考 std::isupper）
     /// @ref is_capitalize 检测 s 的首个字符是否为大写字母
-    /// @ref is_title  对于给定的字符串 s 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回 true
+    /// @ref is_title  对于给定的字符串 s 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大
+    /// 写字母返回 true
     /// @ref is_digit 检测 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
     /// @ref is_xdigit 检测 s 否所有的字符都是数字或者十六进制字符（参考 std::xdigit）
     /// @ref is_ascii 检测 s 中的所有字符是否都在 ASCII 范围内
@@ -776,7 +786,8 @@ struct str {
 
     //! 特征测试：常见词法特征类
     ///
-    /// @ref is_identifier 检查字符串 s 是否满足一个标识符的特征，即以大小写字母或者下划线开头且后续字符为字母数字或者下划线。
+    /// @ref is_identifier 检查字符串 s 是否满足一个标识符的特征，即以大小写字母或者下划线开头且后续字符为字母
+    /// 数字或者下划线。
     /// @ref is_literal_bool 检查字符串 s 是否是 bool 值的特征，等价于 `(is_literal_true(s) || is_literal_false(s))`。
     /// @ref is_literal_true 检查字符串 s 是否可以被视作 true
     /// @ref is_literal_false 检查字符串 s 是否可以被视作 false
@@ -813,8 +824,8 @@ struct str {
     /// @param s 被测试的字符串
     /// @param proc 用于测试 s 中的每个字符是否满足给定条件的函数
     /// @param charset 指定需要满足条件的字符集
-    /// @return 与 is_xxx 系列函数需要“所有字符必须全部满足指定特征”不同，has_xxx 系列函数只需要有任意一个字符满足特征，
-    ///         立即返回 true。唯一的特例是空串总是返回 false。
+    /// @return 与 is_xxx 系列函数需要“所有字符必须全部满足指定特征”不同，has_xxx 系列函数只需要有任意一个字符
+    /// 满足特征，立即返回 true。唯一的特例是空串总是返回 false。
     template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
     static auto has_any_one(std::string_view s, const CharMatchProc& proc) -> bool;
     static auto has_any_one(std::string_view s, const charset_type& charset) -> bool;
@@ -828,8 +839,10 @@ struct str {
     /// * @ref take_view, take, take_inplace: 返回字符串 s 中，从 pos 开始偏移 shifter 的字符串。
     ///
     /// @param s 原始字符串
-    /// @param n 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度时，相关函数总是试图返回尽可能多的字符串。
-    /// @param offset 该参数是有符号整数，用于指定提取的字符串的长度和提取的方向。如果为负数，表示向左提取，如果为正表示向右提取。shifter 的绝对值表示期望提取的数据的长度。
+    /// @param n 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度
+    /// 时，相关函数总是试图返回尽可能多的字符串。
+    /// @param offset 该参数是有符号整数，用于指定提取的字符串的长度和提取的方向。如果为负数，表示向左提取，如
+    /// 果为正表示向右提取。shifter 的绝对值表示期望提取的数据的长度。
     /// @param pos 用于指定子串提取的起始位置，通常与 n 或者 shifter 组合起来确定数据的提取范围
     /// @param begin_pos, end_pos  用于提取字符串的提取范围。
     /// @param range  用于提取字符串的提取范围，一般用在可以替代 begin_pos 和 end_pos 的场景。
@@ -985,33 +998,35 @@ struct str {
     static auto trim_margin_lines_inplace(std::string& s, value_type margin_ch = ' ') -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 单词 @anchor{words}
+    //! 以单词为单位的处理算法 @anchor{words}
+    ///
+    /// @notice{1} 这里的单词（word）是指连续的非空白字符序列。
     ///
     /// * @ref foreach_words 用于遍历字符串中的每个单词
     /// * @ref count_words 用于统计字符串中的单词的数量
+    /// * @ref{next_word_view, next_word_range, next_word} 用于从指定的位置开始向字符串的尾部查找下一个单词
+    /// * @ref{prev_word_view, prev_word_range, prevt_word} 用于从指定的位置开始向字符串的首部查找前一个单词
+    /// * @ref{split_words} 以空格为分隔符从字符串 s 中拆分出多个单词
     ///
-    /// @param s 被便利或者统计的字符串
-    /// @param pos 指定起始位置
+    /// @param s 被查找或者统计的原始字符串
+    /// @param pos 指定起始位置，需要注意在 next_xxx 和 prev_xxx 函数中，pos 的含义的区别。
     /// @param proc 指定一个函数，用来接受遍历每一个被视作单词的子串
-    /// @param sep_proc 用于识别分隔符的函数
-    /// @param sep_ch 用于拆分字符串的分隔字符
-    // template <typename RangeConsumerProc, typename = std::enable_if<std::is_function<RangeConsumerProc>::value>>
-    // static auto foreach_words(std::string_view s, size_type pos, const RangeConsumerProc& proc) -> void;
+    /// @param max_n 用于 @ref{split_words} 函数，用于限制拆分出来的单词的数量（注意并非拆分次数）
     static auto foreach_words(std::string_view s, size_type pos, const range_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, size_type pos, const view_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, const range_consumer_proc& proc) -> void;
     static auto foreach_words(std::string_view s, const view_consumer_proc& proc) -> void;
-    //
+    /// -
     static auto count_words(std::string_view s) -> size_type;
-    //
+    /// -
     static auto next_word_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto next_word_range(std::string_view s, size_type& pos) -> range_type;
     static auto next_word(std::string_view s, size_type& pos) -> std::string;
-    //
+    /// -
     static auto prev_word_view(std::string_view s, size_type& pos) -> std::string_view;
     static auto prev_word_range(std::string_view s, size_type& pos) -> range_type;
     static auto prev_word(std::string_view s, size_type& pos) -> std::string;
-    //
+    /// -
     static auto split_words(std::string_view s, size_type max_n = npos) -> std::vector<std::string>;
 #ifdef STR_UNTESTED
     static auto split_words_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
@@ -1019,26 +1034,25 @@ struct str {
 
     //! 用指定的模式串环绕字符串 @anchor{surround, unsurround}
     ///
-    /// 同时在字符串两端操作，常用于添加括号和去掉括号场景。其中，pattern 参数具有固定模式。
-    /// pattern 的第一个字符表示占位符，其在字符串第二次出现时，表示目标子串的位置。而第二次出现位置前后的部分被视作
-    /// 环绕在 s 前后的子串，或者需要去掉的首尾的子串。比如，`str::surround("abc", "#{{#}}")` 表示在 `"abc"` 前后
-    /// 分别添加 "{{" 和 "}}" 子串，最终结果为 `"{{abc}}"`
+    /// surround 和 unsurround 系列函数，同时在字符串两端操作，常用于添加括号和去掉括号场景。其中，`left` 和
+    /// `right` 表示字符串首尾需要添加或者去掉的子串。对于 unsurround 系列函数，如果字符串的首或者尾，分别无
+    /// 法匹配 `left` 或者 `right` 子串，那么不进行任何操作。
     ///
-    /// * @ref surround, surround_inplace 向给定的字符串的首位添加特定的子串
-    /// * @ref unsurround, unsurround_inplace 同时去掉指定字符串前后满足特定模式的子串
+    /// * @ref{surround, surround_inplace} 向给定的字符串的首位添加特定的子串
+    /// * @ref{unsurround, unsurround_view, unsurround_inplace} 同时去掉指定字符串前后满足特定模式的子串
     ///
     /// @param s 被处理的字符串
-    /// @param pattern 指定字符串的环绕模式
+    /// @param left, right 表示在字符串首尾的需要添加或者去掉的子串
     static auto surround(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string;
     static auto surround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
-    //
+    /// -
     static auto unsurround_view(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string_view;
     static auto unsurround(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string;
     static auto unsurround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
 
     //! 反转：字符串逆序
     ///
-    /// 将 s 中指定范围内的子串的前后字符串的诶个字符交换位置
+    /// 将 s 中指定范围内的子串的前后字符串的逐个字符交换位置
     ///
     /// @param s 被反转的字符串
     /// @param pos 指定反转的起始位置
@@ -1047,7 +1061,7 @@ struct str {
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
     static auto invert_inplace(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
 
-    //! 生成
+    //! 重复序列生成
     ///
     /// 生成字 s 或者 ch 的内容重复出现 times 次后的新字符串
     ///
@@ -1056,52 +1070,57 @@ struct str {
     static auto repeat(std::string_view s, size_type times) -> std::string;
     static auto repeat(value_type ch, size_type times) -> std::string;
 
-    //! 生成：随机生成
+#ifdef STR_UNTESTED
+    //! 随机字符序列生成
     ///
     /// 按照特定的策略，随机生成字符串
     ///
     /// @param n 指定生成的字符串的长度的范围
     /// @param proc 指定随机数函数
     /// @param ch, charset 指生成的字符串中的字符的范围
-#ifdef STR_UNTESTED
     static auto random(size_type n, const number_provider_proc& proc) -> std::string;
     static auto random(size_type n, std::string_view charset, const number_provider_proc& proc) -> std::string;
     static auto random(size_type n, const charset_type& charset, const number_provider_proc& proc) -> std::string;
 #endif // STR_UNTESTED
 
-    //! 生成：
+#ifdef STR_UNTESTED
+    //! 随机字符序列填充
     ///
     /// 自动随机填充指定的字符串（不改变大小）
     ///
     /// @param s 原始字符串
     /// @param charset 指定生成的字符串中的字符的范围
     /// @param proc 随机函数
-#ifdef STR_UNTESTED
     static auto random_fill(std::string& s, std::string_view charset, const number_provider_proc& proc) -> std::string&;
     static auto random_fill(std::string& s, const charset_type& charset, const number_provider_proc& proc) -> std::string&;
     static auto random_fill(std::string& s, const number_provider_proc& proc) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 重排：
+#ifdef STR_UNTESTED
+    //! 字符虚拟随机重排
     ///
     /// 现有字符串随机重排（不改变大小）
     ///
     /// @param s 指定被重拍的字符串
     /// @param proc 随机数生成器
     /// @return 将 s 重排后返回
-#ifdef STR_UNTESTED
     static auto random_reorder(std::string& s, const number_provider_proc& proc) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 空白操作
+    //! 空白串生成 @anchor{spaces}
     ///
-    /// @ref spaces 用于生成指定 width 宽度的空白字符序列
-    /// @ref after_skip_spaces_view, after_skip_spaces, after_skip_spaces_inplace 返回跳过空白后剩余的内容
+    /// * @ref{spaces} 用于生成指定宽度 `width` 的空白字符序列。
+    /// * @ref{make_spaces，make_spaces_inplace} 只要内存允许，支持生成任意长度 ` 的空白串。
     ///
+    ///  @notice{1} @ref{spaces}，@ref{make_spaces}，@ref{make_spaces_inplace} 这三个函数的功能类似。但主要差别
+    ///  是 @ref{space} 利用的是预生成的字符串常量，所以速度会更快，但最大长度有限（`UNIT8_MAX`），大部分情况下
+    ///  @ref{space} 函数都是够用的。当需要生成超过 @ref{space} 支持空白串时，使用 @ref{make_spaces}
+    ///  或者 @ref{make_spaces_inplace} 是更合适的选择。但显然 `make_xxx` 系列函数更慢。
+    ///
+    /// @param s 在 make_spaces_inplace 中表示用于接收数据的字符串
     /// @param witdh 指定待生成的空白串的宽度，这里的空白串采用 ASCII 码为 0x20 的字符填充
-    /// @param s 用于去除空白字符的串
-    /// @param pos 从指定的位置开始找查找并跳过空白
-    /// @return 总是返回跳过空白后，右侧的部分。当未指定 pos 时，表示从字符串 s 的首字符开始处理。
+    /// @return @ref{spaces} 函数返回内部预生成的空白串的视图；@{make_space} 为返回新生成的字符串（内存重新分配）；
+    /// @ref{make_spaces_inplace} 将空白串直接原地生成到字符串 `s`。
     static auto spaces(uint8_t width) -> std::string_view;
     static auto make_spaces(size_type width) -> std::string;
     static auto make_spaces_inplace(std::string& s, size_type width) -> std::string&;
@@ -1117,43 +1136,30 @@ struct str {
     //! 字符串遮罩
     ///
     /// 使用指定的掩码字符串 mask 对原始字符串中的关键文字替换，以遮蔽原始字符串中的敏感信息。常用于
-    /// 敏感信息脱敏，长串简略缩短等场景。其工作方式是，先根据 visible 来决定需要保留多少字符可见。
-    /// 然后使用 mask 中的字符循环填充 width 不足的部分，直到达到需要的宽度。
+    /// 敏感信息脱敏，长串简略缩短等场景。
     ///
-    /// 关于返回字符串的宽度控制：
+    /// * @ref{cover, cover_inplace} 对 `s` 的中间部分使用遮罩字符串 `mask` 替换，其中 `left_n` 和 `right_n` 用于
+    /// 控住遮罩之后，首尾各自保留多少长度的明文子串。
     ///
-    /// * 如果 width 大于 visible，表示限定宽度；
-    /// * 如果 visible 为 0，那么所有字符都被遮罩，其返回的数据由 mask 和 width 决定
-    /// * 如果 width 和 visible 均为 0，那么直接返回 mask
-    /// * 如果 mask 为空串，自动校正为缺省值 "***"
-    ///
-    /// 下面的代码演示了不同调用方式的结果：
-    ///
-    /// ```cpp
-    /// cover_center("abc/mnop/def", "***", 4, 8) //  "ab****ef"
-    /// cover_center("abc/mnop/def", "***", 3, 8) //  "a*****ef"
-    /// cover_center("abc/mnop/def", "***", 3, 3) //  "a***ef"
-    /// cover_center("abc/mnop/def", "***", 3, 0) //  "a***ef"
-    /// cover_center("abc/mnop/def", "***", 0, 0) //  "***"
-    /// cover_center("abc/mnop/def", "", 0, 0)    //  "***"
-    /// ```
-    ///
-    /// @ref{cover, cover_inplace} 对 s 的中间部分使用遮罩 mask 替换
-    /// @ref{cover_right, cover_right_inplace} 对 s 的右侧使用遮罩
-    /// @ref{cover_center, cover_center_inplace} 对 s 的中间部分使用遮罩
-    /// @ref{cover_surrounding, cover_surrounding_inplace} 对 s 的两侧使用遮罩
+    /// @notice{1} 当 `left_n` 或者 `right_n` 或者 `left_n + right_n` 大于或者等于原始串 s 的长度时，本函数将失去
+    /// 遮罩作用。对于这种情况 @ref{cover} 和 @ref{cover_inplace} 函数将返回空串，以避免无意间的信息泄露。因此，
+    /// 在使用本函数之前，最好确保字符串 s 的长度达到本算法的最小值 `left_n + right_n`。
     ///
     /// @param s 被遮罩的字符串
-    /// @param mask 用于遮罩的字符串，如果 mask 为空，自动区默认值 "***"
-    /// @param left_n 左侧保留多少可见字符
-    /// @param right_n 右侧保留多少可见字符
+    /// @param mask 用于遮罩的字符串，特别的，mask 为空也是允许的，但效果等价于去掉被遮罩的字符。
+    /// @param left_n, right_n 用于指定字符串 `s` 的首尾两端分别保留多长的明文串
     /// @return 返回遮罩后的字符串
     static auto cover(std::string_view s, std::string_view mask = "***", size_type left_n = 1, size_type right_n = 3) -> std::string;
     static auto cover_inplace(std::string& s, std::string_view mask = "***", size_type left_n = 1, size_type right_n = 3) -> std::string&;
 
+#ifdef STR_UNIMPL
+    //! 元音（aeiou）化简算法：去掉单词中的元音字符 除非他们为单词的首字母
+#endif // STR_UNIMPL
+
     //! 字符串拼接 @anchor join
     ///
-    /// 用 s 作为分隔符，拼接多个字符串。输入串可以通过 proc 或者 items 供给。如果 proc 无法提供任何字符串或者 items 为空，返回空串。
+    /// 以 `s` 作为分隔符，拼接多个字符串。输入串可以通过 `proc` 或者 `items` 供给。如果 `proc` 无法提供任何字符串
+    /// 或者 `items` 为空，返回空串。
     ///
     /// @param s 分隔符
     /// @param proc 用于通过回调函数的方式供给被拼接的字符串
@@ -1171,7 +1177,6 @@ struct str {
     /// @param items 被字符串容器序列
     /// @return 返回合并后的字符串
     static auto join_list(const view_provider_proc& proc) -> std::string;
-
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_list(const Sequence& items) -> std::string;
 
@@ -1186,10 +1191,8 @@ struct str {
     /// @return 返回拼接后的字符串
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string;
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
-
     template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string;
-
     template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(const Map& items) -> std::string;
 
