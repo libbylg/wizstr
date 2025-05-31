@@ -293,13 +293,13 @@ struct str {
     //! 整数供给器：每次调用返回一个 size_type 类型的整数，主要用于抽象随机函数
     using number_provider_proc = std::function<size_type()>;
 
-    //! std::string_view 小飞机：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以返回 0
+    //! std::string_view 消费器：接收一个 std::string_view，常用于接收一个或者多个字符串，如果需要提前结束，可以返回非 0 值
     using view_consumer_proc = std::function<int(std::string_view item)>;
 
-    //! 键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回 0
+    //! 键值对消费器：接收两个 std::string_view 类型的键值对（key 和 value 参数），如果需要提前结束，可以返回非 0 值
     using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
 
-    //! range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回 0
+    //! range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回非 0 值
     using range_consumer_proc = std::function<int(range_type range)>;
 
     //! 单字符匹配器：检查作为输入参数的字符是否满足特定的条件，常用基于字符的查找和搜索场景
@@ -324,7 +324,7 @@ struct str {
     //! 字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt
     using string_mapping_proc = std::function<std::optional<std::string>(const std::string& key)>;
 
-    //! 用于表示无效位置的值，等价于 std::string 和 std::string_view 的同名常量
+    //! 用于表示无效位置的值，等价于 std::string::npos 或者 std::string_view::npos
     static inline constexpr size_type npos = std::string::npos;
 
     //! 定义了几个操作系统强相关的常量
@@ -365,7 +365,6 @@ struct str {
     static constexpr std::string_view all_hex_upper = "0123456789ABCDEF";
     static constexpr std::string_view all_hex_lower = "0123456789abcdef";
     static constexpr std::string_view all_puncts = R"(!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~)";
-    /// $
 
     //! 在尾部追加 @anchor{append}
     ///
@@ -387,7 +386,6 @@ struct str {
     static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
-    /// $
 
     //! 向头部追加 @anchor{prepend}
     ///
@@ -410,7 +408,6 @@ struct str {
     static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string&;
-    /// $
 
 #ifdef STR_UNTESTED
     //! 向字符串中间插入 @anchor{insert}
@@ -474,7 +471,6 @@ struct str {
     /// -
     static auto iwildcmp(const_pointer s, const_pointer pattern) -> bool;
     static auto iwildcmp(std::string_view s, std::string_view pattern) -> bool;
-    /// $
 
     //! 判断两个字符串的包含关系 @anchor{contains}
     ///
@@ -493,10 +489,9 @@ struct str {
     static auto contains(std::string_view s, const char_match_proc& proc) -> bool;
     static auto contains(std::string_view s, const charset_type& charset) -> bool;
     static auto contains(std::string_view s, const std::regex& pattern) -> bool;
-
+    /// -
     static auto icontains(std::string_view s, std::string_view other) -> bool;
     static auto icontains(std::string_view s, value_type ch) -> bool;
-    /// $
 
     //! 子串统计 @anchor{count}
     ///
@@ -533,7 +528,7 @@ struct str {
     static auto remove_prefix_view(std::string_view s, value_type prefix) -> std::string_view;
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string;
     static auto remove_prefix(std::string_view s, value_type prefix) -> std::string;
-
+    /// -
     static auto remove_prefix_inplace(std::string& s, std::string_view prefix) -> std::string&;
     static auto remove_prefix_inplace(std::string& s, value_type prefix) -> std::string&;
 
@@ -573,43 +568,84 @@ struct str {
     static auto ends_with_spaces(std::string_view s) -> bool;
     static auto starts_with_margin(std::string_view s, value_type margin) -> bool;
 
-    //! 定位字符/字符集
+    //! 定位字符位置
     ///
-    /// 在字符串 s 从特定的位置 pos 开始查找特定的字符；如果找到，返回该字符在字符串中的位置；
-    /// 否则返回 std::nullopt 。
+    /// 在字符串 s 从特定的位置 `pos` 开始向前或者向后查找、定位特定的字符；如果找到，返回该字符在字符串中的位置；
+    /// 否则返回 `std::nullopt` 。
+    ///
+    /// * @ref{next_char} 总是从 `pos` 开始向字符串尾部查找特定的字符，并返回找到的该字符的位置
+    /// * @ref{prev_char} 总是从 `pos - 1` 开始向字符串首部查找特定的字符，并返回找到的该字符的位置
+    ///
+    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从 `pos` 开始
+    /// 向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。当调用 @ref{prev_xxx}
+    /// 系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，此时将返回 `std::nullopt`。
+    /// 同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，@ref{prev_xxx} 系列函数同样无法继续查找，
+    /// 此时也将返回 `std::nullopt`。
+    ///
+    /// @notice{2} 当找到特定的字符时，@ref{next_char} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_char} 的 `pos` 总是指向
+    /// 该字符所在的位置。这个设计使得 @ref{next_char} 和 @ref{prev_char} 可以配合使用。
     ///
     /// @param s 在该字符串中查找
-    /// @param pos 查找的起始位置，当 pos 大于或者等于字符串 s 的长度时，总是返回 std::nullopt。
-    /// @param ch, charset, proc 分别表示
+    /// @param pos 查找的起始位置，需要注意该字段对于 `next_xxx` 和 `next_xxx` 具有不同的含义（参见 @ref{notice{2}}）。
+    /// @param ch, charset 用于定位的字符或者字符集。
+    /// @param proc 用于测试某个字符是否满足定位条件，常用于定制场景。
     static auto next_char(std::string_view s, size_type& pos, value_type ch) -> std::optional<size_type>;
     static auto next_char(std::string_view s, size_type& pos, const charset_type& charset) -> std::optional<size_type>;
     static auto next_char(std::string_view s, size_type& pos, std::string_view charset) -> std::optional<size_type>;
     static auto next_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> std::optional<size_type>;
-
+    /// -
     static auto prev_char(std::string_view s, size_type& pos, value_type ch) -> std::optional<size_type>;
     static auto prev_char(std::string_view s, size_type& pos, const charset_type& charset) -> std::optional<size_type>;
     static auto prev_char(std::string_view s, size_type& pos, std::string_view charset) -> std::optional<size_type>;
     static auto prev_char(std::string_view s, size_type& pos, const char_match_proc& proc) -> std::optional<size_type>;
-    //$
 
     //! 定位子串
+    ///
+    /// 在字符串 `s` 中，查找（定位）子串 `substr` 的位置。如果找到返回找到的该子串的位置（`range_type`）、
+    /// 视图（`std::string_view`）、或者子串本身（`std::string`）；否则，返回 `std::nullopt`。
+    ///
+    /// * @ref{next_string_range, next_string_view, next_string} 从字符串 `s` 的 `pos` 位置开始向字符串尾部，查找 `substr`。
+    /// * @ref{prev_string_range, prev_string_view, prev_string} 从字符串 `s` 的 `pos - 1` 位置开始向字符串首部，查找 `substr`。
+    ///
+    /// @notice{1} 需要特别注意，@ref{next_xxx} 总是从 `pos - 1` 开始，向字符串首部查找（而 @ref{next_char} 总是从 `pos` 开始
+    /// 向字符串尾部查找）。因此，如果希望从 `s` 的最后一个字符开始向前查找时，`pos` 应该指定为 `s.size()`。当调用 @ref{prev_xxx}
+    /// 系列函数且 `pos` 参数指定的值为 `0` 时， @ref{prev_xxx} 系列函数已无法继续向前查找，此时将返回 `std::nullopt`。
+    /// 同理，当调用 @ref{next_xxx} 系列函数，且 `pos` 参数大于或者等于 `s.size()` 时，@ref{prev_xxx} 系列函数同样无法继续查找，
+    /// 此时也将返回 `std::nullopt`。
+    ///
+    /// @notice{2} 当找到特定的字符时，@ref{next_char} 的 `pos` 总是为该字符的下一个字符，而 @ref{pref_char} 的 `pos` 总是指向
+    /// 该字符所在的位置。这个设计使得 @ref{next_char} 和 @ref{prev_char} 可以配合使用。
+    ///
+    /// @param s 在该字符串中查找（定位）子串
+    /// @param s 在该字符串中查找
+    /// @param pos 查找的起始位置，需要注意该字段对于 `next_xxx` 和 `next_xxx` 具有不同的含义（参见 @ref{notice{2}}）。
+    /// @param substr 待查找（定位）的子串。
     static auto next_string_range(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<range_type>;
     static auto next_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string_view>;
     static auto next_string(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string>;
-    //
+    /// -
     static auto prev_string_range(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<range_type>;
     static auto prev_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string_view>;
     static auto prev_string(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string>;
 
     //! 定位换行符
+    ///
+    /// 从 pos 开始查找（定位）行结束符（End-Of-Line）的位置，可用于按行拆分字符串场景。
+    ///
+    /// @notice{eol} 由于操作系统的差异，行结束符并非总是 `\n`，本系列函数采用下面的策略来识别行结束符
+    /// * 如果当前字符为 `\n`，那么将当前字符 `\n` 识别为行结束符；
+    /// * 如果当前字符为 `\r`，那么还需要额外查看下一个字符，如果下一个字符为 `\n`，那么将 `\r\n` 整体视
+    ///   作行结束符；否则将 `\r` 视作行结束符。
+    ///
+    /// @param s 在该字符串内定位
     static auto next_eol_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
     static auto next_eol_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
     static auto next_eol(std::string_view s, size_type& pos) -> std::optional<std::string>;
-    //
+    /// -
     static auto prev_eol_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
     static auto prev_eol_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
     static auto prev_eol(std::string_view s, size_type& pos) -> std::optional<std::string>;
-    //
+    /// -
     static auto ends_with_eol(std::string_view s) -> bool;
     static auto has_eol_suffix(std::string_view s) -> bool;
     static auto eol_suffix(std::string_view s) -> size_type;
@@ -618,8 +654,8 @@ struct str {
     static auto remove_eol_suffix(std::string_view s) -> std::string;
     static auto remove_eol_suffix_inplace(std::string& s) -> std::string&;
 
-    //! 定位正则表达式分隔符
 #ifdef STR_UNTESTED
+    //! 定位正则表达式分隔符
     static auto next_regex_range(std::string_view s, size_type& pos, const std::regex& pattern) -> range_type;
     static auto next_regex_view(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string_view;
     static auto next_regex(std::string_view s, size_type& pos, const std::regex& pattern) -> std::string;
@@ -665,7 +701,7 @@ struct str {
     static auto next_proc_view(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view;
     template <typename RangeSearchProc, typename = std::enable_if<std::is_function<RangeSearchProc>::value>>
     static auto next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string;
-    //
+    /// -
 #ifdef STR_UNIMPL
     static auto prev_proc_range(std::string_view s, size_type& pos, const substr_search_proc& proc) -> range_type;
     static auto prev_proc_view(std::string_view s, size_type& pos, const substr_search_proc& proc) -> std::string_view;
