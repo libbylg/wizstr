@@ -15,7 +15,8 @@
 #include <sys/stat.h>
 
 #include <cassert>
-
+#include <cstring>
+#include <filesystem>
 #include <fstream>
 
 auto str::append(std::string_view s, std::string_view other, size_type times_n) -> std::string {
@@ -2696,7 +2697,7 @@ auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
     }
 
     pos = ptr_begin - s.data();
-    return range_type{size_type(ptr_begin - s.data()), size_type(ptr_end - ptr_begin)};
+    return range_type{static_cast<size_type>(ptr_begin - s.data()), static_cast<size_type>(ptr_end - ptr_begin)};
 }
 
 auto str::prev_word(std::string_view s, size_type& pos) -> std::string {
@@ -2902,7 +2903,7 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
 
 auto str::spaces(uint8_t width) -> std::string_view {
     // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-    static const value_type spaces_cache[256] =                            //
+    static constexpr value_type spaces_cache[256] =                        //
         "                                                                " //
         "                                                                " //
         "                                                                " //
@@ -4370,11 +4371,8 @@ auto str::expand_envs(std::string_view s, bool keep_unexpanded, const string_map
             // 匹配到 ${xxx} 的形式，确定 key
             key = s.substr(pos + 2, end - (pos + 2));
 
-            // 尝试找到替换值
-            auto val = proc(key);
-
             // 如果找到匹配项
-            if (val) {
+            if (auto val = proc(key); val) {
                 result.append(*val);
                 start = end + 1;
                 continue;
@@ -4407,11 +4405,8 @@ auto str::expand_envs(std::string_view s, bool keep_unexpanded, const string_map
         // 确定 key
         key = s.substr(pos + 1, end - (pos + 1));
 
-        // 尝试找到替换值
-        auto val = proc(key);
-
         // 如果找到匹配项
-        if (val) {
+        if (auto val = proc(key); val) {
             result.append(*val);
             start = end;
             continue;
@@ -5375,7 +5370,7 @@ auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> v
     }
 
     // base64 的数据编码表
-    static const value_type table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static constexpr value_type table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     // 数据输入源
     auto src = reinterpret_cast<const uint8_t*>(s.data());
@@ -5392,7 +5387,9 @@ auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> v
     str::size_type pos = 0;
     for (pos = 0; pos < mod_len; pos += 3) {
         // 将3字节组合在一起(总共24bit)
-        uint32_t cache = ((uint32_t)(src[pos]) << 16) + ((uint32_t)(src[pos + 1]) << 8) + (uint32_t)(src[pos + 2]);
+        uint32_t cache = (static_cast<uint32_t>(src[pos]) << 16) //
+            + (static_cast<uint32_t>(src[pos + 1]) << 8)
+            + (static_cast<uint32_t>(src[pos + 2]) << 0);
 
         // 拆分成4字节(每个字节实际只有6bit，对应0x3f的掩码)
         out[0] = table[static_cast<uint8_t>((cache >> 18) & 0x3f)];
@@ -5408,14 +5405,14 @@ auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> v
 
     // 输出最后一部分
     if (mod == 1) {
-        uint32_t cache = (uint32_t)src[pos] << 16;
+        uint32_t cache = static_cast<uint32_t>(src[pos]) << 16;
         out[0] = table[(cache >> 18) & 0x3f];
         out[1] = table[(cache >> 12) & 0x3f];
         out[2] = '=';
         out[3] = '=';
         proc(std::string_view(reinterpret_cast<const_pointer>(out), 4));
     } else if (mod == 2) {
-        uint32_t cache = ((uint32_t)(src[pos]) << 16) + ((uint32_t)(src[pos + 1]) << 8);
+        uint32_t cache = (static_cast<uint32_t>(src[pos]) << 16) + (static_cast<uint32_t>(src[pos + 1]) << 8);
         out[0] = table[(cache >> 18) & 0x3f];
         out[1] = table[(cache >> 12) & 0x3f];
         out[2] = table[(cache >> 6) & 0x3f];
@@ -5564,8 +5561,8 @@ auto str::encode_base16(std::string_view s, bool upper, const view_consumer_proc
         return;
     }
 
-    static const value_type table_lower[] = "0123456789abcdef";
-    static const value_type table_upper[] = "0123456789ABCDEF";
+    static constexpr value_type table_lower[] = "0123456789abcdef";
+    static constexpr value_type table_upper[] = "0123456789ABCDEF";
     const value_type* table = upper ? table_upper : table_lower;
 
     auto src = reinterpret_cast<const uint8_t*>(s.data());
@@ -5666,29 +5663,45 @@ auto str::decode_base16_inplace(std::string& s) -> std::string& {
     return s;
 }
 
-auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, std::string& line) -> void {
+static auto dump_hex_offset(str::size_type offset, uint8_t offset_width, bool upper, const str::view_consumer_proc& proc) -> void {
+    if (proc == nullptr) {
+        return;
+    }
+
+    str::value_type offset_buffer[32];
+    int wlen = std::snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%zX" : "%zx"), offset);
+    assert(wlen > 0);
+    if (wlen < offset_width) {
+        std::string zeros{str::repeat('0', offset_width - wlen)};
+        (void)proc(zeros);
+    }
+    (void)proc(std::string_view{offset_buffer, static_cast<str::size_type>(wlen)});
+}
+
+static auto dump_hex_offset(str::size_type offset, uint8_t offset_width, bool upper, std::string& line) -> void {
     dump_hex_offset(offset, offset_width, upper, [&line](std::string_view text) -> int {
         line += text;
         return 0;
     });
 }
 
-auto str::dump_hex_offset(size_type offset, uint8_t offset_width, bool upper, const view_consumer_proc& proc) -> void {
-    if (proc == nullptr) {
+static auto dump_hex_ascii(const void* data, str::size_type len, str::value_type ascii_mask, const str::view_consumer_proc& proc) -> void {
+    if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
         return;
     }
 
-    value_type offset_buffer[32];
-    int wlen = std::snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%zX" : "%zx"), offset);
-    assert(wlen > 0);
-    if (wlen < offset_width) {
-        std::string zeros{str::repeat('0', offset_width - wlen)};
-        proc(zeros);
+    std::string line;
+    line.resize(len);
+
+    auto ptr = static_cast<str::const_pointer>(data);
+    for (str::size_type index = 0; index < len; index++) {
+        line[index] = std::isprint(ptr[index]) ? ptr[index] : ascii_mask;
     }
-    proc(std::string_view{offset_buffer, static_cast<size_type>(wlen)});
+
+    (void)proc(line);
 }
 
-auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, std::string& line) -> void {
+static auto dump_hex_ascii(const void* data, str::size_type len, str::value_type ascii_mask, std::string& line) -> void {
     if ((data == nullptr) || (len == 0)) {
         return;
     }
@@ -5699,46 +5712,19 @@ auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask,
     });
 }
 
-auto str::dump_hex_ascii(const void* data, size_type len, value_type ascii_mask, const view_consumer_proc& proc) -> void {
-    if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
-        return;
-    }
-
-    std::string line;
-    line.resize(len);
-
-    auto ptr = static_cast<const_pointer>(data);
-    for (size_type index = 0; index < len; index++) {
-        line[index] = std::isprint(ptr[index]) ? ptr[index] : ascii_mask;
-    }
-
-    proc(line);
-}
-
-auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, std::string& line) -> size_type {
-    if ((data == nullptr) || (len == 0)) {
-        return 0;
-    }
-
-    return dump_hex_groups(data, len, group_bytes, upper, [&line](std::string_view text) -> int {
-        line += text;
-        return 0;
-    });
-}
-
-auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, bool upper, const view_consumer_proc& proc) -> size_type {
+static auto dump_hex_groups(const void* data, str::size_type len, uint8_t group_bytes, bool upper, const str::view_consumer_proc& proc) -> str::size_type {
     if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
         return 0;
     }
 
-    std::string_view hex = upper ? all_hex_upper : all_hex_lower;
+    std::string_view hex = upper ? str::all_hex_upper : str::all_hex_lower;
 
     std::string line;
 
     // 处理完整组
-    auto ptr_group = static_cast<const_pointer>(data);
-    for (size_type group_index = 0; group_index < len / group_bytes; group_index++) {
-        for (size_type byte_index = 0; byte_index < group_bytes; byte_index++) {
+    auto ptr_group = static_cast<str::const_pointer>(data);
+    for (str::size_type group_index = 0; group_index < len / group_bytes; group_index++) {
+        for (str::size_type byte_index = 0; byte_index < group_bytes; byte_index++) {
             auto ch = static_cast<uint8_t>(ptr_group[byte_index]);
             line += hex[(ch & 0xF0) >> 4];
             line += hex[(ch & 0x0F) >> 0];
@@ -5750,7 +5736,7 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
 
     if ((len % group_bytes) != 0) {
         // 处理不完整的分组
-        for (size_type byte_index = 0; byte_index < len % group_bytes; byte_index++) {
+        for (str::size_type byte_index = 0; byte_index < len % group_bytes; byte_index++) {
             auto ch = static_cast<uint8_t>(ptr_group[byte_index]);
             line += hex[(ch & 0xF0) >> 4];
             line += hex[(ch & 0x0F) >> 0];
@@ -5760,11 +5746,21 @@ auto str::dump_hex_groups(const void* data, size_type len, uint8_t group_bytes, 
         line.resize(line.size() - 1);
     }
 
-    proc(line);
+    (void)proc(line);
 
     return line.size();
 }
 
+static auto dump_hex_groups(const void* data, str::size_type len, uint8_t group_bytes, bool upper, std::string& line) -> str::size_type {
+    if ((data == nullptr) || (len == 0)) {
+        return 0;
+    }
+
+    return dump_hex_groups(data, len, group_bytes, upper, [&line](std::string_view text) -> int {
+        line += text;
+        return 0;
+    });
+}
 auto str::dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void {
     if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
         return;
@@ -5880,15 +5876,17 @@ auto str::read_all(const char* filename) -> std::string {
         return result;
     }
 
-    struct stat buff{};
-    if (fstat(fileno(file), &buff) != 0) {
+    // 试图获得文件大小
+    [[maybe_unused]] std::error_code ec;
+    auto fsize = std::filesystem::file_size(filename, ec);
+    if (fsize == static_cast<std::uintmax_t>(-1)) {
         return result;
     }
 
-    result.resize(buff.st_size);
+    result.resize(fsize);
 
     errno = 0;
-    size_t n = fread(result.data(), 1, buff.st_size, file);
+    size_t n = fread(result.data(), 1, fsize, file);
     if (n == 0) {
         return result;
     }
