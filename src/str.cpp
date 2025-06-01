@@ -3453,7 +3453,7 @@ auto str::split_path(std::string_view s, const view_consumer_proc& proc) -> void
     }
 
     const_pointer ptr = s.data();
-    if (*ptr == '/') {
+    if (*ptr == sep_path_char) {
         if (proc(std::string_view{ptr, 1}) != 0) {
             return;
         }
@@ -3466,7 +3466,7 @@ auto str::split_path(std::string_view s, const view_consumer_proc& proc) -> void
         // 跳过多余的斜杠，定位到起始位置
         const_pointer start = ptr;
         while (start < endptr) {
-            if (*start != '/') {
+            if (*start != sep_path_char) {
                 break;
             }
             start++;
@@ -3475,7 +3475,7 @@ auto str::split_path(std::string_view s, const view_consumer_proc& proc) -> void
         // 找到结束位置
         ptr = start;
         while (ptr < endptr) {
-            if (*ptr == '/') {
+            if (*ptr == sep_path_char) {
                 break;
             }
             ptr++;
