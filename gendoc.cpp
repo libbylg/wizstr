@@ -196,8 +196,11 @@ struct gendoc_options {
 
     auto load(int argc, char* argv[]) -> std::string {
         int pos = 1;
-        while (pos <= argc) {
-            auto [key, val] = str::next_opt1(pos, argc, argv + 1);
+
+        std::optional<str::pair<std::string_view>> keyval;
+        while (keyval = str::next_opt2(pos, argc, argv)) {
+            std::string_view key = std::get<0>(*keyval);
+            std::string_view val = std::get<1>(*keyval);
             key = str::trim_surrounding_view(key);
             val = str::trim_surrounding_view(val);
             if (key.empty() && val.empty()) {
@@ -218,11 +221,11 @@ struct gendoc_options {
         }
 
         if (output_directory.empty()) {
-            output_directory = std::filesystem::current_path();
+            output_directory = std::filesystem::current_path().string();
         }
 
         if (root_directory.empty()) {
-            root_directory = std::filesystem::current_path();
+            root_directory = std::filesystem::current_path().string();
         }
 
         return {};
@@ -238,6 +241,7 @@ struct line_type {
     std::string line_text;
 
     explicit line_type() = default;
+
     explicit line_type(size_t no, std::string_view text) {
         line_no = no;
         line_text = text;
@@ -270,7 +274,7 @@ public:
             return true;
         }
 
-        auto result = str::read_line(file_);
+        auto result = str::read_next_line(file_);
         if (!result) {
             return false;
         }
@@ -286,7 +290,7 @@ public:
     }
 
     inline operator bool() const {
-        return feof(file_) || ferror(file_);
+        return !feof(file_) && !ferror(file_);
     }
 
 private:
@@ -298,9 +302,10 @@ private:
 struct render_context {
     explicit render_context(FILE* f, const std::string& od, const std::string& rd)
         : output_directory{od}
-        , root_directory{rd}
-        , reader{f} {
+          , root_directory{rd}
+          , reader{f} {
         root = new node;
+        parent = root;
     }
 
     const std::string& output_directory;
@@ -338,14 +343,14 @@ auto try_parse_block(render_context& context) -> void {
             }
         }
 
-        // 标题行
+        // 标题行：井号开头的行
         static std::regex hx_pattern{R"(^#+\s.*)"};
         if (std::regex_match(line.begin(), line.end(), hx_pattern)) {
             try_parse_block_head(context);
             return;
         }
 
-        // 分段
+        // 无需列表行
         static std::regex ul_pattern{R"(\*+\s.*)"};
         if (std::regex_match(line.begin(), line.end(), ul_pattern)) {
             try_parse_block_unordered_list(context);
@@ -357,6 +362,7 @@ auto try_parse_block(render_context& context) -> void {
 }
 
 auto try_parse_document(render_context& context) -> void {
+    try_parse_block(context);
 }
 
 auto render_one_file(render_context& context) -> std::string {
@@ -404,7 +410,7 @@ auto main(int argc, char* argv[]) -> int {
         std::string error;
         str::with_file(filepath, "r", [&opts, &error](FILE* file) -> void {
             assert(file != nullptr);
-            render_context context{stdin, opts.output_directory, opts.root_directory};
+            render_context context{file, opts.output_directory, opts.root_directory};
             error = render_one_file(context);
         });
 

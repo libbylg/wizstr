@@ -254,6 +254,6 @@ target_include_directories(str_test PRIVATE include src)
 target_compile_options(str_test PRIVATE ${QUALITY_OPTIONS})
 
 #   Document generation tools
-#add_executable(gendoc gendoc.cpp src/str.cpp include/str.hpp)
-#target_include_directories(gendoc PRIVATE include src)
-#target_compile_options(gendoc PRIVATE ${QUALITY_OPTIONS})
+add_executable(gendoc gendoc.cpp src/str.cpp include/str.hpp)
+target_include_directories(gendoc PRIVATE include src)
+target_compile_options(gendoc PRIVATE ${QUALITY_OPTIONS})
