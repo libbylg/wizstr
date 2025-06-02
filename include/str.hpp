@@ -2432,7 +2432,7 @@ auto str::next_opt1(const IterProc& proc) -> std::optional<pair<std::string_view
         return str::pair<std::string_view>{std::string_view{}, item};
     }
 
-    if (item == "--") {
+    if (item == std::string_view{"--"}) {
         item_opt = proc();
         if (!item_opt) {
             return str::pair<std::string_view>{std::string_view{}, std::string_view{}};
@@ -2478,7 +2478,7 @@ auto str::next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::stri
     }
 
     // value
-    if (!str::starts_with(curr, "-")) {
+    if (!str::starts_with(curr, std::string_view{"-"})) {
         return pair<std::string_view>{std::string_view{}, curr};
     }
 
@@ -2488,7 +2488,7 @@ auto str::next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::stri
     // }
 
     // -- value
-    if (curr == "--") {
+    if (curr == std::string_view{"--"}) {
         // -- EOL
         if (itr == end) {
             return pair<std::string_view>{std::string_view{}, std::string_view{}};
@@ -2504,16 +2504,16 @@ auto str::next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::stri
     }
 
     // -key value
-    if (!str::starts_with(*itr, "-")) {
+    if (!str::starts_with(*itr, std::string_view{"-"})) {
         return pair<std::string_view>{curr, *(itr++)};
     }
 
     // -key -
-    if (*itr == "-") {
+    if (*itr == std::string_view{"-"}) {
         return pair<std::string_view>{std::string_view{curr}, std::string_view{}};
     }
 
-    if (*itr == "--") {
+    if (*itr == std::string_view{"--"}) {
         itr++;
 
         // -key -- $
