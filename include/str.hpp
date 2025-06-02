@@ -2510,6 +2510,7 @@ auto str::next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::stri
 
     // -key -
     if (*itr == std::string_view{"-"}) {
+        itr++;
         return pair<std::string_view>{std::string_view{curr}, std::string_view{}};
     }
 

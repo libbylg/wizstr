@@ -24,13 +24,76 @@ TEST(test_str, next_opt2) {
         ASSERT_EQ(str::next_opt2(pos, argv), std::nullopt);
         ASSERT_EQ(pos, 2);
     }
-    SECTION("场景：-key -- key2") {
+    SECTION("场景：-key|") {
         int pos = 0;
-        const char* argv[5] = {"-a", "--", "-va"};
+        const char* argv[] = {"-a"};
+        int argc = sizeof(argv) / sizeof(argv[0]);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"-a", ""}));
+        ASSERT_EQ(pos, 1);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
+        ASSERT_EQ(pos, 1);
+    }
+    SECTION("场景：-key -|") {
+        int pos = 0;
+        const char* argv[] = {"-a", "-"};
+        int argc = sizeof(argv) / sizeof(argv[0]);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"-a", ""}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
+        ASSERT_EQ(pos, 2);
+    }
+    SECTION("场景：-key --|") {
+        int pos = 0;
+        const char* argv[] = {"-a", "--"};
+        int argc = sizeof(argv) / sizeof(argv[0]);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"-a", ""}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
+        ASSERT_EQ(pos, 2);
+    }
+    SECTION("场景：-key -- value") {
+        int pos = 0;
+        const char* argv[] = {"-a", "--", "-va"};
         int argc = sizeof(argv) / sizeof(argv[0]);
         ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"-a", "-va"}));
         ASSERT_EQ(pos, 3);
         ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
         ASSERT_EQ(pos, 3);
+    }
+    SECTION("场景：value1") {
+        int pos = 0;
+        const char* argv[] = {"va", "vb"};
+        int argc = sizeof(argv) / sizeof(argv[0]);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"", "va"}));
+        ASSERT_EQ(pos, 1);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"", "vb"}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
+        ASSERT_EQ(pos, 2);
+    }
+    SECTION("场景：-- value") {
+        int pos = 0;
+        const char* argv[] = {"--", "va"};
+        int argc = sizeof(argv) / sizeof(argv[0]);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"", "va"}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
+        ASSERT_EQ(pos, 2);
+    }
+    SECTION("场景：- value") {
+        int pos = 0;
+        const char* argv[] = {"-", "va"};
+        int argc = sizeof(argv) / sizeof(argv[0]);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), (std::tuple{"-", "va"}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
+        ASSERT_EQ(pos, 2);
+    }
+    SECTION("场景：空列表") {
+        int pos = 0;
+        const char* argv[] = {};
+        int argc = sizeof(argv) / sizeof(argv[0]);
+        ASSERT_EQ(str::next_opt2(pos, argc, argv), std::nullopt);
+        ASSERT_EQ(pos, 0);
     }
 }
