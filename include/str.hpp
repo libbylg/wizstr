@@ -25,34 +25,36 @@
 #include <tuple>
 #include <vector>
 
-//! str 提供了一系列字符串处理函数算法库，目标是成为 C++ 语言功能最丰富的函数库。
+//! # 简介
+///
+/// str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语言功能最丰富的字符串处理函数库。
 ///
 /// %# 提供了下列算法：
 ///
-/// * 追加插入（[append](#)、[prepend](#) 和 [insert](#) 系列）
-/// * 大小写不敏感的比较（[icompare](#) 和 [iequals](#) 系列）
-/// * 基于通配符匹配（[wildcmp](#) 系列）
-/// * 两字符串之间的关系（[contains](#) 系列）
-/// * 特征字符串统计（[count](#) 系列）
-/// * 前后缀操作（[prefix](#) 和 [suffix](#) 系列）
-/// * 查找（[find](#) 和 [iter](#) 系列）
-/// * 特征测试（[is](#)、[has](#) 系列）
-/// * 子串提取（[take](#)、[drop](#)、[range](#) 系列）
-/// * 修剪和整形（[align](#)、[surround](#)、[unsurround](#)、[invert](#)、[simplified](#)、[trim](#) 系列）
-/// * 按多行处理（[lines](#) 系列）
-/// * 按单词处理（[words](#) 系列）
-/// * 字符串生成（[repeat](#)、[random](#) 系列）
-/// * 空白串处理（[spaces](#) 系列）
-/// * 字符串遮罩（[cover](#) 系列）
-/// * 字符串拆分（[split](#)、[partition](#)、[chunked](#)、[windowed](#) 系列）
-/// * 字符串拼接（[join](#) 系列）
-/// * 大小写转换（[to](#) 系列）
-/// * 变量展开（expand）
-/// * 文件名路径操作（[basemame](#)、[extname](#)、[dirname](#) 系列）
-/// * 字符串哈希算法（[hash](#) 系列）
-/// * 字符串转义（[encode](#)、[decode](#) 系列）
-/// * 文本文件读取（[read](#) 系列）
-/// * 字符分组和筛选（[grouping](#) 和 [filter](#) 系列）
+/// * 追加插入（@{#append}、@{#prepend} 和 @{#insert} 系列）
+/// * 大小写不敏感的比较（@{#icompare} 和 @{#iequals} 系列）
+/// * 基于通配符匹配（@{#wildcmp} 系列）
+/// * 两字符串之间的关系（@{#contains} 系列）
+/// * 特征字符串统计（@{#count} 系列）
+/// * 前后缀操作（@{#prefix} 和 @{#suffix} 系列）
+/// * 查找（@{#find} 和 @{#iter} 系列）
+/// * 特征测试（@{#is}、@{#has} 系列）
+/// * 子串提取（@{#take}、@{#drop} 系列）
+/// * 修剪和整形（@{#align}、@{#surround}、@{#unsurround}、@{#invert}、@{#simplified}、@{#trim} 系列）
+/// * 按多行处理（@{#lines} 系列）
+/// * 按单词处理（@{#words} 系列）
+/// * 字符串生成（@{#repeat} 系列）
+/// * 空白串处理（@{#spaces} 系列）
+/// * 字符串遮罩（@{#cover} 系列）
+/// * 字符串拆分（@{#split}、@{#partition}、@{#chunked}、@{#windowed} 系列）
+/// * 字符串拼接（@{#join} 系列）
+/// * 大小写转换（@{#to} 系列）
+/// * 变量或者特殊符号展开（@{#expand}）
+/// * 文件名路径操作（@{#basemame}、@{#extname}、@{#dirname}、@{#rawname} 系列）
+/// * 字符串哈希算法（@{#hash} 系列）
+/// * 字符串转义（encode、decode 系列）
+/// * 文本文件读取（@{#read} 系列）
+/// * 字符分组和筛选（@{#grouping} 和 @{#filter} 系列）
 ///
 /// %# 关于函数的返回值及其使用注意事项：
 ///
@@ -61,15 +63,19 @@
 /// * `xxx_view` 形式：
 ///
 ///     通常意味着该函数的返回值是输入参数的一个（或多个）视图，该函数不会发生任何分配行为（返回存放
-///     容器的 `std::string_view`，如 `std::vector<std::string_view>` 类似的除外）。但这种形式的接口是**不安全**的
-///     时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些接口时，需要确保在使用
-///     前其输入参数的地址仍然是有效的。
+///     容器的 `std::string_view`，如 `std::vector<std::string_view>` 类似的除外）。但这种形式的接口
+///     是**不安全**的时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些
+///     接口时，需要确保在使用前其输入参数的地址仍然是有效的。
 ///
 /// * `xxx_inplace` 形式：
 ///
 ///     这类函数通常意味着该函数返回的是输入参数自身，返回值也通常是 `std::string&`。该函数在执行
-///     过程中通常会修改输入参数，并返回。如果使用这类函数，需要确保原始输入串是可以被改写的，否则建议使用 `xxx_view 形式`或
-///     者 `xxx 形式` 的函数代替。
+///     过程中通常会修改输入参数，并返回。如果使用这类函数，需要确保原始输入串是可以被改写的，否则
+///     建议使用 `xxx_view 形式`或者 `xxx 形式` 的函数代替。
+///
+/// * `xxx_range` 形式：
+///
+///     这类函数返回的并不是某种形式的子串，而是子串在原始串中的范围，在子串定位场景很常见。
 ///
 /// * `xxx` 形式：
 ///
@@ -84,20 +90,24 @@ struct str {
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
 
-    //! 字符集
+    //! 字符集 @anchor{charset_type}
+    ///
+    /// 字符集类用于表示一组字符的集合，主要用于以字符为分隔符或者检索目标的场景。
+    /// 大多数情况，我们并不会直接使用 @{charset_type}，而是使用 @{charset} 函数来生成
+    /// 字符集类。
     class charset_type {
     public:
         //! 构造空的字符集对象
         explicit charset_type() {
         }
 
-        //! 构造只有只有字符 ch 的字符集
+        //! 构造只有只有字符 `ch` 的字符集
         explicit charset_type(value_type ch)
             : charset_type() {
             set(ch);
         }
 
-        //! 构造包含 s 中的所有字符的字符集
+        //! 构造包含 `s` 中的所有字符的字符集
         explicit charset_type(std::string_view s)
             : charset_type() {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
@@ -105,7 +115,7 @@ struct str {
             }
         }
 
-        //! 将 s 中的字符加入本字符集或者从本字符集中剔除
+        //! 将 `s` 中的字符加入本字符集或者从本字符集中剔除
         inline auto set(std::string_view s, bool val = true) -> void {
             for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
                 set(*ptr, val);
@@ -148,16 +158,11 @@ struct str {
         }
 
         //! 查询字符 ch 是否在本字符集中
-        inline auto get(value_type ch) const -> bool {
+        inline auto contains(value_type ch) const -> bool {
             uint8_t c = static_cast<value_type>(ch);
             size_type index = c / 64;
             size_type mask = uint64_t{1} << (c % 64);
             return !!(bits_[index] & mask);
-        }
-
-        //! 查询字符 ch 是否在本字符集中，与 get(ch) 等价
-        inline auto contains(value_type c) const -> bool {
-            return get(c);
         }
 
         //! 根据 ASCII 码表，生成本字符集的补集
@@ -170,7 +175,7 @@ struct str {
 
         //! 查询字符 ch 是否在本字符集中，等价于 get(ch) 或者 contains(ch)
         inline auto operator()(value_type ch) const -> bool {
-            return get(ch);
+            return contains(ch);
         }
 
         //! 获取内部存储指针，需要注意每个 bit 位代表字符集中的一个字符
@@ -188,7 +193,7 @@ struct str {
             std::string result;
             for (size_type ch = 0; ch <= std::numeric_limits<value_type>::max(); ch++) {
                 static_assert(sizeof(ch) > sizeof(value_type));
-                if (get(static_cast<value_type>(ch))) {
+                if (contains(static_cast<value_type>(ch))) {
                     result.push_back(static_cast<value_type>(ch));
                 }
             }
@@ -280,15 +285,19 @@ struct str {
         }
     };
 
-    //! 三元组类型（相同类型的 3 个字段）。
+    //! 二元组（相同类型的 2 个元素）。
+    template <typename T>
+    using pair = std::tuple<T, T>;
+
+    //! 三元组类型（相同类型的 3 个元素）。
     template <typename T>
     using ternary = std::array<T, 3>;
 
     //! `std::string_view` 供给器：每次调用返回一个字符串，直到返回 `std::nullopt`。
     using view_provider_proc = std::function<std::optional<std::string_view>()>;
 
-    //! 键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 `std::nullopt`。
-    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
+    //! 键值对供给器：每次调用返回一个 key-value 对组成的二元组（@ref{pair}），直到返回 `std::nullopt`。
+    using view_pair_provider_proc = std::function<std::optional<pair<std::string_view>>()>;
 
     //! 整数供给器：每次调用返回一个 `size_type` 类型的整数，主要用于抽象随机函数。
     using number_provider_proc = std::function<size_type()>;
@@ -1203,7 +1212,7 @@ struct str {
     ///
     /// @param sep_pair: 用于拼接每个 key-value 对，当未指定该参数或者为空时，自动采用 `":"`
     /// @param sep_list: 用于拼接多个拼接好的 key-value 对，当未指定该参数或者为空时，自动采用 `","`
-    /// @param proc: 用于供给 key-value 对， key-value 对由 `std::tuple<std::string_view, std::string_view>` 来表示
+    /// @param proc: 用于供给 key-value 对， key-value 对由 `pair<std::string_view>` 来表示
     /// @param items: 用于存储 key-value 对的容器
     /// @return 返回拼接后的字符串
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string;
@@ -1317,8 +1326,8 @@ struct str {
     /// @param sep: 用作分隔符的字符串，当 `sep` 被指定为空串时，自动以 `":"` 为分隔符。
     /// @return 返回被拆分处理的字符串。如果字符串中未找到分隔符，整个字符串作为返回值的第一个字符串，而第二个字符
     /// 串为空。
-    static auto split_pair(std::string_view s, std::string_view sep = ":") -> std::tuple<std::string, std::string>;
-    static auto split_pair_view(std::string_view s, std::string_view sep = ":") -> std::tuple<std::string_view, std::string_view>;
+    static auto split_pair(std::string_view s, std::string_view sep = ":") -> pair<std::string>;
+    static auto split_pair_view(std::string_view s, std::string_view sep = ":") -> pair<std::string_view>;
 
     //! 拆分多个 key-value 对 @anchor{split_map{}
     ///
@@ -1339,8 +1348,7 @@ struct str {
     /// @param proc: 输出拆分出来的每个键值对。
     /// @return 返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
     static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
-    static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":", size_type max_n = npos)
-        -> std::map<std::string, std::string>;
+    static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":", size_type max_n = npos) -> std::map<std::string, std::string>;
 
     //! 按行拆分 @anchor{split_lines}
     ///
@@ -1702,8 +1710,8 @@ struct str {
     static auto remove_dirname_view(std::string_view s) -> std::string_view;
     static auto remove_dirname(std::string_view s) -> std::string;
     static auto replace_dirname(std::string_view s, std::string_view new_dir) -> std::string;
-    static auto split_dirname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
-    static auto split_dirname(std::string_view s) -> std::tuple<std::string, std::string>;
+    static auto split_dirname_view(std::string_view s) -> pair<std::string_view>;
+    static auto split_dirname(std::string_view s) -> pair<std::string>;
     //
     static auto dirname_inplace(std::string& s) -> std::string&;
 #ifdef STR_UNTESTED
@@ -1726,8 +1734,8 @@ struct str {
     static auto remove_basename_view(std::string_view s) -> std::string_view;
     static auto remove_basename(std::string_view s) -> std::string;
     static auto replace_basename(std::string_view s, std::string_view new_name) -> std::string;
-    static auto split_basename_view(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
-    static auto split_basename(std::string_view s) -> std::tuple<std::string, std::string>;
+    static auto split_basename_view(std::string_view s) -> pair<std::string_view>;
+    static auto split_basename(std::string_view s) -> pair<std::string>;
     /// -
     static auto basename_inplace(std::string& s) -> std::string&;
 #ifdef STR_UNTESTED
@@ -1750,8 +1758,8 @@ struct str {
     static auto remove_extname_view(std::string_view s) -> std::string_view;
     static auto remove_extname(std::string_view s) -> std::string;
     static auto replace_extname(std::string_view s, std::string_view new_name) -> std::string;
-    static auto split_extname_view(std::string_view s) -> std::tuple<std::string_view, std::string_view>;
-    static auto split_extname(std::string_view s) -> std::tuple<std::string, std::string>;
+    static auto split_extname_view(std::string_view s) -> pair<std::string_view>;
+    static auto split_extname(std::string_view s) -> pair<std::string>;
 #endif // STR_UNTESTED
     //
 #ifdef STR_UNTESTED
@@ -1839,7 +1847,7 @@ struct str {
     static auto encode_cstr(std::string_view s) -> std::string;
     static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> size_type;
     static auto decode_cstr(std::string_view s) -> std::tuple<size_type, std::string>;
-    //
+    /// -
     static auto encode_cstr_inplace(std::string& s) -> std::string;
     static auto decode_cstr_inplace(std::string& s) -> size_type;
 
@@ -1996,15 +2004,15 @@ struct str {
     static auto with_file(const std::string& filepath, const char* mode, FILE* repl, const std::function<void(FILE* f)>& proc) -> void;
     static auto with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* f)>& proc) -> void;
 
-    //! 命令行选项识别 @anchor{opt}
+    //! 命令行选项识别 @anchor{opt1}
     ///
-    /// 将一组字符串列表视作命令行的参数（选项）序列，@ref{next_opt} 函数从该序列中按照特定的模式读取和识别
+    /// 将一组字符串列表视作命令行的参数（选项）序列，@ref{next_opt1} 函数从该序列中按照特定的模式读取和识别
     /// 出单个的命令行选项。
     ///
-    /// @notice{1} 与很多其他的命令行参数识别库不同，@anchor{next_opt} 函数所支持的命令行参数的识别模式是一
+    /// @notice{1} 与很多其他的命令行参数识别库不同，@anchor{next_opt1} 函数所支持的命令行参数的识别模式是一
     /// 种无 schema 的模式，其优点是不需要在参数识别前定义一堆的 schema 信息（比如，需要定义有哪些命令行参
-    /// 数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，@anchor{next_opt} 无法实现很复杂的命令
-    /// 行参数设计。@anchor{next_opt} 很适合具有少量命令行参数的情况。下面是 @anchor{next_opt} 函数的识别算
+    /// 数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，@anchor{next_opt1} 无法实现很复杂的命令
+    /// 行参数设计。@anchor{next_opt1} 很适合具有少量命令行参数的情况。下面是 @anchor{next_opt1} 函数的识别算
     /// 法：
     ///
     /// * `-` 为选项识别符，所有以 `-` 开头的串均会作为键值对形式的参数，除非在此之前用 `--` 转义；
@@ -2017,14 +2025,43 @@ struct str {
     /// @param argc, argv: 指定命令行参数序列的大小和起始地址，常用于匹配 `main` 函数的参数。
     /// @param items: 存放命令行参数的容器，用于代替 `argc` 与 `argv` 的组合。
     /// @return 以键值对的形式返回读取到的选项，并提前将 next_index 移动到选项的结尾。
-    static auto next_opt(int& next_index, int argc, const char* argv[]) -> std::tuple<std::string_view, std::string_view>;
-    static auto next_opt(int& next_index, int argc, char* argv[]) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt1(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>>;
+    static auto next_opt1(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>>;
     template <typename Container, typename SizeType = typename Container::size_type>
-    static auto next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt1(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>>;
     template <typename Iterator>
-    static auto next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt1(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>>;
     template <typename IterProc>
-    static auto next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view>;
+    static auto next_opt1(const IterProc& proc) -> std::optional<pair<std::string_view>>;
+
+    //! 命令行选项识别 @anchor{opt2}
+    ///
+    /// 将一组字符串列表视作命令行的参数（选项）序列，@ref{next_opt2} 函数从该序列中按照特定的模式读取和识别
+    /// 出单个的命令行选项。
+    ///
+    /// @notice{1} 与很多其他的命令行参数识别库不同，@anchor{next_opt2} 函数所支持的命令行参数的识别模式是一
+    /// 种无 schema 的模式，其优点是不需要在参数识别前定义一堆的 schema 信息（比如，需要定义有哪些命令行参
+    /// 数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，@anchor{next_opt2} 无法实现很复杂的命令
+    /// 行参数设计。@anchor{next_opt2} 很适合具有少量命令行参数的情况。下面是 @anchor{next_opt2} 函数的识别算
+    /// 法：
+    ///
+    /// * `-` 为选项识别符，所有以 `-` 开头的串均会作为键值对形式的参数，除非在此之前用 `--` 转义；
+    /// * `-key value` 识别为名字为 `key` 且值为 `value` 的键值对参数；若 `value` 部分为空，与 `-key` 等价；
+    /// * `-key -` 定义一个独立的、无 `value` 选项，常常用来定义开关型的选项；`key` 部分为空也是允许的；
+    /// 如果 `-key` 后面是另一个 key，那么，`-` 可以省略
+    /// * `value` 识别为一个没有 `key`，但是有 `value` 的参数；
+    /// * `-- value` 用于对选项识别符号进行转义，用于处理 value 部分本身已以 `-` 开头的情况；
+    ///
+    /// @param next_index: 从该位置的字符串开始识别下一个选项。
+    /// @param argc, argv: 指定命令行参数序列的大小和起始地址，常用于匹配 `main` 函数的参数。
+    /// @param items: 存放命令行参数的容器，用于代替 `argc` 与 `argv` 的组合。
+    /// @return 以键值对的形式返回读取到的选项，并提前将 next_index 移动到选项的结尾。
+    static auto next_opt2(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>>;
+    static auto next_opt2(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>>;
+    template <typename Container, typename SizeType = typename Container::size_type>
+    static auto next_opt2(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>>;
+    template <typename Iterator>
+    static auto next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>>;
 
     //! 符号识别 @anchor{skip_spaces}
     ///
@@ -2358,8 +2395,8 @@ auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
 }
 
 template <typename Container, typename SizeType>
-auto str::next_opt(SizeType& next_index, const Container& items) -> std::tuple<std::string_view, std::string_view> {
-    return next_opt([&next_index, &items]() -> std::optional<std::string_view> {
+auto str::next_opt1(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
+    return next_opt1([&next_index, &items]() -> std::optional<std::string_view> {
         if (next_index >= items.size()) {
             return std::nullopt;
         }
@@ -2369,8 +2406,8 @@ auto str::next_opt(SizeType& next_index, const Container& items) -> std::tuple<s
 }
 
 template <typename Iterator>
-auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, std::string_view> {
-    return next_opt([&itr, &end]() {
+auto str::next_opt1(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
+    return next_opt1([&itr, &end]() {
         if (itr == end) {
             return std::nullopt;
         }
@@ -2380,36 +2417,116 @@ auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, 
 }
 
 template <typename IterProc>
-auto str::next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view> {
+auto str::next_opt1(const IterProc& proc) -> std::optional<pair<std::string_view>> {
     std::optional<std::string_view> item_opt = proc();
     if (!item_opt) {
-        return {std::string_view{}, std::string_view{}};
+        return std::nullopt;
     }
 
     std::string_view item = item_opt.value();
     if (item.empty()) {
-        return {std::string_view{}, item};
+        return str::pair<std::string_view>{std::string_view{}, item};
     }
 
     if (item[0] != '-') {
-        return {std::string_view{}, item};
+        return str::pair<std::string_view>{std::string_view{}, item};
     }
 
     if (item == "--") {
         item_opt = proc();
         if (!item_opt) {
-            return {std::string_view{}, std::string_view{}};
+            return str::pair<std::string_view>{std::string_view{}, std::string_view{}};
         }
 
-        return {std::string_view{}, item_opt.value()};
+        return str::pair<std::string_view>{std::string_view{}, item_opt.value()};
     }
 
     auto pos = item.find('=', 0);
     if (pos == std::string_view::npos) {
-        return {item, std::string_view{}};
+        return str::pair<std::string_view>{item, std::string_view{}};
     }
 
-    return {item.substr(0, pos), item.substr(pos + 1)};
+    return str::pair<std::string_view>{item.substr(0, pos), item.substr(pos + 1)};
+}
+
+template <typename Container, typename SizeType>
+auto str::next_opt2(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
+    if (next_index >= static_cast<SizeType>(items.size())) {
+        next_index = static_cast<SizeType>(items.size());
+        return std::nullopt;
+    }
+
+    auto itr = items.begin();
+    std::advance(itr, next_index);
+
+    auto result = next_opt2(itr, items.end());
+    next_index = static_cast<SizeType>(std::distance(items.begin(), itr));
+    return result;
+}
+
+template <typename Iterator>
+auto str::next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
+    if (itr == end) {
+        return std::nullopt;
+    }
+
+    std::string_view curr = *(itr++);
+
+    // ""
+    if (curr.empty()) {
+        return pair<std::string_view>{std::string_view{}, curr};
+    }
+
+    // value
+    if (!str::starts_with(curr, "-")) {
+        return pair<std::string_view>{std::string_view{}, curr};
+    }
+
+    // // - ...
+    // if (curr == "-") {
+    //     return pair<std::string_view>{std::string_view{}, curr};
+    // }
+
+    // -- value
+    if (curr == "--") {
+        // -- EOL
+        if (itr == end) {
+            return pair<std::string_view>{std::string_view{}, std::string_view{}};
+        }
+
+        // -- value
+        return pair<std::string_view>{std::string_view{}, *(itr++)};
+    }
+
+    // -key EOL
+    if (itr == end) {
+        return pair<std::string_view>{std::string_view{curr}, std::string_view{}};
+    }
+
+    // -key value
+    if (!str::starts_with(*itr, "-")) {
+        return pair<std::string_view>{curr, *(itr++)};
+    }
+
+    // -key -
+    if (*itr == "-") {
+        return pair<std::string_view>{std::string_view{curr}, std::string_view{}};
+    }
+
+    if (*itr == "--") {
+        itr++;
+
+        // -key -- $
+        if (itr == end) {
+            return pair<std::string_view>{std::string_view{curr}, std::string_view{}};
+        }
+
+        // -key -- value
+        return pair<std::string_view>{curr, *(itr++)};
+    }
+
+    // -key -key2
+    return pair<std::string_view>{curr, std::string_view{}};
 }
 
 #endif // TINY_STR_H

@@ -15,6 +15,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+list(APPEND QUALITY_OPTIONS -Wall)
+list(APPEND QUALITY_OPTIONS -Wextra)
+list(APPEND QUALITY_OPTIONS -Werror=return-type)
+list(APPEND QUALITY_OPTIONS -Werror=sign-compare)
+list(APPEND QUALITY_OPTIONS -Werror=conversion)
+list(APPEND QUALITY_OPTIONS -Werror=return-type)
+#list(APPEND QUALITY_OPTIONS -Wno-unused-parameter)
+
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/include/str.hpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/str.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/testing.hpp)
@@ -131,7 +139,8 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_chunk_view.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_eol.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_eol_range.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_eol_view.cpp)
-list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_opt.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_opt1.cpp)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_opt2.cpp)
 #list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_regex.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_spaces_pos.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_next_string.cpp)
@@ -239,17 +248,12 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_windowed.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test/test_str_windowed_view.cpp)
 
 
-list(APPEND QUALITY_OPTIONS -Wall)
-list(APPEND QUALITY_OPTIONS -Wextra)
-list(APPEND QUALITY_OPTIONS -Werror=return-type)
-list(APPEND QUALITY_OPTIONS -Werror=sign-compare)
-list(APPEND QUALITY_OPTIONS -Werror=conversion)
-list(APPEND QUALITY_OPTIONS -Werror=return-type)
-#list(APPEND QUALITY_OPTIONS -Wno-unused-parameter)
-
 #   Define the building target
 add_executable(str_test ${SOURCES})
-
-
 target_include_directories(str_test PRIVATE include src)
 target_compile_options(str_test PRIVATE ${QUALITY_OPTIONS})
+
+#   Document generation tools
+add_executable(gendoc gendoc.cpp src/str.cpp include/str.hpp)
+target_include_directories(gendoc PRIVATE include src)
+target_compile_options(gendoc PRIVATE ${QUALITY_OPTIONS})

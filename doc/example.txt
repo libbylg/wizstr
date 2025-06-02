@@ -4,20 +4,24 @@
 /// * [xxx](#) 等价于 [xxx](#xxx)
 /// * [xxx](yyy) 定义超链接
 /// * [xxx](#xxx) 引用锚点
-/// * @anchor{xxx} 等价于 定义名字为 xxx 的锚点
+/// * @anchor{xxx, yyy} 等价于 定义名字为 xxx 和 yyy 的锚点
+/// * @anchor xxx, yyy: 等价于 定义名字为 xxx 和 yyy 的锚点
 /// * **xxx** 对 xxx 的强调
 /// * `xxx` 行内代码块定义
-/// * @param name, ... 参数定义表
+/// * @param name, ...: 参数定义表
 /// * @param{name, ...} 参数定义表
 /// * @return 返回值描述
 /// * @brief 简介
 /// * @detail 详细描述
 /// * @block{xxx} 定义名字为 xxx 的片段
 /// * @end{xxx} 定义代码片段
+/// * @notice{xxx} 定义一个提示片段，以及名为 xxx 的锚点
 /// * 行间代码块定义
 /// ```
 /// xxx
 /// ```
 /// * @emdbed{xxx} 引用一个block
-/// * @ref{xxx, xxx} 定义一个函数分类说明
+/// * @ref{xxx, xxx} 或者 @{xxx, xxx} 引用某个符号
+/// * @ref{#xxx, #xxx} 或者 @{#xxx,# xxx} 引用某个锚点，等价于 [xxx](#xxx)
 /// * 块的结束符号 ---
+/// * - 分行或者分块

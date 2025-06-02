@@ -197,7 +197,7 @@ struct gendoc_options {
     auto load(int argc, char* argv[]) -> std::string {
         int pos = 1;
         while (pos <= argc) {
-            auto [key, val] = str::next_opt(pos, argc, argv + 1);
+            auto [key, val] = str::next_opt1(pos, argc, argv + 1);
             key = str::trim_surrounding_view(key);
             val = str::trim_surrounding_view(val);
             if (key.empty() && val.empty()) {
