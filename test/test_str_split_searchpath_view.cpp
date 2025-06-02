@@ -18,6 +18,7 @@
 TEST(test_str, split_searchpath_view) {
     SECTION("空串") {
         ASSERT_EQ(str::split_searchpath_view(""), (std::vector<std::string_view>{}));
+        ASSERT_EQ(str::split_searchpath_view("", true), (std::vector<std::string_view>{""}));
     }
     SECTION("空路径") {
         ASSERT_EQ(str::split_searchpath_view(":::"), (std::vector<std::string_view>{}));
@@ -26,10 +27,10 @@ TEST(test_str, split_searchpath_view) {
         ASSERT_EQ(str::split_searchpath_view(":  : :"), (std::vector<std::string_view>{"  ", " "}));
         ASSERT_EQ(str::split_searchpath_view(":  : :", true), (std::vector<std::string_view>{"", "  ", " ", ""}));
 
-        ASSERT_EQ(str::split_searchpath_view(":aaa"), (std::vector<std::string_view>{"aaa"}));
+        ASSERT_EQ(str::split_searchpath_view(":aaa", false), (std::vector<std::string_view>{"aaa"}));
         ASSERT_EQ(str::split_searchpath_view(":aaa", true), (std::vector<std::string_view>{"", "aaa"}));
 
-        ASSERT_EQ(str::split_searchpath_view("abc:def:hij"), (std::vector<std::string_view>{"abc", "def", "hij"}));
+        ASSERT_EQ(str::split_searchpath_view("abc:def:hij", false), (std::vector<std::string_view>{"abc", "def", "hij"}));
         ASSERT_EQ(str::split_searchpath_view("abc:def:hij", true), (std::vector<std::string_view>{"abc", "def", "hij"}));
 
         ASSERT_EQ(str::split_searchpath_view("abc::hij"), (std::vector<std::string_view>{"abc", "hij"}));

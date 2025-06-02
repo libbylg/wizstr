@@ -1336,7 +1336,7 @@ struct str {
     /// @param max_n: 最多拆分多少次。`max_n` 主要用于控制第一轮拆分的次数，如果指定为 0 将返回空 map 或者不
     /// 触发 proc。当次数达到后，后续的数据会被舍弃，且不会被放入 map 中，也不会再触发 proc。由于调用方无法感
     /// 知是否有剩余数据未拆分完，因此，`max_n` 通常只用在舍弃剩余字符串是无关紧要的情况下使用。
-    /// @param proc 输出拆分出来的每个键值对。
+    /// @param proc: 输出拆分出来的每个键值对。
     /// @return 返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
     static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
     static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":", size_type max_n = npos)
@@ -1365,8 +1365,8 @@ struct str {
     ///
     /// @notice{3} 对于重复的路径分隔符（比如，"a///b" 中的 "///"），会自动视作一个路径分隔符。
     ///
-    /// @param s 待拆分的路径。
-    /// @param  proc 用于接收被拆分出来的字符串。
+    /// @param s: 待拆分的路径。
+    /// @param proc: 用于接收被拆分出来的字符串。
     /// @return 当返回值类型为 `void` 时，可以通过 proc 函数接收输出数据；否则，返回值表示拆分出来的多个子串。
     static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_path(std::string_view s) -> std::vector<std::string>;
@@ -1374,22 +1374,25 @@ struct str {
 
     //! 拆分搜索路径 @anchor{split_searchpath}
     ///
-    /// 将字符串 `s` 视作搜索目录（可以以 Linux 系统下的 `$PATH` 环境变量为类比参考），按照搜索路径分隔
-    /// 符 @ref{sep_searchpath_char} 拆分成多个路径。
+    /// 将字符串 `s` 视作搜索目录（可以以 Linux 系统下的 `$PATH` 环境变量为参考），按照搜索路径分隔
+    /// 符 @ref{sep_searchpath_char} 将 `s` 拆分成多个路径。
     ///
     /// @notice{1} 需要注意 POSIX 系统标准并不允许文件路径中存在冒号的情况，
     /// 参考: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03。
     ///
-    /// @notice{2} 需要注意本函数默认支持的是 `*nix` 系统的默认的搜索路径分隔符，对于 Windows 系统，可以指定sep 参
-    /// 数为 ";"。
+    /// @notice{2} 需要注意本函数默认支持的是 `*nix` 系统的默认的搜索路径分隔符，对于 Windows 系统，可以
+    /// 指定 `sep` 参数为 `";"`。
     ///
-    /// @param s 待拆分的路径
-    /// @param keep_empty 是否保留空路径（注意：POSIX 中空搜索路径通常表示当前工作路径，是有意义的）
-    /// @param sep 指定搜索路径分隔符。对于 Windows 下的搜索路径，需要额外指定该参数。
+    /// @notice{3} 本系列函数并不会主动去除路径前后的空白，也对于重复路径也不去重。当 `keep_empty` 指定
+    /// 为 `true` 时，空串会被传递给 proc 或者返回。
+    ///
+    /// @param s: 待拆分的路径
+    /// @param keep_empty: 是否保留空路径（注意：POSIX 中空搜索路径通常表示当前工作路径，是有意义的）
+    /// @param sep: 指定搜索路径分隔符。对于 Windows 下的搜索路径，需要额外指定该参数。
     /// @return 当返回值类型为 `void` 时，可以通过 proc 函数接收输出数据；否则，返回值表示拆分出来的多个子串。
     static auto split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
-    static auto split_searchpath(std::string_view s, bool keep_empty = true, value_type sep = ':') -> std::vector<std::string>;
-    static auto split_searchpath_view(std::string_view s, bool keep_empty = true, value_type sep = ':') -> std::vector<std::string_view>;
+    static auto split_searchpath(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string>;
+    static auto split_searchpath_view(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string_view>;
 
 #ifdef STR_UNIMPL
     // 拆分 csv 数据
@@ -1933,6 +1936,18 @@ struct str {
     static auto interval(size_type begin, size_type end) -> interval_type;
     static auto shifter(size_type pos, ssize_type offset) -> shifter_type;
 
+    //! 读取一行 @anchor{read_next_line}
+    ///
+    /// 以迭代的方式，从指定的文件读取一行文字并返回，本函数可以连续调用，以实现逐行读取效果。但如果需要逐行
+    /// 读取文件的功能，可参考 @ref{read_lines}。
+    ///
+    /// @param filename, file: 指定计划读取的文件的文件名，或者一个已经打开的文件对象，或者文件输入流对象
+    /// @param keeo_ends: 是否保留行尾的续行符
+    static auto read_next_line(FILE* file, bool keep_ends, std::string& line_text) -> bool;
+    static auto read_next_line(FILE* file, bool keep_ends = false) -> std::optional<std::string>;
+    static auto read_next_line(std::istream& file, std::string& line_text) -> bool;
+    static auto read_next_line(std::istream& file) -> std::optional<std::string>;
+
     //! 读取文件的全部内容 @anchor{read_all}
     ///
     /// 将文本文件 filename 中的所有内容读取出来并返回。需要注意，读取大文件很容易触发内存分配失败。
@@ -1943,24 +1958,16 @@ struct str {
     static auto read_all(const std::string& filename) -> std::string;
     static auto read_all(const char* filename) -> std::string;
 
-    //! 读取一行 @anchor{read_next_line}
-    ///
-    /// 以迭代的方式，从指定的文件读取一行文字并返回，本函数可以连续调用，以实现逐行读取效果。但如果想实现逐行
-    /// 读取文件的功能，可参考 @ref{read_lines}。
-    ///
-    /// @param filename, file, stream 指定计划读取的文件的文件名，或者一个已经打开的文件对象，或者文件输入流对象
-    /// @param keeo_ends 是否保留行尾的续行符
-    static auto read_next_line(FILE* file, bool keep_ends, std::string& line_text) -> bool;
-    static auto read_next_line(FILE* file, bool keep_ends = false) -> std::optional<std::string>;
-    static auto read_next_line(std::istream& file, std::string& line_text) -> bool;
-    static auto read_next_line(std::istream& file) -> std::optional<std::string>;
-
     //! 按行读取多行 @anchor{read_lines}
     ///
     /// 从指定的文件（`FILE*` 或者 `std::istream` 或者 `filename`）中连续读取多行文本。
     ///
-    /// @param file: 指定读取的数据的来源，如果是`FILE*` 或者 `std::istream` 类型的形式，表示从该文件的当前位置
-    /// 开始读取。
+    /// @notice{1} 本系列函数和 @ref{read_all} 类型，只适合文件内容较少的文本文件的读取，并不适合大型文件。
+    /// 如果需要按行读取大型文件内容，可考虑基于 @ref{read_next_line} 系列函数自行实现。
+    ///
+    /// @param file, filename: 指定读取的数据的来源，如果是`FILE*` 或者 `std::istream` 类型的形式，表示从该文
+    /// 件的当前位置开始读取。如果是 `std::string` 或者 `const char*` 形式，将自动打开文件，并逐行读取文件所
+    /// 有内容。
     /// @param keep_ends: 指定指定是否需要保留每行行位的结束符（如果有的话）。
     /// @param max_n: 用于限制读取行数，当年读取的行数达到 max_n 时，自动停止读取。
     /// @param proc: 通过 proc 函数接收行输出。
@@ -1974,13 +1981,42 @@ struct str {
     static auto read_lines(const char* filename, bool keep_ends, const line_consumer_proc& proc) -> void;
     static auto read_lines(const std::string& filename, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
     static auto read_lines(const char* filename, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
+
+    //! 打开文件并自动关闭文件 @anchor{with_file}
+    ///
+    /// @ref{with_file} 根据指定的路径 `filepath` 和 `mode` 打开一个文件，并将这个文件交个 `proc` 函数使用。
+    /// 当 `proc` 函数使用完毕后，@ref{with_file} 函数会自动关闭该文件。本函数设计的相对特殊，其核心目的是
+    /// 避免用户去处理打开和关闭文件的操作。在一定程度上可以避免文件忘记关闭问题。
+    ///
+    /// @param filepath: 指定文件路径
+    /// @param mode: 文件打开的模式
+    /// @param repl: 当遇到任何问题导致打开文件失败时，自动采用 repl 参数指定的文件对象代替。需要
+    /// 注意，@with_file 函数并不会自动关闭 `repl` 文件。
+    /// @param proc: 用于接收并使用被 @ref{with_file} 打开的文件对象的函数。
+    static auto with_file(const std::string& filepath, const char* mode, FILE* repl, const std::function<void(FILE* f)>& proc) -> void;
     static auto with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* f)>& proc) -> void;
 
-    //! 选项识别
+    //! 命令行选项识别 @anchor{opt}
     ///
-    /// @param s 命令行字符串
-    /// @param pos 从指定的位置开始读取下一个选项
-    /// @return 以键值对的形式返回读取到的选项，并提前将 pos 移动到选项的结尾
+    /// 将一组字符串列表视作命令行的参数（选项）序列，@ref{next_opt} 函数从该序列中按照特定的模式读取和识别
+    /// 出单个的命令行选项。
+    ///
+    /// @notice{1} 与很多其他的命令行参数识别库不同，@anchor{next_opt} 函数所支持的命令行参数的识别模式是一
+    /// 种无 schema 的模式，其优点是不需要在参数识别前定义一堆的 schema 信息（比如，需要定义有哪些命令行参
+    /// 数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，@anchor{next_opt} 无法实现很复杂的命令
+    /// 行参数设计。@anchor{next_opt} 很适合具有少量命令行参数的情况。下面是 @anchor{next_opt} 函数的识别算
+    /// 法：
+    ///
+    /// * `-` 为选项识别符，所有以 `-` 开头的串均会作为键值对形式的参数，除非在此之前用 `--` 转义；
+    /// * `-key` 定义一个独立的、无 `value` 选项，常常用来定义开关型的选项；`key` 部分为空也是允许的；
+    /// * `-key=value` 识别为名字为 `key` 且值为 `value` 的键值对参数；若 `value` 部分为空，与 `-key` 等价；
+    /// * `value` 识别为一个没有 `key`，但是有 `value` 的参数；
+    /// * `-- value` 用于对选项识别符号进行转义，用于处理 value 部分本身已以 `-` 开头的情况；
+    ///
+    /// @param next_index: 从该位置的字符串开始识别下一个选项。
+    /// @param argc, argv: 指定命令行参数序列的大小和起始地址，常用于匹配 `main` 函数的参数。
+    /// @param items: 存放命令行参数的容器，用于代替 `argc` 与 `argv` 的组合。
+    /// @return 以键值对的形式返回读取到的选项，并提前将 next_index 移动到选项的结尾。
     static auto next_opt(int& next_index, int argc, const char* argv[]) -> std::tuple<std::string_view, std::string_view>;
     static auto next_opt(int& next_index, int argc, char* argv[]) -> std::tuple<std::string_view, std::string_view>;
     template <typename Container, typename SizeType = typename Container::size_type>
@@ -1990,7 +2026,7 @@ struct str {
     template <typename IterProc>
     static auto next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view>;
 
-    //! 符号识别
+    //! 符号识别 @anchor{skip_spaces}
     ///
     /// 尝试识别指定类型的符号，并返回符号的范围
     ///
@@ -1999,7 +2035,9 @@ struct str {
     /// @return 如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值
     ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
     static auto skip_spaces(std::string_view s, size_type& pos) -> void;
+
 #ifdef STR_UNIMPL
+    //! 简单词法识别 @anchor{accept}
     static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_real(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_string(std::string_view s, size_type& pos) -> range_type;
@@ -2016,6 +2054,7 @@ struct str {
     static auto accept(std::string_view s, size_type& pos, const char_match_proc& proc) -> range_type;
 #endif // STR_UNIMPL
 
+#ifdef STR_UNIMPL
     //! 符号分割
     ///
     /// 将 s 视作特定格式的数据，将字符串拆分成多个部分
@@ -2028,7 +2067,6 @@ struct str {
     /// @param s 待拆分字符串
     /// @param proc 用于接收输出
     /// @return 返回拆分后的字符串
-#ifdef STR_UNIMPL
     static auto split_email(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_email(std::string_view s) -> std::vector<std::string>;
     static auto split_email_view(std::string_view s) -> std::vector<std::string_view>;
@@ -2046,6 +2084,7 @@ struct str {
     static auto split_ipv4_view(std::string_view s) -> std::vector<std::string_view>;
 #endif // STR_UNIMPL
 
+#ifdef STR_UNTESTED
     //! 字符筛选和分组
     ///
     /// 根据制定的条件对字符串中的字符进行分组或者筛选
@@ -2055,7 +2094,6 @@ struct str {
     ///
     /// @param s 被用来筛选或者分组的字符串
     /// @param proc 字符匹配条件
-#ifdef STR_UNTESTED
     static auto grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string>;
     static auto filter(std::string_view s, const char_match_proc& proc) -> std::string;
     static auto filter(std::string_view s, const charset_type& charset) -> std::string;
@@ -2063,6 +2101,7 @@ struct str {
     static auto filter_inplace(std::string& s, const charset_type& charset) -> std::string&;
 #endif // STR_UNTESTED
 
+#ifdef STR_UNTESTED
     //! 映射
     ///
     /// 将字符串 s 中在 source 中的字符映射到 target 的对应位置的字符中去。
@@ -2071,13 +2110,18 @@ struct str {
     /// @param match_charset 匹配字符集
     /// @param replace_charset 替换字符集
     /// @param proc 将匹配的字符映射为其他字符集
-#ifdef STR_UNTESTED
     static auto mapping(std::string_view s, std::string_view match_charset, std::string_view replace_charset) -> std::string;
     static auto mapping(std::string_view s, const char_mapping_proc& proc) -> std::string;
     static auto mapping_inplace(std::string& s, std::string_view match_charset, std::string_view replace_charset) -> std::string&;
     static auto mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std::string&;
 #endif // STR_UNTESTED
 
+    //! 用户根目录 @anchor{home}
+    ///
+    /// 返回当前用户的根目录，等价于 `*nix` 下的 `${HOME}` 环境变量的值，主要被用于 @ref{expand_user} 函数。
+    ///
+    /// @notice{1} 由于 Windows 下并无严格意义上的与 `*nix` 下对等的用户根目录的概念，因此，
+    /// 在 Windows 下会以 `USERPROFILE` 环境变量的值来作为 `${HOME}` 的值。
     static auto home() -> std::string;
 };
 
@@ -2337,11 +2381,6 @@ auto str::next_opt(Iterator& itr, Iterator end) -> std::tuple<std::string_view, 
 
 template <typename IterProc>
 auto str::next_opt(const IterProc& proc) -> std::tuple<std::string_view, std::string_view> {
-    /// * `-` 为选项识别符
-    /// * `-key` 定义一个独立的、无 value 选项，常常用来定义开关型的选项
-    /// * `-key=value` 定义一个名字为 key 值为 value 的选项
-    /// * `value` 定义一个没有 key，但是有 value 的参数
-    /// * `-- value` 用于对选项识别符号进行转义，用于处理位置参数本身已以 `-` 开头的情况
     std::optional<std::string_view> item_opt = proc();
     if (!item_opt) {
         return {std::string_view{}, std::string_view{}};
