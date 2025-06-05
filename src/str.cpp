@@ -644,7 +644,7 @@ auto str::suffix(std::string_view s, std::string_view other) -> size_type {
     const_pointer ptr_other = &other.back();
     while (ptr_s != (&s.back() - len)) {
         if (*ptr_s != *ptr_other) {
-            return &s.back() - ptr_s;
+            return static_cast<size_type>(&s.back() - ptr_s);
         }
 
         ptr_s--;
@@ -761,13 +761,13 @@ auto str::next_char(std::string_view s, size_type& pos, const char_match_proc& p
     const_pointer ptr = s.data() + pos;
     while (ptr < (s.data() + s.size())) {
         if (proc(*ptr)) {
-            pos = ptr - s.data();
+            pos = static_cast<size_type>(ptr - s.data());
             return pos++;
         }
         ptr++;
     }
 
-    pos = ptr - s.data();
+    pos = static_cast<size_type>(ptr - s.data());
     return npos;
 }
 
@@ -799,7 +799,7 @@ auto str::prev_char(std::string_view s, size_type& pos, const char_match_proc& p
     const_pointer ptr = s.data() + pos;
     while (ptr > s.data()) {
         if (proc(*(ptr - 1))) {
-            pos = (ptr - 1) - s.data();
+            pos = static_cast<size_type>((ptr - 1) - s.data());
             return pos;
         }
         ptr--;
@@ -1784,7 +1784,7 @@ auto str::take_view(std::string_view s, shifter_type shifter) -> std::string_vie
         if (shifter.pos >= s.size()) {
             return {};
         }
-        size_type n = shifter.offset;
+        size_type n = static_cast<size_type>(shifter.offset);
         return s.substr(shifter.pos, std::min(n, shifter.pos + n));
     }
 
@@ -1799,7 +1799,7 @@ auto str::take_view(std::string_view s, shifter_type shifter) -> std::string_vie
     }
 
     // 如果n较小
-    return s.substr((shifter.pos + shifter.offset), -shifter.offset);
+    return s.substr((shifter.pos + static_cast<size_type>(shifter.offset)), static_cast<size_type>(-shifter.offset));
 }
 
 auto str::take_left(std::string_view s, size_type n) -> std::string {
@@ -1946,7 +1946,7 @@ auto str::take_inplace(std::string& s, shifter_type shifter) -> std::string& {
     }
 
     if (shifter.offset > 0) {
-        return take_inplace(s, shifter.pos, shifter.offset);
+        return take_inplace(s, shifter.pos, static_cast<size_type>(shifter.offset));
     }
 
     // Now pos is the end-pos
@@ -1958,7 +1958,7 @@ auto str::take_inplace(std::string& s, shifter_type shifter) -> std::string& {
         return s = s.substr(0, shifter.pos);
     }
 
-    return s = s.substr((shifter.pos + shifter.offset), static_cast<size_type>(-shifter.offset));
+    return s = s.substr((shifter.pos + static_cast<size_type>(shifter.offset)), static_cast<size_type>(-shifter.offset));
 }
 
 #ifdef STR_UNTESTED
@@ -2109,9 +2109,9 @@ auto str::drop(std::string_view s, shifter_type shifter) -> std::string {
         }
 
         std::string result;
-        result.reserve(s.size() - shifter.offset);
+        result.reserve(s.size() - static_cast<size_type>(shifter.offset));
         result.append(s.data(), shifter.pos);
-        result.append(s.data() + shifter.pos + shifter.offset, s.size() - (shifter.pos + shifter.offset));
+        result.append(s.data() + shifter.pos + shifter.offset, s.size() - (shifter.pos + static_cast<size_type>(shifter.offset)));
         return result;
     }
 
@@ -2124,8 +2124,8 @@ auto str::drop(std::string_view s, shifter_type shifter) -> std::string {
     }
 
     std::string result;
-    result.reserve(s.size() - shifter.offset);
-    result.append(s.substr(0, (shifter.pos + shifter.offset)));
+    result.reserve(s.size() - static_cast<size_type>(shifter.offset));
+    result.append(s.substr(0, (shifter.pos + static_cast<size_type>(shifter.offset))));
     result.append(s.substr(shifter.pos));
     return result;
 }
@@ -2237,8 +2237,8 @@ auto str::drop_inplace(std::string& s, shifter_type shifter) -> std::string& {
             return s;
         }
 
-        std::memmove(s.data() + shifter.pos, (s.data() + (shifter.pos + shifter.offset)), (s.size() - (shifter.pos + shifter.offset)));
-        s.resize(s.size() - shifter.offset);
+        std::memmove(s.data() + shifter.pos, (s.data() + (shifter.pos + static_cast<size_type>(shifter.offset))), (s.size() - (shifter.pos + static_cast<size_type>(shifter.offset))));
+        s.resize(s.size() - static_cast<size_type>(shifter.offset));
         return s;
     }
 
@@ -2252,8 +2252,8 @@ auto str::drop_inplace(std::string& s, shifter_type shifter) -> std::string& {
         return s;
     }
 
-    std::memmove(s.data() + (shifter.pos + shifter.offset), (s.data() + shifter.pos), (s.size() - shifter.pos));
-    s.resize((s.size() + shifter.offset));
+    std::memmove(s.data() + (shifter.pos + static_cast<size_type>(shifter.offset)), (s.data() + shifter.pos), (s.size() - shifter.pos));
+    s.resize((s.size() + static_cast<size_type>(shifter.offset)));
     return s;
 }
 
@@ -2666,10 +2666,10 @@ auto str::next_word_range(std::string_view s, size_type& pos) -> range_type {
     if (itr_end == s.cend()) {
         pos = s.size();
     } else {
-        pos = std::distance(s.cbegin(), itr_end);
+        pos = static_cast<size_type>(std::distance(s.cbegin(), itr_end));
     }
 
-    size_type pos_begin = std::distance(s.cbegin(), itr_begin);
+    size_type pos_begin = static_cast<size_type>(std::distance(s.cbegin(), itr_begin));
     return range_type{pos_begin, (pos - pos_begin)};
 }
 
@@ -2707,7 +2707,7 @@ auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
         ptr_begin--;
     }
 
-    pos = ptr_begin - s.data();
+    pos = static_cast<size_type>(ptr_begin - s.data());
     return range_type{static_cast<size_type>(ptr_begin - s.data()), static_cast<size_type>(ptr_end - ptr_begin)};
 }
 
@@ -3582,7 +3582,7 @@ auto str::partition_range(std::string_view s, const char_match_proc& proc) -> te
         return {range_type{0, s.size()}, range_type{}, range_type{}};
     }
 
-    size_type pos = std::distance(s.begin(), itr);
+    size_type pos = static_cast<size_type>(std::distance(s.begin(), itr));
     return {range_type{0, pos}, range_type{pos, 1}, range_type{(pos + 1), (s.size() - (pos + 1))}};
 }
 
@@ -3636,7 +3636,7 @@ auto str::partition_view(std::string_view s, const char_match_proc& proc) -> ter
         return {s, {}, {}};
     }
 
-    size_type pos = std::distance(s.begin(), itr);
+    size_type pos = static_cast<size_type>(std::distance(s.begin(), itr));
     return {s.substr(0, pos), s.substr(pos, 1), s.substr(pos + 1, (s.size() - (pos + 1)))};
 }
 
@@ -3674,7 +3674,7 @@ auto str::partition_view(std::string_view s, const view_search_proc& proc) -> te
     }
 
     std::string_view matched = result.value();
-    std::string_view right = {(matched.data() + matched.size()), s.size() - (matched.data() + matched.size() - s.data())};
+    std::string_view right = {(matched.data() + matched.size()), s.size() - static_cast<size_type>(matched.data() + matched.size() - s.data())};
     return {s.substr(0, static_cast<size_type>(matched.data() - s.data())), matched, right};
 }
 
@@ -3979,7 +3979,7 @@ auto str::trim_left_view(std::string_view s, const char_match_proc& proc) -> std
         left_ptr++;
     }
 
-    return std::string_view{left_ptr, s.size() - (left_ptr - s.data())};
+    return std::string_view{left_ptr, s.size() - static_cast<size_type>(left_ptr - s.data())};
 }
 
 auto str::trim_left_view(std::string_view s) -> std::string_view {
@@ -4267,7 +4267,7 @@ auto str::simplified(std::string_view s, std::string_view sep, const char_match_
     // 保存非空白
     std::string result;
     if (ptr != start) {
-        result.append(start, (ptr - start));
+        result.append(start, static_cast<size_type>(ptr - start));
     }
 
     while (ptr < (s.data() + s.size())) {
@@ -4296,7 +4296,7 @@ auto str::simplified(std::string_view s, std::string_view sep, const char_match_
         }
 
         if (ptr != start) {
-            result.append(start, (ptr - start));
+            result.append(start, static_cast<size_type>(ptr - start));
         }
     }
 
@@ -4350,7 +4350,7 @@ auto str::simplified_integer(std::string_view s) -> std::string {
         }
     }
 
-    result.append(ptr, (s.data() + s.size()) - ptr);
+    result.append(ptr, static_cast<size_type>((s.data() + s.size()) - ptr));
     return result;
 }
 
@@ -4589,11 +4589,11 @@ auto str::normpath(std::string_view s) -> std::string {
     size_type fixlen = ((result[0] == "/") ? 1 : 0);
 
     for (ssize_type rpos = 1; rpos < static_cast<ssize_type>(components.size()); rpos++) {
-        if (components[rpos] == ".") {
+        if (components[static_cast<size_type>(rpos)] == ".") {
             continue;
         }
 
-        if (components[rpos] == "..") {
+        if (components[static_cast<size_type>(rpos)] == "..") {
             // 如果遇到已经固定的长度了
             if (result.size() == fixlen) {
                 // 如果已经到跟目录了，根目录可以吸收所有的后退运算符号
@@ -4602,7 +4602,7 @@ auto str::normpath(std::string_view s) -> std::string {
                 }
 
                 // 如果碰到固定长度，意味着退无可退了，只能将自己继续作为父级目录增长 fixlen
-                result.emplace_back(components[rpos]);
+                result.emplace_back(components[static_cast<size_type>(rpos)]);
                 fixlen++;
                 continue;
             }
@@ -4618,7 +4618,7 @@ auto str::normpath(std::string_view s) -> std::string {
             }
         }
 
-        result.emplace_back(components[rpos]);
+        result.emplace_back(components[static_cast<size_type>(rpos)]);
     }
 
     // 如果计算之后数组为空，而且不是绝对路径形式，那么裁定为当前目录
@@ -4647,12 +4647,12 @@ auto str::basename_pos(std::string_view s) -> size_type {
         ptr--;
     }
 
-    auto base_view = std::string_view{ptr, s.size() - (ptr - s.data())};
+    auto base_view = std::string_view{ptr, s.size() - static_cast<size_type>(ptr - s.data())};
     if ((base_view == "..") || (base_view == ".")) {
-        return (ptr - s.data()) + base_view.size();
+        return static_cast<size_type>(ptr - s.data()) + base_view.size();
     }
 
-    return ptr - s.data();
+    return static_cast<size_type>(ptr - s.data());
 }
 
 auto str::extname_pos(std::string_view s) -> size_type {
@@ -4687,7 +4687,7 @@ auto str::extname_pos(std::string_view s) -> size_type {
             }
 
             // 场景："xxx/abc.xxx"
-            return (ptr - s.data());
+            return static_cast<size_type>(ptr - s.data());
         }
         ptr--;
     }
@@ -4713,7 +4713,7 @@ auto str::dirname_pos(std::string_view s) -> size_type {
         return 1;
     }
 
-    return ptr - s.data();
+    return static_cast<size_type>(ptr - s.data());
 }
 
 auto str::dirname_range(std::string_view s) -> range_type {
@@ -5166,14 +5166,14 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
             case '\\': {
                 if (w < ptr) {
                     if (proc({reinterpret_cast<const_pointer>(w), static_cast<size_t>(ptr - w)}) != 0) {
-                        return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                        return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                     }
 
                     w = ptr;
                 }
                 ptr++;
                 if (ptr >= end) {
-                    return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                    return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
 
                 // Handle the escape chars
@@ -5238,7 +5238,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         // NOTE: 数据值超出范围
                         if (val > 0xFF) {
-                            return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                            return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                         }
 
                         ch = static_cast<decltype(ch)>(val);
@@ -5253,7 +5253,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                         auto sp = (ptr + 1);
 
                         if (sp >= end) {
-                            return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                            return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                         }
 
                         // NOTE: 十六进制字符表示可以识别任意长度的字符
@@ -5267,14 +5267,14 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                             } else {
                                 // 如果 \x 后面没有十六进制数据，说明格式错误
                                 if (sp == (ptr + 1)) {
-                                    return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                                    return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                                 }
                                 break;
                             }
 
                             // 数据值超出范围
                             if (val > 0xFF) {
-                                return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                                return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                             }
 
                             sp++;
@@ -5285,11 +5285,11 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                     }
                     break;
                     default:
-                        return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                        return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
 
                 if (proc(std::string_view{&ch, 1}) != 0) {
-                    return (reinterpret_cast<const_pointer>(ptr) - s.data());
+                    return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
 
                 w = ptr;
@@ -5372,7 +5372,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
         proc({reinterpret_cast<const_pointer>(w), static_cast<size_t>(ptr - w)});
     }
 
-    return (reinterpret_cast<const_pointer>(ptr) - s.data());
+    return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
 }
 
 auto str::decode_cstr(std::string_view s) -> std::tuple<size_type, std::string> {
@@ -5425,10 +5425,10 @@ auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> v
             + (static_cast<uint32_t>(src[pos + 2]) << 0);
 
         // 拆分成4字节(每个字节实际只有6bit，对应0x3f的掩码)
-        out[0] = table[static_cast<uint8_t>((cache >> 18) & 0x3f)];
-        out[1] = table[static_cast<uint8_t>((cache >> 12) & 0x3f)];
-        out[2] = table[static_cast<uint8_t>((cache >> 6) & 0x3f)];
-        out[3] = table[static_cast<uint8_t>((cache >> 0) & 0x3f)];
+        out[0] = static_cast<uint8_t>(table[static_cast<uint8_t>((cache >> 18) & 0x3f)]);
+        out[1] = static_cast<uint8_t>(table[static_cast<uint8_t>((cache >> 12) & 0x3f)]);
+        out[2] = static_cast<uint8_t>(table[static_cast<uint8_t>((cache >> 6) & 0x3f)]);
+        out[3] = static_cast<uint8_t>(table[static_cast<uint8_t>((cache >> 0) & 0x3f)]);
 
         // 输出一部分数据
         if (proc(std::string_view(reinterpret_cast<const_pointer>(out), 4)) != 0) {
@@ -5439,16 +5439,16 @@ auto str::encode_base64(std::string_view s, const view_consumer_proc& proc) -> v
     // 输出最后一部分
     if (mod == 1) {
         uint32_t cache = static_cast<uint32_t>(src[pos]) << 16;
-        out[0] = table[(cache >> 18) & 0x3f];
-        out[1] = table[(cache >> 12) & 0x3f];
+        out[0] = static_cast<uint8_t>(table[(cache >> 18) & 0x3f]);
+        out[1] = static_cast<uint8_t>(table[(cache >> 12) & 0x3f]);
         out[2] = '=';
         out[3] = '=';
         proc(std::string_view(reinterpret_cast<const_pointer>(out), 4));
     } else if (mod == 2) {
         uint32_t cache = (static_cast<uint32_t>(src[pos]) << 16) + (static_cast<uint32_t>(src[pos + 1]) << 8);
-        out[0] = table[(cache >> 18) & 0x3f];
-        out[1] = table[(cache >> 12) & 0x3f];
-        out[2] = table[(cache >> 6) & 0x3f];
+        out[0] = static_cast<uint8_t>(table[(cache >> 18) & 0x3f]);
+        out[1] = static_cast<uint8_t>(table[(cache >> 12) & 0x3f]);
+        out[2] = static_cast<uint8_t>(table[(cache >> 6) & 0x3f]);
         out[3] = '=';
         proc(std::string_view(reinterpret_cast<const_pointer>(out), 4));
     }
@@ -5556,9 +5556,9 @@ auto str::decode_base64(std::string_view s, const view_consumer_proc& proc) -> v
         t[2] = table[src[i * 4 + 2]];
         t[3] = table[src[i * 4 + 3]];
 
-        o[0] = ((t[0] & 0x3f) << 2) | ((t[1] & 0x30) >> 4);
-        o[1] = ((t[1] & 0x0f) << 4) | ((t[2] & 0x3c) >> 2);
-        o[2] = ((t[2] & 0x03) << 6) | ((t[3] & 0x3f) >> 0);
+        o[0] = static_cast<uint8_t>(((t[0] & 0x3f) << 2) | ((t[1] & 0x30) >> 4));
+        o[1] = static_cast<uint8_t>(((t[1] & 0x0f) << 4) | ((t[2] & 0x3c) >> 2));
+        o[2] = static_cast<uint8_t>(((t[2] & 0x03) << 6) | ((t[3] & 0x3f) >> 0));
 
         size_t n = 3;
         if (((i + 1) * 4) >= s.size()) [[unlikely]] {
@@ -5705,7 +5705,7 @@ static auto dump_hex_offset(str::size_type offset, uint8_t offset_width, bool up
     int wlen = std::snprintf(offset_buffer, sizeof(offset_buffer), (upper ? "%zX" : "%zx"), offset);
     assert(wlen > 0);
     if (wlen < offset_width) {
-        std::string zeros{str::repeat('0', offset_width - wlen)};
+        std::string zeros{str::repeat('0', static_cast<str::size_type>(offset_width - wlen))};
         (void)proc(zeros);
     }
     (void)proc(std::string_view{offset_buffer, static_cast<str::size_type>(wlen)});
