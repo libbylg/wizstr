@@ -1083,34 +1083,6 @@ auto str::next_regex(std::string_view s, size_type& pos, std::string_view patter
 }
 #endif // STR_UNTESTED
 
-#ifdef STR_UNTESTED
-auto str::next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
-    size_type start = next_spaces_pos(s, pos);
-    if (start == str::npos) {
-        return std::nullopt;
-    }
-
-    return range_type{start, (pos - start)};
-}
-
-auto str::next_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view> {
-    auto range = next_spaces_range(s, pos);
-    if (!range) {
-        return std::nullopt;
-    }
-
-    return s.substr(range->pos, range->len);
-}
-
-auto str::next_spaces(std::string_view s, size_type& pos) -> std::optional<std::string> {
-    auto view = next_spaces_view(s, pos);
-    if (!view) {
-        return std::nullopt;
-    }
-
-    return std::string{*view};
-}
-#endif // STR_UNTESTED
 
 auto str::next_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     if (pos >= s.size()) {
@@ -1144,14 +1116,40 @@ auto str::next_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     return start;
 }
 
-#ifdef STR_UNTESTED
-auto str::prev_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
-    auto end = prev_spaces_pos(s, pos);
-    if (end == str::npos) {
+auto str::next_spaces(std::string_view s, size_type& pos) -> std::optional<size_type> {
+    auto start = next_spaces_pos(s, pos);
+    if ((start == str::npos) || (start == pos)) {
         return std::nullopt;
     }
 
-    return range_type{pos, static_cast<size_type>(end - pos)};
+    return start;
+}
+
+auto str::next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
+    auto start = next_spaces(s, pos);
+    if (!start) {
+        return std::nullopt;
+    }
+
+    return range_type{*start, (pos - *start)};
+}
+
+auto str::next_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view> {
+    auto range = next_spaces_range(s, pos);
+    if (!range) {
+        return std::nullopt;
+    }
+
+    return s.substr(range->pos, range->len);
+}
+
+auto str::prev_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type> {
+    auto end = prev_spaces(s, pos);
+    if (!end) {
+        return std::nullopt;
+    }
+
+    return range_type{pos, static_cast<size_type>(*end - pos)};
 }
 
 auto str::prev_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view> {
@@ -1163,19 +1161,10 @@ auto str::prev_spaces_view(std::string_view s, size_type& pos) -> std::optional<
     return s.substr(range->pos, range->len);
 }
 
-auto str::prev_spaces(std::string_view s, size_type& pos) -> std::optional<std::string> {
-    auto view = prev_spaces_view(s, pos);
-    if (!view) {
-        return std::nullopt;
-    }
-
-    return std::string{*view};
-}
-
 auto str::prev_spaces_pos(std::string_view s, size_type& pos) -> size_type {
-    if (s.empty()) {
+    if (s.empty() || (pos == 0)) {
         pos = 0;
-        return str::npos;
+        return 0;
     }
 
     if (pos >= s.size()) {
@@ -1193,15 +1182,27 @@ auto str::prev_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     pos = end;
     while (pos > 0) {
         if (!std::isspace(s[pos - 1])) {
-            pos--;
+            //pos--;
             break;
         }
         pos--;
     }
 
-    return pos;
+    if (pos == end) {
+        return 0;
+    }
+
+    return end;
 }
-#endif // STR_UNTESTED
+
+auto str::prev_spaces(std::string_view s, size_type& pos) -> std::optional<size_type> {
+    auto end = prev_spaces_pos(s, pos);
+    if (end == 0) {
+        return std::nullopt;
+    }
+
+    return end;
+}
 
 auto str::is_lower(std::string_view s) -> bool {
     if (s.empty()) {
@@ -1694,6 +1695,16 @@ auto str::has_any_one(std::string_view s, const charset_type& set) -> bool {
     }
     return false;
 }
+
+auto str::is_space_or_empty(std::string_view s) -> bool {
+    for (const_pointer ptr = s.data(); ptr < s.data() + s.size(); ptr++) {
+        if (!std::isspace(*ptr)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 auto str::take_left_view(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
@@ -2752,6 +2763,24 @@ auto str::split_words_view(std::string_view s, size_type max_n) -> std::vector<s
 }
 #endif // STR_UNTESTED
 
+auto str::starts_with_word(std::string_view s, std::string_view word) -> bool {
+    if (word.empty()) {
+        return false;
+    }
+
+    size_type pos = 0;
+    return (str::next_word_view(s, pos) == word);
+}
+
+auto str::ends_with_word(std::string_view s, std::string_view word) -> bool {
+    if (word.empty()) {
+        return false;
+    }
+
+    size_type pos = s.size();
+    return (str::prev_word_view(s, pos) == word);
+}
+
 auto str::surround(std::string_view s, std::string_view left, std::string_view right) -> std::string {
     std::string result;
     result.reserve(s.size() + left.size() + right.size());
@@ -2903,11 +2932,11 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
 
 auto str::spaces(uint8_t width) -> std::string_view {
     // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-    static constexpr value_type spaces_cache[256] =                        //
-        "                                                                " //
-        "                                                                " //
-        "                                                                " //
-        "                                                               "  //
+    static constexpr value_type spaces_cache[256] =                            //
+            "                                                                " //
+            "                                                                " //
+            "                                                                " //
+            "                                                               "  //
         ;
     // width 的取值范围是 0-255,
     return std::string_view{spaces_cache + (sizeof(spaces_cache) - 1) - width, width};
@@ -3220,16 +3249,18 @@ auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, c
         return;
     }
 
-    split(s,                                                            //
+    split(s, //
         [sep_str](std::string_view s, size_type& pos) -> size_type {
-              //
-              size_type start = s.find(sep_str, pos);
-              pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
-              return start; }, //
-        max_n,                                                          //
+            //
+            size_type start = s.find(sep_str, pos);
+            pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
+            return start;
+        },     //
+        max_n, //
         [s, &proc](range_type range) -> int {
-              //
-              return proc(s.substr(range.pos, range.len)); });
+            //
+            return proc(s.substr(range.pos, range.len));
+        });
 }
 
 auto str::split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void {
@@ -5212,7 +5243,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    } break;
+                    }
+                    break;
                     case 'X':
                         [[fallthrough]];
                     case 'x': {
@@ -5250,7 +5282,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    } break;
+                    }
+                    break;
                     default:
                         return (reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
@@ -5260,7 +5293,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                 }
 
                 w = ptr;
-            } break;
+            }
+            break;
 
             case 'A' ... 'Z':
                 [[fallthrough]];
@@ -5760,6 +5794,7 @@ static auto dump_hex_groups(const void* data, str::size_type len, uint8_t group_
         return 0;
     });
 }
+
 auto str::dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void {
     if ((data == nullptr) || (len == 0) || (proc == nullptr)) {
         return;

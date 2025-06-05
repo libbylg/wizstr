@@ -721,18 +721,14 @@ struct str {
     /// @param pos: 作为输入参数时，表示查找空白块的起始位置；作为输出参数时，表示找到的空白块最后一个空白字符的
     /// 之后的位置。
     static auto next_spaces_pos(std::string_view s, size_type& pos) -> size_type;
-#ifdef STR_UNTESTED
+    static auto next_spaces(std::string_view s, size_type& pos) -> std::optional<size_type>;
     static auto next_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
     static auto next_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
-    static auto next_spaces(std::string_view s, size_type& pos) -> std::optional<std::string>;
-#endif // STR_UNTESTED
     /// -
-#ifdef STR_UNTESTED
+    static auto prev_spaces_pos(std::string_view s, size_type& pos) -> size_type;
+    static auto prev_spaces(std::string_view s, size_type& pos) -> std::optional<size_type>;
     static auto prev_spaces_range(std::string_view s, size_type& pos) -> std::optional<range_type>;
     static auto prev_spaces_view(std::string_view s, size_type& pos) -> std::optional<std::string_view>;
-    static auto prev_spaces(std::string_view s, size_type& pos) -> std::optional<std::string>;
-    static auto prev_spaces_pos(std::string_view s, size_type& pos) -> size_type;
-#endif // STR_UNTESTED
 
 #ifdef STR_UNTESTED
     //! 定位满足条件的子串
@@ -847,6 +843,9 @@ struct str {
     template <typename CharMatchProc, typename = std::enable_if<std::is_function<CharMatchProc>::value>>
     static auto has_any_one(std::string_view s, const CharMatchProc& proc) -> bool;
     static auto has_any_one(std::string_view s, const charset_type& charset) -> bool;
+
+    //! 是否空白或者控
+    static auto is_space_or_empty(std::string_view s) -> bool;
 
     //! 提取子串：基于位置 @anchor{take}
     ///
@@ -1031,6 +1030,8 @@ struct str {
     /// * @ref next_word_view, next_word_range, next_word: 用于从指定的位置开始向字符串的尾部查找下一个单词
     /// * @ref prev_word_view, prev_word_range, prev_word: 用于从指定的位置开始向字符串的首部查找前一个单词
     /// * @ref split_words: 以空格为分隔符从字符串 s 中拆分出多个单词
+    /// * @ref starts_with_word: 检查字符串 s 的第一个单词是否为期望的单词
+    /// * @ref ends_with_word:  检查字符串 s 的最后一个单词是否为期望的单词
     ///
     /// @param s: 被查找或者统计的原始字符串
     /// @param pos: 指定起始位置，需要注意在 next_xxx 和 prev_xxx 函数中，pos 的含义的区别。
@@ -1055,6 +1056,9 @@ struct str {
 #ifdef STR_UNTESTED
     static auto split_words_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
 #endif // STR_UNTESTED
+    /// -
+    static auto starts_with_word(std::string_view s, std::string_view word) -> bool;
+    static auto ends_with_word(std::string_view s, std::string_view word) -> bool;
 
     //! 用指定的模式串环绕字符串 @anchor{surround, unsurround}
     ///

@@ -41,7 +41,7 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语�
 * 文本文件读取（@{#read} 系列）
 * 字符分组和筛选（@{#grouping} 和 @{#filter} 系列）
 
-%# 关于函数的返回值及其使用注意事项：
+% 关于函数的返回值及其使用注意事项：
 
 str 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
 
@@ -69,311 +69,55 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
   原始输入参数的问题。但这类函数由于总是会拷贝原始输入字符串的，所以如果返回的字符串无法充分利用字符串的 SSO 特性，
   那么性能会比 `xxx_view` 和 `xxx_inplace` 系列要低一些。当然这类函数的优点也是显而易见的，就是更`安全`。
 
-<!--
-struct str {
-    using size_type = std::string::size_type;
-    using ssize_type = ssize_t;
-    using value_type = std::string::value_type;
-    using pointer = std::string::pointer;
-    using const_pointer = std::string::const_pointer;
+### 定义了几个操作系统强相关的常量
 
-    //! 字符集 @anchor{charset_type}
-    ///
-    /// 字符集类用于表示一组字符的集合，主要用于以字符为分隔符或者检索目标的场景。
-    /// 大多数情况，我们并不会直接使用 @{charset_type}，而是使用 @{charset} 函数来生成
-    /// 字符集类。
-    class charset_type {
-    public:
-        //! 构造空的字符集对象
-        explicit charset_type() {
-        }
+```c++
+static constexpr std::string_view sep_searchpath = ":";
+static constexpr value_type sep_searchpath_char = ':';
+static constexpr std::string_view sep_path = "/";
+static constexpr value_type sep_path_char = '/';
+static constexpr std::string_view sep_line_ends = "\n";
+```
 
-        //! 构造只有只有字符 `ch` 的字符集
-        explicit charset_type(value_type ch)
-            : charset_type() {
-            set(ch);
-        }
+* @ref{sep_searchpath, sep_searchpath_char} 搜索路径分隔符
+* @ref{sep_path, sep_path_char} 文件路径分隔符
+* @ref{sep_line_ends} 行结束符
 
-        //! 构造包含 `s` 中的所有字符的字符集
-        explicit charset_type(std::string_view s)
-            : charset_type() {
-            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-                set(*ptr);
-            }
-        }
+### @member char_categorization: 字符分类
 
-        //! 将 `s` 中的字符加入本字符集或者从本字符集中剔除
-        inline auto set(std::string_view s, bool val = true) -> void {
-            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-                set(*ptr, val);
-            }
-        }
+```c++
+static constexpr std::string_view all_uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static constexpr std::string_view all_lowers = "abcdefghijklmnopqrstuvwxyz";
+static constexpr std::string_view all_leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+static constexpr std::string_view all_alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+static constexpr std::string_view all_digits = "0123456789";
+static constexpr std::string_view all_xdigits = "0123456789ABCDEFabcdef";
+static constexpr std::string_view all_alnums = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+static constexpr std::string_view all_alnumuls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+static constexpr std::string_view all_aluls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+static constexpr std::string_view all_spaces = "\x09\x0A\x0B\x0C\x0d\x20";
+static constexpr std::string_view all_hex_upper = "0123456789ABCDEF";
+static constexpr std::string_view all_hex_lower = "0123456789abcdef";
+static constexpr std::string_view all_puncts = R"(!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~)";
+```
 
-        //! 将字符 ch 加入本字符集或者从本字符集中剔除
-        inline auto set(value_type c, bool val = true) -> void {
-            uint8_t ch = static_cast<value_type>(c);
-            size_type index = ch / 64;
-            size_type mask = uint64_t{1} << (ch % 64);
-            if (val) {
-                bits_[index] |= mask;
-            } else {
-                bits_[index] ^= ~mask;
-            }
-        }
+* @ref{all_uppers} 所有大写字母集合
+* @ref{all_lowers} 所有小写字母集合
+* @ref{all_leters} 所有字母集合
+* @ref{all_alphas} 所有字母集合
+* @ref{all_digits} 所有数字字符
+* @ref{all_xdigits} 所有十六进制数字表示的字符集合
+* @ref{all_alnums} 所有的字母和数字集合
+* @ref{all_alnumuls} 所有的字母、数字、下划线的集合
+* @ref{all_aluls} 所有字母和下滑线的集合
+* @ref{all_spaces} 所有空白字符
+* @ref{all_hex_upper} 所有大写字母形式的十六进制字符集
+* @ref{all_hex_lower} 所有小写字母形式的十六进制字符集
+* @ref{all_puncts} 所有标点符号
 
-        //! 将字符串 s 中的所有字符从本字符集中剔除
-        inline auto clr(std::string_view s) -> void {
-            for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
-                clr(*ptr);
-            }
-        }
+### @func append: 在尾部追加 
 
-        //! 将字符 ch 从本字符集中剔除
-        inline auto clr(value_type c) -> void {
-            uint8_t ch = static_cast<value_type>(c);
-            size_type index = ch / 64;
-            size_type mask = uint64_t{1} << (ch % 64);
-            bits_[index] ^= ~mask;
-        }
-
-        //! 清空本字符集中的所有字符
-        inline auto clr() -> void {
-            bits_[0] = 0;
-            bits_[1] = 0;
-            bits_[2] = 0;
-            bits_[3] = 0;
-        }
-
-        //! 查询字符 ch 是否在本字符集中
-        inline auto contains(value_type ch) const -> bool {
-            uint8_t c = static_cast<value_type>(ch);
-            size_type index = c / 64;
-            size_type mask = uint64_t{1} << (c % 64);
-            return !!(bits_[index] & mask);
-        }
-
-        //! 根据 ASCII 码表，生成本字符集的补集
-        inline auto invert() -> void {
-            bits_[0] = ~bits_[0];
-            bits_[1] = ~bits_[1];
-            bits_[2] = ~bits_[2];
-            bits_[3] = ~bits_[3];
-        }
-
-        //! 查询字符 ch 是否在本字符集中，等价于 get(ch) 或者 contains(ch)
-        inline auto operator()(value_type ch) const -> bool {
-            return contains(ch);
-        }
-
-        //! 获取内部存储指针，需要注意每个 bit 位代表字符集中的一个字符
-        inline auto data() const -> const uint64_t* {
-            return bits_;
-        }
-
-        //! 获取内部存储指针，需要注意每个 bit 位代表字符集中的一个字符
-        inline auto data() -> uint64_t* {
-            return bits_;
-        }
-
-        //! 将本字符集中所包含的所有字符提取出来。
-        inline auto string() const -> std::string {
-            std::string result;
-            for (size_type ch = 0; ch <= std::numeric_limits<value_type>::max(); ch++) {
-                static_assert(sizeof(ch) > sizeof(value_type));
-                if (contains(static_cast<value_type>(ch))) {
-                    result.push_back(static_cast<value_type>(ch));
-                }
-            }
-            return result;
-        }
-
-    private:
-        //! 用于表示字符集中哪些字符在本字符集中，每个 bit 位代表字符集中的一个字符。
-        uint64_t bits_[4]{0, 0, 0, 0};
-    };
-
-    //! 基于位置的范围类型
-    struct range_type {
-        //! 起始位置
-        size_type pos{0};
-
-        //! 长度
-        size_type len{0};
-
-        //! 空范围，长度为 0
-        explicit range_type() = default;
-
-        //! 指定起始位置和长度构造范围对象
-        explicit range_type(size_type tpos, size_type tn)
-            : pos{tpos}
-            , len{tn} {
-        }
-
-        //! 获得范围的长度（即 len）。
-        inline auto size() const -> size_type {
-            return len;
-        }
-
-        //! 判断范围是否为空。需要注意，不管 pos 如何，只要 len 长度为 0，范围都为空。
-        inline auto empty() const -> bool {
-            return len == 0;
-        }
-
-        inline auto begin() const -> size_type {
-            return pos;
-        }
-
-        inline auto begin_pos() const -> size_type {
-            return pos;
-        }
-
-        inline auto end() const -> size_type {
-            size_type result{};
-            if (__builtin_add_overflow(pos, len, &result)) {
-                return npos;
-            }
-            return result;
-        }
-
-        inline auto end_pos() const -> size_type {
-            return end();
-        }
-
-        inline auto operator==(const range_type& range) const -> bool {
-            if (len != range.len) {
-                return false;
-            }
-
-            if (len == 0) {
-                return true;
-            }
-
-            return pos == range.pos;
-        }
-    };
-
-    //! 基于起始位置和偏移量的范围类型。
-    struct shifter_type {
-        size_type pos{0};
-        ssize_type offset{0};
-
-        auto empty() const -> bool {
-            return offset == 0;
-        }
-    };
-
-    //! 基于上下界的范围类型。
-    struct interval_type {
-        size_type begin{0};
-        size_type end{0};
-
-        auto empty() const -> bool {
-            return begin == end;
-        }
-    };
-
-    //! 三元组类型（相同类型的 3 个字段）。
-    template <typename T>
-    using ternary = std::array<T, 3>;
-
-    //! `std::string_view` 供给器：每次调用返回一个字符串，直到返回 `std::nullopt`。
-    using view_provider_proc = std::function<std::optional<std::string_view>()>;
-
-    //! 键值对供给器：每次调用返回一个 key-value 对组成的 tuple，直到返回 `std::nullopt`。
-    using view_pair_provider_proc = std::function<std::optional<std::tuple<std::string_view, std::string_view>>()>;
-
-    //! 整数供给器：每次调用返回一个 `size_type` 类型的整数，主要用于抽象随机函数。
-    using number_provider_proc = std::function<size_type()>;
-
-    //! `std::string_view` 消费器：接收一个 `std::string_view`，常用于接收一个或者多个字符串，如果需要提前结束，
-    /// 可以返回非 0 值。
-    using view_consumer_proc = std::function<int(std::string_view item)>;
-
-    //! 键值对消费器：接收两个 `std::string_view` 类型的键值对（key 和 value 参数），如果需要提前结束，
-    /// 可以返回非 0 值。
-    using view_pair_consumer_proc = std::function<int(std::string_view key, std::string_view value)>;
-
-    //! range 消费器：接收一个 range_type 类型的参数，常用于表示找到的子串的范围，如果需要提前结束，可以返回非 0 值
-    using range_consumer_proc = std::function<int(range_type range)>;
-
-    //! 单字符匹配器：检查作为输入参数的字符是否满足特定的条件，常用基于字符的查找和搜索场景
-    using char_match_proc = std::function<bool(value_type ch)>;
-
-    //! 字符串视图检索器：在指定的范围内查找，如果找到返回找到的子串，否则返回 std::nullopt
-    using view_search_proc = std::function<std::optional<std::string_view>(std::string_view search_range)>;
-
-    //! 字符串视图检索器：在指定的范围内查找，返回找到的子串，或者为找到时 std::nullopt
-    using substr_search_proc = std::function<size_type(std::string_view text, size_type& pos)>;
-
-    //! 行消费器：接收一个行索引和行文字，常用于字符串按行、分割读取等场景，如果需要提前结束，可以返回 0
-    using line_consumer_proc = std::function<int(size_type line_index, std::string_view line_text)>;
-
-    //! 单字符映射：将单个字符映射为另一个数据类型的值
-    template <typename MappedType>
-    using mapping_proc = std::function<auto(value_type)->MappedType>;
-
-    //! 单字符映射器：将一个字符映射为另一个字符
-    using char_mapping_proc = mapping_proc<value_type>;
-
-    //! 字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt
-    using string_mapping_proc = std::function<std::optional<std::string>(const std::string& key)>;
-
-    //! 用于表示无效位置的值，等价于 std::string::npos 或者 std::string_view::npos
-    static inline constexpr size_type npos = std::string::npos;
-
-    //! 定义了几个操作系统强相关的常量
-    ///
-    /// * @ref{sep_searchpath, sep_searchpath_char} 搜索路径分隔符
-    /// * @ref{sep_path, sep_path_char} 文件路径分隔符
-    /// * @ref{sep_line_ends} 行结束符
-    static constexpr std::string_view sep_searchpath = ":";
-    static constexpr value_type sep_searchpath_char = ':';
-    static constexpr std::string_view sep_path = "/";
-    static constexpr value_type sep_path_char = '/';
-    static constexpr std::string_view sep_line_ends = "\n";
-
-    //! 字符分类
-    ///
-    /// * @ref{all_uppers} 所有大写字母集合
-    /// * @ref{all_lowers} 所有小写字母集合
-    /// * @ref{all_leters} 所有字母集合
-    /// * @ref{all_alphas} 所有字母集合
-    /// * @ref{all_digits} 所有数字字符
-    /// * @ref{all_xdigits} 所有十六进制数字表示的字符集合
-    /// * @ref{all_alnums} 所有的字母和数字集合
-    /// * @ref{all_alnumuls} 所有的字母、数字、下划线的集合
-    /// * @ref{all_aluls} 所有字母和下滑线的集合
-    /// * @ref{all_spaces} 所有空白字符
-    /// * @ref{all_hex_upper} 所有大写字母形式的十六进制字符集
-    /// * @ref{all_hex_lower} 所有小写字母形式的十六进制字符集
-    /// * @ref{all_puncts} 所有标点符号
-    static constexpr std::string_view all_uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    static constexpr std::string_view all_lowers = "abcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view all_leters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view all_alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    static constexpr std::string_view all_digits = "0123456789";
-    static constexpr std::string_view all_xdigits = "0123456789ABCDEFabcdef";
-    static constexpr std::string_view all_alnums = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    static constexpr std::string_view all_alnumuls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
-    static constexpr std::string_view all_aluls = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
-    static constexpr std::string_view all_spaces = "\x09\x0A\x0B\x0C\x0d\x20";
-    static constexpr std::string_view all_hex_upper = "0123456789ABCDEF";
-    static constexpr std::string_view all_hex_lower = "0123456789abcdef";
-    static constexpr std::string_view all_puncts = R"(!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~)";
-
-    //! 在尾部追加 @anchor{append}
-    ///
-    /// 提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的追加字符串，这里针对
-    /// 大量字符串拼接提供了相对简便的方法。
-    ///
-    /// @notice{1} 对于 @ref{append_inplace} 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种
-    /// 情况。
-    ///
-    /// @param s: 指定向哪个字符串后添加新串。
-    /// @param other: 被追加的字符串。
-    /// @param times_n: 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
-    /// @param proc: 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
-    /// @param items: 从容器 items 中获取被追加的字符串。
+```c++
     static auto append(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
     static auto append(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
@@ -383,29 +127,47 @@ struct str {
     static auto append_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto append_inplace(std::string& s, const Sequence& items) -> std::string&;
+```
 
-    //! 向头部追加 @anchor{prepend}
-    ///
-    /// 將一个或者多个字符串追加到指定字符串的前面。实际上，STL 中已经提供了比较丰富的字符串插入函数，这里针对
-    /// 大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒
-    /// 序的方式被追加。比如，`str::prepend("abc", {"123", "456", "789"})` 返回的结果是 "789456123abc"。
-    /// 对于 prepend_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
-    ///
-    /// @param s: 所有字符串都追加到该字符串之前
-    /// @param other: 被追加的字符串
-    /// @param times_n: 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
-    /// @param proc: 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
-    /// @param items: 从容器 items 中获取被追加的字符串。
-    static auto prepend(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
-    static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
-    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto prepend(std::string_view s, const Sequence& items) -> std::string;
-    /// -
-    static auto prepend_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
-    static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
-    template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
-    static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string&;
+@param s: 指定向哪个字符串后添加新串。  
+@param other: 被追加的字符串。  
+@param times_n: 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。  
+@param proc: 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。  
+@param items: 从容器 items 中获取被追加的字符串。  
 
+提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的追加字符串，这里针对
+大量字符串拼接提供了相对简便的方法。
+
+@notice{1} 对于 @ref{append_inplace} 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种
+情况。
+
+### 向头部追加 @anchor{prepend}
+
+```c++
+static auto prepend(std::string_view s, std::string_view other, size_type times_n = 1) -> std::string;
+static auto prepend(std::string_view s, const view_provider_proc& proc) -> std::string;
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+static auto prepend(std::string_view s, const Sequence& items) -> std::string;
+/// -
+static auto prepend_inplace(std::string& s, std::string_view other, size_type times_n = 1) -> std::string&;
+static auto prepend_inplace(std::string& s, const view_provider_proc& proc) -> std::string&;
+template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
+static auto prepend_inplace(std::string& s, const Sequence& items) -> std::string&;
+```
+
+@param s: 所有字符串都追加到该字符串之前
+@param other: 被追加的字符串
+@param times_n: 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
+@param proc: 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
+@param items: 从容器 items 中获取被追加的字符串。
+
+將一个或者多个字符串追加到指定字符串的前面。实际上，STL 中已经提供了比较丰富的字符串插入函数，这里针对
+大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒
+序的方式被追加。比如，`str::prepend("abc", {"123", "456", "789"})` 返回的结果是 "789456123abc"。
+对于 prepend_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
+
+
+<!--
 #ifdef STR_UNTESTED
     //! 向字符串中间插入 @anchor{insert}
     ///
@@ -431,30 +193,40 @@ struct str {
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string&;
 #endif // STR_UNTESTED
+-->
 
-    //! 不区分大小写的比较 @anchor{icompare}
-    ///
-    /// @ref{icompare} 提供了不区分大小写比较的能力，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，
-    /// 返回 0；
-    ///
-    /// @param s: 参与比较的字符串
-    /// @param other: 另一个参与比较的字符串
-    /// @param max_n: 表示最多比较前 max_n 个字符
-    /// @return 返回正数，表示 s 大于 other；返回负值，表示 s 小于 other；返回 0，表示 s 和 other 相等。
-    static auto icompare(std::string_view s, std::string_view other) -> int;
-    static auto icompare(std::string_view s, std::string_view other, size_type max_n) -> int;
 
-    //! 不区分大小写的相等測試 @anchor{iequals}
-    ///
-    /// @ref{iequals} 提供了不区分大小写的相等比较，其中 `max_n` 用于限制最多比较字符数量。特别的，如果
-    /// `max_n` 等于 0。
-    ///
-    /// @param s: 参与比较的字符串
-    /// @param other: 另一个参与比较的字符串
-    /// @param max_n: 表示最多比较前 max_n 个字符
-    /// @return 如果相等，返回 true，否则返回 false
-    static auto iequals(std::string_view s, std::string_view other) -> bool;
-    static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
+### 不区分大小写的比较 @anchor{icompare}
+
+```c++
+static auto icompare(std::string_view s, std::string_view other) -> int;
+static auto icompare(std::string_view s, std::string_view other, size_type max_n) -> int;
+```
+
+@param s: 参与比较的字符串
+@param other: 另一个参与比较的字符串
+@param max_n: 表示最多比较前 max_n 个字符
+@return 返回正数，表示 s 大于 other；返回负值，表示 s 小于 other；返回 0，表示 s 和 other 相等。
+
+@ref{icompare} 提供了不区分大小写比较的能力，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，
+返回 0；
+
+### 不区分大小写的相等測試 @anchor{iequals}
+
+```c++
+  static auto iequals(std::string_view s, std::string_view other) -> bool;
+  static auto iequals(std::string_view s, std::string_view other, size_type max_n) -> bool;
+```
+
+@param s: 参与比较的字符串
+@param other: 另一个参与比较的字符串
+@param max_n: 表示最多比较前 `max_n` 个字符
+@return 如果相等，返回 true，否则返回 `false`
+
+@ref{iequals} 提供了不区分大小写的相等比较，其中 `max_n` 用于限制最多比较字符数量。特别的，如果
+`max_n` 等于 0。
+
+<!--
 
     //! 基于通配符的匹配检测 @anchor{wildcmp, iwildcmp}
     ///

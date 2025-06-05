@@ -1,4 +1,5 @@
 #include "str.hpp"
+#include "test/testing.hpp"
 
 #include <cassert>
 #include <filesystem>
@@ -8,57 +9,59 @@
 
 //! 节点类型表
 ///
-/// 用法：DEF_NODEKIND(Priority_, Name_, Desc_)
+/// 用法：DEF_NODEKIND(Priority_, Name_, Type_, Desc_)
 #define NODEKIND_TABLE()                 \
-    DEF_NODEKIND(98, EOF, "文档结束")    \
-                                         \
-    DEF_NODEKIND(90, DOCUMENT, "文档根") \
-    DEF_NODEKIND(80, TITLE, "文档标题")  \
-                                         \
-    DEF_NODEKIND(81, H1, "标题1")        \
-    DEF_NODEKIND(82, H2, "标题2")        \
-    DEF_NODEKIND(83, H3, "标题3")        \
-    DEF_NODEKIND(84, H4, "标题4")        \
-    DEF_NODEKIND(85, H5, "标题5")        \
-    DEF_NODEKIND(86, H6, "标题6")        \
-                                         \
-    DEF_NODEKIND(71, S1, "段1")          \
-    DEF_NODEKIND(72, S2, "段2")          \
-    DEF_NODEKIND(73, S3, "段3")          \
-    DEF_NODEKIND(74, S4, "段4")          \
-                                         \
-    DEF_NODEKIND(60, COMMENT, "注释")    \
-    DEF_NODEKIND(60, PARAGRAPH, "段落")  \
-    DEF_NODEKIND(60, THEAD, "表头")      \
-    DEF_NODEKIND(60, TROW, "表的行")     \
-    DEF_NODEKIND(60, TCOL, "表的列")     \
-    DEF_NODEKIND(60, PARAM, "参数定义")  \
-    DEF_NODEKIND(60, CODE, "代码块")     \
-    DEF_NODEKIND(60, RETURN, "返回值")   \
-    DEF_NODEKIND(60, BRIEF, "概要")      \
-    DEF_NODEKIND(60, DETIAL, "详情")     \
-    DEF_NODEKIND(60, FORMULA, "公式")    \
-    DEF_NODEKIND(60, STRONG, "强调")     \
-    DEF_NODEKIND(60, EM, "重要")         \
-    DEF_NODEKIND(60, OL, "有序列表")     \
-    DEF_NODEKIND(60, UL, "无序列表")     \
-    DEF_NODEKIND(60, LI, "列表子项")     \
-    DEF_NODEKIND(50, TEXT, "文本")       \
-    DEF_NODEKIND(50, ICODE, "行内代码")  \
-    DEF_NODEKIND(50, ECODE, "嵌入代码")  \
-    DEF_NODEKIND(50, HREF, "超链接")     \
-    DEF_NODEKIND(50, IMAGE, "图片")      \
-    DEF_NODEKIND(50, ANCHOR, "锚点定义") \
-    /* (end) */
+    DEF_NODEKIND(00, NEOF, NONE, "文档结束")    \
+    /* 容器 */                           \
+    DEF_NODEKIND(10, DOCUMENT, node_document, "文档根") \
+    DEF_NODEKIND(11, BLOCK, node_block, "块")        \
+    DEF_NODEKIND(12, LINE, node_line, "行")         \
+    /* 独立行 */                         \
+    DEF_NODEKIND(20, TITLE, node_title, "文档标题")  \
+    DEF_NODEKIND(21, H1, node_head, "标题1")        \
+    DEF_NODEKIND(22, H2, node_head, "标题2")        \
+    DEF_NODEKIND(23, H3, node_head, "标题3")        \
+    DEF_NODEKIND(24, H4, node_head, "标题4")        \
+    DEF_NODEKIND(25, H5, node_head, "标题5")        \
+    DEF_NODEKIND(26, H6, node_head, "标题6")        \
+    /* 独立行 */                         \
+    DEF_NODEKIND(31, S1, node_section, "段1")          \
+    DEF_NODEKIND(32, S2, node_section, "段2")          \
+    DEF_NODEKIND(33, S3, node_section, "段3")          \
+    DEF_NODEKIND(34, S4, node_section, "段4")          \
+    /* 行间 */                           \
+    DEF_NODEKIND(50, COMMENT, node_comment, "注释")    \
+    DEF_NODEKIND(52, THEAD, node_thead, "表头")      \
+    DEF_NODEKIND(53, TROW, node_trow, "表的行")     \
+    DEF_NODEKIND(54, TCOL, node_tcol, "表的列")     \
+    DEF_NODEKIND(55, PARAM, node_param, "参数定义")  \
+    DEF_NODEKIND(56, RETURN, node_return, "返回值")   \
+    DEF_NODEKIND(57, BCODE, node_bcode, "代码块")    \
+    DEF_NODEKIND(58, BRIEF, node_brief, "概要")      \
+    DEF_NODEKIND(59, DETIAL, node_detial, "详情")     \
+    DEF_NODEKIND(60, FORMULA, node_formula, "公式")    \
+    DEF_NODEKIND(63, OL, node_orderd_list, "有序列表")     \
+    DEF_NODEKIND(64, UL, node_unorderd_list, "无序列表")     \
+    DEF_NODEKIND(65, LI, node_list_item, "列表子项")     \
+    DEF_NODEKIND(66, HREF, node_href, "超链接")     \
+    DEF_NODEKIND(67, IMAGE, node_image, "图片")      \
+    DEF_NODEKIND(68, ANCHOR, node_anchor, "锚点定义") \
+    DEF_NODEKIND(69, EMBDED, node_embded, "嵌入文字") \
+    /* 行内元素 */                       \
+    DEF_NODEKIND(80, STRONG, node_strong, "强调")     \
+    DEF_NODEKIND(81, EM, node_em, "重要")         \
+    DEF_NODEKIND(82, TEXT, node_text, "文本")       \
+    DEF_NODEKIND(83, ICODE, node_icode, "行内代码")  \
+/* (end) */
 
 enum node_kind : uint8_t {
-#define DEF_NODEKIND(Priority_, Name_, Desc_) NODE_KIND_##Name_,
+#define DEF_NODEKIND(Priority_, Name_, Type_, Desc_) NODE_KIND_##Name_ = (Priority_),
     NODEKIND_TABLE()
 #undef DEF_NODEKIND
 };
 
 enum node_priority : uint8_t {
-#define DEF_NODEKIND(Priority_, Name_, Desc_) NODE_PRIORITY_##Name_ = (Priority_),
+#define DEF_NODEKIND(Priority_, Name_, Type_, Desc_) NODE_PRIORITY_##Name_ = (Priority_),
     NODEKIND_TABLE()
 #undef DEF_NODEKIND
 };
@@ -70,70 +73,202 @@ enum node_flags : uint32_t {
     FLAG_STANDALONE = 0x0004, ///< 独占一行
 };
 
+struct list_head {
+    list_head* next;
+    list_head* prev;
+};
+
+static inline auto list_head_init(list_head* head) -> list_head* {
+    head->next = head;
+    head->prev = head;
+    return head;
+}
+
+static inline auto list_insert(list_head* prev, list_head* next, list_head* new_item) -> void {
+    assert(prev != nullptr);
+    assert(next != nullptr);
+    assert(new_item != nullptr);
+    new_item->next = next;
+    new_item->prev = prev;
+    prev->next = new_item;
+    next->prev = new_item;
+}
+
+static inline auto list_append(list_head* head, list_head* new_item) -> void {
+    assert(head != nullptr);
+    assert(new_item != nullptr);
+    list_insert(head->prev, head, new_item);
+}
+
+static auto list_prepend(list_head* head, list_head* new_item) -> void {
+    assert(new_item != nullptr);
+    list_insert(head, head->next, new_item);
+}
+
+static auto list_split(list_head* old_item) -> void {
+    assert(old_item != nullptr);
+    old_item->prev->next = old_item->next;
+    old_item->next->prev = old_item->prev;
+    list_head_init(old_item);
+}
+
 struct node {
-    // 节点类型
-    node_kind kind{NODE_KIND_TEXT};
-
-    // 节点标记位
-    node_flags flags{0};
-
-    // 符号优先级
-    int8_t priority{0};
+    // 所有可能的子节点
+    list_head children{&children, &children};
 
     // 父节点
     node* parent{nullptr};
 
-    // 所有可能的子节点
-    std::vector<node*> children;
+
+    // 节点类型
+    node_kind kind{NODE_KIND_TEXT};
+
+    // 节点标记位
+    uint32_t flags{0}; // node_flags
+
+    // 符号优先级
+    int8_t priority{0};
+
+    auto append(node* child) -> void {
+        assert(child != nullptr);
+        list_append(&children, reinterpret_cast<list_head*>(child));
+        child->parent = this;
+    }
+
+    auto prepend(node* child) -> void {
+        assert(child != nullptr);
+        list_prepend(&children, reinterpret_cast<list_head*>(child));
+        child->parent = this;
+    }
+
+    auto split() -> node* {
+        list_split(reinterpret_cast<list_head*>(this));
+        return this;
+    }
 };
 
 struct node_document : public node {
-    node_document() {
+    explicit node_document() {
         kind = NODE_KIND_DOCUMENT;
         priority = NODE_PRIORITY_DOCUMENT;
     }
 };
 
-struct node_text : public node {
-    std::string text;
+struct node_block : public node {
+    explicit node_block() {
+        kind = NODE_KIND_BLOCK;
+    }
 };
 
-struct node_inline_code : public node {
+struct node_line : public node {
+    int32_t line_no{};
+
+    explicit node_line() {
+        kind = NODE_KIND_LINE;
+    }
+};
+
+struct node_title : public node {
+    explicit node_title() {
+        kind = NODE_KIND_TITLE;
+    }
+};
+
+struct node_head : public node {
+    explicit node_head(int8_t level) {
+        assert((level >= 1) && (level <= 6));
+        kind = static_cast<node_kind>(NODE_KIND_H1 + (level - 1));
+    }
+};
+
+struct node_section : public node {
+    explicit node_section(int8_t level) {
+        assert((level >= 1) && (level <= 4));
+        kind = static_cast<node_kind>(NODE_KIND_S1 + (level - 1));
+    }
+};
+
+struct node_comment : public node {
+    std::vector<std::string> lines;
+
+    explicit node_comment() {
+        kind = NODE_KIND_COMMENT;
+    }
+};
+
+struct node_bcode : public node {
+    std::vector<std::string> lines;
+
+    explicit node_bcode() {
+        kind = NODE_KIND_BCODE;
+    }
+};
+
+struct node_icode : public node {
     std::string text;
+
+    explicit node_icode() {
+        kind = NODE_KIND_ICODE;
+        flags |= node_flags::FLAG_INLINE;
+    }
 };
 
 struct node_embded : public node {
     std::string file_name;
     std::string block_name;
+
+    explicit node_embded() {
+        kind = NODE_KIND_EMBDED;
+    }
+};
+
+struct node_unorderd_list : public node {
+    int32_t level{};
+
+    explicit node_unorderd_list(int32_t l) {
+        kind = NODE_KIND_UL;
+        level = l;
+    }
 };
 
 struct node_href : public node {
     std::string name;
     std::string url;
+
+    explicit node_href() {
+        kind = NODE_KIND_HREF;
+    }
 };
 
 struct node_image : public node {
     std::string name;
     std::string url;
-};
 
-struct node_hr : public node {
+    node_image() {
+        kind = NODE_KIND_IMAGE;
+    }
 };
 
 struct node_anchor : public node {
     std::vector<std::string> names;
+
+    explicit node_anchor() {
+        kind = NODE_KIND_ANCHOR;
+    }
 };
 
-struct node_comment : public node {
-    std::string text;
+struct node_param : public node {
+    std::vector<std::string> names;
+
+    explicit node_param() {
+        kind = NODE_KIND_PARAM;
+    }
 };
 
-struct node_head : public node {
-    int8_t level;
-};
-
-struct node_section : public node {
-    int8_t level;
+struct node_return : public node {
+    explicit node_return() {
+        kind = NODE_KIND_RETURN;
+    }
 };
 
 struct will {
@@ -274,7 +409,7 @@ public:
             return true;
         }
 
-        auto result = str::read_next_line(file_);
+        auto result = str::read_next_line(file_, false);
         if (!result) {
             return false;
         }
@@ -302,8 +437,8 @@ private:
 struct render_context {
     explicit render_context(FILE* f, const std::string& od, const std::string& rd)
         : output_directory{od}
-          , root_directory{rd}
-          , reader{f} {
+        , root_directory{rd}
+        , reader{f} {
         root = new node;
         parent = root;
     }
@@ -319,16 +454,116 @@ struct render_context {
     std::vector<node*> stack;
 };
 
-auto try_parse_block_head(render_context& context) -> void {
+auto try_parse_line(render_context& context) -> void;
+
+auto try_parse_head(render_context& context) -> void {
+    static std::regex hx_pattern{R"(^(#+)\s+(.*))"};
+    const auto& line = context.reader.line_text();
+    std::smatch match;
+    std::regex_match(line, match, hx_pattern);
+    int32_t level = static_cast<int32_t>(match[1].length());
+
+    node_head* head = new node_head(static_cast<int8_t>(level));
+    context.parent->append(head);
+    context.parent = head;
+    try_parse_line(context);
+    context.parent = context.parent->parent;
 }
 
-auto try_parse_block_unordered_list(render_context& context) -> void {
+// % xxx
+auto try_parse_section(render_context& context) -> void {
+    static std::regex hx_pattern{R"(^(%+)\s+(.*))"};
+    const auto& line = context.reader.line_text();
+    std::smatch match;
+    std::regex_match(line, match, hx_pattern);
+    int32_t level = static_cast<int32_t>(match[1].length());
+
+    node_section* section = new node_section(static_cast<int8_t>(level));
+    context.parent->append(section);
+    context.parent = section;
+    try_parse_line(context);
+    context.parent = context.parent->parent;
 }
 
-auto try_parse_block_text(render_context& context) -> void {
+// * xxx
+auto try_parse_unordered_list(render_context& context) -> void {
+
+
+
+    node_unorderd_list* ul = new node_unorderd_list;
+    context.parent->append(ul);
+    context.parent = ul;
+    try_parse_line(context);
+    context.parent = context.parent->parent;
 }
 
-auto try_parse_inline(render_context& context, node* parent) -> void {
+auto try_parse_line(render_context& context) -> void {
+}
+
+auto try_accept_block_text(render_context& context) -> void {
+    node_block* block = new node_block();
+    context.parent->append(block);
+    context.parent = block;
+
+    do {
+        auto& line = context.reader.line_text();
+
+        // 连续的文本行遇到了空行或者空白行，字节跳过
+        if (str::is_space_or_empty(line)) {
+            break;
+        }
+
+        node_line* nline = new node_line;
+        context.parent->append(nline);
+        context.parent = nline;
+        try_parse_line(context);
+        context.parent = nline->parent;
+    } while (context.reader.next_line()) ;
+
+    context.parent = context.parent->parent;
+}
+
+auto try_parse_comment(render_context& context) -> void {
+    node_comment* comment = new node_comment;
+    context.parent->append(comment);
+
+    do {
+        comment->lines.emplace_back(context.reader.line_text());
+        if (str::ends_with(context.reader.line_text(), "-->")) {
+            return;
+        }
+    } while (context.reader.next_line());
+}
+
+auto try_parse_param(render_context& context) -> void {
+    static std::regex param_pattern1{R"(^\s*@param\s+([a-zA-Z_][0-9a-zA-Z_]*)(,\s+([a-zA-Z_][0-9a-zA-Z_]*))?:(.*))"};
+    static std::regex param_pattern2{R"(^\s*@param\{([a-zA-Z_][0-9a-zA-Z_]*)(,\s+[a-zA-Z_][0-9a-zA-Z_]*)?\}(.*))"};
+
+    std::smatch match;
+    if (std::regex_match(context.reader.line_text(), match, param_pattern1)) {
+
+    } else if (std::regex_match(context.reader.line_text(), match, param_pattern2)) {
+
+    }
+
+}
+
+auto try_parse_return(render_context& context) -> void {
+    static std::regex return_pattern{R"(^\s*@return:\s+(.*))"};
+    node_return* nret = new node_return;
+    context.parent->append(nret);
+}
+
+auto try_parse_bcode(render_context& context) -> void {
+    node_bcode* bcode = new node_bcode;
+    context.parent->append(bcode);
+    while (context.reader.next_line()) {
+        if (str::starts_with(context.reader.line_text(), "```")) {
+            break;
+        }
+
+        bcode->lines.emplace_back(context.reader.line_text());
+    }
 }
 
 auto try_parse_block(render_context& context) -> void {
@@ -337,27 +572,58 @@ auto try_parse_block(render_context& context) -> void {
         std::string_view line = context.reader.line_text();
 
         if (line.empty()) {
-            if (context.parent->flags & node_flags::FLAG_STANDALONE) {
-                context.parent = context.parent->parent;
-                continue;
-            }
+            // if (context.parent->flags & node_flags::FLAG_STANDALONE) {
+            //     context.parent = context.parent->parent;
+            //     continue;
+            // }
+            continue;
         }
 
-        // 标题行：井号开头的行
+        // @param 开头的行
+        if (str::starts_with_word(line, "@param")) {
+            try_parse_param(context);
+        }
+
+        // @return 开头的行
+        if (str::starts_with_word(line, "@return")) {
+            try_parse_return(context);
+            continue;
+        }
+
+        // 代码块
+        if (str::starts_with_word(line, "```")) {
+            try_parse_bcode(context);
+            continue;
+        }
+
+        //! 注释块: <!-- ... -->
+        if (str::starts_with_word(line, "<!--")) {
+            try_parse_comment(context);
+            continue;
+        }
+
+        // 标题行：# 号开头的行
         static std::regex hx_pattern{R"(^#+\s.*)"};
         if (std::regex_match(line.begin(), line.end(), hx_pattern)) {
-            try_parse_block_head(context);
-            return;
+            try_parse_head(context);
+            continue;
+        }
+
+        // 章节内分级： % 号开头的行
+        static std::regex gx_pattern{R"(^%(#)\s.*)"};
+        if (std::regex_match(line.begin(), line.end(), hx_pattern)) {
+            try_parse_head(context);
+            continue;
         }
 
         // 无需列表行
         static std::regex ul_pattern{R"(\*+\s.*)"};
         if (std::regex_match(line.begin(), line.end(), ul_pattern)) {
-            try_parse_block_unordered_list(context);
-            return;
+            try_parse_unordered_list(context);
+            continue;
         }
 
-        try_parse_block_text(context);
+        try_accept_block_text(context);
     }
 }
 
