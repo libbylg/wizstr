@@ -26,7 +26,7 @@ TEST(test_str, expand_envs_inplace) {
 #ifndef WIN32
     scope_guard guard_env([] {
         unsetenv("ENV_XYZ");
-    }
+    });
 #endif
 
     SECTION("${xxx}形式") {
