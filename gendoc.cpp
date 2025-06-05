@@ -487,14 +487,21 @@ auto try_parse_section(render_context& context) -> void {
 
 // * xxx
 auto try_parse_unordered_list(render_context& context) -> void {
+    auto& line = context.reader.line_text();
+    str::size_type pos = 0;
+    auto spaces = str::next_spaces_range(line, pos);
+    int32_t level = static_cast<int32_t>(spaces->size() / 2);
+    node_unorderd_list* ul = new node_unorderd_list(level);
+
+    if (context.parent->kind != NODE_KIND_UL) {
+        context.parent->append(ul);
+        context.parent = ul;
+        try_parse_line(context);
+        context.parent = context.parent->parent;
+        return;
+    }
 
 
-
-    node_unorderd_list* ul = new node_unorderd_list;
-    context.parent->append(ul);
-    context.parent = ul;
-    try_parse_line(context);
-    context.parent = context.parent->parent;
 }
 
 auto try_parse_line(render_context& context) -> void {

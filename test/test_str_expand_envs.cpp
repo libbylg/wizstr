@@ -20,7 +20,7 @@ TEST(test_str, expand_envs) {
     std::string ENV_XYZ_KV{"ENV_XYZ=/home/xyz"};
     putenv(ENV_XYZ_KV.data());
 #ifndef WIN32
-    scope_guard guardEnv([] {
+    scope_guard guard_env([] {
         unsetenv("ENV_XYZ");
     });
 #endif

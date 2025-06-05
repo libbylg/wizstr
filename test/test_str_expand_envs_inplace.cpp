@@ -15,6 +15,8 @@
 
 #include "str.hpp"
 
+#include "test-utils.hpp"
+
 #include <cstdlib>
 
 TEST(test_str, expand_envs_inplace) {
@@ -22,7 +24,9 @@ TEST(test_str, expand_envs_inplace) {
     std::string ENV_XYZ_KV{"ENV_XYZ=/home/xyz"};
     putenv(ENV_XYZ_KV.data());
 #ifndef WIN32
-    unsetenv("ENV_XYZ");
+    scope_guard guard_env([] {
+        unsetenv("ENV_XYZ");
+    }
 #endif
 
     SECTION("${xxx}形式") {
