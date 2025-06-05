@@ -1,2 +1,17 @@
 *.cpp	text eol=lf
 *.hpp	text eol=lf
+*.txt	text eol=lf
+*.cmake	text eol=lf
+*.sh	text eol=lf
+*.lua	text eol=lf
+*.md	text eol=lf
+
+.clang-format	text eol=lf
+.clang-tidy	text eol=lf
+
+.gitattributes	text eol=lf
+.gitignore	text eol=lf
+
+
+PROJECT 	text eol=lf
+MODULE  	text eol=lf

@@ -9,7 +9,7 @@ TEST(test_str, prev_spaces_view) {
         std::optional<std::string_view> item;
 
         ASSERT_TRUE((item = str::prev_spaces_view(s, pos = str::npos)));
-        ASSERT_TRUE((pos == 24) && (*item ==  "\n\n"));
+        ASSERT_TRUE((pos == 25) && (*item ==  "\n\n"));
 
         ASSERT_TRUE((item = str::prev_spaces_view(s, pos)));
         ASSERT_TRUE((pos == 22) && (item ==  " \r"));
@@ -85,21 +85,21 @@ TEST(test_str, prev_spaces_view) {
         std::optional<std::string_view> item;
 
         ASSERT_FALSE((item = str::prev_spaces_view(s, pos = 0)));
-        ASSERT_TRUE((pos == 3));
+        ASSERT_TRUE((pos == 0));
 
         ASSERT_FALSE((item = str::prev_spaces_view(s, pos = 1)));
-        ASSERT_TRUE((pos == 3));
+        ASSERT_TRUE((pos == 0));
 
-        ASSERT_TRUE((item = str::prev_spaces_view(s, pos = 2)));
-        ASSERT_TRUE((pos == 3));
+        ASSERT_FALSE((item = str::prev_spaces_view(s, pos = 2)));
+        ASSERT_TRUE((pos == 0));
 
-        ASSERT_TRUE((item = str::prev_spaces_view(s, pos = 3)));
-        ASSERT_TRUE((pos == 3));
+        ASSERT_FALSE((item = str::prev_spaces_view(s, pos = 3)));
+        ASSERT_TRUE((pos == 0));
 
-        ASSERT_TRUE((item = str::prev_spaces_view(s, pos = 4)));
-        ASSERT_TRUE((pos == 3));
+        ASSERT_FALSE((item = str::prev_spaces_view(s, pos = 4)));
+        ASSERT_TRUE((pos == 0));
 
-        ASSERT_TRUE((item = str::prev_spaces_view(s, pos = str::npos)));
-        ASSERT_TRUE((pos == 3));
+        ASSERT_FALSE((item = str::prev_spaces_view(s, pos = str::npos)));
+        ASSERT_TRUE((pos == 0));
     }
 }
