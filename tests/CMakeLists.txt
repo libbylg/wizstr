@@ -256,3 +256,9 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_windowed_view.cpp)
 add_executable(tests ${SOURCES})
 target_include_directories(tests PRIVATE ${INCPATH})
 target_compile_options(tests PRIVATE ${QUALITY_OPTIONS})
+
+
+add_custom_target(test
+        COMMAND tests
+        )
+add_dependencies(test tests)
