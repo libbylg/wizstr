@@ -1,5 +1,5 @@
 #include "str.hpp"
-#include "../test/testing.hpp"
+#include "../tests/testing.hpp"
 
 #include <cassert>
 #include <filesystem>

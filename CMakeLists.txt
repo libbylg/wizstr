@@ -30,7 +30,7 @@ target_compile_options(str-static PRIVATE ${QUALITY_OPTIONS})
 set_target_properties(str-static PROPERTIES OUTPUT_NAME "str")
 
 #   Unit-testing
-add_subdirectory(test)
+add_subdirectory(tests)
 
 #   Documentation tools
 add_subdirectory(tools)
