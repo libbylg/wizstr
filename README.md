@@ -4,7 +4,33 @@
 
 ## 介绍
 
-str 库提供了一系列字符串处理函数算法，目标是成为 C++ 中功能最丰富的字符串处理函数库。
+str 库提供了一系列字符串处理函数算法，str 的目标是希望能成为 C++ 中，功能最丰富的字符串处理函数库。
+
+当前 str 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [doc/str.md](doc/str.md)）
+
+* 批量追加插入（append、insert）
+* 大小写不敏感的比较（icompare）
+* 通配符匹配（wild）
+* 查找及包含关系检测（next_xxx、prev_xxx、contains）
+* 特征字符串统计（count）
+* 前后缀操作（prefix、suffix）
+* 特征测试（is_xxx）
+* 子串提取（take、drop）
+* 修剪和整形（trim、surround、align、invert、simplified）
+* 按多行处理（lines）
+* 按词处理（word）
+* 字符串生成（make）
+* 空白串处理（space）
+* 字符串遮罩（cover）
+* 字符串拆分（split）
+* 字符串拼接（join）
+* 大小写转换（to_xxx）
+* 变量或者特殊符号展开（expand）
+* 文件名路径操作（dirname、basename、extname、rawname）
+* 字符串转义（encode、decode）
+* 文本文件逐行或者全量读取（read_xxx）
+* 字符分组和筛选（grouping、filter）
+* 十六进制数据dump（dump_hex）
 
 ## 安装教程
 
@@ -68,7 +94,7 @@ sh build.sh install -i <InstallTargetDirectory>`
 本项目已经被集成到 xxx，可以在在线编辑器中直接使用
 -->
 
-**文档：**
+**阅读文档：**
 
 当前文档正在装修，现阶段可直接参考 [include/str.hpp](include/str.hpp) 中的文档注释。
 
