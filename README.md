@@ -24,7 +24,7 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 中�
 
 **如何编译**
 
-* 方式1：通过 cmake (适合任何环境)
+* 方式1：通过 `cmake` 编译 (适合任何环境)
 
 ```shell
 mkdir build
@@ -44,7 +44,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=<InstallTargetDirectory>
 
 关于 `CMAKE_INSTALL_PREFIX` 的含义和用法用法可以参考 cmake 官方文档。
 
-* 方式2：通过 build.sh (适合 `*nix` 系统，含 `msys2` 和 `mingw`)
+* 方式2：通过 `build.sh` (适合 `*nix` 系统，含 `msys2` 和 `mingw`)
 
 ```shell
 sh build.sh compile
