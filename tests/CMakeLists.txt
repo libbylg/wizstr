@@ -253,6 +253,6 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_windowed.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_windowed_view.cpp)
 
 #   Define the building target
-add_executable(str_test ${SOURCES})
-target_include_directories(str_test PRIVATE ${INCPATH})
-target_compile_options(str_test PRIVATE ${QUALITY_OPTIONS})
+add_executable(test ${SOURCES})
+target_include_directories(test PRIVATE ${INCPATH})
+target_compile_options(test PRIVATE ${QUALITY_OPTIONS})
