@@ -43,6 +43,7 @@ function cmd_help()
     echo    "Usage:"
     echo    "    build.sh [compile] [release|debug] [-c] [-j N]"
     echo    "    build.sh cdb [release|debug]"
+    echo    "    build.sh install [<InstalTargetDirectory>]"
     echo    "    build.sh test"
     echo    "    build.sh clean all|compile|debug|release|cdb|test|install|ide|doc||cmake"
     echo    "    build.sh help|-h|--help  Show this help"
@@ -140,10 +141,9 @@ function cmd_compile()
     fi
 
     if [[ -z "${opt_parallel_num}" ]]; then
-        opt_parallel_num=$(cat "/proc/cpuinfo" | grep -E '^processor(\s)*:' | wc -l)
-        # if [[ ! -z "${opt_parallel_num}" ]]; then
-        #     opt_parallel_num=$((opt_parallel_num / 2))
-        # fi
+        if [[ -f "/proc/cpuinfo" ]]; then
+            opt_parallel_num=$(cat "/proc/cpuinfo" | grep -E '^processor(\s)*:' | wc -l)
+        fi
     fi
 
     if [[ -z "${opt_parallel_num}" || "${opt_parallel_num}" -eq 0 ]]; then
@@ -180,6 +180,14 @@ function cmd_compile()
         return  $?
     fi
 
+    #   Clean metadata files
+    local compile_metadata_file="${compile_dir}/compile-metadata.properties"
+    rm -rf "${compile_metadata_file}"
+    if [[ -f "${compile_metadata_file}" ]]; then
+        error   "Can not remove compile-metadata-file: '${compile_metadata_file}'"
+        return  1
+    fi
+
     #   Normal compile project
     cd "${compile_dir}" \
         && cmake ..   \
@@ -191,18 +199,24 @@ function cmd_compile()
         return  1
     fi
 
+    #   Write compile metadata file
+    local compile_metadata_file_writing="${compile_metadata_file}.writing"
+    rm -rf  "${compile_metadata_file_writing}"
+    echo    "compile.mode  ${opt_compile_mode}"    >>  "${compile_metadata_file_writing}"
+    mv -f   "${compile_metadata_file_writing}"    "${compile_metadata_file}"
+    if [[ ! -f "${compile_metadata_file}" ]]; then
+        return 1
+    fi
+
     return  0
 }
 
+#   install <InstallTargetDirectory>
 function cmd_install()
 {
     local opt_install_dir="$2"
     if [[ -z "${opt_install_dir}" ]]; then
         opt_install_dir="${PROJECT_ROOT}/output-install"
-    fi
-
-    if [[ -d "${opt_install_dir}" ]]; then
-        rm -rf "${opt_install_dir}"
     fi
 
     mkdir -p "${opt_install_dir}"
@@ -211,16 +225,18 @@ function cmd_install()
         return  1
     fi
 
-    if [[ ! -d "${compile_dir}/str_test" ]]; then
-        error   "Need to compile first"
+    local compile_dir="${PROJECT_ROOT}/output-compile"
+    if [[ ! -f "${compile_dir}/compile-metadata.properties" ]]; then
+        error   "Need execute 'sh build.sh compile' first: '${compile_dir}/compile-metadata.properties'"
         return  1
     fi
-    
-    cp "${compile_dir}/str_test" "${opt_install_dir}" \
-        && echo "Install target success"
+
+    cd "${compile_dir}" \
+        && cmake .. -DCMAKE_INSTALL_DIR="${opt_install_dir}"    \
+        && make install
     RESULT=$?
     if [[ ${RESULT} -ne 0 ]]; then
-        error   "Install target failed(${RESULT}): '${opt_install_dir}'"
+        error   "Install failed(${RESULT}): '${opt_install_dir}'"
         return  1
     fi
 
@@ -340,6 +356,10 @@ function main()
             ;;
         doc)
             cmd_doc         "${action}" "$@"
+            return          "$?"
+            ;;
+        install)
+            cmd_install     "${action}" "$@"
             return          "$?"
             ;;
         *)
