@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.24)
 project(str_test LANGUAGES CXX)
 
 #   Import quality configuration
-include(${CMAKE_SOURCE_DIR}/quality.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
 
 #   Add major source
 list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/include/str.hpp)
@@ -252,13 +252,11 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_wildcmp.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_windowed.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_windowed_view.cpp)
 
-#   Define the building target
+#   Add unit-testing target
 add_executable(tests ${SOURCES})
 target_include_directories(tests PRIVATE ${INCPATH})
 target_compile_options(tests PRIVATE ${QUALITY_OPTIONS})
 
-#   Define fake target for: make test
-add_custom_target(test
-        COMMAND tests
-        )
+#   Add fake target for: make test
+add_custom_target(test COMMAND tests)
 add_dependencies(test tests)

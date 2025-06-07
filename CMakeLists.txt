@@ -14,7 +14,7 @@ file(READ "${CMAKE_SOURCE_DIR}/VERSION" VERSION_CONTENT)
 set(STR_VERSION ${VERSION_CONTENT})
 
 #   Import quality configuration
-include(${CMAKE_SOURCE_DIR}/quality.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
 
 #   Generate shared library
 add_library(str-shared SHARED src/str.cpp include/str.hpp)
@@ -29,19 +29,24 @@ target_include_directories(str-static PRIVATE include src)
 target_compile_options(str-static PRIVATE ${QUALITY_OPTIONS})
 set_target_properties(str-static PROPERTIES OUTPUT_NAME "str")
 
-install(TARGETS str-shared str-static
-        EXPORT str
-        LIBRARY DESTINATION lib  # Shared library install target directory
-        ARCHIVE DESTINATION lib  # Static library install target directory
-        INCLUDES DESTINATION include  # Headers
-        NAMESPACE str
-)
-
 #   Unit-testing
 add_subdirectory(tests)
 
-#   Documentation tools
-add_subdirectory(tools)
+#   All templates
+add_subdirectory(templates)
 
-#   Examples
-add_subdirectory(examples)
+#   Install all libs
+install(TARGETS str-shared str-static
+        EXPORT str
+        LIBRARY DESTINATION lib         # Shared library install target directory
+        ARCHIVE DESTINATION lib         # Static library install target directory
+)
+
+install(FILES include/str.hpp DESTINATION include)
+
+install(EXPORT str
+        FILE strTargets.cmake
+        NAMESPACE str::
+        DESTINATION lib/cmake/str
+)
+

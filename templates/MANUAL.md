@@ -1,3 +1,4 @@
+#!tools/gendoc -o docs/MANUAL.md
 <!--
 Copyright (c) 2021-2024 libbylg@126.com
 str is licensed under Mulan PSL v2.
