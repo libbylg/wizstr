@@ -6,7 +6,7 @@
 
 str 库提供了一系列字符串处理函数算法，str 的目标是希望能成为 C++ 中，功能最丰富的字符串处理函数库。
 
-当前 str 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [doc/str.md](doc/str.md)）
+当前 str 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [doc/manual.md](doc/manual.md)）
 
 * 批量追加插入（append、insert）
 * 大小写不敏感的比较（icompare）
@@ -31,6 +31,52 @@ str 库提供了一系列字符串处理函数算法，str 的目标是希望能
 * 文本文件逐行或者全量读取（read_xxx）
 * 字符分组和筛选（grouping、filter）
 * 十六进制数据dump（dump_hex）
+
+## 示例
+
+```c++
+#include <iostream>
+
+#include "str.h"
+
+int main() {
+    // split
+    auto items = str::split("Welcome to use str library");
+    std::cout << "items: [";
+    for (auto& item : items) {
+        std::cout << item << ",";
+    }
+    std::cout << "]" << std::endl;
+    
+    // path
+    auto dirname = str::dirname("/home/sam/project/main.cpp");
+    auto basename = str::basename("/home/sam/project/main.cpp");
+    auto fullpath = str::join_path({dirname, basename});
+    std::cout << "dirname: " << dirname << std::endl;
+    std::cout << "basename: " << basename << std::endl;
+    std::cout << "fullpath: " << fullpath << std::endl;
+    
+    // trim
+    std::string_view s = "  Hello  World  !  ";
+    std::cout << "trim_left: [" << str::trim_left(s) << "]" << std::endl;
+    std::cout << "trim_right: [" << str::trim_right(s) << "]" << std::endl;
+    std::cout << "trim_surrounding: [" << str::trim_surrounding(s) << "]" << std::endl;
+    
+    return 0;
+}
+```
+
+输出结果如下：
+
+```text
+items: ["Welcome", "to", "use", "str", "library"]
+dirname: /home/sam/project
+basename: main.cpp
+fullpath: /home/sam/project/main.cpp
+[Hello  World  !  ]
+[  Hello  World  !]
+[Hello  World  !]
+```
 
 ## 安装教程
 
@@ -108,7 +154,7 @@ sh build.sh install -i <InstallTargetDirectory>`
 sh build.sh doc
 ```
 
-编译完成之后，您可以直接在查看 `doc/str.md` 文件。
+编译完成之后，您可以直接在查看 `doc/manual.md` 文件。
 
 **示例代码：**
 
@@ -118,7 +164,7 @@ str 中每个已经提供的函数都经历了尽可能充分的测试，所以�
 
 #### 寻求求助?
 
-  - 首先，您可以在 [FAQ.md](doc/FAQ.md) 中检索你遇到的问题，看看是否有现成的解决方案。
+  - 首先，您可以在 [faq.md](doc/faq.md) 中检索你遇到的问题，看看是否有现成的解决方案。
   - 其次，您可以通过 StackOverflow 提问，但注意带上 `gitee-str` 标签；
   - 最后，您可以通过提 [issue](https://gitee.com/libbylg/str/issues) 来直接向维护人员寻求帮助，但请带上 `help` 标签的；
 
@@ -139,17 +185,20 @@ str 中每个已经提供的函数都经历了尽可能充分的测试，所以�
 
 ## 贡献者名单
 
-* libbylg@126.com
-
+虚位以待
 
 ## 用户荣誉榜
 
-| 公司    | 产品 | 备注 |
-|-------|----|----|
-|       |    |    |
+| 公司  | 产品  | 备注 |
+|-----|-----|----|
+| Hxx | Pxx |    |
 
 ## 请作者喝杯奶茶
 
 <!--
 TODO
 -->
+
+## 关联项目：
+
+* [Framework-Less-Testing](https://gitee.com/libbylg/Framework-Less-Testing)

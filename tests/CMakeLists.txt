@@ -257,7 +257,7 @@ add_executable(tests ${SOURCES})
 target_include_directories(tests PRIVATE ${INCPATH})
 target_compile_options(tests PRIVATE ${QUALITY_OPTIONS})
 
-
+#   Define fake target for: make test
 add_custom_target(test
         COMMAND tests
         )

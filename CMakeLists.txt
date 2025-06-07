@@ -29,8 +29,19 @@ target_include_directories(str-static PRIVATE include src)
 target_compile_options(str-static PRIVATE ${QUALITY_OPTIONS})
 set_target_properties(str-static PROPERTIES OUTPUT_NAME "str")
 
+install(TARGETS str-shared str-static
+        EXPORT str
+        LIBRARY DESTINATION lib  # Shared library install target directory
+        ARCHIVE DESTINATION lib  # Static library install target directory
+        INCLUDES DESTINATION include  # Headers
+        NAMESPACE str
+)
+
 #   Unit-testing
 add_subdirectory(tests)
 
 #   Documentation tools
 add_subdirectory(tools)
+
+#   Examples
+add_subdirectory(examples)
