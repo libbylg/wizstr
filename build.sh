@@ -44,7 +44,7 @@ function cmd_help()
     echo    "    build.sh [compile] [release|debug] [-c] [-j N]"
     echo    "    build.sh cdb [release|debug]"
     echo    "    build.sh test"
-    echo    "    build.sh clean"
+    echo    "    build.sh clean all|compile|debug|release|cdb|test|install|ide|doc||cmake"
     echo    "    build.sh help|-h|--help  Show this help"
 
     return  0
@@ -57,30 +57,41 @@ function cmd_clean()
         range="all"
     fi
 
+    if [[ "${range}" == "all" || "${range}" == "output" ]]; then
+        echo   "Clean: output-*"
+        rm -rf "${PROJECT_ROOT}"/output-*
+    fi
+
     if [[ "${range}" == "all" || "${range}" == "compile" || "${range}" == "debug" || "${range}" == "release" ]]; then
-        echo   "Clean: ${PROJECT_ROOT}/output-compile"
-        echo   "Clean: ${PROJECT_ROOT}/build"
+        echo   "Clean: output-compile"
+        echo   "Clean: build"
         rm -rf "${PROJECT_ROOT}/output-compile"
         rm -rf "${PROJECT_ROOT}/build"
     fi
     
     if [[ "${range}" == "all" || "${range}" == "cdb" || "${range}" == "debug" ]]; then
-        echo   "Clean: ${PROJECT_ROOT}/output-cdb"
+        echo   "Clean: output-cdb"
         rm -rf "${PROJECT_ROOT}/output-cdb"
     fi
     
     if [[ "${range}" == "all" || "${range}" == "test" || "${range}" == "ut" ]]; then
-        echo   "Clean: ${PROJECT_ROOT}/output-test"
+        echo   "Clean: output-test"
         rm -rf "${PROJECT_ROOT}/output-test"
     fi
     
     if [[ "${range}" == "all" || "${range}" == "install" || "${range}" == "dist" ]]; then
-        echo   "Clean: ${PROJECT_ROOT}/output-install"
+        echo   "Clean: output-install"
         rm -rf "${PROJECT_ROOT}/output-install"
     fi
     
     if [[ "${range}" == "all" || "${range}" == "ide" || "${range}" == "cmake" ]]; then
-        echo   "Clean: ${PROJECT_ROOT}/cmake-*"
+        echo   "Clean: cmake-*"
+        rm -rf "${PROJECT_ROOT}"/cmake-*
+    fi
+
+    if [[ "${range}" == "all" || "${range}" == "doc" ]]; then
+        echo   "Clean: templates/gendoc"
+        echo   "Clean: templates"/example*
         rm -rf "${PROJECT_ROOT}"/cmake-*
     fi
 
@@ -275,6 +286,19 @@ function cmd_cdb()
     return  0
 }
 
+#  $1   doc
+function cmd_doc()
+{
+    rm -rf   "${PROJECT_ROOT}/output-doc"
+    mkdir -p "${PROJECT_ROOT}/output-doc"  \
+        &&  cd "${PROJECT_ROOT}/output-doc" \
+        &&  cmake ..    \
+        &&  make doc    \
+        &&  echo ""
+    RESULT=$?
+    return ${RESULT}
+}
+
 function main()
 {
     local action="$1"
@@ -312,6 +336,10 @@ function main()
             ;;
         cdb)
             cmd_cdb         "${action}" "$@"
+            return          "$?"
+            ;;
+        doc)
+            cmd_doc         "${action}" "$@"
             return          "$?"
             ;;
         *)

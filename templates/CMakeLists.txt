@@ -19,7 +19,7 @@ list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/src/str.cpp)
 list(APPEND INCPATH ${CMAKE_SOURCE_DIR}/include)
 list(APPEND INCPATH ${CMAKE_SOURCE_DIR}/src)
 
-#   examples for README
+#   Example applications for README
 add_executable(example1 EXCLUDE_FROM_ALL example1.cpp ${SOURCES})
 target_include_directories(example1 PRIVATE ${INCPATH})
 target_compile_options(example1 PRIVATE ${QUALITY_OPTIONS})
@@ -34,5 +34,5 @@ set_target_properties(gendoc PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(gendoc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/templates")
 
 #   Add fake target for: make doc
-add_custom_target(doc COMMAND "${CMAKE_SOURCE_DIR}/templates/gendoc.sh"))
+add_custom_target(doc COMMAND "${CMAKE_SOURCE_DIR}/templates/gendoc.sh")
 add_dependencies(doc gendoc example1)
