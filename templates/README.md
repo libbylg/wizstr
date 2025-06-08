@@ -68,7 +68,7 @@ int main() {
 
     // dump_hex
     std::string k = "This function is used to dump binnary data to hex string like xxd";
-    str::dump_hex(k.data(), k.size(), str::dump_hex_format(str::show_ascii | str::show_offset),
+    str::dump_hex(k.data(), k.size(), str::dump_hex_format{.flags = (str::show_ascii | str::show_offset)},
         [](size_t, std::string_view line_text) {
             std::cout << line_text << std::endl;
             return 0;
