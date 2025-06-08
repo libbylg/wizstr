@@ -2083,19 +2083,6 @@ struct str {
     static auto skip_spaces(std::string_view s, size_type& pos) -> void;
 
     //! 简单词法识别 @anchor{accept}
-    ///
-    /// 从 `pos` 位置开始逐个扫描 `s` 中的每个字符，如果和目标字符 `ch` 匹配，则返回该字符的位置。
-    /// 当指定 `escape` 字符时，表示扫描到 `escape` 字符时，自动忽略下一个字符，即使这个字符就是 `ch`。
-    ///
-    /// @notice{0} 如果扫描失败，也就是未找到字符 ch，那么所有函数都会返回 str::npos，且所有函数
-    /// 都会确保输出参数 `pos` 不会发生改变。
-    ///
-    /// @param s: 待扫描的字符串
-    /// @param pos: 扫描的起始位置，该参数为输入输出参数。当成功扫描到 ch 字符时，
-    /// 扫描将终止，pos 将位于 ch 字符的下一个字符的位置。如果未找到 pos 的值不会改变。
-    /// @param ch: 扫描过程中需要匹配的字符
-    /// @param escape: 扫描过程中如果遇到 escape 字符，将自动忽略下一个字符，以实现字符转义的效果
-    /// @return: 返回找到 ch 的位置，否则返回 `str::npos`
     static auto accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type;
     static auto accept_until(std::string_view s, size_type& pos, value_type ch, value_type escape) -> size_type;
 #ifdef STR_UNIMPL

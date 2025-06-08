@@ -6223,7 +6223,6 @@ auto str::accept_until(std::string_view s, size_type& pos, value_type ch, value_
             pos = curr + 1;
             return curr;
         }
-
         curr++;
     }
 

@@ -17,6 +17,7 @@ TEST(test_str, accept_until) {
     size_t start{0};
     size_t pos{0};
 
+<<<<<<< HEAD
     SECTION("一般情况：未指定转义字符") {
         ASSERT_EQ(pos = str::accept_until("abc`", start = 0, '`'), 3);
         ASSERT_EQ(start, 4);
@@ -69,4 +70,17 @@ TEST(test_str, accept_until) {
         ASSERT_EQ(pos = str::accept_until("", start = 4, '`'), str::npos);
         ASSERT_EQ(start, 4);
     }
+=======
+    ASSERT_EQ(pos = str::accept_until("abc`", start = 0, '`'), 3);
+    ASSERT_EQ(start, 4);
+
+    ASSERT_EQ(pos = str::accept_until("abc`", start = 0, 'Q'), str::npos);
+    ASSERT_EQ(start, 4);
+
+    ASSERT_EQ(pos = str::accept_until("abc`", start = 3, '`'), 3);
+    ASSERT_EQ(start, 4);
+
+    ASSERT_EQ(pos = str::accept_until("abc`", start = 4, '`'), str::npos);
+    ASSERT_EQ(start, 4);
+>>>>>>> f087e12 (add accept_until)
 }
