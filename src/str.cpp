@@ -1083,7 +1083,6 @@ auto str::next_regex(std::string_view s, size_type& pos, std::string_view patter
 }
 #endif // STR_UNTESTED
 
-
 auto str::next_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     if (pos >= s.size()) {
         pos = s.size();
@@ -1182,7 +1181,7 @@ auto str::prev_spaces_pos(std::string_view s, size_type& pos) -> size_type {
     pos = end;
     while (pos > 0) {
         if (!std::isspace(s[pos - 1])) {
-            //pos--;
+            // pos--;
             break;
         }
         pos--;
@@ -1704,7 +1703,6 @@ auto str::is_space_or_empty(std::string_view s) -> bool {
     }
     return true;
 }
-
 
 auto str::take_left_view(std::string_view s, size_type n) -> std::string_view {
     if (n == 0) {
@@ -2932,11 +2930,11 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
 
 auto str::spaces(uint8_t width) -> std::string_view {
     // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-    static constexpr value_type spaces_cache[256] =                            //
-            "                                                                " //
-            "                                                                " //
-            "                                                                " //
-            "                                                               "  //
+    static constexpr value_type spaces_cache[256] =                        //
+        "                                                                " //
+        "                                                                " //
+        "                                                                " //
+        "                                                               "  //
         ;
     // width 的取值范围是 0-255,
     return std::string_view{spaces_cache + (sizeof(spaces_cache) - 1) - width, width};
@@ -3249,18 +3247,16 @@ auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, c
         return;
     }
 
-    split(s, //
+    split(s,                                                            //
         [sep_str](std::string_view s, size_type& pos) -> size_type {
             //
             size_type start = s.find(sep_str, pos);
             pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
-            return start;
-        },     //
-        max_n, //
+            return start; }, //
+        max_n,                                                          //
         [s, &proc](range_type range) -> int {
             //
-            return proc(s.substr(range.pos, range.len));
-        });
+            return proc(s.substr(range.pos, range.len)); });
 }
 
 auto str::split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void {
@@ -5243,8 +5239,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    }
-                    break;
+                    } break;
                     case 'X':
                         [[fallthrough]];
                     case 'x': {
@@ -5282,8 +5277,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    }
-                    break;
+                    } break;
                     default:
                         return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
@@ -5293,8 +5287,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                 }
 
                 w = ptr;
-            }
-            break;
+            } break;
 
             case 'A' ... 'Z':
                 [[fallthrough]];
@@ -6199,6 +6192,39 @@ auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
             break;
         }
     }
+}
+
+auto str::accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type {
+    size_type curr = pos;
+    while (curr < s.size()) {
+        if (s[curr] == ch) {
+            pos = curr + 1;
+            return curr;
+        }
+    }
+
+    return str::npos;
+}
+
+auto str::accept_until(std::string_view s, size_type& pos, value_type ch, value_type escape) -> size_type {
+    size_type curr = pos;
+    while (curr < s.size()) {
+        if (s[curr] == escape) {
+            if ((curr + 1) >= s.size()) {
+                return str::npos;
+            }
+
+            curr += 2;
+            continue;
+        }
+
+        if (s[curr] == ch) {
+            pos = curr + 1;
+            return curr;
+        }
+    }
+
+    return str::npos;
 }
 
 #ifdef STR_UNTESTED

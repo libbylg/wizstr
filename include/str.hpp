@@ -2077,8 +2077,10 @@ struct str {
     ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
     static auto skip_spaces(std::string_view s, size_type& pos) -> void;
 
-#ifdef STR_UNIMPL
     //! 简单词法识别 @anchor{accept}
+    static auto accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, value_type ch, value_type escape) -> size_type;
+#ifdef STR_UNIMPL
     static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_real(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_string(std::string_view s, size_type& pos) -> range_type;
