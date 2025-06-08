@@ -8,10 +8,14 @@
 # FIT FOR A PARTICULAR PURPOSE.
 # See the Mulan PSL v2 for more details.
 cmake_minimum_required(VERSION 3.24)
-project(str)
 
-file(READ "${CMAKE_SOURCE_DIR}/VERSION" VERSION_CONTENT)
-set(STR_VERSION ${VERSION_CONTENT})
+#   Read project version from local file
+file(READ "${CMAKE_SOURCE_DIR}/VERSION" PROJECT_VERSION_FILE)
+set(PROJECT_VERSION "${PROJECT_VERSION_FILE}")
+string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
+
+#   Definition of the top project
+project(str VERSION ${PROJECT_VERSION})
 
 #   Import quality configuration
 include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
@@ -21,7 +25,7 @@ add_library(str-shared SHARED src/str.cpp include/str.hpp)
 target_include_directories(str-shared PRIVATE include src)
 target_compile_options(str-shared PRIVATE ${QUALITY_OPTIONS})
 set_target_properties(str-shared PROPERTIES OUTPUT_NAME "str")
-set_target_properties(str-shared PROPERTIES VERSION ${STR_VERSION} SOVERSION ${STR_VERSION})
+set_target_properties(str-shared PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION})
 
 #   Generate static library
 add_library(str-static STATIC src/str.cpp include/str.hpp)
@@ -50,3 +54,24 @@ install(EXPORT str
         DESTINATION lib/cmake/str
 )
 
+
+#   Generate Config for find_package
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+        "${CMAKE_SOURCE_DIR}/cmake/config.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/strConfig.cmake"
+        INSTALL_DESTINATION lib/cmake/str
+)
+
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/strConfigVersion.cmake"
+        VERSION "${PROJECT_VERSION}"
+        COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/strConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/strConfigVersion.cmake"
+        DESTINATION lib/cmake/str
+)

@@ -90,10 +90,10 @@ trim_surrounding: [Hello  World  !]
 * 操作系统：
   绝大多数函数适用于任何操作系统，部分路径处理函数只支持 `*nix` 系统，含 `msys2` 和 `mingw`
 * 编译器：
-    * gcc：支持
-    * clang：支持
-    * msvc：支持
-    * 其他：不确定，因无条件测试验证，所以如果您使用更低版本 cmake 成功通过编译和测试，恳请告诉我（可以提 issue 反馈）。
+  * gcc：支持
+  * clang：支持
+  * msvc：支持
+  * 其他：不确定，因无条件测试验证，所以如果您使用更低版本 cmake 成功通过编译和测试，恳请告诉我（可以提 issue 反馈）。
 * cmake：
   至少为 `3.24`，理论上更低版本也可行，但并未在更低版本测试过。
   如果您使用更低版本 cmake 成功通过编译和测试，恳请告诉我（可以提 issue）。
@@ -141,11 +141,14 @@ sh build.sh install <InstallTargetDirectory>`
 
 这种方式就是直接将 `include/str.hpp` 和 `src/str.cpp` 这两个文件直接拷贝到您的项目中去，并随项目的其他代码一起编译。
 
-@notice{3} 这种方式并不是很推荐，主要是这种方式对 str 造成侵入式修改，最终会导致丧失简单即可升级 str 库到新版本的能力。
+@notice{3} 这种方式并不是很推荐，主要是一旦采用这种方式，很容易对 str 的这部分代码造成侵入式修改，
+最终会导致丧失简单即可升级 str 库到新版本的能力。 
+考虑到某些特殊的闭源项目或者存在网络隔离环境的项目必须这样做，那么我们仍然建议您做好代码隔离，
+当需要对 str 的代码做修改时，也尽可能用打 patch 的方式来修改，而非直接修改 str 的源码。
 
 #### 方式2：链接 str 的静态库或者动态库
 
-这种方式，需要您先完成编译和安装（参见 "构建" 小节）。 
+这种方式，需要您先完成编译和安装（参见 "构建" 小节）。
 剩余的就是配置 Makefile 使得编译器和连接器能正确找到并使用 str 库的头文件和动态或者静态库。
 
 下面，我们假设您已经将 str 库安装到了 ${HOME}/cpp/depends/str 下了，
@@ -166,11 +169,32 @@ gcc 和 clang 中，链接动态库一般是直接 `-lstr`，如果连接静态�
 
 #### 方式3：使用 cmake 自动发现和引入 str 库
 
-正在装修中...
+这种方式在您使用 cmake 才是可行的，假设您的项目的的某个名字为 MyApp 的构建目标需要用到 str 库。
+那么，配置方式如下：
+
+* 用想使用动态库：
+
+```cmake
+find_package(str)
+# ... 
+target_link_libraries(MyApp PRIVATE str::str-shared)
+```
+
+* 用想使用静态库：
+
+```cmake
+find_package(str)
+# ... 
+target_link_libraries(MyApp PRIVATE str::str-static)
+```
+
+## LICENSE
+
+BSD-like License ： [木兰宽松许可v2（MulanPSL2）](LICENSE)
 
 ## 文档&试玩
 
-#### Playground
+#### Playground 试玩
 
 正在装修中...
 
