@@ -2097,7 +2097,15 @@ struct str {
     /// @param escape: 扫描过程中如果遇到 escape 字符，将自动忽略下一个字符，以实现字符转义的效果
     /// @return: 返回找到 ch 的位置，否则返回 `str::npos`
     static auto accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type;
-    static auto accept_until(std::string_view s, size_type& pos, value_type ch, value_type escape) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, value_type ch) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, const charset_type& set) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const charset_type& set) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const char_match_proc& proc) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type>;
+    static auto accept(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto accept(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type>;
+    static auto accept_word(std::string_view s, size_type& pos, std::string_view word) -> std::optional<range_type>;
 #ifdef STR_UNIMPL
     static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_real(std::string_view s, size_type& pos) -> range_type;

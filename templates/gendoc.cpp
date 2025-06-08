@@ -273,6 +273,7 @@ struct node_return : public node {
 
 struct node_text : public node {
     std::string text;
+
     explicit node_text(std::string_view content) {
         kind = NODE_KIND_TEXT;
         text = content;
@@ -538,26 +539,24 @@ auto try_parse_icode(render_context& context) -> void {
 auto try_parse_line(render_context& context) -> void {
     std::string_view remain = context.line_parse_stack.back();
     if (str::starts_with(remain, "*")) {
+        if (str::starts_with(remain, "**")) {
 
+        }
     } else if (str::starts_with(remain, "`")) {
         size_t start = 0;
         auto pos = str::accept_until(remain, start, '`');
-        if (pos) {
+        if (pos != str::npos) {
             node_icode* icode = new node_icode(str::take_view(remain, str::interval(1, pos)));
             context.parent->append(icode);
         }
     } else if (str::starts_with(remain, "[")) {
-        const char* ptr = remain.data();
-        const char* end = remain.data() + remain.size();
-        while (ptr < end) {
-            if (*ptr == ']') {
-                break;
-            }
-            if (*ptr == '\\') {
-                if ((ptr + 1) >= end) {
-                    ptr += 2;
-                    continue;
-                }
+        size_t start = 0;
+        auto pos = str::accept_until(remain, start, ']', '\\');
+        if (pos != str::npos) {
+            str::skip_spaces(remain, pos);
+            if (str::accept(remain, pos, "(")) {
+                start = pos;
+                pos = str::accept_until(remain, start, ')', '\\');
             }
         }
     } else if (str::starts_with(remain, "@")) {
