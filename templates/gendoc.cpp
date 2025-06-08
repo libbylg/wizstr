@@ -543,7 +543,7 @@ auto try_parse_line(render_context& context) -> void {
         size_t start = 0;
         auto pos = str::accept_until(remain, start, '`');
         if (pos) {
-            node_icode* icode = new node_icode(str::take_view(remain, str::interval(1, *pos)));
+            node_icode* icode = new node_icode(str::take_view(remain, str::interval(1, pos)));
             context.parent->append(icode);
         }
     } else if (str::starts_with(remain, "[")) {
