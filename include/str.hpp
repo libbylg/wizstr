@@ -1902,11 +1902,6 @@ struct str {
         value_type ascii_mask{'.'};           ///< 显示 ascii 时，对不打印字符显示的掩码字符
         std::string_view offset_margin{": "}; ///< 显示 offset 时，shifter 右侧与文本段的分隔符
         std::string_view ascii_margin{" "};   ///< 显示 ascii 时，在此之前显示的 margin 字符
-
-        explicit dump_hex_format() = default;
-        explicit dump_hex_format(uint8_t f)
-            : flags(f) {
-        }
     };
 
     //! 数据按十六进制 dump @anchor{dump_hex}
