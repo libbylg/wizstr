@@ -1,5 +1,5 @@
-#include "str.hpp"
 #include "../tests/testing.hpp"
+#include "str.hpp"
 
 #include <cassert>
 #include <filesystem>
@@ -10,49 +10,49 @@
 //! 节点类型表
 ///
 /// 用法：DEF_NODEKIND(Priority_, Name_, Type_, Desc_)
-#define NODEKIND_TABLE()                 \
-    DEF_NODEKIND(00, NEOF, NONE, "文档结束")    \
-    /* 容器 */                           \
-    DEF_NODEKIND(10, DOCUMENT, node_document, "文档根") \
-    DEF_NODEKIND(11, BLOCK, node_block, "块")        \
-    DEF_NODEKIND(12, LINE, node_line, "行")         \
-    /* 独立行 */                         \
-    DEF_NODEKIND(20, TITLE, node_title, "文档标题")  \
-    DEF_NODEKIND(21, H1, node_head, "标题1")        \
-    DEF_NODEKIND(22, H2, node_head, "标题2")        \
-    DEF_NODEKIND(23, H3, node_head, "标题3")        \
-    DEF_NODEKIND(24, H4, node_head, "标题4")        \
-    DEF_NODEKIND(25, H5, node_head, "标题5")        \
-    DEF_NODEKIND(26, H6, node_head, "标题6")        \
-    /* 独立行 */                         \
-    DEF_NODEKIND(31, S1, node_section, "段1")          \
-    DEF_NODEKIND(32, S2, node_section, "段2")          \
-    DEF_NODEKIND(33, S3, node_section, "段3")          \
-    DEF_NODEKIND(34, S4, node_section, "段4")          \
-    /* 行间 */                           \
-    DEF_NODEKIND(50, COMMENT, node_comment, "注释")    \
-    DEF_NODEKIND(52, THEAD, node_thead, "表头")      \
-    DEF_NODEKIND(53, TROW, node_trow, "表的行")     \
-    DEF_NODEKIND(54, TCOL, node_tcol, "表的列")     \
-    DEF_NODEKIND(55, PARAM, node_param, "参数定义")  \
-    DEF_NODEKIND(56, RETURN, node_return, "返回值")   \
-    DEF_NODEKIND(57, BCODE, node_bcode, "代码块")    \
-    DEF_NODEKIND(58, BRIEF, node_brief, "概要")      \
-    DEF_NODEKIND(59, DETIAL, node_detial, "详情")     \
-    DEF_NODEKIND(60, FORMULA, node_formula, "公式")    \
-    DEF_NODEKIND(63, OL, node_orderd_list, "有序列表")     \
-    DEF_NODEKIND(64, UL, node_unorderd_list, "无序列表")     \
+#define NODEKIND_TABLE()                                 \
+    DEF_NODEKIND(00, NEOF, NONE, "文档结束")             \
+    /* 容器 */                                           \
+    DEF_NODEKIND(10, DOCUMENT, node_document, "文档根")  \
+    DEF_NODEKIND(11, BLOCK, node_block, "块")            \
+    DEF_NODEKIND(12, LINE, node_line, "行")              \
+    /* 独立行 */                                         \
+    DEF_NODEKIND(20, TITLE, node_title, "文档标题")      \
+    DEF_NODEKIND(21, H1, node_head, "标题1")             \
+    DEF_NODEKIND(22, H2, node_head, "标题2")             \
+    DEF_NODEKIND(23, H3, node_head, "标题3")             \
+    DEF_NODEKIND(24, H4, node_head, "标题4")             \
+    DEF_NODEKIND(25, H5, node_head, "标题5")             \
+    DEF_NODEKIND(26, H6, node_head, "标题6")             \
+    /* 独立行 */                                         \
+    DEF_NODEKIND(31, S1, node_section, "段1")            \
+    DEF_NODEKIND(32, S2, node_section, "段2")            \
+    DEF_NODEKIND(33, S3, node_section, "段3")            \
+    DEF_NODEKIND(34, S4, node_section, "段4")            \
+    /* 行间 */                                           \
+    DEF_NODEKIND(50, COMMENT, node_comment, "注释")      \
+    DEF_NODEKIND(52, THEAD, node_thead, "表头")          \
+    DEF_NODEKIND(53, TROW, node_trow, "表的行")          \
+    DEF_NODEKIND(54, TCOL, node_tcol, "表的列")          \
+    DEF_NODEKIND(55, PARAM, node_param, "参数定义")      \
+    DEF_NODEKIND(56, RETURN, node_return, "返回值")      \
+    DEF_NODEKIND(57, BCODE, node_bcode, "代码块")        \
+    DEF_NODEKIND(58, BRIEF, node_brief, "概要")          \
+    DEF_NODEKIND(59, DETIAL, node_detial, "详情")        \
+    DEF_NODEKIND(60, FORMULA, node_formula, "公式")      \
+    DEF_NODEKIND(63, OL, node_orderd_list, "有序列表")   \
+    DEF_NODEKIND(64, UL, node_unorderd_list, "无序列表") \
     DEF_NODEKIND(65, LI, node_list_item, "列表子项")     \
-    DEF_NODEKIND(66, HREF, node_href, "超链接")     \
-    DEF_NODEKIND(67, IMAGE, node_image, "图片")      \
-    DEF_NODEKIND(68, ANCHOR, node_anchor, "锚点定义") \
-    DEF_NODEKIND(69, EMBDED, node_embded, "嵌入文字") \
-    /* 行内元素 */                       \
-    DEF_NODEKIND(80, STRONG, node_strong, "强调")     \
-    DEF_NODEKIND(81, EM, node_em, "重要")         \
-    DEF_NODEKIND(82, TEXT, node_text, "文本")       \
-    DEF_NODEKIND(83, ICODE, node_icode, "行内代码")  \
-/* (end) */
+    DEF_NODEKIND(66, HREF, node_href, "超链接")          \
+    DEF_NODEKIND(67, IMAGE, node_image, "图片")          \
+    DEF_NODEKIND(68, ANCHOR, node_anchor, "锚点定义")    \
+    DEF_NODEKIND(69, EMBDED, node_embded, "嵌入文字")    \
+    /* 行内元素 */                                       \
+    DEF_NODEKIND(80, STRONG, node_strong, "强调")        \
+    DEF_NODEKIND(81, EM, node_em, "重要")                \
+    DEF_NODEKIND(82, TEXT, node_text, "文本")            \
+    DEF_NODEKIND(83, ICODE, node_icode, "行内代码")      \
+    /* (end) */
 
 enum node_kind : uint8_t {
 #define DEF_NODEKIND(Priority_, Name_, Type_, Desc_) NODE_KIND_##Name_ = (Priority_),
@@ -118,7 +118,6 @@ struct node {
 
     // 父节点
     node* parent{nullptr};
-
 
     // 节点类型
     node_kind kind{NODE_KIND_TEXT};
@@ -318,15 +317,15 @@ struct will {
 auto cmd_help(int argc, char* artgv[]) -> int {
     constexpr std::string_view help_text = //
         "Usage:\n"                         //
-        "   gendoc [InputFiles...] [-o OutputDirectory] [-r RootDirectory]\n";
+        "   gendoc [InputFile] [-o OutputFile] [-r RootDirectory]\n";
     std::cout << help_text;
 
     return 0;
 }
 
 struct gendoc_options {
-    std::vector<std::string> input_files;
-    std::string output_directory;
+    std::string input_file;
+    std::string output_file;
     std::string root_directory;
 
     auto load(int argc, char* argv[]) -> std::string {
@@ -343,7 +342,7 @@ struct gendoc_options {
             }
 
             if (key == "-o") {
-                output_directory = val;
+                output_file = val;
                 continue;
             }
 
@@ -352,11 +351,7 @@ struct gendoc_options {
                 continue;
             }
 
-            input_files.emplace_back(val);
-        }
-
-        if (output_directory.empty()) {
-            output_directory = std::filesystem::current_path().string();
+            input_file = val;
         }
 
         if (root_directory.empty()) {
@@ -435,17 +430,17 @@ private:
 };
 
 struct render_context {
-    explicit render_context(FILE* f, const std::string& od, const std::string& rd)
-        : output_directory{od}
-        , root_directory{rd}
-        , reader{f} {
+    explicit render_context(FILE* ifile, FILE* ofile, const std::string& rd)
+        : root_directory{rd}
+        , reader{ifile}
+        , writer{ofile} {
         root = new node;
         parent = root;
     }
 
-    const std::string& output_directory;
     const std::string& root_directory;
     line_reader reader;
+    FILE* writer{nullptr};
 
     node* root{nullptr};
     node* parent{nullptr};
@@ -500,8 +495,6 @@ auto try_parse_unordered_list(render_context& context) -> void {
         context.parent = context.parent->parent;
         return;
     }
-
-
 }
 
 auto try_parse_line(render_context& context) -> void {
@@ -525,7 +518,7 @@ auto try_accept_block_text(render_context& context) -> void {
         context.parent = nline;
         try_parse_line(context);
         context.parent = nline->parent;
-    } while (context.reader.next_line()) ;
+    } while (context.reader.next_line());
 
     context.parent = context.parent->parent;
 }
@@ -550,9 +543,7 @@ auto try_parse_param(render_context& context) -> void {
     if (std::regex_match(context.reader.line_text(), match, param_pattern1)) {
 
     } else if (std::regex_match(context.reader.line_text(), match, param_pattern2)) {
-
     }
-
 }
 
 auto try_parse_return(render_context& context) -> void {
@@ -655,11 +646,14 @@ auto main(int argc, char* argv[]) -> int {
         return 1;
     }
 
-    if (!std::filesystem::exists(opts.output_directory)) {
-        std::error_code error;
-        if (!std::filesystem::create_directories(opts.output_directory, error)) {
-            std::cerr << "Can not create output directory `" << opts.output_directory << "'" << std::endl;
-            return 1;
+    if (!opts.output_file.empty()) {
+        std::string output_directory = str::dirname(opts.output_file);
+        if (!std::filesystem::exists(opts.output_file)) {
+            std::error_code error;
+            if (!std::filesystem::create_directories(output_directory, error)) {
+                std::cerr << "Can not create output directory `" << output_directory << "'" << std::endl;
+                return 1;
+            }
         }
     }
 
@@ -668,29 +662,19 @@ auto main(int argc, char* argv[]) -> int {
         return 1;
     }
 
-    if (opts.input_files.empty()) {
-        render_context context{stdin, opts.output_directory, opts.root_directory};
-        std::string error = render_one_file(context);
-        if (!error.empty()) {
-            std::cerr << "Generate document failed: " << error << std::endl;
-            return 1;
-        }
-
-        return 0;
-    }
-
-    for (const auto& filepath : opts.input_files) {
-        std::string error;
-        str::with_file(filepath, "r", [&opts, &error](FILE* file) -> void {
-            assert(file != nullptr);
-            render_context context{file, opts.output_directory, opts.root_directory};
+    FILE* input_repl = ((opts.input_file.empty()) ? stdin : nullptr);
+    str::with_file(opts.input_file, "r", input_repl, [&opts, &error](FILE* ifile) -> void {
+        assert(ifile != nullptr);
+        FILE* output_repl = ((opts.output_file.empty()) ? stdout : nullptr);
+        str::with_file(opts.output_file, "w+", output_repl, [ifile, &opts, &error](FILE* ofile) -> void {
+            render_context context{ifile, ofile, opts.root_directory};
             error = render_one_file(context);
         });
+    });
 
-        if (!error.empty()) {
-            std::cerr << "Generate document failed: " << error << std::endl;
-            return 1;
-        }
+    if (!error.empty()) {
+        std::cerr << "Generate document failed: " << error << std::endl;
+        return 1;
     }
 
     return 0;
