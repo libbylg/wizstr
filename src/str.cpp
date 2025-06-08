@@ -2930,11 +2930,11 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
 
 auto str::spaces(uint8_t width) -> std::string_view {
     // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-    static constexpr value_type spaces_cache[256] =                        //
-        "                                                                " //
-        "                                                                " //
-        "                                                                " //
-        "                                                               "  //
+    static constexpr value_type spaces_cache[256] =                            //
+            "                                                                " //
+            "                                                                " //
+            "                                                                " //
+            "                                                               "  //
         ;
     // width 的取值范围是 0-255,
     return std::string_view{spaces_cache + (sizeof(spaces_cache) - 1) - width, width};
@@ -3247,16 +3247,18 @@ auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, c
         return;
     }
 
-    split(s,                                                            //
+    split(s, //
         [sep_str](std::string_view s, size_type& pos) -> size_type {
             //
             size_type start = s.find(sep_str, pos);
             pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
-            return start; }, //
-        max_n,                                                          //
+            return start;
+        },     //
+        max_n, //
         [s, &proc](range_type range) -> int {
             //
-            return proc(s.substr(range.pos, range.len)); });
+            return proc(s.substr(range.pos, range.len));
+        });
 }
 
 auto str::split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void {
@@ -5239,7 +5241,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    } break;
+                    }
+                    break;
                     case 'X':
                         [[fallthrough]];
                     case 'x': {
@@ -5277,7 +5280,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    } break;
+                    }
+                    break;
                     default:
                         return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
@@ -5287,7 +5291,8 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                 }
 
                 w = ptr;
-            } break;
+            }
+            break;
 
             case 'A' ... 'Z':
                 [[fallthrough]];
@@ -6195,9 +6200,29 @@ auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
 }
 
 auto str::accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type {
+    return accept_until(s, pos, [ch](value_type item) -> bool { return ch == item; });
+}
+
+auto str::accept_until(std::string_view s, size_type& pos, value_type escape, value_type ch) -> size_type {
+    return accept_until(s, pos, escape, [ch](value_type item) -> bool { return ch == item; });
+}
+
+auto str::accept_until(std::string_view s, size_type& pos, const charset_type& set) -> size_type {
+    return accept_until(s, pos, [&set](value_type ch) -> bool {
+        return set.contains(ch);
+    });
+}
+
+auto str::accept_until(std::string_view s, size_type& pos, value_type escape, const charset_type& set) -> size_type {
+    return accept_until(s, pos, escape, [&set](value_type ch) -> bool {
+        return set.contains(ch);
+    });
+}
+
+auto str::accept_until(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type {
     size_type curr = pos;
     while (curr < s.size()) {
-        if (s[curr] == ch) {
+        if (proc(s[curr])) {
             pos = curr + 1;
             return curr;
         }
@@ -6207,7 +6232,7 @@ auto str::accept_until(std::string_view s, size_type& pos, value_type ch) -> siz
     return str::npos;
 }
 
-auto str::accept_until(std::string_view s, size_type& pos, value_type ch, value_type escape) -> size_type {
+auto str::accept_until(std::string_view s, size_type& pos, value_type escape, const char_match_proc& proc) -> size_type {
     size_type curr = pos;
     while (curr < s.size()) {
         if (s[curr] == escape) {
@@ -6219,7 +6244,7 @@ auto str::accept_until(std::string_view s, size_type& pos, value_type ch, value_
             continue;
         }
 
-        if (s[curr] == ch) {
+        if (proc(s[curr])) {
             pos = curr + 1;
             return curr;
         }
@@ -6228,6 +6253,60 @@ auto str::accept_until(std::string_view s, size_type& pos, value_type ch, value_
     }
 
     return str::npos;
+}
+
+
+auto str::accept_until(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type> {
+    if ((pos >= s.size()) || token.empty()) {
+        return std::nullopt;
+    }
+
+    size_type curr = pos;
+    auto range = next_string_range(s, curr, token);
+    if (!range) {
+        return std::nullopt;
+    }
+
+    return range;
+}
+
+auto str::accept(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type> {
+    if ((pos >= s.size()) || token.empty()) {
+        return std::nullopt;
+    }
+
+    std::string_view remain = s.substr(pos);
+    if (!str::has_prefix(remain, token)) {
+        return std::nullopt;
+    }
+
+    return range_type{pos, token.size()};
+}
+
+auto str::accept(std::string_view s, size_type& pos, value_type ch) -> size_type {
+    if ((pos >= s.size())) {
+        return str::npos;
+    }
+
+    if (s[pos] != ch) {
+        return str::npos;
+    }
+
+    return pos++;
+}
+
+auto str::accept_word(std::string_view s, size_type& pos, std::string_view word) -> std::optional<range_type> {
+    if ((pos >= s.size()) || word.empty()) {
+        return std::nullopt;
+    }
+
+    size_type curr = pos;
+    auto result = str::next_word_range(s, curr);
+    if (result.empty() || (str::take_view(s, result) != word)) {
+        return std::nullopt;
+    }
+
+    return result;
 }
 
 #ifdef STR_UNTESTED
