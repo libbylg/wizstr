@@ -327,7 +327,7 @@ struct str {
 
     //! 单字符映射：将单个字符映射为另一个数据类型的值
     template <typename MappedType>
-    using mapping_proc = std::function<auto(value_type)->MappedType>;
+    using mapping_proc = std::function<auto(value_type) -> MappedType>;
 
     //! 单字符映射器：将一个字符映射为另一个字符
     using char_mapping_proc = mapping_proc<value_type>;
@@ -2077,8 +2077,31 @@ struct str {
     ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
     static auto skip_spaces(std::string_view s, size_type& pos) -> void;
 
-#ifdef STR_UNIMPL
     //! 简单词法识别 @anchor{accept}
+    ///
+    /// 从 `pos` 位置开始逐个扫描 `s` 中的每个字符，如果和目标字符 `ch` 匹配，则返回该字符的位置。
+    /// 当指定 `escape` 字符时，表示扫描到 `escape` 字符时，自动忽略下一个字符，即使这个字符就是 `ch`。
+    ///
+    /// @notice{0} 如果扫描失败，也就是未找到字符 ch，那么所有函数都会返回 str::npos，且所有函数
+    /// 都会确保输出参数 `pos` 不会发生改变。
+    ///
+    /// @param s: 待扫描的字符串
+    /// @param pos: 扫描的起始位置，该参数为输入输出参数。当成功扫描到 ch 字符时，
+    /// 扫描将终止，pos 将位于 ch 字符的下一个字符的位置。如果未找到 pos 的值不会改变。
+    /// @param ch: 扫描过程中需要匹配的字符
+    /// @param escape: 扫描过程中如果遇到 escape 字符，将自动忽略下一个字符，以实现字符转义的效果
+    /// @return: 返回找到 ch 的位置，否则返回 `str::npos`
+    static auto accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, value_type ch) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, const charset_type& set) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const charset_type& set) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const char_match_proc& proc) -> size_type;
+    static auto accept_until(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type>;
+    static auto accept(std::string_view s, size_type& pos, value_type ch) -> size_type;
+    static auto accept(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type>;
+    static auto accept_word(std::string_view s, size_type& pos, std::string_view word) -> std::optional<range_type>;
+#ifdef STR_UNIMPL
     static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_real(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_string(std::string_view s, size_type& pos) -> range_type;

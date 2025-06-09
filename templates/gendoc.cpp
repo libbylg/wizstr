@@ -206,9 +206,10 @@ struct node_bcode : public node {
 struct node_icode : public node {
     std::string text;
 
-    explicit node_icode() {
+    explicit node_icode(std::string_view content) {
         kind = NODE_KIND_ICODE;
         flags |= node_flags::FLAG_INLINE;
+        text = content;
     }
 };
 
@@ -267,6 +268,15 @@ struct node_param : public node {
 struct node_return : public node {
     explicit node_return() {
         kind = NODE_KIND_RETURN;
+    }
+};
+
+struct node_text : public node {
+    std::string text;
+
+    explicit node_text(std::string_view content) {
+        kind = NODE_KIND_TEXT;
+        text = content;
     }
 };
 
@@ -445,6 +455,9 @@ struct render_context {
     node* root{nullptr};
     node* parent{nullptr};
 
+    // 行解析栈
+    std::vector<std::string_view> line_parse_stack;
+
     // 优先级队列
     std::vector<node*> stack;
 };
@@ -452,10 +465,10 @@ struct render_context {
 auto try_parse_line(render_context& context) -> void;
 
 auto try_parse_head(render_context& context) -> void {
-    static std::regex hx_pattern{R"(^(#+)\s+(.*))"};
+    static std::regex head_pattern{R"(^(#+)\s+(.*))"};
     const auto& line = context.reader.line_text();
     std::smatch match;
-    std::regex_match(line, match, hx_pattern);
+    std::regex_match(line, match, head_pattern);
     int32_t level = static_cast<int32_t>(match[1].length());
 
     node_head* head = new node_head(static_cast<int8_t>(level));
@@ -467,10 +480,11 @@ auto try_parse_head(render_context& context) -> void {
 
 // % xxx
 auto try_parse_section(render_context& context) -> void {
-    static std::regex hx_pattern{R"(^(%+)\s+(.*))"};
+    static std::regex section_pattern{R"(^(%+)\s+(.*))"};
+
     const auto& line = context.reader.line_text();
     std::smatch match;
-    std::regex_match(line, match, hx_pattern);
+    std::regex_match(line, match, section_pattern);
     int32_t level = static_cast<int32_t>(match[1].length());
 
     node_section* section = new node_section(static_cast<int8_t>(level));
@@ -482,22 +496,75 @@ auto try_parse_section(render_context& context) -> void {
 
 // * xxx
 auto try_parse_unordered_list(render_context& context) -> void {
-    auto& line = context.reader.line_text();
-    str::size_type pos = 0;
-    auto spaces = str::next_spaces_range(line, pos);
-    int32_t level = static_cast<int32_t>(spaces->size() / 2);
-    node_unorderd_list* ul = new node_unorderd_list(level);
+    static std::regex ul_pattern{R"(^(\*+)\s+(.*))"};
 
-    if (context.parent->kind != NODE_KIND_UL) {
-        context.parent->append(ul);
-        context.parent = ul;
-        try_parse_line(context);
-        context.parent = context.parent->parent;
-        return;
+    const auto& line = context.reader.line_text();
+    std::smatch match;
+    std::regex_match(line, match, ul_pattern);
+    int32_t level = static_cast<int32_t>(match[1].length());
+
+    node_unorderd_list* ul_new = new node_unorderd_list(level);
+
+    node* add_to_parent = nullptr;
+    for (node* parent = context.parent; true; parent = parent->parent) {
+        assert(parent != nullptr);
+        if (parent->kind != NODE_KIND_UL) {
+            add_to_parent = parent;
+            break;
+        }
+
+        node_unorderd_list* ul_node = reinterpret_cast<node_unorderd_list*>(parent);
+        if (ul_node->level > level) {
+            add_to_parent = ul_node;
+            break;
+        }
     }
+
+    assert(add_to_parent != nullptr);
+
+    add_to_parent->append(ul_new);
+    context.parent = ul_new;
+    assert(context.line_parse_stack.empty());
+    context.line_parse_stack.clear();
+    context.line_parse_stack.emplace_back(str::take_view(line, match.position(2), match.length(2)));
+    try_parse_line(context);
+    assert(context.line_parse_stack.empty());
+
+    return;
+}
+
+auto try_parse_icode(render_context& context) -> void {
 }
 
 auto try_parse_line(render_context& context) -> void {
+    std::string_view remain = context.line_parse_stack.back();
+    if (str::starts_with(remain, "*")) {
+        if (str::starts_with(remain, "**")) {
+
+        }
+    } else if (str::starts_with(remain, "`")) {
+        size_t start = 0;
+        auto pos = str::accept_until(remain, start, '`');
+        if (pos != str::npos) {
+            node_icode* icode = new node_icode(str::take_view(remain, str::interval(1, pos)));
+            context.parent->append(icode);
+        }
+    } else if (str::starts_with(remain, "[")) {
+        size_t start = 0;
+        auto pos = str::accept_until(remain, start, ']', '\\');
+        if (pos != str::npos) {
+            str::skip_spaces(remain, pos);
+            if (str::accept(remain, pos, "(")) {
+                start = pos;
+                pos = str::accept_until(remain, start, ')', '\\');
+            }
+        }
+    } else if (str::starts_with(remain, "@")) {
+    } else if (str::starts_with(remain, "![")) {
+    }
+
+    node_text* text = new node_text(remain);
+    context.parent->append(text);
 }
 
 auto try_accept_block_text(render_context& context) -> void {

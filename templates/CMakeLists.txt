@@ -34,5 +34,5 @@ set_target_properties(gendoc PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(gendoc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/templates")
 
 #   Add fake target for: make doc
-add_custom_target(doc COMMAND "${CMAKE_SOURCE_DIR}/templates/gendoc.sh")
+add_custom_target(doc COMMAND /bin/sh "${CMAKE_SOURCE_DIR}/templates/gendoc.sh")
 add_dependencies(doc gendoc example1)

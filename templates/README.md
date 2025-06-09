@@ -44,13 +44,9 @@ str 库聚焦丰富的功能、完善的测试、完备的接口设计。
 #include "str.hpp"
 
 int main() {
-    // split
+    // split&join
     auto items = str::split("Welcome to use str library");
-    std::cout << "items: [";
-    for (auto& item : items) {
-        std::cout << item << ",";
-    }
-    std::cout << "]" << std::endl;
+    std::cout << "items: [" << str::join_list(items) << "]" << std::endl;
 
     // path
     auto dirname = str::dirname("/home/sam/project/main.cpp");
@@ -65,6 +61,15 @@ int main() {
     std::cout << "trim_left: [" << str::trim_left(s) << "]" << std::endl;
     std::cout << "trim_right: [" << str::trim_right(s) << "]" << std::endl;
     std::cout << "trim_surrounding: [" << str::trim_surrounding(s) << "]" << std::endl;
+    std::cout << "simplified: [" << str::simplified(s) << "]" << std::endl;
+
+    // dump_hex
+    std::string k = "This function is used to dump binnary data to hex string like xxd";
+    str::dump_hex(k.data(), k.size(), str::dump_hex_format{.flags = (str::show_ascii | str::show_offset)},
+        [](size_t, std::string_view line_text) {
+            std::cout << line_text << std::endl;
+            return 0;
+        });
 
     return 0;
 }
@@ -73,13 +78,19 @@ int main() {
 输出结果如下：
 
 ```text
-items: [Welcome,to,use,str,library,]
+items: [Welcome,to,use,str,library]
 dirname: /home/sam/project
 basename: main.cpp
 fullpath: /home/sam/project/main.cpp
 trim_left: [Hello  World  !  ]
 trim_right: [  Hello  World  !]
 trim_surrounding: [Hello  World  !]
+simplified: [Hello World !]
+00: 54686973 2066756e 6374696f 6e206973 This function is
+10: 20757365 6420746f 2064756d 70206269  used to dump bi
+20: 6e6e6172 79206461 74612074 6f206865 nnary data to he
+30: 78207374 72696e67 206c696b 65207878 x string like xx
+40: 64                                  d               
 ```
 
 ## 构建

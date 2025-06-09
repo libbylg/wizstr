@@ -16,13 +16,9 @@
 #include "str.hpp"
 
 int main() {
-    // split
+    // split&join
     auto items = str::split("Welcome to use str library");
-    std::cout << "items: [";
-    for (auto& item : items) {
-        std::cout << item << ",";
-    }
-    std::cout << "]" << std::endl;
+    std::cout << "items: [" << str::join_list(items) << "]" << std::endl;
 
     // path
     auto dirname = str::dirname("/home/sam/project/main.cpp");
@@ -37,6 +33,15 @@ int main() {
     std::cout << "trim_left: [" << str::trim_left(s) << "]" << std::endl;
     std::cout << "trim_right: [" << str::trim_right(s) << "]" << std::endl;
     std::cout << "trim_surrounding: [" << str::trim_surrounding(s) << "]" << std::endl;
+    std::cout << "simplified: [" << str::simplified(s) << "]" << std::endl;
+
+    // dump_hex
+    std::string k = "This function is used to dump binnary data to hex string like xxd";
+    str::dump_hex(k.data(), k.size(), str::dump_hex_format{.flags = (str::show_ascii | str::show_offset)},
+        [](size_t, std::string_view line_text) {
+            std::cout << line_text << std::endl;
+            return 0;
+        });
 
     return 0;
 }
