@@ -76,13 +76,19 @@ int main() {
 输出结果如下：
 
 ```text
-items: [Welcome,to,use,str,library,]
+items: [Welcome,to,use,str,library]
 dirname: /home/sam/project
 basename: main.cpp
 fullpath: /home/sam/project/main.cpp
 trim_left: [Hello  World  !  ]
 trim_right: [  Hello  World  !]
 trim_surrounding: [Hello  World  !]
+simplified: [Hello World !]
+00: 54686973 2066756e 6374696f 6e206973 This function is
+10: 20757365 6420746f 2064756d 70206269  used to dump bi
+20: 6e6e6172 79206461 74612074 6f206865 nnary data to he
+30: 78207374 72696e67 206c696b 65207878 x string like xx
+40: 64                                  d               
 ```
 
 ## 构建
