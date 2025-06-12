@@ -43,7 +43,7 @@
     DEF_NODEKIND(63, OL, node_orderd_list, "有序列表")   \
     DEF_NODEKIND(64, UL, node_unorderd_list, "无序列表") \
     DEF_NODEKIND(65, LI, node_list_item, "列表子项")     \
-    DEF_NODEKIND(66, HREF, node_href, "超链接")          \
+    DEF_NODEKIND(66, HLINK, node_hlink, "超链接")        \
     DEF_NODEKIND(67, IMAGE, node_image, "图片")          \
     DEF_NODEKIND(68, ANCHOR, node_anchor, "锚点定义")    \
     DEF_NODEKIND(69, EMBDED, node_embded, "嵌入文字")    \
@@ -231,23 +231,6 @@ struct node_unorderd_list : public node {
     }
 };
 
-struct node_href : public node {
-    std::string name;
-    std::string url;
-
-    explicit node_href() {
-        kind = NODE_KIND_HREF;
-    }
-};
-
-struct node_image : public node {
-    std::string name;
-    std::string url;
-
-    node_image() {
-        kind = NODE_KIND_IMAGE;
-    }
-};
 
 struct node_anchor : public node {
     std::vector<std::string> names;
@@ -277,6 +260,46 @@ struct node_text : public node {
     explicit node_text(std::string_view content) {
         kind = NODE_KIND_TEXT;
         text = content;
+    }
+};
+
+struct node_strong : public node {
+    std::string text;
+
+    explicit node_strong(std::string_view content) {
+        kind = NODE_KIND_STRONG;
+        text = content;
+    }
+};
+
+struct node_em : public node {
+    std::string text;
+
+    explicit node_em(std::string_view content) {
+        kind = NODE_KIND_EM;
+        text = content;
+    }
+};
+
+struct node_hlink : public node {
+    std::string name;
+    std::string url;
+
+    explicit node_hlink(std::string_view n, std::string_view u) {
+        kind = NODE_KIND_HLINK;
+        name = n;
+        url = u;
+    }
+};
+
+struct node_image : public node {
+    std::string name;
+    std::string url;
+
+    explicit node_image(std::string_view n, std::string_view u) {
+        kind = NODE_KIND_IMAGE;
+        name = n;
+        url = u;
     }
 };
 
@@ -450,6 +473,7 @@ struct render_context {
 
     const std::string& root_directory;
     line_reader reader;
+    size_t rpos{0};
     FILE* writer{nullptr};
 
     node* root{nullptr};
@@ -536,35 +560,462 @@ auto try_parse_unordered_list(render_context& context) -> void {
 auto try_parse_icode(render_context& context) -> void {
 }
 
-auto try_parse_line(render_context& context) -> void {
-    std::string_view remain = context.line_parse_stack.back();
-    if (str::starts_with(remain, "*")) {
-        if (str::starts_with(remain, "**")) {
-
-        }
-    } else if (str::starts_with(remain, "`")) {
-        size_t start = 0;
-        auto pos = str::accept_until(remain, start, '`');
-        if (pos != str::npos) {
-            node_icode* icode = new node_icode(str::take_view(remain, str::interval(1, pos)));
-            context.parent->append(icode);
-        }
-    } else if (str::starts_with(remain, "[")) {
-        size_t start = 0;
-        auto pos = str::accept_until(remain, start, ']', '\\');
-        if (pos != str::npos) {
-            str::skip_spaces(remain, pos);
-            if (str::accept(remain, pos, "(")) {
-                start = pos;
-                pos = str::accept_until(remain, start, ')', '\\');
-            }
-        }
-    } else if (str::starts_with(remain, "@")) {
-    } else if (str::starts_with(remain, "![")) {
+struct acceptor {
+public:
+    explicit acceptor(std::string_view line, str::size_type pos = 0)
+        : line_{line}
+        , rpos_{pos} {
     }
 
-    node_text* text = new node_text(remain);
-    context.parent->append(text);
+    auto from(str::size_type pos) -> acceptor& {
+        rpos_ = pos;
+        return *this;
+    }
+
+    auto starts_with(std::string_view prefix) -> bool {
+        return (str::starts_with(line_, rpos_, prefix));
+    }
+
+    auto accept(str::value_type expect_ch) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept(line_, rpos_, expect_ch);
+        if (!range) {
+            ok_ = false;
+        }
+
+        return *this;
+    }
+
+    auto accept(const str::charset_type expect_charstr) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept(line_, rpos_, expect_charstr);
+        if (!range) {
+            ok_ = false;
+        }
+
+        return *this;
+    }
+
+    auto accept(std::string_view expect_str) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept(line_, rpos_, expect_str);
+        if (!range) {
+            ok_ = false;
+        }
+
+        return *this;
+    }
+
+    auto accept(std::string_view& result, const std::regex& expect_pattern) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept(line_, rpos_, expect_pattern);
+        if (!range) {
+            ok_ = false;
+        }
+
+        result = str::take_view(line_, *range);
+        return *this;
+    }
+
+    auto accept_until(str::value_type escape, str::value_type sep_ch) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, escape, sep_ch);
+        if (!range) {
+            ok_ = false;
+        }
+
+        return *this;
+    }
+
+    auto accept_until(str::value_type sep_ch) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, sep_ch);
+        if (!range) {
+            ok_ = false;
+            return *this;
+        }
+
+        return *this;
+    }
+
+    auto accept_until(str::value_type escape, const str::charset_type& sep_charset) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, escape, sep_charset);
+        if (!range) {
+            ok_ = false;
+        }
+
+        return *this;
+    }
+
+    auto accept_until(const str::charset_type& sep_charset) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, sep_charset);
+        if (!range) {
+            ok_ = false;
+            return *this;
+        }
+
+        return *this;
+    }
+
+    auto accept_until(std::string_view sep_str) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, sep_str);
+        if (!range) {
+            ok_ = false;
+        }
+
+        return *this;
+    }
+
+    auto accept_until(const std::regex& sep_pattern) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        std::string_view remain = str::take_view(line_, rpos_);
+        std::match_results<std::string_view::const_iterator> match;
+        if (!std::regex_search(remain.begin(), remain.end(), match, sep_pattern)) {
+            ok_ = false;
+            return *this;
+        }
+
+        rpos_ = match.position(0) + match.length(0);
+        return *this;
+    }
+
+    auto accept_until(std::string_view& result, str::value_type escape, str::value_type sep_ch) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, escape, sep_ch);
+        if (!range) {
+            ok_ = false;
+            return *this;
+        }
+
+        result = result.substr(range->pos, range->len);
+        return *this;
+    }
+
+    auto accept_until(std::string_view& result, str::value_type sep_ch) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, sep_ch);
+        if (!range) {
+            ok_ = false;
+            return *this;
+        }
+
+        result = result.substr(range->pos, range->len);
+        return *this;
+    }
+
+    auto accept_until(std::string_view& result, str::value_type escape, const str::charset_type& sep_charset) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, escape, sep_charset);
+        if (!range) {
+            ok_ = false;
+            return *this;
+        }
+
+        result = result.substr(range->pos, range->len);
+        return *this;
+    }
+
+    auto accept_until(std::string_view& result, const str::charset_type& sep_charset) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, sep_charset);
+        if (!range) {
+            ok_ = false;
+            return *this;
+        }
+
+        result = result.substr(range->pos, range->len);
+        return *this;
+    }
+
+    auto accept_until(std::string_view& result, std::string_view sep_str) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        auto range = str::accept_until(line_, rpos_, sep_str);
+        if (!range) {
+            ok_ = false;
+        }
+
+        result = line_.substr(range->pos, range->len);
+        return *this;
+    }
+
+    auto accept_until(std::string_view& result, const std::regex& sep_pattern) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        std::string_view remain = str::take_view(line_, rpos_);
+        std::match_results<std::string_view::const_iterator> match;
+        if (!std::regex_search(remain.begin(), remain.end(), match, sep_pattern)) {
+            ok_ = false;
+            return *this;
+        }
+
+        result = str::take_left(remain, match.position(0));
+        rpos_ = match.position(0) + match.length(0);
+        return *this;
+    }
+
+    auto skip_spaces() -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        str::skip_spaces(line_, rpos_);
+        return *this;
+    }
+
+    auto skip_max(str::size_type max_n) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        str::skip_max(line_, rpos_, max_n);
+        return *this;
+    }
+
+    auto skip_n(str::size_type n) -> acceptor& {
+        if (!ok_) {
+            return *this;
+        }
+
+        if (!str::skip_n(line_, rpos_, n)) {
+            ok_ = false;
+        }
+        return *this;
+    }
+
+    auto pos() const -> str::size_type {
+        return rpos_;
+    }
+
+    operator bool() const {
+        return ok_;
+    }
+
+    auto ok() const -> bool {
+        return ok_;
+    }
+
+private:
+    std::string_view line_;
+    str::size_type rpos_{0};
+    bool ok_{true};
+};
+
+auto try_parse_line(render_context& context, str::range_type range) -> void {
+    const std::string& line = context.reader.line_text();
+
+    size_t curr = range.begin();
+    while (curr < range.end()) {
+        char c = line[curr];
+        switch (c) {
+            case '*': {
+                acceptor acceptor(line);
+                std::string_view content;
+
+                // strong
+                if (acceptor.from(curr).accept("**").accept_until(content, "**")) {
+                    auto strong = new node_strong(content);
+                    context.parent->append(strong);
+                    curr = acceptor.pos();
+                    continue;
+                }
+
+                // em
+                if (acceptor.from(curr).accept("*").accept_until(content, "*")) {
+                    auto strong = new node_em(content);
+                    context.parent->append(strong);
+                    curr = acceptor.pos();
+                    continue;
+                }
+            }
+            break;
+            case '`': {
+                acceptor acceptor(line);
+                std::string_view content;
+
+                if (acceptor.from(curr).accept('`').accept_until(content, '`')) {
+                    node_icode* icode = new node_icode(content);
+                    context.parent->append(icode);
+                    curr = acceptor.pos();
+                    continue;
+                }
+            }
+            break;
+            case '[': {
+                // []()
+
+                str::size_type pos = curr;
+                acceptor acceptor(line);
+
+                std::string_view hlink_name;
+                std::string_view hlink_url;
+                acceptor.from(pos)
+                        .accept('[')
+                        .accept_until(hlink_name, '\\', ']')
+                        .skip_spaces()
+                        .accept('(')
+                        .accept_until(hlink_url, '\\', ')');
+                if (!acceptor) {
+                    break;
+                }
+
+                auto hlink = new node_hlink(hlink_name, hlink_url);
+                context.parent->append(hlink);
+                curr = pos;
+                continue;
+            }
+            break;
+            case '@': {
+                // @xxx{} @xxx{yyy, yyy}:
+                // @{yyy} @{yyy, yyy}
+                // @xxx yyy, yyy:
+                acceptor acceptor(line);
+                static std::regex name_pattern{R"([a-z]+)"};
+
+                std::string_view anno_name;
+
+                // 形式：@{yyy} @{yyy, yyy}
+                if (acceptor.from(curr).accept("@{")) {
+                    std::string_view item;
+                    do {
+                        if (!acceptor.accept(item, name_pattern)) {
+                            break;
+                        }
+
+                        acceptor.skip_spaces();
+                        if (acceptor.starts_with(",")) {
+                            continue;
+                        }
+
+                    } while (!acceptor.starts_with("}"));
+
+                }
+
+                // 形式：@xxx{} @xxx{yyy,yyy}
+                if (acceptor.from(curr).accept("@").accept(anno_name, name_pattern).accept('{')) {
+                    acceptor.skip_spaces();
+
+                    std::vector<std::string> names;
+
+                    while (!acceptor.starts_with("}")) {
+                        std::string_view name;
+                        if (!acceptor.accept(name, name_pattern)) {
+                            break;
+                        }
+
+                        names.emplace_back(std::move(name));
+
+                        if (!acceptor.starts_with(",")) {
+                            break;
+                        }
+                    }
+
+                    if (acceptor.starts_with("}")) {
+                        acceptor.skip_n(1);
+                        break;
+                    }
+                    break;
+                }
+
+                // 形式：@xxx yyy, yyy:
+                if (acceptor.from(curr).accept("@").accept(anno_name, name_pattern)) {
+                    std::string_view item;
+                    while (true) {
+                        acceptor.accept(item, name_pattern);
+                        acceptor.skip_spaces();
+
+                        if (acceptor.starts_with(",")) {
+                            acceptor.skip_n(1);
+                            continue;
+                        }
+
+                        if (acceptor.starts_with(":")) {
+                            acceptor.skip_n(1);
+                            break;
+                        }
+
+                        break;
+                    }
+                    break;
+                }
+            }
+            break;
+            case '!': {
+                // ![]()
+                acceptor acceptor(line);
+                std::string_view image_name;
+                std::string_view image_url;
+                acceptor.accept("![")
+                        .accept_until(image_name, '\\', ']')
+                        .accept('(')
+                        .accept_until(image_url, ')');
+                if (!acceptor) {
+                    break;
+                }
+
+                auto himage = new node_image(image_name, image_url);
+                context.parent->append(himage);
+                curr = acceptor.pos();
+                continue;
+            }
+            break;
+            default: {
+            }
+            break;
+        }
+
+        node_text* text = new node_text(str::take_view(line, curr));
+        context.parent->append(text);
+    }
 }
 
 auto try_accept_block_text(render_context& context) -> void {

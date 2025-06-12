@@ -200,6 +200,23 @@ struct str {
             return result;
         }
 
+        inline auto operator |(const charset_type& b) -> charset_type {
+            charset_type result;
+            result.bits_[0] = bits_[0] | b.bits_[0];
+            result.bits_[1] = bits_[1] | b.bits_[1];
+            result.bits_[2] = bits_[2] | b.bits_[2];
+            result.bits_[3] = bits_[3] | b.bits_[3];
+            return result;
+        }
+
+        inline auto operator |=(const charset_type& b) -> charset_type& {
+            bits_[0] |= b.bits_[0];
+            bits_[1] |= b.bits_[1];
+            bits_[2] |= b.bits_[2];
+            bits_[3] |= b.bits_[3];
+            return *this;
+        }
+
     private:
         //! 用于表示字符集中哪些字符在本字符集中，每个 bit 位代表字符集中的一个字符。
         uint64_t bits_[4]{0, 0, 0, 0};
@@ -539,6 +556,8 @@ struct str {
     static auto has_prefix(std::string_view s, std::string_view prefix) -> bool;
     static auto starts_with(std::string_view s, value_type ch) -> bool;
     static auto starts_with(std::string_view s, std::string_view prefix) -> bool;
+    static auto starts_with(std::string_view s, size_type pos, value_type ch) -> bool;
+    static auto starts_with(std::string_view s, size_type pos, std::string_view prefix) -> bool;
     static auto remove_prefix_view(std::string_view s, std::string_view prefix) -> std::string_view;
     static auto remove_prefix_view(std::string_view s, value_type prefix) -> std::string_view;
     static auto remove_prefix(std::string_view s, std::string_view prefix) -> std::string;
@@ -2067,40 +2086,77 @@ struct str {
     template <typename Iterator>
     static auto next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>>;
 
-    //! 符号识别 @anchor{skip_spaces}
-    ///
-    /// 尝试识别指定类型的符号，并返回符号的范围
-    ///
-    /// @param s 被视作符号识别的缓冲区的字符串
-    /// @param pos 作为输入参数是表示指定识别的起始位置，作为输出参数时表示下一个还未被识别的字符的位置
-    /// @return 如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值
-    ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
-    static auto skip_spaces(std::string_view s, size_type& pos) -> void;
-
     //! 简单词法识别 @anchor{accept}
     ///
-    /// 从 `pos` 位置开始逐个扫描 `s` 中的每个字符，如果和目标字符 `ch` 匹配，则返回该字符的位置。
-    /// 当指定 `escape` 字符时，表示扫描到 `escape` 字符时，自动忽略下一个字符，即使这个字符就是 `ch`。
+    /// * @ref{accept_until} 从 `pos` 位置开始逐个扫描 `s` 中的每个字符，如果遇到哨兵字符或者字符串
+    /// 或者其他形式的哨兵，则返回截止到哨兵起始位置的字符范围。当指定 `escape` 字符时，表示扫描到 `escape` 字符时，
+    /// 自动忽略下一个字符，即使这个字符就是哨兵字符本身。最终，accept_until 会返回哨兵之前的字符序列的范围。
     ///
-    /// @notice{0} 如果扫描失败，也就是未找到字符 ch，那么所有函数都会返回 str::npos，且所有函数
-    /// 都会确保输出参数 `pos` 不会发生改变。
+    /// * @ref{accept} 从 `pos` 位置开始逐个扫描 `s` 中的每个字符，收集满足条件的字符序列，
+    /// 直到下一个字符无法满足条件为止。最终，accept 会返回满足条件的字符序列的范围。
+    ///
+    /// @notice{0} 如果扫描失败，那么所有函数都会返回 `std::nullopt`，且输出参数 `pos` 不会发生改变。
+    ///
+    /// @notice{1} accept 和 accept_until 这两组函数的行为的重要区别是：accept 系列函数总是 '盯着' 满足
+    /// 条件的字符，而 accept_until 总是 '盯着' 不满足条件的字符。
+    ///
+    /// @notice{2} 虽然 accept 和 accept_until 这两组函数都是可以连续调用的，但是需要注意 accept_until 总是
+    /// 会自动跳过已经识别出来的哨兵。因此，如果连续调用 accept_until，总是不可能得到哨兵序列的范围。如果确
+    /// 实有必要获得的哨兵字符串，可以通过 pos 与返回的 range_type 来组合计算出来。如下示例：
+    ///
+    /// ```c++
+    /// auto range = str::accept_until(s, pos, token);
+    /// auto token_range = str::range(range->end_pos(), pos - range->end_pos());
+    /// ```
     ///
     /// @param s: 待扫描的字符串
-    /// @param pos: 扫描的起始位置，该参数为输入输出参数。当成功扫描到 ch 字符时，
-    /// 扫描将终止，pos 将位于 ch 字符的下一个字符的位置。如果未找到 pos 的值不会改变。
-    /// @param ch: 扫描过程中需要匹配的字符
+    /// @param pos: 扫描的起始位置，该参数为输入输出参数。如果符号识别成功，对于 accept_until 来说，pos 总是
+    /// 位于哨兵序列最后一个字符的下一个字符；而对于 accept 由于并没有哨兵，它总是指向找到的第一个不满足条件
+    /// 的字符的位置。
+    /// @param guard_ch: 以单个字符作为哨兵
+    /// @param guard_charset: 以字符集（多个可选的字符）为哨兵
+    /// @param guard_proc: 更抽象的单字符的哨兵，在扫描时只要字符满足条件即表示遇到哨兵
+    /// @param guard_token: 以一个字符序列为哨兵
+    /// @param guard_pattern: 以一个正则表达式为哨兵（需要确保不匹配到空串）
     /// @param escape: 扫描过程中如果遇到 escape 字符，将自动忽略下一个字符，以实现字符转义的效果
-    /// @return: 返回找到 ch 的位置，否则返回 `str::npos`
-    static auto accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type;
-    static auto accept_until(std::string_view s, size_type& pos, value_type escape, value_type ch) -> size_type;
-    static auto accept_until(std::string_view s, size_type& pos, const charset_type& set) -> size_type;
-    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const charset_type& set) -> size_type;
-    static auto accept_until(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type;
-    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const char_match_proc& proc) -> size_type;
-    static auto accept_until(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type>;
-    static auto accept(std::string_view s, size_type& pos, value_type ch) -> size_type;
-    static auto accept(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type>;
-    static auto accept_word(std::string_view s, size_type& pos, std::string_view word) -> std::optional<range_type>;
+    /// @param expect_ch: 用于 accept 函数，表示待识别的字符
+    /// @param expect_token: 用于 accept 函数，表示待识别的字符串
+    /// @param expect_pattern: 用于 accept 函数，表示需要识别的字符序列的模式
+    /// @param expect_charset: 用于 accept 函数，表示待识别的满足条件的字符集
+    /// @param expect_proc: 用于 accept 函数，表示待识别的字符需要满足的条件
+    /// @return: accept_until 系列函数总是返回找到的哨兵字符序列之前的字符序列的范围；而 accept 系列
+    /// 函数总是返回满足条件的字符序列的范围。
+    static auto accept_until(std::string_view s, size_type& pos, value_type guard_ch) -> std::optional<range_type>;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, value_type guard_ch) -> std::optional<range_type>;
+    static auto accept_until(std::string_view s, size_type& pos, std::string_view guard_token) -> std::optional<range_type>;
+    static auto accept_until(std::string_view s, size_type& pos, const std::regex& guard_pattern) -> std::optional<range_type>;
+    static auto accept_until(std::string_view s, size_type& pos, const charset_type& guard_charset) -> std::optional<range_type>;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const charset_type& guard_charset) -> std::optional<range_type>;
+    static auto accept_until(std::string_view s, size_type& pos, const char_match_proc& guard_proc) -> std::optional<range_type>;
+    static auto accept_until(std::string_view s, size_type& pos, value_type escape, const char_match_proc& guard_proc) -> std::optional<range_type>;
+    /// -
+    static auto accept(std::string_view s, size_type& pos, value_type expect_ch) -> std::optional<range_type>;
+    static auto accept(std::string_view s, size_type& pos, std::string_view expect_token) -> std::optional<range_type>;
+    static auto accept(std::string_view s, size_type& pos, const std::regex& expect_pattern) -> std::optional<range_type>;
+    static auto accept(std::string_view s, size_type& pos, const charset_type& expect_charset) -> std::optional<range_type>;
+    static auto accept(std::string_view s, size_type& pos, const char_match_proc& expect_proc) -> std::optional<range_type>;
+
+    //! @anchor skip: 跳过满足条件的字符
+    ///
+    /// * @ref{skip_n} 从 `pos` 开始跳过 `n` 个字符，并返回 `true`；如果长度不够，返回 `false`；
+    /// * @ref{skip_max} 从 `pos` 开始跳过最多 `max_n` 个字符，跳过实际跳过的长度；
+    /// * @ref{skip_spaces} 从 `pos` 开始，跳过所有空白字符，如果有的话；
+    ///
+    /// @param s: 被视作符号识别的缓冲区的字符串
+    /// @param pos: 作为输入参数是表示指定识别的起始位置，作为输出参数时表示下一个还未被识别的字符的位置
+    /// @param n: 跳过 n 个字符
+    /// @param max_n: 最多跳过 max_n 个字符
+    /// @return 如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值
+    ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
+    static auto skip_n(std::string_view s, size_type& pos, size_type n) -> bool;
+    static auto skip_max(std::string_view s, size_type& pos, size_type max_n) -> size_type;
+    static auto skip_spaces(std::string_view s, size_type& pos) -> void;
+
 #ifdef STR_UNIMPL
     static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
     static auto accept_literal_real(std::string_view s, size_type& pos) -> range_type;

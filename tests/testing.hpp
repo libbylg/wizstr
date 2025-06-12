@@ -194,7 +194,7 @@ struct testcase : public testcase_head {
 #define ASSERT_FALSE(Expr1_) (TESTING_ASSERT(!(Expr1_)))
 
 //! 用例分段宏（模仿 catch2）
-#define SECTION(Desc_) if (true)
-#define GROUP(Desc_) if (true)
+#define SECTION(Desc_) if (printf("SECTION:%s\n", Desc_) || true)
+#define GROUP(Desc_) if (printf("GROUP:%s\n", Desc_) || true)
 
 #endif // TESTING_H

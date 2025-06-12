@@ -604,6 +604,23 @@ auto str::starts_with(std::string_view s, std::string_view prefix) -> bool {
     return has_prefix(s, prefix);
 }
 
+auto str::starts_with(std::string_view s, size_type pos, value_type ch) -> bool {
+    if (pos >= s.size()) {
+        return false;
+    }
+
+    return s[pos] == ch;
+}
+
+auto str::starts_with(std::string_view s, size_type pos, std::string_view prefix) -> bool {
+    if (pos >= s.size()) {
+        return false;
+    }
+
+    std::string_view view = s.substr(pos, (s.size() - pos));
+    return str::starts_with(view, prefix);
+}
+
 auto str::remove_prefix_view(std::string_view s, std::string_view prefix) -> std::string_view {
     if (!has_prefix(s, prefix)) {
         return s;
@@ -6199,115 +6216,171 @@ auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
     }
 }
 
-auto str::accept_until(std::string_view s, size_type& pos, value_type ch) -> size_type {
-    return accept_until(s, pos, [ch](value_type item) -> bool { return ch == item; });
+auto str::accept_until(std::string_view s, size_type& pos, value_type guard_ch) -> std::optional<range_type> {
+    return accept_until(s, pos, [guard_ch](value_type item) -> bool { return guard_ch == item; });
 }
 
-auto str::accept_until(std::string_view s, size_type& pos, value_type escape, value_type ch) -> size_type {
-    return accept_until(s, pos, escape, [ch](value_type item) -> bool { return ch == item; });
+auto str::accept_until(std::string_view s, size_type& pos, value_type escape, value_type guard_ch) -> std::optional<range_type> {
+    return accept_until(s, pos, escape, [guard_ch](value_type item) -> bool { return guard_ch == item; });
 }
 
-auto str::accept_until(std::string_view s, size_type& pos, const charset_type& set) -> size_type {
-    return accept_until(s, pos, [&set](value_type ch) -> bool {
-        return set.contains(ch);
+auto str::accept_until(std::string_view s, size_type& pos, const charset_type& guard_charset) -> std::optional<range_type> {
+    return accept_until(s, pos, [&guard_charset](value_type ch) -> bool {
+        return guard_charset.contains(ch);
     });
 }
 
-auto str::accept_until(std::string_view s, size_type& pos, value_type escape, const charset_type& set) -> size_type {
-    return accept_until(s, pos, escape, [&set](value_type ch) -> bool {
-        return set.contains(ch);
+auto str::accept_until(std::string_view s, size_type& pos, value_type escape, const charset_type& guard_charset) -> std::optional<range_type> {
+    return accept_until(s, pos, escape, [&guard_charset](value_type ch) -> bool {
+        return guard_charset.contains(ch);
     });
 }
 
-auto str::accept_until(std::string_view s, size_type& pos, const char_match_proc& proc) -> size_type {
+auto str::accept_until(std::string_view s, size_type& pos, const char_match_proc& guard_proc) -> std::optional<range_type> {
     size_type curr = pos;
     while (curr < s.size()) {
-        if (proc(s[curr])) {
+        if (guard_proc(s[curr])) {
             pos = curr + 1;
-            return curr;
+            return range_type{curr, 1};
         }
         curr++;
     }
 
-    return str::npos;
+    return std::nullopt;
 }
 
-auto str::accept_until(std::string_view s, size_type& pos, value_type escape, const char_match_proc& proc) -> size_type {
+auto str::accept_until(std::string_view s, size_type& pos, value_type escape, const char_match_proc& guard_proc) -> std::optional<range_type> {
     size_type curr = pos;
     while (curr < s.size()) {
         if (s[curr] == escape) {
             if ((curr + 1) >= s.size()) {
-                return str::npos;
+                return std::nullopt;
             }
 
             curr += 2;
             continue;
         }
 
-        if (proc(s[curr])) {
+        if (guard_proc(s[curr])) {
             pos = curr + 1;
-            return curr;
+            return range_type{curr, 1};
         }
 
         curr++;
     }
 
-    return str::npos;
+    return std::nullopt;
 }
 
-
-auto str::accept_until(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type> {
-    if ((pos >= s.size()) || token.empty()) {
+auto str::accept_until(std::string_view s, size_type& pos, std::string_view guard_token) -> std::optional<range_type> {
+    if ((pos >= s.size()) || guard_token.empty()) {
         return std::nullopt;
     }
 
     size_type curr = pos;
-    auto range = next_string_range(s, curr, token);
+    auto range = next_string_range(s, curr, guard_token);
     if (!range) {
         return std::nullopt;
     }
 
-    return range;
+    pos = curr;
+    return range_type{curr, static_cast<size_type>(range->pos - curr)};
 }
 
-auto str::accept(std::string_view s, size_type& pos, std::string_view token) -> std::optional<range_type> {
-    if ((pos >= s.size()) || token.empty()) {
+auto str::accept_until(std::string_view s, size_type& pos, const std::regex& sep_pattern) -> std::optional<range_type> {
+    if (pos >= s.size()) {
+        return std::nullopt;
+    }
+
+    std::string_view remain = str::take_view(s, pos);
+    std::match_results<std::string_view::const_iterator> match;
+    if (!std::regex_search(remain.begin(), remain.end(), match, sep_pattern)) {
+        return std::nullopt;
+    }
+
+    pos = match.position(0) + match.length(0);
+    return range_type{static_cast<size_type>(match.position(0)), static_cast<size_type>(match.length(0))};
+}
+
+auto str::accept(std::string_view s, size_type& pos, std::string_view expect_token) -> std::optional<range_type> {
+    if ((pos >= s.size()) || expect_token.empty()) {
         return std::nullopt;
     }
 
     std::string_view remain = s.substr(pos);
-    if (!str::has_prefix(remain, token)) {
+    if (!str::has_prefix(remain, expect_token)) {
         return std::nullopt;
     }
 
-    return range_type{pos, token.size()};
+    return range_type{pos, expect_token.size()};
 }
 
-auto str::accept(std::string_view s, size_type& pos, value_type ch) -> size_type {
+auto str::accept(std::string_view s, size_type& pos, const std::regex& expect_pattern) -> std::optional<range_type> {
+    if (pos >= s.size()) {
+        return std::nullopt;
+    }
+
+    std::string_view remain = str::take_view(s, pos);
+    std::match_results<std::string_view::const_iterator> match;
+    if (!std::regex_search(remain.begin(), remain.end(), match, expect_pattern)) {
+        return std::nullopt;
+    }
+
+    if (match.position(0) != 0) {
+        return std::nullopt;
+    }
+
+    pos = match.position(0) + match.length(0);
+    return range_type{static_cast<size_type>(match.position(0)), static_cast<size_type>(match.length(0))};
+}
+
+auto str::accept(std::string_view s, size_type& pos, const char_match_proc& expect_proc) -> std::optional<range_type> {
     if ((pos >= s.size())) {
-        return str::npos;
-    }
-
-    if (s[pos] != ch) {
-        return str::npos;
-    }
-
-    return pos++;
-}
-
-auto str::accept_word(std::string_view s, size_type& pos, std::string_view word) -> std::optional<range_type> {
-    if ((pos >= s.size()) || word.empty()) {
         return std::nullopt;
     }
 
-    size_type curr = pos;
-    auto result = str::next_word_range(s, curr);
-    if (result.empty() || (str::take_view(s, result) != word)) {
+    if (!expect_proc(s[pos])) {
         return std::nullopt;
     }
 
-    return result;
+    return range_type{pos++, 1};
 }
+
+auto str::accept(std::string_view s, size_type& pos, const charset_type& expect_charset) -> std::optional<range_type> {
+    return str::accept(s, pos, expect_charset);
+}
+
+auto str::accept(std::string_view s, size_type& pos, value_type expect_char) -> std::optional<range_type> {
+    return str::accept(s, pos, [expect_char](value_type ch)-> bool { return expect_char == ch; });
+}
+
+auto str::skip_n(std::string_view s, size_type& pos, size_type n) -> bool {
+    if (pos >= s.size()) {
+        return (n == 0);
+    }
+
+    if ((s.size() - pos) < n) {
+        return false;
+    }
+
+    pos += n;
+    return true;
+}
+
+auto str::skip_max(std::string_view s, size_type& pos, size_type max_n) -> size_type {
+    if (pos >= s.size()) {
+        return 0;
+    }
+
+    if ((s.size() - pos) < max_n) {
+        pos = s.size();
+        return (s.size() - pos);
+    }
+
+    pos += max_n;
+    return pos;
+}
+
 
 #ifdef STR_UNTESTED
 auto str::grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string> {
