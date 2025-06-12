@@ -24,6 +24,17 @@ TEST(test_str, next_opt2) {
         ASSERT_EQ(str::next_opt2(pos, argv), std::nullopt);
         ASSERT_EQ(pos, 2);
     }
+    SECTION("场景2：-key value") {
+        int pos = 0;
+        auto items = std::vector<std::string>{"-a", "va"};
+        char* argv[]{items[0].data(), items[1].data()};
+        ASSERT_EQ(str::next_opt2(pos, 2, argv), (std::tuple{"-a", "va"}));
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt2(pos, 2, argv), std::nullopt);
+        ASSERT_EQ(pos, 2);
+        ASSERT_EQ(str::next_opt2(pos, 2, argv), std::nullopt);
+        ASSERT_EQ(pos, 2);
+    }
     SECTION("场景：-key|") {
         int pos = 0;
         const char* argv[] = {"-a"};
