@@ -6162,11 +6162,9 @@ public:
     argv_view(size_type argc, value_type argv[])
         : argc_{argc}
         , argv_{argv} {
-        assert(argc >= 0);
     }
 
     [[nodiscard]] inline auto size() const -> size_type {
-        assert(argc_ >= 0);
         return argc_;
     }
 
@@ -6188,10 +6186,20 @@ private:
 };
 
 auto str::next_opt1(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>> {
+    if ((argc <= 0) || (argv == nullptr)) {
+        next_index = 0;
+        return std::nullopt;
+    }
+
     return next_opt1(next_index, argv_view{argc, argv});
 }
 
 auto str::next_opt1(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>> {
+    if ((argc <= 0) || (argv == nullptr)) {
+        next_index = 0;
+        return std::nullopt;
+    }
+
     return next_opt1(next_index, argv_view{argc, argv});
 }
 
@@ -6347,7 +6355,9 @@ auto str::accept(std::string_view s, size_type& pos, const char_match_proc& expe
 }
 
 auto str::accept(std::string_view s, size_type& pos, const charset_type& expect_charset) -> std::optional<range_type> {
-    return str::accept(s, pos, expect_charset);
+    return str::accept(s, pos, [&expect_charset](value_type ch) -> bool {
+        return expect_charset.contains(ch);
+    });
 }
 
 auto str::accept(std::string_view s, size_type& pos, value_type expect_char) -> std::optional<range_type> {

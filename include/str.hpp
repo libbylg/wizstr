@@ -23,6 +23,7 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 //! # 简介
@@ -2480,7 +2481,16 @@ auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
 template <typename Container, typename SizeType>
 auto str::next_opt1(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
     return next_opt1([&next_index, &items]() -> std::optional<std::string_view> {
+        assert(items.size() >= 0);
+
+        if (std::is_signed<SizeType>::value) {
+            if (next_index < 0) {
+                next_index = 0;
+            }
+        }
+
         if (next_index >= items.size()) {
+            next_index = items.size();
             return std::nullopt;
         }
 
@@ -2490,12 +2500,12 @@ auto str::next_opt1(SizeType& next_index, const Container& items) -> std::option
 
 template <typename Iterator>
 auto str::next_opt1(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
-    return next_opt1([&itr, &end]() {
+    return next_opt1([&itr, &end]()-> std::optional<std::string_view> {
         if (itr == end) {
             return std::nullopt;
         }
 
-        return *itr++;
+        return *(itr++);
     });
 }
 
@@ -2534,6 +2544,14 @@ auto str::next_opt1(const IterProc& proc) -> std::optional<pair<std::string_view
 
 template <typename Container, typename SizeType>
 auto str::next_opt2(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
+    assert(items.size() >= 0);
+
+    if (std::is_signed<SizeType>::value) {
+        if (next_index < 0) {
+            next_index = 0;
+        }
+    }
+
     if (next_index >= static_cast<SizeType>(items.size())) {
         next_index = static_cast<SizeType>(items.size());
         return std::nullopt;
