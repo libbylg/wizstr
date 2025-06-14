@@ -6205,19 +6205,6 @@ auto str::next_opt2(int& next_index, int argc, char* argv[]) -> std::optional<pa
     return next_opt2(next_index, argv_view{argc, argv});
 }
 
-auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
-    if (pos > s.size()) {
-        pos = s.size();
-        return;
-    }
-
-    for (; pos < s.size(); ++pos) {
-        if (!std::isspace(s[pos])) {
-            break;
-        }
-    }
-}
-
 auto str::accept_until(std::string_view s, size_type& pos, value_type guard_ch) -> std::optional<range_type> {
     return accept_until(s, pos, [guard_ch](value_type item) -> bool { return guard_ch == item; });
 }
@@ -6358,8 +6345,25 @@ auto str::accept(std::string_view s, size_type& pos, value_type expect_char) -> 
     return str::accept(s, pos, [expect_char](value_type ch)-> bool { return expect_char == ch; });
 }
 
+auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
+    if (pos > s.size()) {
+        pos = s.size();
+        return;
+    }
+
+    for (; pos < s.size(); ++pos) {
+        if (!std::isspace(s[pos])) {
+            break;
+        }
+    }
+}
+
 auto str::skip_n(std::string_view s, size_type& pos, size_type n) -> bool {
-    if (pos >= s.size()) {
+    if (pos > s.size()) {
+        return false;
+    }
+
+    if (pos == s.size()) {
         return (n == 0);
     }
 
@@ -6371,18 +6375,23 @@ auto str::skip_n(std::string_view s, size_type& pos, size_type n) -> bool {
     return true;
 }
 
-auto str::skip_max(std::string_view s, size_type& pos, size_type max_n) -> size_type {
-    if (pos >= s.size()) {
+auto str::skip_max(std::string_view s, size_type& pos, size_type max_n) -> std::optional<size_type> {
+    if (pos > s.size()) {
+        return std::nullopt;
+    }
+
+    if (pos == s.size()) {
         return 0;
     }
 
-    if ((s.size() - pos) < max_n) {
+    auto n = (s.size() - pos);
+    if ((n) < max_n) {
         pos = s.size();
-        return (s.size() - pos);
+        return n;
     }
 
     pos += max_n;
-    return pos;
+    return max_n;
 }
 
 

@@ -2155,7 +2155,7 @@ struct str {
     /// @return 如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值
     ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
     static auto skip_n(std::string_view s, size_type& pos, size_type n) -> bool;
-    static auto skip_max(std::string_view s, size_type& pos, size_type max_n) -> size_type;
+    static auto skip_max(std::string_view s, size_type& pos, size_type max_n) -> std::optional<size_type>;
     static auto skip_spaces(std::string_view s, size_type& pos) -> void;
 
 #ifdef STR_UNIMPL
