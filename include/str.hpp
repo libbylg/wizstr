@@ -26,20 +26,11 @@
 #include <type_traits>
 #include <vector>
 
-#define STR_NAMESPACE str // {{STR-NAMESPACE-PLACEHOLDER}}
-// #define STR_CLASSNAME str // {{STR-CLASSNAME-PLACEHOLDER}}
-
 //! Adaptor for namespace
 #if defined(STR_NAMESPACE)
 namespace STR_NAMESPACE {
 #endif
 
-//! Adaptor for class name
-#if defined(STR_CLASSNAME)
-#define STR_PREFIX(name) STR_CLASSNAME::name
-#else
-#define STR_PREFIX(name)
-#endif
 
 //! # 简介
 ///
@@ -99,14 +90,15 @@ namespace STR_NAMESPACE {
 ///     因此，这类函数既没有类似 `_view` 系列函数那样的返回值依赖于输入参数的生存期的问题，也没有类似 `xxx_inplace` 那样会修改
 ///     原始输入参数的问题。但这类函数由于总是会拷贝原始输入字符串的，所以如果返回的字符串无法充分利用字符串的 SSO 特性，
 ///     那么性能会比 `xxx_view` 和 `xxx_inplace` 系列要低一些。当然这类函数的优点也是显而易见的，就是更`安全`。
-#if defined(STR_CLASSNAME)
-struct STR_CLASSNAME {
-#endif//STR_CLASSNAME
+struct str {
     using size_type = std::string::size_type;
     using ssize_type = ssize_t;
     using value_type = std::string::value_type;
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
+
+    //! 用于表示无效位置的值，等价于 std::string::npos 或者 std::string_view::npos
+    static inline constexpr size_type npos = std::string::npos;
 
     //! 字符集 @anchor{charset_type}
     ///
@@ -370,9 +362,6 @@ struct STR_CLASSNAME {
     //! 字符串映射：将一个字符串映射为另一个字符串，如果能成功映射返回映射后的字符串，否则返回 std::nullopt
     using string_mapping_proc = std::function<std::optional<std::string>(const std::string& key)>;
 
-    //! 用于表示无效位置的值，等价于 std::string::npos 或者 std::string_view::npos
-    static inline constexpr size_type npos = std::string::npos;
-
     //! 定义了几个操作系统强相关的常量
     ///
     /// * @ref{sep_searchpath, sep_searchpath_char} 搜索路径分隔符
@@ -440,7 +429,7 @@ struct STR_CLASSNAME {
     ///
     /// 將一个或者多个字符串追加到指定字符串的前面。实际上，STL 中已经提供了比较丰富的字符串插入函数，这里针对
     /// 大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒
-    /// 序的方式被追加。比如，`STR_PREFIX(prepend)("abc", {"123", "456", "789"})` 返回的结果是 "789456123abc"。
+    /// 序的方式被追加。比如，`str::prepend("abc", {"123", "456", "789"})` 返回的结果是 "789456123abc"。
     /// 对于 prepend_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
     ///
     /// @param s: 所有字符串都追加到该字符串之前
@@ -1340,10 +1329,10 @@ struct STR_CLASSNAME {
 #endif // STR_UNIMPL
     static auto split(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, size_type max_n = STR_PREFIX(npos)) -> std::vector<std::string>;
+    static auto split(std::string_view s, size_type max_n = npos) -> std::vector<std::string>;
     static auto split_view(std::string_view s, const charset_type& sep_charset, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_view(std::string_view s, std::string_view sep_str, size_type max_n = npos) -> std::vector<std::string_view>;
-    static auto split_view(std::string_view s, size_type max_n = STR_PREFIX(npos)) -> std::vector<std::string_view>;
+    static auto split_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
 
     //! 按逗号拆分 @anchor{split_list}
     ///
@@ -1975,8 +1964,8 @@ struct STR_CLASSNAME {
     /// * @ref{shifter} 用于给定起始点 `pos` 以及偏移量 `offset` 来数据的范围，其返回的是 @ref{shifter_type} 类型的对象。
     ///
     /// @notice{1} 需要特别注意 range 在某些边界场景下并不是完全等价的。比如:
-    /// `STR_PREFIX(range)(pos, n)` 并非总是等价于 `STR_PREFIX(interval)(pos, (pos + n))`，因为考虑到 `pos` 或者 `n`
-    /// 的值可能为 `STR_PREFIX(npos)`，此时简单地用 `(pos + n)` 做等价表示。
+    /// `str::range(pos, n)` 并非总是等价于 `str::interval(pos, (pos + n))`，因为考虑到 `pos` 或者 `n`
+    /// 的值可能为 `str::npos`，此时简单地用 `(pos + n)` 做等价表示。
     ///
     /// @notice{2} @ref{shifter} 函数相对比较特殊，其 `offset` 参数可以为正值也可以为负值。如果 `offset` 为负值，
     /// 可以理解为 `(pos + offset)` 到 `pos` 的范围（不包含 `pos`）。如果 `offset` 为正值，可以理解为 `pos`
@@ -2123,8 +2112,8 @@ struct STR_CLASSNAME {
     /// 实有必要获得的哨兵字符串，可以通过 pos 与返回的 range_type 来组合计算出来。如下示例：
     ///
     /// ```c++
-    /// auto range = STR_PREFIX(accept_until)(s, pos, token);
-    /// auto token_range = STR_PREFIX(range)(range->end_pos(), pos - range->end_pos());
+    /// auto range = str::accept_until(s, pos, token);
+    /// auto token_range = str::range(range->end_pos(), pos - range->end_pos());
     /// ```
     ///
     /// @param s: 待扫描的字符串
@@ -2261,13 +2250,11 @@ struct STR_CLASSNAME {
     /// @notice{1} 由于 Windows 下并无严格意义上的与 `*nix` 下对等的用户根目录的概念，因此，
     /// 在 Windows 下会以 `USERPROFILE` 环境变量的值来作为 `${HOME}` 的值。
     static auto home() -> std::string;
-#if defined(STR_CLASSNAME)
 };
-#endif//STR_CLASSNAME
 
 
 template <typename Sequence, typename>
-auto STR_PREFIX(append)(std::string_view s, const Sequence& items) -> std::string {
+auto str::append(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return append(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2279,7 +2266,7 @@ auto STR_PREFIX(append)(std::string_view s, const Sequence& items) -> std::strin
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(append_inplace)(std::string& s, const Sequence& items) -> std::string& {
+auto str::append_inplace(std::string& s, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     s = append(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2292,7 +2279,7 @@ auto STR_PREFIX(append_inplace)(std::string& s, const Sequence& items) -> std::s
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(prepend)(std::string_view s, const Sequence& items) -> std::string {
+auto str::prepend(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
     return prepend(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2304,7 +2291,7 @@ auto STR_PREFIX(prepend)(std::string_view s, const Sequence& items) -> std::stri
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(prepend_inplace)(std::string& s, const Sequence& items) -> std::string& {
+auto str::prepend_inplace(std::string& s, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     return prepend_inplace(s, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2317,7 +2304,7 @@ auto STR_PREFIX(prepend_inplace)(std::string& s, const Sequence& items) -> std::
 
 #ifdef STR_UNIMPL
 template <typename Sequence, typename>
-auto STR_PREFIX(insert)(std::string& s, size_type pos, const Sequence& items) -> std::string& {
+auto str::insert(std::string& s, size_type pos, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     return insert(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2331,7 +2318,7 @@ auto STR_PREFIX(insert)(std::string& s, size_type pos, const Sequence& items) ->
 
 #ifdef STR_UNIMPL
 template <typename Sequence, typename>
-auto STR_PREFIX(insert_inplace)(std::string& s, size_type pos, const Sequence& items) -> std::string& {
+auto str::insert_inplace(std::string& s, size_type pos, const Sequence& items) -> std::string& {
     auto itr = items.begin();
     return insert_inplace(s, pos, [&items, &itr]() -> std::optional<std::string_view> {
         if (itr == items.end()) {
@@ -2345,7 +2332,7 @@ auto STR_PREFIX(insert_inplace)(std::string& s, size_type pos, const Sequence& i
 
 #ifdef STR_UNTESTED
 template <typename RangeSearchProc, typename>
-auto STR_PREFIX(next_proc_range)(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type {
+auto str::next_proc_range(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> range_type {
     if (pos >= s.size()) {
         pos = s.size();
         return range_type{};
@@ -2362,7 +2349,7 @@ auto STR_PREFIX(next_proc_range)(std::string_view s, size_type& pos, const Range
 }
 
 template <typename RangeSearchProc, typename>
-auto STR_PREFIX(next_proc_view)(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view {
+auto str::next_proc_view(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string_view {
     auto range = next_proc_range(s, pos, proc);
     if (range.empty()) {
         return {};
@@ -2372,13 +2359,13 @@ auto STR_PREFIX(next_proc_view)(std::string_view s, size_type& pos, const RangeS
 }
 
 template <typename RangeSearchProc, typename>
-auto STR_PREFIX(next_proc)(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string {
+auto str::next_proc(std::string_view s, size_type& pos, const RangeSearchProc& proc) -> std::string {
     return std::string{next_proc_view(s, pos, proc)};
 }
 #endif // STR_UNTESTED
 
 template <typename CharMatchProc, typename>
-auto STR_PREFIX(is_all_in)(std::string_view s, const CharMatchProc& proc) -> bool {
+auto str::is_all_in(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (!proc(*ptr)) {
             return false;
@@ -2388,7 +2375,7 @@ auto STR_PREFIX(is_all_in)(std::string_view s, const CharMatchProc& proc) -> boo
 }
 
 template <typename CharMatchProc, typename>
-auto STR_PREFIX(has_any_one)(std::string_view s, const CharMatchProc& proc) -> bool {
+auto str::has_any_one(std::string_view s, const CharMatchProc& proc) -> bool {
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         if (proc(*ptr)) {
             return true;
@@ -2398,7 +2385,7 @@ auto STR_PREFIX(has_any_one)(std::string_view s, const CharMatchProc& proc) -> b
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join)(std::string_view s, const Sequence& items) -> std::string {
+auto str::join(std::string_view s, const Sequence& items) -> std::string {
     std::string result;
     auto itr = items.begin();
     return join(s, [&items, &itr]() -> std::optional<std::string_view> {
@@ -2411,14 +2398,14 @@ auto STR_PREFIX(join)(std::string_view s, const Sequence& items) -> std::string 
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join_list)(const Sequence& items) -> std::string {
+auto str::join_list(const Sequence& items) -> std::string {
     return join(",", items);
 }
 
 template <typename Map, typename>
-auto STR_PREFIX(join_map)(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
+auto str::join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string {
     auto itr = items.cbegin();
-    return STR_PREFIX(join_map)(sep_pair, sep_list,
+    return str::join_map(sep_pair, sep_list,
         [&itr, end = items.cend()]() -> std::optional<std::tuple<std::string_view, std::string_view>> {
             if (itr == end) {
                 return std::nullopt;
@@ -2430,12 +2417,12 @@ auto STR_PREFIX(join_map)(std::string_view sep_pair, std::string_view sep_list, 
 }
 
 template <typename Map, typename>
-auto STR_PREFIX(join_map)(const Map& items) -> std::string {
-    return STR_PREFIX(join_map)("=", ",", items);
+auto str::join_map(const Map& items) -> std::string {
+    return str::join_map("=", ",", items);
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join_lines)(std::string_view line_ends, const Sequence& items) -> std::string {
+auto str::join_lines(std::string_view line_ends, const Sequence& items) -> std::string {
     auto itr = items.begin();
     if (itr == items.end()) {
         return {};
@@ -2451,14 +2438,14 @@ auto STR_PREFIX(join_lines)(std::string_view line_ends, const Sequence& items) -
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join_lines)(const Sequence& items) -> std::string {
+auto str::join_lines(const Sequence& items) -> std::string {
     return join_lines(sep_line_ends, items);
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join_path)(std::string_view sep, const Sequence& items) -> std::string {
+auto str::join_path(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.begin();
-    return STR_PREFIX(join_path)(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
+    return str::join_path(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
         if (itr == end) {
             return std::nullopt;
         }
@@ -2468,14 +2455,14 @@ auto STR_PREFIX(join_path)(std::string_view sep, const Sequence& items) -> std::
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join_path)(const Sequence& items) -> std::string {
-    return STR_PREFIX(join_path)(sep_path, items);
+auto str::join_path(const Sequence& items) -> std::string {
+    return str::join_path(sep_path, items);
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join_searchpath)(std::string_view sep, const Sequence& items) -> std::string {
+auto str::join_searchpath(std::string_view sep, const Sequence& items) -> std::string {
     auto itr = items.begin();
-    return STR_PREFIX(join_searchpath)(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
+    return str::join_searchpath(sep, [end = items.end(), &itr]() -> std::optional<std::string_view> {
         if (itr == end) {
             return std::nullopt;
         }
@@ -2485,12 +2472,12 @@ auto STR_PREFIX(join_searchpath)(std::string_view sep, const Sequence& items) ->
 }
 
 template <typename Sequence, typename>
-auto STR_PREFIX(join_searchpath)(const Sequence& items) -> std::string {
+auto str::join_searchpath(const Sequence& items) -> std::string {
     return join_searchpath(":", items);
 }
 
 template <typename T>
-auto STR_PREFIX(sum)(std::string_view s, const mapping_proc<T>& proc) -> T {
+auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
     T result = 0;
     for (const_pointer ptr = s.data(); ptr < (s.data() + s.size()); ptr++) {
         result += proc(*ptr);
@@ -2499,7 +2486,7 @@ auto STR_PREFIX(sum)(std::string_view s, const mapping_proc<T>& proc) -> T {
 }
 
 template <typename Container, typename SizeType>
-auto STR_PREFIX(next_opt1)(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
+auto str::next_opt1(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
     return next_opt1([&next_index, &items]() -> std::optional<std::string_view> {
         if constexpr (std::is_signed<SizeType>::value) {
             if (next_index < 0) {
@@ -2522,7 +2509,7 @@ auto STR_PREFIX(next_opt1)(SizeType& next_index, const Container& items) -> std:
 }
 
 template <typename Iterator>
-auto STR_PREFIX(next_opt1)(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
+auto str::next_opt1(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
     return next_opt1([&itr, &end]()-> std::optional<std::string_view> {
         if (itr == end) {
             return std::nullopt;
@@ -2533,7 +2520,7 @@ auto STR_PREFIX(next_opt1)(Iterator& itr, Iterator end) -> std::optional<pair<st
 }
 
 template <typename IterProc>
-auto STR_PREFIX(next_opt1)(const IterProc& proc) -> std::optional<pair<std::string_view>> {
+auto str::next_opt1(const IterProc& proc) -> std::optional<pair<std::string_view>> {
     std::optional<std::string_view> item_opt = proc();
     if (!item_opt) {
         return std::nullopt;
@@ -2541,32 +2528,32 @@ auto STR_PREFIX(next_opt1)(const IterProc& proc) -> std::optional<pair<std::stri
 
     std::string_view item = item_opt.value();
     if (item.empty()) {
-        return STR_PREFIX(pair)<std::string_view>{std::string_view{}, item};
+        return str::pair<std::string_view>{std::string_view{}, item};
     }
 
     if (item[0] != '-') {
-        return STR_PREFIX(pair)<std::string_view>{std::string_view{}, item};
+        return str::pair<std::string_view>{std::string_view{}, item};
     }
 
     if (item == std::string_view{"--"}) {
         item_opt = proc();
         if (!item_opt) {
-            return STR_PREFIX(pair)<std::string_view>{std::string_view{}, std::string_view{}};
+            return str::pair<std::string_view>{std::string_view{}, std::string_view{}};
         }
 
-        return STR_PREFIX(pair)<std::string_view>{std::string_view{}, item_opt.value()};
+        return str::pair<std::string_view>{std::string_view{}, item_opt.value()};
     }
 
     auto pos = item.find('=', 0);
     if (pos == std::string_view::npos) {
-        return STR_PREFIX(pair)<std::string_view>{item, std::string_view{}};
+        return str::pair<std::string_view>{item, std::string_view{}};
     }
 
-    return STR_PREFIX(pair)<std::string_view>{item.substr(0, pos), item.substr(pos + 1)};
+    return str::pair<std::string_view>{item.substr(0, pos), item.substr(pos + 1)};
 }
 
 template <typename Container, typename SizeType>
-auto STR_PREFIX(next_opt2)(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
+auto str::next_opt2(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
     if constexpr (std::is_signed<SizeType>::value) {
         if (next_index < 0) {
             next_index = 0;
@@ -2592,7 +2579,7 @@ auto STR_PREFIX(next_opt2)(SizeType& next_index, const Container& items) -> std:
 }
 
 template <typename Iterator>
-auto STR_PREFIX(next_opt2)(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
+auto str::next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
     if (itr == end) {
         return std::nullopt;
     }
@@ -2605,7 +2592,7 @@ auto STR_PREFIX(next_opt2)(Iterator& itr, Iterator end) -> std::optional<pair<st
     }
 
     // value
-    if (!STR_PREFIX(starts_with)(curr, std::string_view{"-"})) {
+    if (!str::starts_with(curr, std::string_view{"-"})) {
         return pair<std::string_view>{std::string_view{}, curr};
     }
 
@@ -2626,7 +2613,7 @@ auto STR_PREFIX(next_opt2)(Iterator& itr, Iterator end) -> std::optional<pair<st
     }
 
     // -key value
-    if (!STR_PREFIX(starts_with)(*itr, std::string_view{"-"})) {
+    if (!str::starts_with(*itr, std::string_view{"-"})) {
         return pair<std::string_view>{curr, *(itr++)};
     }
 
