@@ -17,6 +17,17 @@ string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
 #   Definition of the top project
 project(str VERSION ${PROJECT_VERSION})
 
+OPTION(OPT_NAMESPACE "Specify the namespace of this library" "")
+OPTION(OPT_CLASSNAME "Specify the class name of this library" "str")
+
+if (NOT ${OPT_NAMESPACE} STREQUAL "")
+    set(STR_NAMESPACE ${OPT_NAMESPACE})
+endif()
+
+if (NOT "${OPT_CLASSNAME}" STREQUAL "")
+    set(STR_CLASSNAME ${OPT_CLASSNAME})
+endif()
+
 #   Import quality configuration
 include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
 
