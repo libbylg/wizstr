@@ -49,6 +49,26 @@ TEST(test_str, next_opt1) {
             ASSERT_FALSE(str::next_opt1(pos = 0, argv));
             ASSERT_EQ(pos, 0);
         }
+        SECTION("空选项") {
+            str::size_type pos = 0;
+            auto argv = std::vector{"-a=va", ""};
+            ASSERT_EQ(str::next_opt1(pos = 0, argv), (std::tuple{"-a", "va"}));
+            ASSERT_EQ(pos, 1);
+            ASSERT_EQ(str::next_opt1(pos, argv), (std::tuple{"", ""}));
+            ASSERT_EQ(pos, 2);
+            ASSERT_FALSE(str::next_opt1(pos, argv));
+            ASSERT_EQ(pos, 2);
+        }
+        SECTION("转义:转义后为空") {
+            str::size_type pos = 0;
+            auto argv = std::vector{"-k", "--"};
+            ASSERT_EQ(str::next_opt1(pos = 0, argv), (std::tuple{"-k", ""}));
+            ASSERT_EQ(pos, 1);
+            ASSERT_EQ(str::next_opt1(pos, argv), (std::tuple{"", ""}));
+            ASSERT_EQ(pos, 2);
+            ASSERT_FALSE(str::next_opt1(pos, argv));
+            ASSERT_EQ(pos, 2);
+        }
     }
     GROUP("迭代器模式") {
         SECTION("正常情况") {
@@ -160,6 +180,13 @@ TEST(test_str, next_opt1) {
             ASSERT_FALSE(str::next_opt1(pos = -15, argc=-10, argv));
             ASSERT_EQ(pos, 0);
             ASSERT_FALSE(str::next_opt1(pos = 0, argc=-1, argv));
+            ASSERT_EQ(pos, 0);
+        }
+        SECTION("null数组") {
+            int pos = 0;
+            const char** argv = nullptr;
+            int argc = 5;
+            ASSERT_FALSE(str::next_opt1(pos = 0, argc=5, argv));
             ASSERT_EQ(pos, 0);
         }
     }

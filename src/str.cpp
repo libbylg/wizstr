@@ -6162,6 +6162,10 @@ public:
     argv_view(size_type argc, value_type argv[])
         : argc_{argc}
         , argv_{argv} {
+        if ((argc_ < 0) || (argv_ == nullptr)) [[unlikely]] {
+            argc_ = 0;
+            return;
+        }
     }
 
     [[nodiscard]] inline auto size() const -> size_type {
@@ -6186,20 +6190,10 @@ private:
 };
 
 auto str::next_opt1(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>> {
-    if ((argc <= 0) || (argv == nullptr)) {
-        next_index = 0;
-        return std::nullopt;
-    }
-
     return next_opt1(next_index, argv_view{argc, argv});
 }
 
 auto str::next_opt1(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>> {
-    if ((argc <= 0) || (argv == nullptr)) {
-        next_index = 0;
-        return std::nullopt;
-    }
-
     return next_opt1(next_index, argv_view{argc, argv});
 }
 

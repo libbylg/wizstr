@@ -2481,11 +2481,14 @@ auto str::sum(std::string_view s, const mapping_proc<T>& proc) -> T {
 template <typename Container, typename SizeType>
 auto str::next_opt1(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
     return next_opt1([&next_index, &items]() -> std::optional<std::string_view> {
-        assert(items.size() >= 0);
-
-        if (std::is_signed<SizeType>::value) {
+        if constexpr (std::is_signed<SizeType>::value) {
             if (next_index < 0) {
                 next_index = 0;
+            }
+
+            if (items.size() <= 0) {
+                next_index = 0;
+                return std::nullopt;
             }
         }
 
@@ -2544,11 +2547,14 @@ auto str::next_opt1(const IterProc& proc) -> std::optional<pair<std::string_view
 
 template <typename Container, typename SizeType>
 auto str::next_opt2(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>> {
-    assert(items.size() >= 0);
-
-    if (std::is_signed<SizeType>::value) {
+    if constexpr (std::is_signed<SizeType>::value) {
         if (next_index < 0) {
             next_index = 0;
+        }
+
+        if (items.size() <= 0) {
+            next_index = 0;
+            return std::nullopt;
         }
     }
 
@@ -2582,11 +2588,6 @@ auto str::next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::stri
     if (!str::starts_with(curr, std::string_view{"-"})) {
         return pair<std::string_view>{std::string_view{}, curr};
     }
-
-    // // - ...
-    // if (curr == "-") {
-    //     return pair<std::string_view>{std::string_view{}, curr};
-    // }
 
     // -- value
     if (curr == std::string_view{"--"}) {
