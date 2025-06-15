@@ -33,8 +33,8 @@ TEST(test_str, prev_string_view) {
         ASSERT_FALSE(result = str::prev_string_view("abc def", pos = 4, "de"));
         ASSERT_TRUE((pos == 0));
 
-        ASSERT_TRUE(result = str::prev_string_view("abc def", pos = 5, "de"));
-        ASSERT_TRUE((pos == 4) && (*result == "de"));
+        ASSERT_FALSE(result = str::prev_string_view("abc def", pos = 5, "de"));
+        ASSERT_TRUE((pos == 0));
 
         ASSERT_TRUE(result = str::prev_string_view("abc def", pos = 6, "de"));
         ASSERT_TRUE((pos == 4) && (*result == "de"));
@@ -86,22 +86,13 @@ TEST(test_str, prev_string_view) {
         ASSERT_TRUE((pos == 6) && (*result == "AAA"));
 
         ASSERT_TRUE(result = str::prev_string_view("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 5) && (*result == "AAA"));
-
-        ASSERT_TRUE(result = str::prev_string_view("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 4) && (*result == "AAA"));
-
-        ASSERT_TRUE(result = str::prev_string_view("AAAKAAAAA", pos, "AAA"));
         ASSERT_TRUE((pos == 0) && (*result == "AAA"));
 
-        ASSERT_TRUE(result = str::next_string_view("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 1) && (*result == "AAA"));
+        ASSERT_FALSE(result = str::prev_string_view("AAAKAAAAA", pos, "AAA"));
+        ASSERT_TRUE((pos == 0));
 
         ASSERT_TRUE(result = str::next_string_view("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 5) && (*result == "AAA"));
-
-        ASSERT_TRUE(result = str::next_string_view("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 6) && (*result == "AAA"));
+        ASSERT_TRUE((pos == 3) && (*result == "AAA"));
 
         ASSERT_TRUE(result = str::next_string_view("AAAKAAAAA", pos, "AAA"));
         ASSERT_TRUE((pos == 7) && (*result == "AAA"));

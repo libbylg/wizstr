@@ -33,8 +33,8 @@ TEST(test_str, prev_string_range) {
         ASSERT_FALSE(result = str::prev_string_range("abc def", pos = 4, "de"));
         ASSERT_TRUE((pos == 0));
 
-        ASSERT_TRUE(result = str::prev_string_range("abc def", pos = 5, "de"));
-        ASSERT_TRUE((pos == 4) && (*result == str::range_type{4, 2}));
+        ASSERT_FALSE(result = str::prev_string_range("abc def", pos = 5, "de"));
+        ASSERT_TRUE((pos == 0));
 
         ASSERT_TRUE(result = str::prev_string_range("abc def", pos = 6, "de"));
         ASSERT_TRUE((pos == 4) && (*result == str::range_type{4, 2}));
@@ -86,25 +86,19 @@ TEST(test_str, prev_string_range) {
         ASSERT_TRUE((pos == 6) && (*result == str::range_type{6, 3}));
 
         ASSERT_TRUE(result = str::prev_string_range("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 5) && (*result == str::range_type{5, 3}));
-
-        ASSERT_TRUE(result = str::prev_string_range("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 4) && (*result == str::range_type{4, 3}));
-
-        ASSERT_TRUE(result = str::prev_string_range("AAAKAAAAA", pos, "AAA"));
         ASSERT_TRUE((pos == 0) && (*result == str::range_type{0, 3}));
 
-        ASSERT_TRUE(result = str::next_string_range("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 1) && (*result == str::range_type{0, 3}));
+        ASSERT_FALSE(result = str::prev_string_range("AAAKAAAAA", pos, "AAA"));
+        ASSERT_TRUE((pos == 0));
 
         ASSERT_TRUE(result = str::next_string_range("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 5) && (*result == str::range_type{4, 3}));
+        ASSERT_TRUE((pos == 3) && (*result == str::range_type{0, 3}));
 
         ASSERT_TRUE(result = str::next_string_range("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 6) && (*result == str::range_type{5, 3}));
+        ASSERT_TRUE((pos == 7) && (*result == str::range_type{4, 3}));
 
-        ASSERT_TRUE(result = str::next_string_range("AAAKAAAAA", pos, "AAA"));
-        ASSERT_TRUE((pos == 7) && (*result == str::range_type{6, 3}));
+        ASSERT_FALSE(result = str::next_string_range("AAAKAAAAA", pos, "AAA"));
+        ASSERT_TRUE((pos == 9));
 
         ASSERT_FALSE(result = str::next_string_range("AAAKAAAAA", pos, "AAA"));
         ASSERT_TRUE((pos == 9));

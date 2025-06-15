@@ -19,21 +19,21 @@ TEST(test_str, next_string_view) {
         std::optional<std::string_view> result;
 
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 0, "ab"));
-        ASSERT_TRUE((pos == 2) && (*result == "ab"));
+        ASSERT_TRUE((pos == 3) && (*result == "ab"));
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 1, "ab"));
-        ASSERT_TRUE((pos == 2) && (*result == "ab"));
+        ASSERT_TRUE((pos == 3) && (*result == "ab"));
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 2, "ab"));
-        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE((pos == 7) && (*result == "ab"));
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 3, "ab"));
-        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE((pos == 7) && (*result == "ab"));
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 4, "ab"));
-        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE((pos == 7) && (*result == "ab"));
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 5, "ab"));
-        ASSERT_TRUE((pos == 6) && (*result == "ab"));
+        ASSERT_TRUE((pos == 7) && (*result == "ab"));
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 6, "ab"));
-        ASSERT_TRUE((pos == 10) && (*result == "ab"));
+        ASSERT_TRUE((pos == 11) && (*result == "ab"));
         ASSERT_TRUE(result = str::next_string_view("Aabc ab Kaba", pos = 7, "ab"));
-        ASSERT_TRUE((pos == 10) && (*result == "ab"));
+        ASSERT_TRUE((pos == 11) && (*result == "ab"));
         ASSERT_FALSE(result = str::next_string_view("Aabc ab Kaba", pos = 10, "ab"));
         ASSERT_TRUE((pos == 12));
         ASSERT_FALSE(result = str::next_string_view("Aabc ab Kaba", pos = str::npos, "ab"));
@@ -72,11 +72,11 @@ TEST(test_str, next_string_view) {
         std::optional<std::string_view> result;
 
         ASSERT_TRUE(result = str::next_string_view("abababab", pos, "aba"));
-        ASSERT_TRUE(pos == 1);
+        ASSERT_TRUE((pos == 3) && (*result == "aba"));
         ASSERT_TRUE(result = str::next_string_view("abababab", pos, "aba"));
-        ASSERT_TRUE(pos == 3);
-        ASSERT_TRUE(result = str::next_string_view("abababab", pos, "aba"));
-        ASSERT_TRUE(pos == 5);
+        ASSERT_TRUE(pos == 7);
+        // ASSERT_TRUE(result = str::next_string_view("abababab", pos, "aba"));
+        // ASSERT_TRUE(pos == 5);
         ASSERT_FALSE(result = str::next_string_view("abababab", pos, "aba"));
         ASSERT_TRUE(pos == 8);
         ASSERT_FALSE(result = str::next_string_view("abababab", pos, "aba"));
@@ -88,13 +88,10 @@ TEST(test_str, next_string_view) {
 
         std::string s{"abababa"};
         ASSERT_TRUE(result = str::next_string_view(s, pos, "aba"));
-        ASSERT_TRUE((pos == 1) && (*result == "aba"));
-
-        ASSERT_TRUE(result = str::next_string_view(s, pos, "aba"));
         ASSERT_TRUE((pos == 3) && (*result == "aba"));
 
         ASSERT_TRUE(result = str::next_string_view(s, pos, "aba"));
-        ASSERT_TRUE((pos == 5) && (*result == "aba"));
+        ASSERT_TRUE((pos == 7) && (*result == "aba"));
 
         ASSERT_FALSE(result = str::next_string_view(s, pos, "aba"));
         ASSERT_TRUE((pos == 7));
@@ -103,10 +100,10 @@ TEST(test_str, next_string_view) {
         ASSERT_TRUE((pos == 4) && (*result == "aba"));
 
         ASSERT_TRUE(result = str::prev_string_view(s, pos, "aba"));
-        ASSERT_TRUE((pos == 2) && (*result == "aba"));
-
-        ASSERT_TRUE(result = str::prev_string_view(s, pos, "aba"));
         ASSERT_TRUE((pos == 0) && (*result == "aba"));
+
+        ASSERT_FALSE(result = str::prev_string_view(s, pos, "aba"));
+        ASSERT_TRUE((pos == 0));
 
         ASSERT_FALSE(result = str::prev_string_view(s, pos, "aba"));
         ASSERT_TRUE((pos == 0));

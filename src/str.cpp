@@ -848,7 +848,7 @@ auto str::next_string_range(std::string_view s, size_type& pos, std::string_view
         return std::nullopt;
     }
 
-    pos = next_pos + 1;
+    pos = next_pos + substr.size();
     return range_type{next_pos, substr.size()};
 }
 
@@ -884,14 +884,41 @@ auto str::prev_string_range(std::string_view s, size_type& pos, std::string_view
         pos = s.size();
     }
 
-    auto start = s.rfind(substr, pos - 1);
-    if (start == std::string_view::npos) {
-        pos = 0;
-        return std::nullopt;
+    const_pointer last = s.data() + pos;
+    while (last >= (s.data() + substr.size())) {
+        const_pointer eptr = last;
+        const_pointer mend = substr.data() + substr.size();
+        while (mend > substr.data()) {
+            if (*(mend - 1) != *(eptr - 1)) {
+                break;
+            }
+            mend--;
+            eptr--;
+        }
+
+        if (mend == substr.data()) {
+            pos = static_cast<size_type>(eptr - s.data());
+            return range_type{pos, substr.size()};
+        }
+
+        last--;
     }
 
-    pos = start;
-    return range_type{start, substr.size()};
+    pos = 0;
+    return std::nullopt;
+    // auto start = s.rfind(substr, pos);
+    // if (start == std::string_view::npos) {
+    //     pos = 0;
+    //     return std::nullopt;
+    // }
+    //
+    // if ((start + substr.size()) > pos) {
+    //     pos = 0;
+    //     return std::nullopt;
+    // }
+    //
+    // pos = start;
+    // return range_type{start, substr.size()};
 }
 
 auto str::prev_string_view(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string_view> {
@@ -6237,8 +6264,9 @@ auto str::accept_until(std::string_view s, size_type& pos, const char_match_proc
     size_type curr = pos;
     while (curr < s.size()) {
         if (guard_proc(s[curr])) {
+            auto result = range_type{pos, (curr - pos)};
             pos = curr + 1;
-            return range_type{curr, 1};
+            return result;
         }
         curr++;
     }
@@ -6259,8 +6287,9 @@ auto str::accept_until(std::string_view s, size_type& pos, value_type escape, co
         }
 
         if (guard_proc(s[curr])) {
+            auto result = range_type{pos, (curr - pos)};
             pos = curr + 1;
-            return range_type{curr, 1};
+            return result;
         }
 
         curr++;
@@ -6280,8 +6309,9 @@ auto str::accept_until(std::string_view s, size_type& pos, std::string_view guar
         return std::nullopt;
     }
 
+    auto result = range_type{pos, static_cast<size_type>(range->pos - pos)};
     pos = curr;
-    return range_type{curr, static_cast<size_type>(range->pos - curr)};
+    return result;
 }
 
 auto str::accept_until(std::string_view s, size_type& pos, const std::regex& sep_pattern) -> std::optional<range_type> {
@@ -6295,8 +6325,15 @@ auto str::accept_until(std::string_view s, size_type& pos, const std::regex& sep
         return std::nullopt;
     }
 
-    pos = match.position(0) + match.length(0);
-    return range_type{static_cast<size_type>(match.position(0)), static_cast<size_type>(match.length(0))};
+    // 匹配到零长串是不合理的
+    if (match.length(0) == 0) {
+        return std::nullopt;
+    }
+
+    auto end = pos + static_cast<size_type>(match.position(0));
+    auto result = range_type{pos, static_cast<size_type>(end - pos)}; //static_cast<size_type>(match.length(0))
+    pos = end + match.length(0);
+    return result;
 }
 
 auto str::accept(std::string_view s, size_type& pos, std::string_view expect_token) -> std::optional<range_type> {

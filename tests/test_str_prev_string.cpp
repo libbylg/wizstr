@@ -33,8 +33,8 @@ TEST(test_str, prev_string) {
         ASSERT_FALSE(result = str::prev_string("abc def", pos = 4, "de"));
         ASSERT_TRUE((pos == 0));
 
-        ASSERT_TRUE(result = str::prev_string("abc def", pos = 5, "de"));
-        ASSERT_TRUE((pos == 4) && (*result == "de"));
+        ASSERT_FALSE(result = str::prev_string("abc def", pos = 5, "de"));
+        ASSERT_TRUE((pos == 0));
 
         ASSERT_TRUE(result = str::prev_string("abc def", pos = 6, "de"));
         ASSERT_TRUE((pos == 4) && (*result == "de"));

@@ -14,167 +14,181 @@
 #include "str.hpp"
 
 TEST(test_str, accept_until) {
-    size_t start{0};
-    size_t pos{0};
+    GROUP("单字符为守卫符+未指定转义字符") {
+        size_t pos = 0;
+        std::optional<str::range_type> range;
+        ASSERT_TRUE(range = str::accept_until("abc`", pos = 0, '`'));
+        ASSERT_TRUE((pos == 4)&&(range == str::range(0, 3)));
 
-    SECTION("一般情况：未指定转义字符") {
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 0, '`'), 3);
-        ASSERT_EQ(start, 4);
+        ASSERT_FALSE(range = str::accept_until("abc`", pos = 0, 'Q'));
+        ASSERT_TRUE((pos == 0));
 
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 0, 'Q'), str::npos);
-        ASSERT_EQ(start, 0);
+        ASSERT_TRUE(range = str::accept_until("abc`", pos = 3, '`'));
+        ASSERT_TRUE((pos == 4)&&(range == str::range(3, 0)));
 
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 3, '`'), 3);
-        ASSERT_EQ(start, 4);
+        ASSERT_FALSE(range = str::accept_until("abc`", pos = 4, '`'));
+        ASSERT_TRUE((pos == 4));
 
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 4, '`'), str::npos);
-        ASSERT_EQ(start, 4);
-
-        ASSERT_EQ(pos = str::accept_until("abc`", start = str::npos, '`'), str::npos);
-        ASSERT_EQ(start, str::npos);
+        ASSERT_FALSE(range = str::accept_until("abc`", pos = str::npos, '`'));
+        ASSERT_TRUE((pos == str::npos));
     }
 
-    SECTION("一般情况：指定转义字符") {
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 0, ']', '\\'), 5);
-        ASSERT_EQ(start, 6);
+    GROUP("单字符为守卫符+指定转义字符") {
+        size_t pos = 0;
+        std::optional<str::range_type> range;
+        ASSERT_TRUE(range = str::accept_until(R"([a\]c])", pos = 0, '\\', ']'));
+        ASSERT_TRUE((pos == 6) && (range == str::range(0, 5)));
 
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c)", start = 0, 'Q', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
+        ASSERT_FALSE(range = str::accept_until(R"([a\]c)", pos = 0, '\\', ']'));
+        ASSERT_TRUE((pos == 0));
 
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 2, ']', '\\'), 5);
-        ASSERT_EQ(start, 6);
+        ASSERT_TRUE(range = str::accept_until(R"([a\]c])", pos = 2, '\\', ']'));
+        ASSERT_TRUE((pos == 6) && (range == str::range(2, 3)));
 
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 3, ']', '\\'), 3);
-        ASSERT_EQ(start, 4);
+        ASSERT_TRUE(range = str::accept_until(R"([a\]c])", pos = 3, '\\', ']'));
+        ASSERT_TRUE((pos == 4) && (range == str::range(3, 0)));
 
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = str::npos, ']', '\\'), str::npos);
-        ASSERT_EQ(start, str::npos);
+        ASSERT_FALSE(range = str::accept_until(R"([a\]c])", pos = str::npos, '\\', ']'));
+        ASSERT_TRUE((pos == str::npos));
 
-        ASSERT_EQ(pos = str::accept_until(R"(\)", start = 0, ']', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
+        ASSERT_FALSE(range = str::accept_until(R"(\)", pos = 0, '\\', ']'));
+        ASSERT_TRUE((pos == 0));
 
-        ASSERT_EQ(pos = str::accept_until(R"(abc\)", start = 0, ']', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
+        ASSERT_FALSE(range = str::accept_until(R"(abc\)", pos = 0, '\\', ']'));
+        ASSERT_TRUE((pos == 0));
+
+        SECTION("转义字符为自身") {
+            ASSERT_FALSE(range = str::accept_until(R"(ab\\c\\)", pos = 0, '\\', '\\'));
+            ASSERT_TRUE((pos == 0));
+        }
+
+        SECTION("空串场景") {
+            ASSERT_FALSE(range = str::accept_until("", pos = 0, '\0'));
+            ASSERT_TRUE((pos == 0));
+
+            ASSERT_FALSE(range = str::accept_until("", pos = 4, '`'));
+            ASSERT_TRUE((pos == 4));
+
+            ASSERT_FALSE(range = str::accept_until("", pos = str::npos, '`'));
+            ASSERT_TRUE((pos == str::npos));
+        }
     }
 
-    SECTION("转义字符为自身") {
-        ASSERT_EQ(pos = str::accept_until(R"(ab\\c\\)", start = 0, '\\', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
+    GROUP("字符集做守卫符+未指定转义字符") {
+        size_t pos = 0;
+        std::optional<str::range_type> range;
+        ASSERT_TRUE(range = str::accept_until("abc`", pos = 0, str::charset("`#%")));
+        ASSERT_TRUE((pos == 4)&&(range == str::range(0, 3)));
+
+        ASSERT_FALSE(range = str::accept_until("abc`", pos = 0, str::charset("XYZ")));
+        ASSERT_TRUE((pos == 0));
+
+        ASSERT_TRUE(range = str::accept_until("abc`", pos = 3, str::charset("`#%")));
+        ASSERT_TRUE((pos == 4)&&(range == str::range(3, 0)));
+
+        ASSERT_FALSE(range = str::accept_until("abc`", pos = 4, str::charset("`#%")));
+        ASSERT_TRUE((pos == 4));
+
+        ASSERT_FALSE(range = str::accept_until("abc`", pos = str::npos, str::charset("`#%")));
+        ASSERT_TRUE((pos == str::npos));
+
+        ASSERT_FALSE(range = str::accept_until("abc`", pos = 0, str::charset()));
+        ASSERT_TRUE((pos == 0));
     }
 
-    SECTION("空串场景") {
-        ASSERT_EQ(pos = str::accept_until("", start = 0, '\0'), str::npos);
-        ASSERT_EQ(start, 0);
+    GROUP("字符集做守卫符+指定转义字符") {
+        size_t pos = 0;
+        std::optional<str::range_type> range;
+        ASSERT_TRUE(range = str::accept_until(R"([a\]c])", pos = 0, '\\', str::charset("]#%")));
+        ASSERT_TRUE((pos == 6) && (range == str::range(0, 5)));
 
-        ASSERT_EQ(pos = str::accept_until("", start = 4, '`'), str::npos);
-        ASSERT_EQ(start, 4);
+        ASSERT_FALSE(range = str::accept_until(R"([a\]c)", pos = 0, '\\', str::charset("]#%")));
+        ASSERT_TRUE((pos == 0));
+
+        ASSERT_TRUE(range = str::accept_until(R"([a\]c])", pos = 2, '\\', str::charset("]#%")));
+        ASSERT_TRUE((pos == 6) && (range == str::range(2, 3)));
+
+        ASSERT_TRUE(range = str::accept_until(R"([a\]c])", pos = 3, '\\', str::charset("]#%")));
+        ASSERT_TRUE((pos == 4) && (range == str::range(3, 0)));
+
+        ASSERT_FALSE(range = str::accept_until(R"([a\]c])", pos = str::npos, '\\', str::charset("]#%")));
+        ASSERT_TRUE((pos == str::npos));
+
+        ASSERT_FALSE(range = str::accept_until(R"(\)", pos = 0, '\\', str::charset("]#%")));
+        ASSERT_TRUE((pos == 0));
+
+        ASSERT_FALSE(range = str::accept_until(R"(abc\)", pos = 0, '\\', str::charset("]#%")));
+        ASSERT_TRUE((pos == 0));
+
+        ASSERT_FALSE(range = str::accept_until(R"(abc\)", pos = 0, '\\', str::charset()));
+        ASSERT_TRUE((pos == 0));
+
+        SECTION("连续识别") {
+            ASSERT_TRUE(range = str::accept_until(R"(%abc#\#def#)", pos = 0, '\\', str::charset("]#%")));
+            ASSERT_TRUE((pos == 1) && (range == str::range(0, 0)));
+            ASSERT_TRUE(range = str::accept_until(R"(%abc#\#def#)", pos, '\\', str::charset("]#%")));
+            ASSERT_TRUE((pos == 5) && (range == str::range(1, 3)));
+            ASSERT_TRUE(range = str::accept_until(R"(%abc#\#def#)", pos, '\\', str::charset("]#%")));
+            ASSERT_TRUE((pos == 11) && (range == str::range(5, 5)));
+            ASSERT_FALSE(range = str::accept_until(R"(%abc#\#def#)", pos, '\\', str::charset("]#%")));
+            ASSERT_TRUE((pos == 11));
+        }
     }
 
-    SECTION("一般情况：未指定转义字符") {
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 0, '`'), 3);
-        ASSERT_EQ(start, 4);
-
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 0, 'Q'), str::npos);
-        ASSERT_EQ(start, 0);
-
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 3, '`'), 3);
-        ASSERT_EQ(start, 4);
-
-        ASSERT_EQ(pos = str::accept_until("abc`", start = 4, '`'), str::npos);
-        ASSERT_EQ(start, 4);
-
-        ASSERT_EQ(pos = str::accept_until("abc`", start = str::npos, '`'), str::npos);
-        ASSERT_EQ(start, str::npos);
+    GROUP("字符串做守卫符") {
+        SECTION("连续识别") {
+            size_t pos = 0;
+            std::optional<str::range_type> range;
+            ASSERT_TRUE(range = str::accept_until(R"(abc###def####)", pos, "##"));
+            ASSERT_TRUE((pos == 5) && (range == str::range(0, 3)));
+            ASSERT_TRUE(range = str::accept_until(R"(abc###def####)", pos, "##"));
+            ASSERT_TRUE((pos == 11) && (range == str::range(5, 4)));
+            ASSERT_TRUE(range = str::accept_until(R"(abc###def####)", pos, "##"));
+            ASSERT_TRUE((pos == 13) && (range == str::range(11, 0)));
+            ASSERT_FALSE(range = str::accept_until(R"(abc###def####)", pos, "##"));
+            ASSERT_TRUE((pos == 13));
+        }
+        SECTION("未识别到") {
+            size_t pos = 0;
+            std::optional<str::range_type> range;
+            ASSERT_FALSE(range = str::accept_until(R"(abc###def####)", pos=0, "!!"));
+            ASSERT_TRUE((pos == 0));
+        }
+        SECTION("空串") {
+            size_t pos = 0;
+            std::optional<str::range_type> range;
+            ASSERT_FALSE(range = str::accept_until(R"()", pos=0, "####"));
+            ASSERT_TRUE((pos == 0));
+            ASSERT_FALSE(range = str::accept_until(R"()", pos=1, "####"));
+            ASSERT_TRUE((pos == 1));
+            ASSERT_FALSE(range = str::accept_until(R"()", pos=str::npos, "####"));
+            ASSERT_TRUE((pos == str::npos));
+            ASSERT_FALSE(range = str::accept_until(R"()", pos=0, "####"));
+            ASSERT_TRUE((pos == 0));
+            ASSERT_FALSE(range = str::accept_until(R"()", pos=1, "####"));
+            ASSERT_TRUE((pos == 1));
+            ASSERT_FALSE(range = str::accept_until(R"()", pos=0, ""));
+            ASSERT_TRUE((pos == 0));
+        }
     }
 
-    SECTION("一般情况：指定转义字符") {
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 0, ']', '\\'), 5);
-        ASSERT_EQ(start, 6);
-
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c)", start = 0, 'Q', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
-
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 2, ']', '\\'), 5);
-        ASSERT_EQ(start, 6);
-
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 3, ']', '\\'), 3);
-        ASSERT_EQ(start, 4);
-
-        ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = str::npos, ']', '\\'), str::npos);
-        ASSERT_EQ(start, str::npos);
-
-        ASSERT_EQ(pos = str::accept_until(R"(\)", start = 0, ']', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
-
-        ASSERT_EQ(pos = str::accept_until(R"(abc\)", start = 0, ']', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
+    GROUP("正则表达式做守卫符") {
+        size_t pos = 0;
+        std::optional<str::range_type> range;
+        // 0 长串
+        ASSERT_FALSE(range = str::accept_until(R"(ABC0)", pos=0, std::regex("[0-9]*")));
+        ASSERT_TRUE((pos == 0));
+        // 有效匹配
+        ASSERT_TRUE(range = str::accept_until(R"(ABC0)", pos=0, std::regex("[0-9]+")));
+        ASSERT_TRUE((pos == 4) && (range == str::range(0, 3)));
+        // 无任何字符匹配
+        ASSERT_FALSE(range = str::accept_until(R"(ABCD)", pos=0, std::regex("[0-9]+")));
+        ASSERT_TRUE((pos == 0));
+        // 首字符开始匹配
+        ASSERT_TRUE(range = str::accept_until(R"(0123)", pos=0, std::regex("[0-9]+")));
+        ASSERT_TRUE((pos == 4) && (range == str::range(0, 0)));
+        // 空串
+        ASSERT_FALSE(range = str::accept_until(R"()", pos=0, std::regex("[0-9]+")));
+        ASSERT_TRUE((pos == 0));
     }
-
-    SECTION("转义字符为自身") {
-        ASSERT_EQ(pos = str::accept_until(R"(ab\\c\\)", start = 0, '\\', '\\'), str::npos);
-        ASSERT_EQ(start, 0);
-    }
-
-    SECTION("空串场景") {
-        ASSERT_EQ(pos = str::accept_until("", start = 0, '\0'), str::npos);
-        ASSERT_EQ(start, 0);
-
-        ASSERT_EQ(pos = str::accept_until("", start = 4, '`'), str::npos);
-        ASSERT_EQ(start, 4);
-    }
-    // size_t start{0};
-    // size_t pos{0};
-    //
-    // SECTION("一般情况：未指定转义字符") {
-    //     ASSERT_EQ(pos = str::accept_until("abc`", start = 0, '`'), 3);
-    //     ASSERT_EQ(start, 4);
-    //
-    //     ASSERT_EQ(pos = str::accept_until("abc`", start = 0, 'Q'), str::npos);
-    //     ASSERT_EQ(start, 0);
-    //
-    //     ASSERT_EQ(pos = str::accept_until("abc`", start = 3, '`'), 3);
-    //     ASSERT_EQ(start, 4);
-    //
-    //     ASSERT_EQ(pos = str::accept_until("abc`", start = 4, '`'), str::npos);
-    //     ASSERT_EQ(start, 4);
-    //
-    //     ASSERT_EQ(pos = str::accept_until("abc`", start = str::npos, '`'), str::npos);
-    //     ASSERT_EQ(start, str::npos);
-    // }
-    //
-    // SECTION("一般情况：指定转义字符") {
-    //     ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 0, ']', '\\'), 5);
-    //     ASSERT_EQ(start, 6);
-    //
-    //     ASSERT_EQ(pos = str::accept_until(R"([a\]c)", start = 0, 'Q', '\\'), str::npos);
-    //     ASSERT_EQ(start, 0);
-    //
-    //     ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 2, ']', '\\'), 5);
-    //     ASSERT_EQ(start, 6);
-    //
-    //     ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = 3, ']', '\\'), 3);
-    //     ASSERT_EQ(start, 4);
-    //
-    //     ASSERT_EQ(pos = str::accept_until(R"([a\]c])", start = str::npos, ']', '\\'), str::npos);
-    //     ASSERT_EQ(start, str::npos);
-    //
-    //     ASSERT_EQ(pos = str::accept_until(R"(\)", start = 0, ']', '\\'), str::npos);
-    //     ASSERT_EQ(start, 0);
-    //
-    //     ASSERT_EQ(pos = str::accept_until(R"(abc\)", start = 0, ']', '\\'), str::npos);
-    //     ASSERT_EQ(start, 0);
-    // }
-    //
-    // SECTION("转义字符为自身") {
-    //     ASSERT_EQ(pos = str::accept_until(R"(ab\\c\\)", start = 0, '\\', '\\'), str::npos);
-    //     ASSERT_EQ(start, 0);
-    // }
-    //
-    // SECTION("空串场景") {
-    //     ASSERT_EQ(pos = str::accept_until("", start = 0, '\0'), str::npos);
-    //     ASSERT_EQ(start, 0);
-    //
-    //     ASSERT_EQ(pos = str::accept_until("", start = 4, '`'), str::npos);
-    //     ASSERT_EQ(start, 4);
-    // }
 }

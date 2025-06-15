@@ -20,19 +20,16 @@ TEST(test_str, next_string) {
         std::optional<std::string> result;
 
         ASSERT_TRUE(result = str::next_string(s, pos, "AA"));
-        ASSERT_TRUE((pos == 1) && (*result == "AA"));
+        ASSERT_TRUE((pos == 2) && (*result == "AA"));
 
         ASSERT_TRUE(result = str::next_string(s, pos, "AA"));
-        ASSERT_TRUE((pos == 6) && (*result == "AA"));
-
-        ASSERT_TRUE(result = str::next_string(s, pos, "AA"));
-        ASSERT_TRUE((pos == 11) && (*result == "AA"));
+        ASSERT_TRUE((pos == 7) && (*result == "AA"));
 
         ASSERT_TRUE(result = str::next_string(s, pos, "AA"));
         ASSERT_TRUE((pos == 12) && (*result == "AA"));
 
         ASSERT_TRUE(result = str::next_string(s, pos, "AA"));
-        ASSERT_TRUE((pos == 13) && (*result == "AA"));
+        ASSERT_TRUE((pos == 14) && (*result == "AA"));
 
         ASSERT_FALSE(result = str::next_string(s, pos, "AA"));
         ASSERT_TRUE((pos == 14));
