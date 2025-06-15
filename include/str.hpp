@@ -31,7 +31,6 @@
 namespace STR_NAMESPACE {
 #endif
 
-
 //! # 简介
 ///
 /// str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语言功能最丰富的字符串处理函数库。
@@ -1951,11 +1950,12 @@ struct str {
 
     //! 字符集对象生成 @anchor{charset}
     ///
-    /// @ref{charset} 用于将 `s` 中的所有字符设置到字符集对象中。
+    /// @ref{charset} 用于将 `s` 中的所有字符设置到字符集对象中，无参版本标识生成空字符集。
     ///
     /// @param s: 从 `s` 中的每个不重复字符作为字符集的一部分
     /// @return 返回生成的字符集
     static auto charset(std::string_view s) -> charset_type;
+    static auto charset() -> charset_type;
 
     //! 范围对象生成 @anchor{range, interval, shifter}
     ///

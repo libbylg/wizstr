@@ -1498,9 +1498,9 @@ auto str::is_literal_true(std::string_view s) -> bool {
             return false;
         case 1:
             switch (*ptr) {
-            case '1':
+                case '1':
                     return true;
-            default:
+                default:
                     return false;
             }
         default:
@@ -1573,9 +1573,9 @@ auto str::is_literal_false(std::string_view s) -> bool {
             return false;
         case 1:
             switch (*ptr) {
-            case '0':
+                case '0':
                     return true;
-            default:
+                default:
                     return false;
             }
         default:
@@ -3079,20 +3079,20 @@ auto str::join_list(const view_provider_proc& proc) -> std::string {
 
 auto str::join_map(std::string_view sep_pair, std::string_view sep_list,
     const view_pair_provider_proc& proc) -> std::string {
-        std::string result;
-        bool suffix = false;
-        for (auto item = proc(); item; item = proc()) {
-            if (suffix) {
-                result.append(sep_list);
-            }
-
-            result.append(std::get<0>(item.value()));
-            result.append(sep_pair);
-            result.append(std::get<1>(item.value()));
-            suffix = true;
+    std::string result;
+    bool suffix = false;
+    for (auto item = proc(); item; item = proc()) {
+        if (suffix) {
+            result.append(sep_list);
         }
-        return result;
+
+        result.append(std::get<0>(item.value()));
+        result.append(sep_pair);
+        result.append(std::get<1>(item.value()));
+        suffix = true;
     }
+    return result;
+}
 
 auto str::join_map(const view_pair_provider_proc& proc) -> std::string {
     return str::join_map("=", ",", proc);
@@ -3403,42 +3403,42 @@ auto str::split_pair_view(std::string_view s, std::string_view sep) -> pair<std:
 
 auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
     const view_pair_consumer_proc& proc) -> void {
-        if (s.empty()) [[unlikely]] {
-            return;
-        }
-
-        if (sep_list.empty()) [[unlikely]] {
-            sep_list = ",";
-        }
-
-        if (sep_pair.empty()) [[unlikely]] {
-            sep_pair = ":";
-        }
-
-        str::split(s, sep_list, str::npos, [sep_pair, &proc](std::string_view item) -> int {
-            auto key_val = str::split_pair(item, sep_pair);
-            return proc(std::get<0>(key_val), std::get<1>(key_val));
-        });
+    if (s.empty()) [[unlikely]] {
+        return;
     }
+
+    if (sep_list.empty()) [[unlikely]] {
+        sep_list = ",";
+    }
+
+    if (sep_pair.empty()) [[unlikely]] {
+        sep_pair = ":";
+    }
+
+    str::split(s, sep_list, str::npos, [sep_pair, &proc](std::string_view item) -> int {
+        auto key_val = str::split_pair(item, sep_pair);
+        return proc(std::get<0>(key_val), std::get<1>(key_val));
+    });
+}
 
 auto str::split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair,
     size_type max_n) -> std::map<std::string, std::string> {
-        if (max_n == 0) {
-            return {};
+    if (max_n == 0) {
+        return {};
+    }
+
+    std::map<std::string, std::string> result;
+    str::split_map(s, sep_list, sep_pair, [max_n, &result](std::string_view key, std::string_view value) -> int {
+        result[std::string{key}] = std::string{value};
+        if (result.size() >= max_n) {
+            return -1;
         }
 
-        std::map<std::string, std::string> result;
-        str::split_map(s, sep_list, sep_pair, [max_n, &result](std::string_view key, std::string_view value) -> int {
-            result[std::string{key}] = std::string{value};
-            if (result.size() >= max_n) {
-                return -1;
-            }
+        return 0;
+    });
 
-            return 0;
-        });
-
-        return result;
-    }
+    return result;
+}
 
 auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void {
     if (s.empty()) {
@@ -5263,7 +5263,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
                     }
-                        break;
+                    break;
                     case 'X':
                         [[fallthrough]];
                     case 'x': {
@@ -5302,7 +5302,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
                     }
-                        break;
+                    break;
                     default:
                         return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
@@ -5313,7 +5313,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                 w = ptr;
             }
-                break;
+            break;
 
             case 'A' ... 'Z':
                 [[fallthrough]];
@@ -5903,6 +5903,10 @@ auto str::charset(std::string_view s) -> charset_type {
     return charset_type{s};
 }
 
+auto str::charset() -> charset_type {
+    return charset_type{};
+}
+
 auto str::range(size_type pos, size_type n) -> range_type {
     return range_type{pos, n};
 }
@@ -6165,7 +6169,7 @@ public:
 
     argv_view(size_type argc, value_type argv[])
         : argc_{argc}
-    , argv_{argv} {
+        , argv_{argv} {
         if ((argc_ < 0) || (argv_ == nullptr)) [[unlikely]] {
             argc_ = 0;
             return;
@@ -6305,7 +6309,9 @@ auto str::accept(std::string_view s, size_type& pos, std::string_view expect_tok
         return std::nullopt;
     }
 
-    return range_type{pos, expect_token.size()};
+    auto result = range_type{pos, expect_token.size()};
+    pos += expect_token.size();
+    return result;
 }
 
 auto str::accept(std::string_view s, size_type& pos, const std::regex& expect_pattern) -> std::optional<range_type> {
@@ -6319,12 +6325,18 @@ auto str::accept(std::string_view s, size_type& pos, const std::regex& expect_pa
         return std::nullopt;
     }
 
-    if (match.position(0) != 0) {
+    if (static_cast<size_type>(match.position(0)) != 0) {
         return std::nullopt;
     }
 
-    pos = match.position(0) + match.length(0);
-    return range_type{static_cast<size_type>(match.position(0)), static_cast<size_type>(match.length(0))};
+    // 不允许匹配长度为0
+    if (match.length(0) == 0) {
+        return std::nullopt;
+    }
+
+    auto result = range_type{static_cast<size_type>(pos + match.position(0)), static_cast<size_type>(match.length(0))};
+    pos += (match.position(0) + match.length(0));
+    return result;
 }
 
 auto str::accept(std::string_view s, size_type& pos, const char_match_proc& expect_proc) -> std::optional<range_type> {
@@ -6332,11 +6344,20 @@ auto str::accept(std::string_view s, size_type& pos, const char_match_proc& expe
         return std::nullopt;
     }
 
-    if (!expect_proc(s[pos])) {
+    size_type curr = pos;
+    for (; curr < s.size(); curr++) {
+        if (!expect_proc(s[curr])) {
+            break;
+        }
+    }
+
+    if (curr <= pos) {
         return std::nullopt;
     }
 
-    return range_type{pos++, 1};
+    auto result = range_type{pos, (curr - pos)};
+    pos = curr;
+    return result;
 }
 
 auto str::accept(std::string_view s, size_type& pos, const charset_type& expect_charset) -> std::optional<range_type> {
@@ -6346,7 +6367,15 @@ auto str::accept(std::string_view s, size_type& pos, const charset_type& expect_
 }
 
 auto str::accept(std::string_view s, size_type& pos, value_type expect_char) -> std::optional<range_type> {
-    return str::accept(s, pos, [expect_char](value_type ch)-> bool { return expect_char == ch; });
+    if (pos >= s.size()) {
+        return std::nullopt;
+    }
+
+    if (s[pos] != expect_char) {
+        return std::nullopt;
+    }
+
+    return range_type{pos++, 1};
 }
 
 auto str::skip_spaces(std::string_view s, size_type& pos) -> void {

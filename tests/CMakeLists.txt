@@ -24,6 +24,7 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/testing.hpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/testing.cpp)
 
 #   Add all testing files
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_accept.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_accept_until.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_align_center.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_align_center_inplace.cpp)
