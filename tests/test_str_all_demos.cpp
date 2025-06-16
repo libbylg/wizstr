@@ -15,6 +15,10 @@
 
 #include <iostream>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_demo, align) {
 
     std::string result;
