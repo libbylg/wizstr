@@ -48,13 +48,9 @@ str 库聚焦丰富的功能、完善的测试、完备的接口设计。
 #include "str.hpp"
 
 int main() {
-    // split
+    // split&join
     auto items = str::split("Welcome to use str library");
-    std::cout << "items: [";
-    for (auto& item : items) {
-        std::cout << item << ",";
-    }
-    std::cout << "]" << std::endl;
+    std::cout << "items: [" << str::join_list(items) << "]" << std::endl;
 
     // path
     auto dirname = str::dirname("/home/sam/project/main.cpp");
@@ -69,6 +65,15 @@ int main() {
     std::cout << "trim_left: [" << str::trim_left(s) << "]" << std::endl;
     std::cout << "trim_right: [" << str::trim_right(s) << "]" << std::endl;
     std::cout << "trim_surrounding: [" << str::trim_surrounding(s) << "]" << std::endl;
+    std::cout << "simplified: [" << str::simplified(s) << "]" << std::endl;
+
+    // dump_hex
+    std::string k = "This function is used to dump binnary data to hex string like xxd";
+    str::dump_hex(k.data(), k.size(), str::dump_hex_format{.flags = (str::show_ascii | str::show_offset)},
+        [](size_t, std::string_view line_text) {
+            std::cout << line_text << std::endl;
+            return 0;
+        });
 
     return 0;
 }
@@ -148,7 +153,19 @@ sh build.sh install <InstallTargetDirectory>`
 
 #### 方式1：直接源码集成
 
-这种方式就是直接将 `include/str.hpp` 和 `src/str.cpp` 这两个文件直接拷贝到您的项目中去，并随项目的其他代码一起编译。
+这种方式就是直接将 `include/str_config.hpp`, `include/str.hpp` 和 `src/str.cpp` 这三个文件直接拷贝到您的项目中去，
+并随项目的其他代码一起编译。需要注意，`include/str_config.hpp` 在源码仓中并不存在，这个文件需要手工生成。
+其内容可参照下面的修改：
+
+```c++
+#ifndef STR_CONFIG_H
+#define STR_CONFIG_H
+// #define STR_NAMESPACE MyStr  
+#endif
+```
+
+其中，如果取消 `#define STR_NAMESPACE MyStr` 这一行的注释，表示您想为本 str 库指定一个名字空间。你可以将 `MyStr` 
+替换为您喜欢的名字空间名字即可。
 
 @notice{3} 这种方式并不是很推荐，主要是一旦采用这种方式，很容易对 str 的这部分代码造成侵入式修改，
 最终会导致丧失简单即可升级 str 库到新版本的能力。 
@@ -196,6 +213,17 @@ find_package(str)
 # ... 
 target_link_libraries(MyApp PRIVATE str::str-static)
 ```
+
+## 关于名字空间
+
+str 库中所有的函数都是 `struct str` 的静态成员函数。这种方式的优点是：你无法绕过 `str` 类名来调用其任何成员函数。
+相对于 `namespace str` 来说更加严格。这主要是因为 str 库中有不少函数已知与一些其他的 C/C++ 库存在名字冲突。
+然而，`str` 本身也可能与用户的某些类名相同。因此，权衡考虑，允许 `str` 库的用户在编译阶段指定一个自定义的名字空间
+将有助于更灵活地解决类名冲突问题。具体方法如下：
+
+* 如果采用源码集成，此时不涉及对 str 库的单独编译，此时可以自行通过 `include/str_config.hpp` 文件类指定；
+* 如果采用 cmake 命令来编译，可以通过增加 cmake 命令行参数 `-DSTR_NAMESPACE=xxx` 的方式来指定名字空间名称（注意 xxx 需要替换成您期望的名字空间名）；
+* 如果采用 build.sh 命令来编译，当前不支持定制名字空间名称。
 
 ## LICENSE
 
