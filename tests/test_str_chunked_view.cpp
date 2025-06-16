@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, chunked_view) {
     GROUP("返回容器") {
         ASSERT_EQ(str::chunked_view("abcdefghi1234567", 0), (std::vector{"abcdefghi1234567"}));

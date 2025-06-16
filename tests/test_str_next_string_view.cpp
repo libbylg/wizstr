@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, next_string_view) {
     SECTION("不同起始位置") {
         str::size_type pos = 0;

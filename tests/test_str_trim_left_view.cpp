@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, trim_left_view) {
     SECTION("左右都没有空白") {
         ASSERT_EQ(str::trim_left_view("3bc1233"), "3bc1233");

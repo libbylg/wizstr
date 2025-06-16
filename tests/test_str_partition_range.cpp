@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, partition_range) {
     SECTION("以字符串分割") {
         ASSERT_EQ(str::partition_range("aaa::bbb", "::"), (std::array{str::range(0, 3), str::range(3, 2), str::range(5, 3)}));

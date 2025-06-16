@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, next_string) {
     SECTION("一般场景") {
         std::string_view s{"AAabcAAdefAAAA"};

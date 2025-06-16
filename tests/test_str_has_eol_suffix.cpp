@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, has_eol_suffix) {
     SECTION("一般情况:LF") {
         ASSERT_TRUE(str::has_eol_suffix("abc\n"));

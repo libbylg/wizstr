@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, split_lines) {
     GROUP("不保留行尾") {
         SECTION("一般情况:\\n") {

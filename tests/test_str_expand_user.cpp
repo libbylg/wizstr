@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, expand_user) {
     SECTION("简单场景") {
         ASSERT_EQ(str::expand_user("~"), std::string{str::home()});

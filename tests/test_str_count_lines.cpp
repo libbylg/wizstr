@@ -15,6 +15,10 @@
 
 #include <array>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, count_lines) {
     SECTION("一般场景:CR+LF") {
         ASSERT_EQ(str::count_lines("\r\n\t A\r\n\t B\r\n\t C\r\n\t "), 5);

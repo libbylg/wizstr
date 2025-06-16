@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, expand_tabs) {
     SECTION("简单场景") {
         ASSERT_EQ(str::expand_tabs("1\t123\t1234\t12345\t123456\t$", 4), "1   123 1234    12345   123456  $");

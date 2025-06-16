@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, drop_left) {
     SECTION("一般场景") {
         ASSERT_EQ(str::drop_left("3bc1233", 0), "3bc1233");

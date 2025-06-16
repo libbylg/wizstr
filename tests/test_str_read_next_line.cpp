@@ -16,6 +16,10 @@
 
 #include <fstream>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, read_next_line) {
     GROUP("FILE") {
         SECTION("invalid-file-ptr") {

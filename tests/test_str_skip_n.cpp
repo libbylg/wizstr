@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, skip_n) {
     SECTION("长度：剩余长度足够") {
         size_t pos = 0;

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, is_ascii) {
     ASSERT_EQ(str::is_ascii("0123456789ABCDEF#$%\r\n\t\v "), true);
     ASSERT_EQ(str::is_ascii("ABCDEF"), true);

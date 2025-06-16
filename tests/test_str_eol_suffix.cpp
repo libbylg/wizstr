@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, eol_suffix) {
     SECTION("一般情况:LF") {
         ASSERT_EQ(str::eol_suffix("abc\n"), 1);

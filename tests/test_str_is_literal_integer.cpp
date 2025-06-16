@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, is_literal_integer) {
     SECTION("空串") {
         ASSERT_EQ(str::is_literal_integer(""), false);

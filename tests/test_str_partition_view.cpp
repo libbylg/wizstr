@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, partition_view) {
     SECTION("以字符串分割") {
         ASSERT_EQ(str::partition_view("aaa::bbb", "::"), (std::array{"aaa", "::", "bbb"}));

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, ends_with) {
     SECTION("一般情况") {
         ASSERT_EQ(str::ends_with("aaa", "baa"), false);

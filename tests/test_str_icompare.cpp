@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, icompare) {
     SECTION("同长字符串对比") {
         ASSERT_EQ(str::icompare("ABCdef", "abcdef"), 0);

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, repeat) {
     GROUP("字符串重复场景") {
         SECTION("简单字符串重复多次") {

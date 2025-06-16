@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, remove_eol_suffix_range) {
     SECTION("一般情况:LF") {
         ASSERT_EQ(str::remove_eol_suffix_range("abc\n"), (str::range_type{0, 3}));

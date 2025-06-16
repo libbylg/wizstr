@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, invert) {
     SECTION("反转偶数长度的字符串") {
         ASSERT_EQ(str::invert("0123456789"), "9876543210");

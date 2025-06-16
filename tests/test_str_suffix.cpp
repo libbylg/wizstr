@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, suffix) {
     SECTION("一般情况") {
         ASSERT_EQ(str::suffix("aaa", "baa"), 2);

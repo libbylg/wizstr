@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, split_view) {
     GROUP("按空白拆分(缺省场景") {
         SECTION("按空白拆分:返回容器:无次数限制") {

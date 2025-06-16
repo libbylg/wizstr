@@ -17,6 +17,10 @@
 
 #include <map>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, split_pair_view) {
     SECTION("一般情况") {
         ASSERT_EQ(str::split_pair_view("a:b"), (std::tuple{"a", "b"}));

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, is_alpha) {
     ASSERT_EQ(str::is_alpha("ABCDEFGHIUKLMNOPQRSTUVWXYZabcdefghiuklmnopqrstuvwxyz"), true);
     ASSERT_EQ(str::is_alpha("!@#$%^&*({[<>]})~`_-+="), false);

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, starts_with) {
     SECTION("一般情况") {
         ASSERT_EQ(str::starts_with("aaa", "aa"), true);

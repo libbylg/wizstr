@@ -15,6 +15,10 @@
 
 #include <string>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, decode_cstr_inplace) {
     SECTION("一般情况") {
         std::string s;

@@ -15,6 +15,10 @@
 
 #include <array>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, foreach_lines) {
     SECTION("一般场景:CR+LF") {
         std::string result;

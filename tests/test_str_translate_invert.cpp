@@ -10,7 +10,11 @@
  * See the Mulan PSL v2 for more details.
  */
 
-// TEST(test_str, invert) {
+// #if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
+TEST(test_str, invert) {
 //    SECTION("全部颠倒") {
 //        std::string s("HelloWorld");
 //        ASSERT_EQ(str::invert(s), "dlroWolleH");

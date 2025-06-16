@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, is_all_in) {
     SECTION("字符集") {
         ASSERT_EQ(str::is_all_in("A", str::charset("ABC")), true);

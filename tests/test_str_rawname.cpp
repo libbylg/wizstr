@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, rawname) {
     SECTION("一般情况") {
         ASSERT_EQ(str::rawname("/aaa/bbb/ccc.txt"), "ccc");   // str::range(9, 3));

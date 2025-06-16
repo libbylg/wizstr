@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, wildcmp_cstr) {
     SECTION("检查是否匹配通配符") {
         ASSERT_TRUE(str::wildcmp("3bc12def33", "3*"));
@@ -35,6 +39,10 @@ TEST(test_str, wildcmp_cstr) {
         ASSERT_FALSE(str::wildcmp("abc", "abc***d"));
     }
 }
+
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
 
 TEST(test_str, wildcmp_string_view) {
     SECTION("检查是否匹配通配符") {

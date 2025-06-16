@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, accept_until) {
     GROUP("单字符为守卫符+未指定转义字符") {
         size_t pos = 0;

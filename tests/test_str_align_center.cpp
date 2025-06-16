@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, align_center) {
     SECTION("一般情况：字符串居中对齐对齐，两边填充") {
         ASSERT_EQ(str::align_center("HelloWorld", 13, '*'), "*HelloWorld**");

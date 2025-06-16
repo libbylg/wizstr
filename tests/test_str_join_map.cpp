@@ -16,6 +16,10 @@
 #include <array>
 #include <list>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, join_map) {
     SECTION("一般情况") {
         std::map<std::string_view, std::string_view> items = {

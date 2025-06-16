@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, split_list) {
     GROUP("container场景") {
         SECTION("一般情况") {

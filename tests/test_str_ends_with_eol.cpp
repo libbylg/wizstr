@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, ends_with_eol) {
     SECTION("一般情况:LF") {
         ASSERT_TRUE(str::ends_with_eol("abc\n"));

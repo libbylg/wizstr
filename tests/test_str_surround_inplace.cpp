@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, surround_inplace) {
     std::string s;
     ASSERT_EQ(str::surround_inplace(s = "a+b", "(", ")"), "(a+b)");

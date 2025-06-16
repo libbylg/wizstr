@@ -14,6 +14,10 @@
 #include "str.hpp"
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, all_from_customers) {
     std::string_view s = "..ab;c.d., ff.yw..:d;fg..d.";
     SECTION("按单分隔符拆分") {

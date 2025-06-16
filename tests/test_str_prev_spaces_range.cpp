@@ -2,6 +2,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, prev_spaces_range) {
     SECTION("一般场景") {
         std::string_view s{"\r\nAA abc  AAd\tef \v AAA \rA\n\n"};

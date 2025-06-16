@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, next_regex) {
     SECTION("不同起始位置:从0开始连续查找") {
         str::size_type pos = 0;

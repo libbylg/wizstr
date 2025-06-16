@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, prepend) {
     SECTION("普通字符串") {
         ASSERT_EQ(str::prepend("aaa", "bbb", 3), "bbbbbbbbbaaa");

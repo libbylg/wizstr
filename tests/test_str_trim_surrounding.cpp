@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, trim_surrounding) {
     SECTION("左右都没有空白") {
         ASSERT_EQ(str::trim_surrounding("3bc1233"), "3bc1233");

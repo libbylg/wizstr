@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, count) {
     SECTION("检查是否匹配某个正则表达式") {
         ASSERT_EQ(str::count("3bc12def1233", "12"), 2);

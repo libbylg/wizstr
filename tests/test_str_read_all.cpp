@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, read_all) {
     SECTION("Gernial") {
         std::string filename{str::dirname(__FILE__) + "/data/test-general.txt"};

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, is_space) {
     ASSERT_EQ(str::is_space("\r\n\v\t "), true);
     ASSERT_EQ(str::is_space(""), false);

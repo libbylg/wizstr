@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, simplified_integer) {
 
     ASSERT_EQ(str::simplified_integer("123"), "123");

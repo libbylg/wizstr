@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, unsurround) {
     ASSERT_EQ(str::unsurround("(a+b)", "(", ")"), "a+b");
     ASSERT_EQ(str::unsurround("a+b", "", ""), "a+b");

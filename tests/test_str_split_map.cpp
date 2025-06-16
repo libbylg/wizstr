@@ -17,6 +17,10 @@
 
 #include <map>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, split_map) {
     SECTION("一般情况") {
         auto result = str::split_map("a:1,b:2,c:3");

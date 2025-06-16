@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, is_identifier) {
     ASSERT_EQ(str::is_identifier("0123456789"), false);
     ASSERT_EQ(str::is_identifier(""), false);

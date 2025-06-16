@@ -19,6 +19,10 @@
 
 #include <cstdlib>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, expand_envs_inplace) {
     std::string ENV_XYZ = "/home/xyz";
     std::string ENV_XYZ_KV{"ENV_XYZ=/home/xyz"};

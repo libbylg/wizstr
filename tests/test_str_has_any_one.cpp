@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, has_any_one) {
     SECTION("字符集") {
         ASSERT_EQ(str::has_any_one("A", str::charset("ABC")), true);

@@ -15,6 +15,10 @@
 
 #include <complex>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, next_opt1) {
     GROUP("容器模式") {
         SECTION("正常情况") {

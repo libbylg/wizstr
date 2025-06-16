@@ -17,6 +17,10 @@
 
 #include <list>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, join_path) {
     SECTION("容器模式：一般场景") {
         ASSERT_EQ(str::join_path(std::vector{"A"}), "A");

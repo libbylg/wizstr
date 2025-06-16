@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, insert) {
     SECTION("一般情况") {
         ASSERT_EQ(str::insert("aaa", 0, "bbb"), "bbbaaa");

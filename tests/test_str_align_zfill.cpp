@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, align_zfill) {
     SECTION("一般情况：字符串右对齐，左边填充") {
         ASSERT_EQ(str::align_zfill("123", 8), "00000123");

@@ -17,6 +17,10 @@
 #include <list>
 #include <vector>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, join) {
     SECTION("一般场景") {
         ASSERT_EQ(str::join(",", {"A", "B", "C"}), "A,B,C");

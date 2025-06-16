@@ -17,6 +17,10 @@
 
 #include <list>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, join_searchpath) {
     SECTION("容器+默认sep") {
         ASSERT_EQ(str::join_searchpath({"A", "B", "C"}), "A:B:C");

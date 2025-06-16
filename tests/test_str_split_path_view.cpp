@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, split_path_view) {
     SECTION("绝对路径") {
         ASSERT_EQ(str::split_path_view("/"), (std::vector<std::string_view>{"/"}));

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, make_spaces) {
     SECTION("简单字符串重复多次") {
         ASSERT_EQ(str::make_spaces(5), "     ");

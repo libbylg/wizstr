@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, skip_space_view) {
     size_t pos{0};
     ASSERT_EQ(str::after_skip_spaces_view("abc"), "abc");
@@ -25,6 +29,10 @@ TEST(test_str, skip_space_view) {
     ASSERT_EQ(str::after_skip_spaces_view(""), "");
     ASSERT_EQ(str::after_skip_spaces_view("abc  def"), "abc  def");
 }
+
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
 
 TEST(test_str, skip_space) {
     size_t pos{0};

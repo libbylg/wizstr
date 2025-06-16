@@ -15,6 +15,10 @@
 
 #include <string>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, decode_cstr) {
     SECTION("一般情况") {
         ASSERT_EQ(str::decode_cstr(R"()"), (std::tuple{0u, R"()"}));

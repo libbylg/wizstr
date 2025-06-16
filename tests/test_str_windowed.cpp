@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, windowed) {
     SECTION("max_n") {
         ASSERT_EQ(str::windowed("abc-def-ghi", 0, 3), (std::vector{"abc-def-ghi", "-def-ghi", "f-ghi", "hi"}));

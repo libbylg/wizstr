@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, to_title) {
     ASSERT_EQ(str::to_title("abc def"), "Abc Def");
     ASSERT_EQ(str::to_title("   abc def  \r\t\n\v 123"), "   Abc Def  \r\t\n\v 123");

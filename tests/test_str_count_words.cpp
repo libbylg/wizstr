@@ -14,6 +14,10 @@
 
 #include <array>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, count_words) {
     SECTION("无pos+view模式:简单场景") {
         ASSERT_EQ(str::count_words("\r\n\t A\r\n\t B\r\n\t C\r\n\t "), 3);

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, is_upper) {
     SECTION("全大写") {
         ASSERT_EQ(str::is_upper("ABCDEF"), true);

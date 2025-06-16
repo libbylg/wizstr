@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, to_upper) {
     SECTION("一般情况") {
         ASSERT_EQ(str::to_upper("  AabbCC中华人民共和国"), "  AABBCC中华人民共和国");

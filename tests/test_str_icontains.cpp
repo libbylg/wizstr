@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, icontains) {
     SECTION("简单场景") {
         ASSERT_EQ(str::icontains("3bc1233", "3bc"), true);

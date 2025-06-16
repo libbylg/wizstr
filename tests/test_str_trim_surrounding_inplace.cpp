@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, trim_surrounding_inplace) {
     std::string s;
     SECTION("左右都没有空白") {

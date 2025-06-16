@@ -15,6 +15,10 @@
 
 #include <list>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, normpath_inplace) {
     SECTION("一般场景") {
         std::string s;

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, prev_eol_range) {
     SECTION("一般情况:LF") {
         std::string_view s{"a\nb\nc"};

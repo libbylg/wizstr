@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, split_searchpath) {
     SECTION("空串") {
         ASSERT_EQ(str::split_searchpath(""), (std::vector<std::string_view>{}));

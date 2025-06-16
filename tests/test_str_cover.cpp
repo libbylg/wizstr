@@ -15,6 +15,10 @@
 
 #include <array>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, cover) {
     SECTION("mask") {
         ASSERT_EQ(str::cover("abcdefghijk"), "a***ijk");

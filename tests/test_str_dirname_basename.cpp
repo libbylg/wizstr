@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, dirname_basename) {
     SECTION("全路径") {
         ASSERT_EQ(str::dirname("/aaa/bbb/ccc"), "/aaa/bbb");

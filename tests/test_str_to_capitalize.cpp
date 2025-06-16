@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, to_capitalize) {
     ASSERT_EQ(str::to_capitalize("abc def"), "Abc def");
     ASSERT_EQ(str::to_capitalize("Abc def"), "Abc def");

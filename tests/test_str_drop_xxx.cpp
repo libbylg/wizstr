@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, drop_left) {
     SECTION("一般场景") {
         ASSERT_EQ(str::drop_left_view("3bc1233", 0), "3bc1233");
@@ -28,6 +32,10 @@ TEST(test_str, drop_left) {
     }
 }
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, drop_right) {
     SECTION("一般场景") {
         ASSERT_EQ(str::drop_right_view("3bc1233", 0), "3bc1233");
@@ -42,6 +50,10 @@ TEST(test_str, drop_right) {
         ASSERT_EQ(str::drop_right_view("", str::npos), "");
     }
 }
+
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
 
 TEST(test_str, drop_mid) {
     SECTION("一般场景") {
@@ -65,6 +77,10 @@ TEST(test_str, drop_mid) {
         ASSERT_EQ(str::drop_mid("", 3, str::npos), "");
     }
 }
+
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
 
 TEST(test_str, drop) {
     SECTION("一般场景") {

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, encode_base16) {
     ASSERT_EQ(str::encode_base16(""), "");
     ASSERT_EQ(str::encode_base16("a"), "61");

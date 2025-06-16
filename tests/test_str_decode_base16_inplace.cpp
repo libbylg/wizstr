@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, decode_base16_inplace) {
     std::string s;
     ASSERT_EQ(str::decode_base16_inplace(s = ""), "");

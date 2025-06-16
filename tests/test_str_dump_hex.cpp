@@ -15,6 +15,10 @@
 
 #include "test-utils.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, dump_hex) {
     SECTION("缺省形式") {
         std::string data{"Hello world!Hello world!"};

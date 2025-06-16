@@ -19,6 +19,10 @@
 #include <list>
 #include <vector>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, join_lines) {
     SECTION("容器模式:不带line_ends参数") {
         ASSERT_EQ(str::join_lines({"A", "B", "C"}), "A\nB\nC\n");

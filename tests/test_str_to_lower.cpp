@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, to_lower) {
     SECTION("一般情况") {
         ASSERT_EQ(str::to_lower("  AabbCC中华人民共和国"), "  aabbcc中华人民共和国");

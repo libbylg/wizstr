@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, ends_with_spaces) {
     SECTION("一般情况") {
         ASSERT_FALSE(str::ends_with_spaces("aaa"));

@@ -13,6 +13,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, swap_case) {
     SECTION("一般情况") {
         ASSERT_EQ(str::swap_case("  AabbCC中华人民共和国"), "  aABBcc中华人民共和国");

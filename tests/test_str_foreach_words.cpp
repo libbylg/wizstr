@@ -15,6 +15,10 @@
 
 #include <array>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 TEST(test_str, foreach_words) {
 
     // [无pos+view模式] ====================================
