@@ -17,16 +17,22 @@ string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
 #   Definition of the top project
 project(str VERSION ${PROJECT_VERSION})
 
-OPTION(OPT_NAMESPACE "Specify the namespace of this library" "")
-OPTION(OPT_CLASSNAME "Specify the class name of this library" "str")
-
-if (NOT ${OPT_NAMESPACE} STREQUAL "")
-    set(STR_NAMESPACE ${OPT_NAMESPACE})
-endif()
-
-if (NOT "${OPT_CLASSNAME}" STREQUAL "")
-    set(STR_CLASSNAME ${OPT_CLASSNAME})
-endif()
+#   Support custom the namespace
+set(STR_NAMESPACE "" CACHE STRING "Used to given a namespace for this library, The default is empty")
+if (STR_NAMESPACE STREQUAL "")
+    file(WRITE "${CMAKE_SOURCE_DIR}/include/str_config.hpp"
+            "#ifndef STR_CONFIG_H\n"
+            "#define STR_CONFIG_H\n"
+            "#endif\n"
+    )
+else ()
+    file(WRITE "${CMAKE_SOURCE_DIR}/include/str_config.hpp"
+            "#ifndef STR_CONFIG_H\n"
+            "#define STR_CONFIG_H\n"
+            "#define STR_NAMESPACE ${STR_NAMESPACE}\n"
+            "#endif\n"
+    )
+endif ()
 
 #   Import quality configuration
 include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
@@ -58,6 +64,7 @@ install(TARGETS str-shared str-static
 )
 
 install(FILES include/str.hpp DESTINATION include)
+install(FILES include/str_config.hpp DESTINATION include)
 
 install(EXPORT str
         FILE strTargets.cmake

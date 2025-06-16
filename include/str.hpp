@@ -26,6 +26,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "str_config.hpp"
+
 //! Adaptor for namespace
 #if defined(STR_NAMESPACE)
 namespace STR_NAMESPACE {
