@@ -7,6 +7,10 @@
 #include <variant>
 #include <vector>
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 //! 节点类型表
 ///
 /// 用法：DEF_NODEKIND(Priority_, Name_, Type_, Desc_)

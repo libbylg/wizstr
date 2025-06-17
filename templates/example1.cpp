@@ -15,6 +15,10 @@
 
 #include "str.hpp"
 
+#if defined(STR_NAMESPACE)
+using str = STR_NAMESPACE::str;
+#endif
+
 int main() {
     // split&join
     auto items = str::split("Welcome to use str library");
