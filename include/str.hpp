@@ -30,7 +30,8 @@
 
 //! Adaptor for namespace
 #if defined(STR_NAMESPACE)
-namespace STR_NAMESPACE {
+namespace
+STR_NAMESPACE {
 #endif
 
 //! # 简介
@@ -264,20 +265,12 @@ struct str {
             return pos;
         }
 
-        inline auto begin_pos() const -> size_type {
-            return pos;
-        }
-
         inline auto end() const -> size_type {
             size_type result{};
             if (__builtin_add_overflow(pos, len, &result)) {
                 return npos;
             }
             return result;
-        }
-
-        inline auto end_pos() const -> size_type {
-            return end();
         }
 
         inline auto operator==(const range_type& range) const -> bool {
@@ -290,6 +283,11 @@ struct str {
             }
 
             return pos == range.pos;
+        }
+
+        auto shift(ssize_type offset) -> range_type& {
+            pos += offset;
+            return *this;
         }
     };
 
@@ -1973,6 +1971,7 @@ struct str {
     /// 可以理解为 `(pos + offset)` 到 `pos` 的范围（不包含 `pos`）。如果 `offset` 为正值，可以理解为 `pos`
     /// 到 `(pos + offset)` 的范围。当然在遇到具体字符串时，会根据具体字符串的长度调整。
     static auto range(size_type pos, size_type n) -> range_type;
+    static auto range() -> range_type;
     static auto interval(size_type begin, size_type end) -> interval_type;
     static auto shifter(size_type pos, ssize_type offset) -> shifter_type;
 
@@ -2154,17 +2153,20 @@ struct str {
     ///
     /// * @ref{skip_n} 从 `pos` 开始跳过 `n` 个字符，并返回 `true`；如果长度不够，返回 `false`；
     /// * @ref{skip_max} 从 `pos` 开始跳过最多 `max_n` 个字符，跳过实际跳过的长度；
-    /// * @ref{skip_spaces} 从 `pos` 开始，跳过所有空白字符，如果有的话；
+    /// * @ref{skip_spaces} 从 `pos` 开始，跳过所有空白字符；如果指定了 `min_n` 参数，那么空白数量不够 min_n 时，
+    /// 会返回 `false`；
     ///
     /// @param s: 被视作符号识别的缓冲区的字符串
     /// @param pos: 作为输入参数是表示指定识别的起始位置，作为输出参数时表示下一个还未被识别的字符的位置
     /// @param n: 跳过 n 个字符
-    /// @param max_n: 最多跳过 max_n 个字符
+    /// @param max_n: 最多跳过的字符的数量，如果剩余字符数量不够将自动返回
+    /// @param min_n: 指定至少需要跳过的字符数量
     /// @return 如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值
     ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
     static auto skip_n(std::string_view s, size_type& pos, size_type n) -> bool;
     static auto skip_max(std::string_view s, size_type& pos, size_type max_n) -> std::optional<size_type>;
     static auto skip_spaces(std::string_view s, size_type& pos) -> void;
+    static auto skip_spaces(std::string_view s, size_type& pos, size_type min_n) -> bool;
 
 #ifdef STR_UNIMPL
     static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;

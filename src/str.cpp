@@ -20,7 +20,8 @@
 #include <fstream>
 
 #if defined(STR_NAMESPACE)
-namespace STR_NAMESPACE {
+namespace
+STR_NAMESPACE {
 #endif
 
 auto str::append(std::string_view s, std::string_view other, size_type times_n) -> std::string {
@@ -857,7 +858,7 @@ auto str::next_string_view(std::string_view s, size_type& pos, std::string_view 
     if (!range) {
         return std::nullopt;
     }
-    return std::string_view{s.data() + range->begin_pos(), range->size()};
+    return std::string_view{s.data() + range->begin(), range->size()};
 }
 
 auto str::next_string(std::string_view s, size_type& pos, std::string_view substr) -> std::optional<std::string> {
@@ -978,7 +979,7 @@ auto str::next_eol_view(std::string_view s, size_type& pos) -> std::optional<std
     if (!range) {
         return std::nullopt;
     }
-    return std::string_view{s.data() + range->begin_pos(), range->size()};
+    return std::string_view{s.data() + range->begin(), range->size()};
 }
 
 auto str::next_eol(std::string_view s, size_type& pos) -> std::optional<std::string> {
@@ -1022,7 +1023,7 @@ auto str::prev_eol_view(std::string_view s, size_type& pos) -> std::optional<std
         return std::nullopt;
     }
 
-    return s.substr(range->begin_pos(), range->size());
+    return s.substr(range->begin(), range->size());
 }
 
 auto str::prev_eol(std::string_view s, size_type& pos) -> std::optional<std::string> {
@@ -1079,7 +1080,7 @@ auto str::remove_eol_suffix_range(std::string_view s) -> range_type {
 
 auto str::remove_eol_suffix_view(std::string_view s) -> std::string_view {
     auto range = remove_eol_suffix_range(s);
-    return {s.data() + range.begin_pos(), range.size()};
+    return {s.data() + range.begin(), range.size()};
 }
 
 auto str::remove_eol_suffix(std::string_view s) -> std::string {
@@ -1801,7 +1802,7 @@ auto str::take_view(std::string_view s, size_type pos) -> std::string_view {
 }
 
 auto str::take_view(std::string_view s, range_type range) -> std::string_view {
-    return take_view(s, range.begin_pos(), range.size());
+    return take_view(s, range.begin(), range.size());
 }
 
 auto str::take_view(std::string_view s, interval_type inter) -> std::string_view {
@@ -1939,18 +1940,18 @@ auto str::take_inplace(std::string& s, range_type range) -> std::string& {
         return s;
     }
 
-    if (range.begin_pos() >= s.size()) [[unlikely]] {
+    if (range.begin() >= s.size()) [[unlikely]] {
         s.resize(0);
         return s;
     }
 
-    if (range.end_pos() >= s.size()) {
-        std::memmove(s.data(), (s.data() + range.begin_pos()), (s.size() - range.begin_pos()));
-        s.resize(s.size() - range.begin_pos());
+    if (range.end() >= s.size()) {
+        std::memmove(s.data(), (s.data() + range.begin()), (s.size() - range.begin()));
+        s.resize(s.size() - range.begin());
         return s;
     }
 
-    std::memmove(s.data(), (s.data() + range.begin_pos()), range.size());
+    std::memmove(s.data(), (s.data() + range.begin()), range.size());
     s.resize(range.size());
     return s;
 }
@@ -2106,7 +2107,7 @@ auto str::drop(std::string_view s, size_type pos) -> std::string {
 }
 
 auto str::drop(std::string_view s, range_type range) -> std::string {
-    return drop(s, range.begin_pos(), range.size());
+    return drop(s, range.begin(), range.size());
 }
 
 auto str::drop(std::string_view s, interval_type inter) -> std::string {
@@ -2241,7 +2242,7 @@ auto str::drop_inplace(std::string& s, size_type pos) -> std::string& {
 }
 
 auto str::drop_inplace(std::string& s, range_type range) -> std::string& {
-    return drop_inplace(s, range.begin_pos(), range.size());
+    return drop_inplace(s, range.begin(), range.size());
 }
 
 auto str::drop_inplace(std::string& s, interval_type inter) -> std::string& {
@@ -2682,7 +2683,7 @@ auto str::count_words(std::string_view s) -> size_type {
 
 auto str::next_word_view(std::string_view s, size_type& pos) -> std::string_view {
     auto range = next_word_range(s, pos);
-    return std::string_view{(s.data() + range.begin_pos()), range.size()};
+    return std::string_view{(s.data() + range.begin()), range.size()};
 }
 
 auto str::next_word_range(std::string_view s, size_type& pos) -> range_type {
@@ -2725,7 +2726,7 @@ auto str::next_word(std::string_view s, size_type& pos) -> std::string {
 
 auto str::prev_word_view(std::string_view s, size_type& pos) -> std::string_view {
     auto range = prev_word_range(s, pos);
-    return std::string_view{s.data() + range.begin_pos(), range.size()};
+    return std::string_view{s.data() + range.begin(), range.size()};
 }
 
 auto str::prev_word_range(std::string_view s, size_type& pos) -> range_type {
@@ -3487,9 +3488,9 @@ auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_pr
         // 遇到结束符
         size_type line_size = 0;
         if (keep_ends) {
-            line_size = static_cast<size_type>(s.data() + eol->end_pos() - ptr_line);
+            line_size = static_cast<size_type>(s.data() + eol->end() - ptr_line);
         } else {
-            line_size = static_cast<size_type>(s.data() + eol->begin_pos() - ptr_line);
+            line_size = static_cast<size_type>(s.data() + eol->begin() - ptr_line);
         }
 
         if (proc(std::string_view{ptr_line, line_size}) != 0) {
@@ -3497,7 +3498,7 @@ auto str::split_lines(std::string_view s, bool keep_ends, const view_consumer_pr
         }
 
         // 移动到下一行起始位置
-        ptr_line = s.data() + eol->end_pos();
+        ptr_line = s.data() + eol->end();
     }
 
     // 最后一部分可能没有换行符
@@ -4980,7 +4981,7 @@ auto str::rawname_range(std::string_view s) -> range_type {
 auto str::rawname_view(std::string_view s) -> std::string_view {
     // return remove_extname_view(basename_view(s));
     auto range = rawname_range(s);
-    return std::string_view{s.data() + range.begin_pos(), range.size()};
+    return std::string_view{s.data() + range.begin(), range.size()};
 }
 
 auto str::rawname(std::string_view s) -> std::string {
@@ -5938,6 +5939,10 @@ auto str::range(size_type pos, size_type n) -> range_type {
     return range_type{pos, n};
 }
 
+auto str::range() -> range_type {
+    return range_type{};
+}
+
 auto str::interval(size_type begin, size_type end) -> interval_type {
     return interval_type{begin, end};
 }
@@ -6428,6 +6433,29 @@ auto str::skip_spaces(std::string_view s, size_type& pos) -> void {
     }
 }
 
+auto str::skip_spaces(std::string_view s, size_type& pos, size_type min_n) -> bool {
+    if (pos > s.size()) {
+        pos = s.size();
+        return false;
+    }
+
+    size_type count = 0;
+    size_type curr = pos;
+    for (; curr < s.size(); ++curr) {
+        if (!std::isspace(s[curr])) {
+            break;
+        }
+        count++;
+    }
+
+    if (count >= min_n) {
+        pos = curr;
+        return true;
+    }
+
+    return false;
+}
+
 auto str::skip_n(std::string_view s, size_type& pos, size_type n) -> bool {
     if (pos > s.size()) {
         return false;
@@ -6700,11 +6728,11 @@ auto str::foreach_lines(std::string_view s, bool keep_ends, const line_consumer_
             break;
         }
 
-        size_type endpos = keep_ends ? range->end_pos() : range->begin_pos();
+        size_type endpos = keep_ends ? range->end() : range->begin();
         if (proc(line_index++, s.substr(line_start, endpos - line_start)) != 0) {
             return;
         }
-        line_start = range->end_pos();
+        line_start = range->end();
     }
 
     if (line_start < s.size()) {
