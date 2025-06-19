@@ -10,6 +10,7 @@
  * See the Mulan PSL v2 for more details.
  */
 #include "testing.hpp"
+#include "test-utils.hpp"
 
 #include "str.hpp"
 
@@ -35,4 +36,18 @@ TEST(test_demo, align) {
         "    ***    \n"  //
         "     *     \n";
     ASSERT_EQ(result, expect);
+}
+
+TEST(test_demo, split_by_charset) {
+    std::vector<std::string> result;
+    std::string s = "A12BCd3";
+
+    static auto charset_digits = str::charset(str::all_digits);
+    static auto charset_alphas = str::charset(str::all_alphas);
+    for (size_t pos = 0; pos < s.size();) {
+        auto charset = (std::isdigit(s[pos])) ? &charset_digits : &charset_alphas;
+        result.emplace_back(str::take_view(s, *str::accept(s, pos, *charset)));
+    }
+
+    ASSERT_EQ(result, (std::vector{"A", "12", "BCd", "3"}));
 }

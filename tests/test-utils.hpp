@@ -12,9 +12,17 @@
 #ifndef STR_TEST_TO_PROC_HPP
 #define STR_TEST_TO_PROC_HPP
 
+#include <limits>
+#include <functional>
+#include <string>
+#include <string_view>
+#include <vector>
+#include <optional>
+
 class scope_guard {
 public:
-    explicit scope_guard(const std::function<void()>& proc): proc_{proc} {
+    explicit scope_guard(const std::function<void()>& proc)
+        : proc_{proc} {
     }
 
     ~scope_guard() {
@@ -27,7 +35,7 @@ private:
     const std::function<void()>& proc_;
 };
 
-template<typename ContainerType>
+template <typename ContainerType>
 class to_proc {
 public:
     explicit to_proc(const ContainerType& container)
@@ -126,13 +134,13 @@ auto operator==(const std::tuple<A1, A2>& a, const std::tuple<B1, B2>& b) -> boo
     return (std::get<0>(a) == std::get<0>(b)) && (std::get<1>(a) == std::get<1>(b));
 }
 
-template<typename ContainerType, typename ElemType = typename ContainerType::value_type>
+template <typename ContainerType, typename ElemType = typename ContainerType::value_type>
 class to_consumer {
 public:
     explicit to_consumer(ContainerType& result,
-                         typename ContainerType::size_type max_n = std::numeric_limits<typename ContainerType::size_type>::max())
+        typename ContainerType::size_type max_n = std::numeric_limits<typename ContainerType::size_type>::max())
         : result_{result}
-    , max_n_{max_n} {
+        , max_n_{max_n} {
     }
 
     inline auto operator()(ElemType&& elem) -> int {
