@@ -16,8 +16,11 @@ using str = STR_NAMESPACE::str;
 ///
 /// 用法：DEF_NODEKIND(Priority_, Name_, Type_, Desc_)
 #define NODEKIND_TABLE()                                 \
-    DEF_NODEKIND(00, NEOF, NONE, "文档结束")             \
-    DEF_NODEKIND(01, GUARD, NONE, "节点守卫")            \
+    DEF_NODEKIND(00, ERROR, node, "文档错误")            \
+    DEF_NODEKIND(01, NEOF, NONE, "文档结束")             \
+    DEF_NODEKIND(02, HEAD_GUARD, NONE, "head节点守卫")   \
+    DEF_NODEKIND(02, SECTION_GUARD, NONE, "section节点守卫")   \
+    DEF_NODEKIND(02, UL_GUARD, NONE, "ul节点守卫")       \
     /* 容器 */                                           \
     DEF_NODEKIND(10, DOCUMENT, node_document, "文档根")  \
     DEF_NODEKIND(11, BLOCK, node_block, "块")            \
@@ -135,7 +138,7 @@ struct node : public list_head<node> {
     list_head<node> children;
 
     // 节点类型
-    node_kind kind{NODE_KIND_TEXT};
+    node_kind kind{NODE_KIND_ERROR};
 
     // 节点标记位
     uint32_t flags{0}; // node_flags
@@ -283,8 +286,17 @@ struct node_anchor : public node {
 };
 
 struct node_param : public node {
+    std::vector<std::string> names;
+
     explicit node_param() {
         kind = NODE_KIND_PARAM;
+    }
+
+    explicit node_param(std::vector<std::string_view> n)
+        : node_param() {
+        for (auto item : n) {
+            names.emplace_back(item);
+        }
     }
 };
 
@@ -431,6 +443,14 @@ auto print_md(node* nd, const std::function<void(std::string_view)> print) -> vo
         break;
         case NODE_KIND_PARAM: {
             node_param* param = reinterpret_cast<node_param*>(nd);
+            print("@param ");
+            for (size_t index = 0; index < param->names.size(); index++) {
+                if (index != 0) {
+                    print(", ");
+                }
+                print(param->names[index]);
+            }
+            print(": ");
             for (auto child = param->children.next; child != reinterpret_cast<node*>(&param->children); child = child->next) {
                 print_md(child, print);
             }
@@ -1375,6 +1395,13 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
             }
             break;
         }
+
+        // 从下一个字符开始解析
+        curr++;
+
+        // 扫描字符串行，知道遇到指定的分隔符
+        auto text_range = str::accept_until(line, curr, str::charset("*`[@!"));
+        curr = (text_range ? text_range->end() : parse_range.end());
     }
 
     // 这一行最后一部分
@@ -1433,9 +1460,6 @@ auto try_parse_param(render_context& context) -> void {
     //
     // } else if (std::regex_match(context.reader.line_text(), match, param_pattern2)) {
     // }
-    node_param* param = new node_param;
-    context.parent->append(param);
-    context.parent = param;
 
     const std::string& line = context.reader.line_text();
     str::range_type range{0, line.size()};
@@ -1443,21 +1467,22 @@ auto try_parse_param(render_context& context) -> void {
     // 形式：@xxx yyy, yyy:
     acceptor acceptor(str::take_view(line, range));
     static std::regex name_pattern{R"([a-z]+)"};
-    std::string_view anno_type;
     std::vector<std::string_view> anno_names;
 
     acceptor.from(0).accept("@param");
     std::string_view item;
     while (true) {
         if (!acceptor.skip_spaces(1)) {
-            assert(false);  //  格式错误: param 后面无空白
+            assert(false); //  格式错误: param 后面无空白
             return;
         }
 
         if (!acceptor.accept(item, name_pattern)) {
-            assert(false);  //  格式错误：param 的参数名称不满足规范
+            assert(false); //  格式错误：param 的参数名称不满足规范
             return;
         }
+
+        anno_names.emplace_back(item);
 
         acceptor.skip_spaces();
 
@@ -1469,16 +1494,14 @@ auto try_parse_param(render_context& context) -> void {
         break;
     }
 
-    if (!acceptor.starts_with(":")) {
+    if (!acceptor.accept_until(":")) {
         assert(false); // 格式错误
         return;
     }
 
-    acceptor.skip_n(1);
-
-    // 前面是一个注解
-    auto anno = new node_anno(anno_type, anno_names);
-    context.parent->append(anno);
+    node_param* param = new node_param(anno_names);
+    context.parent->append(param);
+    context.parent = param;
 
     // 后面是一个行内的元素
     auto param_list_range = acceptor.range().shift(range.pos);
@@ -1523,6 +1546,7 @@ auto try_parse_block(render_context& context) -> void {
         // @param 开头的行
         if (str::starts_with_word(line, "@param")) {
             try_parse_param(context);
+            continue;
         }
 
         // @return 开头的行
@@ -1551,7 +1575,7 @@ auto try_parse_block(render_context& context) -> void {
         }
 
         // 章节内分级： % 号开头的行
-        static std::regex gx_pattern{R"(^%(#)\s.*)"};
+        static std::regex gx_pattern{R"(^%+\s.*)"};
         if (std::regex_match(line.begin(), line.end(), hx_pattern)) {
             try_parse_head(context);
             continue;

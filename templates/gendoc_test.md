@@ -1,1 +1,1 @@
-@param aaa, bbb, ccc:
+@return:KKK
