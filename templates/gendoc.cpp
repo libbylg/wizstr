@@ -14,64 +14,60 @@ using str = STR_NAMESPACE::str;
 
 //! 节点类型表
 ///
-/// 用法：DEF_NODEKIND(Priority_, Name_, Type_, Desc_)
-#define NODEKIND_TABLE()                                 \
-    DEF_NODEKIND(00, ERROR, node, "文档错误")            \
-    DEF_NODEKIND(01, NEOF, NONE, "文档结束")             \
-    DEF_NODEKIND(02, HEAD_GUARD, NONE, "head节点守卫")   \
-    DEF_NODEKIND(02, SECTION_GUARD, NONE, "section节点守卫")   \
-    DEF_NODEKIND(02, UL_GUARD, NONE, "ul节点守卫")       \
-    /* 容器 */                                           \
-    DEF_NODEKIND(10, DOCUMENT, node_document, "文档根")  \
-    DEF_NODEKIND(11, BLOCK, node_block, "块")            \
-    DEF_NODEKIND(12, LINE, node_line, "行")              \
-    /* 独立行 */                                         \
-    DEF_NODEKIND(20, TITLE, node_title, "文档标题")      \
-    DEF_NODEKIND(21, HEAD, node_head, "标题")            \
-    /* 独立行 */                                         \
-    DEF_NODEKIND(31, SECTION, node_section, "段")        \
-    /* 行间 */                                           \
-    DEF_NODEKIND(50, COMMENT, node_comment, "注释")      \
-    DEF_NODEKIND(52, THEAD, node_thead, "表头")          \
-    DEF_NODEKIND(53, TROW, node_trow, "表的行")          \
-    DEF_NODEKIND(54, TCOL, node_tcol, "表的列")          \
-    DEF_NODEKIND(55, PARAM, node_param, "参数定义")      \
-    DEF_NODEKIND(56, RETURN, node_return, "返回值")      \
-    DEF_NODEKIND(57, BCODE, node_bcode, "代码块")        \
-    DEF_NODEKIND(58, BRIEF, node_brief, "概要")          \
-    DEF_NODEKIND(59, DETIAL, node_detial, "详情")        \
-    DEF_NODEKIND(60, IFORMULA, node_iformula, "行内公式")\
-    DEF_NODEKIND(61, BFORMULA, node_bformula, "行间公式")\
-    DEF_NODEKIND(63, OL, node_orderd_list, "有序列表")   \
-    DEF_NODEKIND(64, UL, node_unorderd_list, "无序列表") \
-    DEF_NODEKIND(65, LI, node_list_item, "列表子项")     \
-    DEF_NODEKIND(66, HLINK, node_hlink, "超链接")        \
-    DEF_NODEKIND(67, IMAGE, node_image, "图片")          \
-    DEF_NODEKIND(68, ANCHOR, node_anchor, "锚点定义")    \
-    DEF_NODEKIND(69, EMBDED, node_embded, "嵌入文字")    \
-    /* 行内元素 */                                       \
-    DEF_NODEKIND(80, STRONG, node_strong, "强调")        \
-    DEF_NODEKIND(81, EM, node_em, "重要")                \
-    DEF_NODEKIND(82, TEXT, node_text, "文本")            \
-    DEF_NODEKIND(83, ICODE, node_icode, "行内代码")      \
-    DEF_NODEKIND(84, ANNO, node_anno, "注解")            \
+/// 用法：DEF_NODEKIND(Priority_, Id_, Name_, Type_, Desc_)
+#define NODEKIND_TABLE()                                       \
+    /* 容器 */                                                 \
+    DEF_NODEKIND(0, 10, PROJECT, node_project, "项目根")       \
+    DEF_NODEKIND(1, 11, ARTICLE, node_article, "文章")         \
+    DEF_NODEKIND(2, 12, CHAPTER, node_chapter, "章")           \
+    DEF_NODEKIND(3, 13, SECTION, node_section, "节")           \
+    /* 段落：会挂子节点 */                                     \
+    DEF_NODEKIND(4, 20, PARAM, node_param, "参数定义")         \
+    DEF_NODEKIND(4, 21, RETURN, node_return, "返回值")         \
+    DEF_NODEKIND(4, 22, LIST, node_list, "列表块")             \
+    DEF_NODEKIND(4, 23, LISTITEM, node_listitem, "列表项目")   \
+    /* 段落：不挂子节点 */                                     \
+    DEF_NODEKIND(5, 30, TABLE, node_table, "表块")             \
+    DEF_NODEKIND(5, 31, PARAGRAPH, node_paragraph, "通用段落") \
+    DEF_NODEKIND(5, 32, BCODE, node_bcode, "代码块")           \
+    DEF_NODEKIND(5, 33, BFORMULA, node_bformula, "行间公式")   \
+    DEF_NODEKIND(6, 34, COMMENT, node_comment, "注释行")       \
+    /* 行内元素 */                                             \
+    DEF_NODEKIND(7, 50, IFORMULA, node_iformula, "行内公式")   \
+    DEF_NODEKIND(7, 51, HLINK, node_hlink, "超链接")           \
+    DEF_NODEKIND(7, 52, IMAGE, node_image, "图片")             \
+    DEF_NODEKIND(7, 53, ANCHOR, node_anchor, "锚点定义")       \
+    DEF_NODEKIND(7, 54, EMBDED, node_embded, "嵌入文字")       \
+    DEF_NODEKIND(7, 55, STRONG, node_strong, "强调")           \
+    DEF_NODEKIND(7, 56, EM, node_em, "重要")                   \
+    DEF_NODEKIND(7, 57, TEXT, node_text, "文本")               \
+    DEF_NODEKIND(7, 58, ICODE, node_icode, "行内代码")         \
+    DEF_NODEKIND(7, 59, ANNO, node_anno, "注解")               \
+    /* 特殊节点：行本身 */                                     \
+    DEF_NODEKIND(20, 90, LINE, node_line, "行")                \
+    DEF_NODEKIND(20, 91, THEAD, node_thead, "表头行")          \
+    DEF_NODEKIND(20, 92, TROW, node_trow, "表的行")            \
+    DEF_NODEKIND(20, 93, TCOL, node_tcol, "表的列")            \
     /* (end) */
 
-enum node_kind : uint8_t {
-#define DEF_NODEKIND(Priority_, Name_, Type_, Desc_) NODE_KIND_##Name_ = (Priority_),
+enum node_kind : int8_t {
+    // 错误（用于初始化）
+    NODE_KIND_ERROR = 0,
+
+#define DEF_NODEKIND(Priority_, Id_,  Name_, Type_, Desc_) NODE_KIND_##Name_ = (Id_),
     NODEKIND_TABLE()
 #undef DEF_NODEKIND
 };
 
-enum node_priority : uint8_t {
-#define DEF_NODEKIND(Priority_, Name_, Type_, Desc_) NODE_PRIORITY_##Name_ = (Priority_),
+enum node_priority : int8_t {
+#define DEF_NODEKIND(Priority_, Id_, Name_, Type_, Desc_) NODE_PRIORITY_##Name_ = (Priority_),
     NODEKIND_TABLE()
 #undef DEF_NODEKIND
 };
 
 enum node_limits {
-    HEAD_LEVEL_MIN = 1,
-    HEAD_LEVEL_MAX = 6,
+    CHAPTER_LEVEL_MIN = 1,
+    CHAPTER_LEVEL_MAX = 6,
 
     SECTION_LEVEL_MIN = 1,
     SECTION_LEVEL_MAX = 4,
@@ -95,6 +91,29 @@ static inline auto list_head_init(H* head) -> H* {
     head->next = reinterpret_cast<decltype(head->next)>(head);
     head->prev = reinterpret_cast<decltype(head->next)>(head);
     return head;
+}
+
+template <typename H>
+static inline auto list_is_empty(H* head) -> bool {
+    return reinterpret_cast<H*>(head->next) == head;
+}
+
+template <typename H>
+static inline auto list_first(H* head) -> decltype(H::next) {
+    if (list_is_empty(head)) {
+        return nullptr;
+    }
+
+    return head->next;
+}
+
+template <typename H>
+static inline auto list_last(H* head) -> decltype(H::prev) {
+    if (list_is_empty(head)) {
+        return nullptr;
+    }
+
+    return head->prev;
 }
 
 template <typename P, typename N, typename T>
@@ -169,16 +188,42 @@ struct node : public list_head<node> {
     }
 };
 
-struct node_document : public node {
-    explicit node_document() {
-        kind = NODE_KIND_DOCUMENT;
-        priority = NODE_PRIORITY_DOCUMENT;
+struct node_project : public node {
+    explicit node_project() {
+        kind = NODE_KIND_PROJECT;
     }
 };
 
-struct node_block : public node {
-    explicit node_block() {
-        kind = NODE_KIND_BLOCK;
+struct node_article : public node {
+    explicit node_article() {
+        kind = NODE_KIND_ARTICLE;
+        priority = NODE_PRIORITY_ARTICLE;
+    }
+};
+
+struct node_chapter : public node {
+    int8_t level{0};
+
+    explicit node_chapter(int8_t l) {
+        assert((l >= CHAPTER_LEVEL_MIN) && (l <= CHAPTER_LEVEL_MAX));
+        kind = NODE_KIND_CHAPTER;
+        level = l;
+    }
+};
+
+struct node_section : public node {
+    int8_t level{0};
+
+    explicit node_section(int8_t l) {
+        assert((l >= SECTION_LEVEL_MIN) && (l <= SECTION_LEVEL_MAX));
+        kind = NODE_KIND_SECTION;
+        level = l;
+    }
+};
+
+struct node_paragraph : public node {
+    explicit node_paragraph() {
+        kind = NODE_KIND_PARAGRAPH;
     }
 };
 
@@ -190,32 +235,6 @@ struct node_line : public node {
     }
 };
 
-// struct node_title : public node {
-//     explicit node_title() {
-//         kind = NODE_KIND_TITLE;
-//     }
-// };
-
-struct node_head : public node {
-    explicit node_head(int8_t l) {
-        assert((l >= HEAD_LEVEL_MIN) && (l <= HEAD_LEVEL_MAX));
-        kind = NODE_KIND_HEAD;
-        level = l;
-    }
-
-    int8_t level{0};
-};
-
-struct node_section : public node {
-    explicit node_section(int8_t l) {
-        assert((l >= SECTION_LEVEL_MIN) && (l <= SECTION_LEVEL_MAX));
-        kind = NODE_KIND_SECTION;
-        level = l;
-    }
-
-    int8_t level{0};
-};
-
 struct node_comment : public node {
     std::vector<std::string> lines;
 
@@ -225,10 +244,14 @@ struct node_comment : public node {
 };
 
 struct node_bcode : public node {
+    std::string language;
+    std::map<std::string, std::string> properties;
     std::vector<std::string> lines;
 
-    explicit node_bcode() {
+    explicit node_bcode(std::string_view lang, std::map<std::string, std::string> prop) {
         kind = NODE_KIND_BCODE;
+        language = lang;
+        properties = std::move(prop);
     }
 };
 
@@ -243,19 +266,19 @@ struct node_icode : public node {
 };
 
 struct node_iformula : public node {
+    std::string text;
+
     explicit node_iformula() {
         kind = NODE_KIND_IFORMULA;
     }
-
-    std::string text;
 };
 
 struct node_bformula : public node {
+    std::vector<std::string> lines;
+
     explicit node_bformula() {
         kind = NODE_KIND_BFORMULA;
     }
-
-    std::vector<std::string> lines;
 };
 
 struct node_embded : public node {
@@ -267,11 +290,17 @@ struct node_embded : public node {
     }
 };
 
-struct node_unorderd_list : public node {
+struct node_list : public node {
+    explicit node_list() {
+        kind = NODE_KIND_LIST;
+    }
+};
+
+struct node_listitem : public node {
     int32_t level{};
 
-    explicit node_unorderd_list(int32_t l) {
-        kind = NODE_KIND_UL;
+    explicit node_listitem(int32_t l) {
+        kind = NODE_KIND_LISTITEM;
         level = l;
     }
 };
@@ -368,59 +397,73 @@ struct node_anno : public node {
     }
 };
 
-auto print_md(node* nd, const std::function<void(std::string_view)> print) -> void {
+auto print_md(node* nd, size_t level, const std::function<void(std::string_view)> print) -> void {
     assert((nd != nullptr) && (print != nullptr));
     switch (nd->kind) {
-        case NODE_KIND_DOCUMENT: {
-            node_document* document = reinterpret_cast<node_document*>(nd);
-            for (auto child = document->children.next; child != reinterpret_cast<node*>(&document->children); child = child->next) {
-                print_md(child, print);
+        case NODE_KIND_PROJECT: {
+            print(str::make_spaces(level * 4));
+            node_project* project = reinterpret_cast<node_project*>(nd);
+            for (auto child = project->children.next; child != reinterpret_cast<node*>(&project->children); child = child->next) {
+                print_md(child, level, print);
             }
         }
         break;
-        case NODE_KIND_BLOCK: {
-            node_block* block = reinterpret_cast<node_block*>(nd);
-            for (auto child = block->children.next; child != reinterpret_cast<node*>(&block->children); child = child->next) {
-                print_md(child, print);
+        case NODE_KIND_ARTICLE: {
+            print(str::make_spaces(level * 4));
+            node_article* article = reinterpret_cast<node_article*>(nd);
+            for (auto child = article->children.next; child != reinterpret_cast<node*>(&article->children); child = child->next) {
+                print_md(child, level, print);
             }
         }
         break;
-        case NODE_KIND_LINE: {
-            node_block* block = reinterpret_cast<node_block*>(nd);
-            for (auto child = block->children.next; child != reinterpret_cast<node*>(&block->children); child = child->next) {
-                print_md(child, print);
+        case NODE_KIND_CHAPTER: {
+            print(str::make_spaces(level * 4));
+            node_chapter* chapter = reinterpret_cast<node_chapter*>(nd);
+            print(str::repeat("#", chapter->level));
+            print(" ");
+            auto line = chapter->children.next;
+            print_md(line, 0, print); // 0: 不需要加空白前缀
+            print("\n");
+            for (auto child = line->next; child != reinterpret_cast<node*>(&chapter->children); child = child->next) {
+                print_md(child, level + 1, print);
+            }
+        }
+        break;
+        case NODE_KIND_PARAGRAPH: {
+            node_paragraph* paragraph = reinterpret_cast<node_paragraph*>(nd);
+            for (auto child = paragraph->children.next; child != reinterpret_cast<node*>(&paragraph->children); child = child->next) {
+                print_md(child, level, print);
             }
             print("\n");
         }
         break;
-        // case NODE_KIND_TITLE: {
-        //     node_title* title = reinterpret_cast<node_title*>(nd);
-        // }
-        // break;
-        case NODE_KIND_HEAD: {
-            node_head* head = reinterpret_cast<node_head*>(nd);
-            print(str::repeat("*", head->level));
-            print(" ");
-            for (auto child = head->children.next; child != reinterpret_cast<node*>(&head->children); child = child->next) {
-                print_md(child, print);
+        case NODE_KIND_LINE: {
+            print(str::make_spaces(level * 4));
+            node_line* line = reinterpret_cast<node_line*>(nd);
+            for (auto child = line->children.next; child != reinterpret_cast<node*>(&line->children); child = child->next) {
+                print_md(child, level + 1, print);
             }
             print("\n");
         }
         break;
         case NODE_KIND_SECTION: {
+            print(str::make_spaces(level * 4));
             node_section* section = reinterpret_cast<node_section*>(nd);
             auto tag = str::repeat("%", section->level);
             print(tag);
             print(" ");
+            auto line = section->children.next;
+            print_md(line, 0, print); // 0: 不需要加空白前缀
+            print("\n");
             for (auto child = section->children.next; child != reinterpret_cast<node*>(&section->children); child = child->next) {
-                print_md(child, print);
+                print_md(child, level + 1, print);
             }
             print(tag);
             print("<");
-            print("\n");
         }
         break;
         case NODE_KIND_COMMENT: {
+            print(str::make_spaces(level * 4));
             node_comment* comment = reinterpret_cast<node_comment*>(nd);
             print("<!-- \n");
             for (auto& line : comment->lines) {
@@ -442,6 +485,7 @@ auto print_md(node* nd, const std::function<void(std::string_view)> print) -> vo
         }
         break;
         case NODE_KIND_PARAM: {
+            print(str::make_spaces(level * 4));
             node_param* param = reinterpret_cast<node_param*>(nd);
             print("@param ");
             for (size_t index = 0; index < param->names.size(); index++) {
@@ -452,35 +496,43 @@ auto print_md(node* nd, const std::function<void(std::string_view)> print) -> vo
             }
             print(": ");
             for (auto child = param->children.next; child != reinterpret_cast<node*>(&param->children); child = child->next) {
-                print_md(child, print);
+                print_md(child, level + 1, print);
             }
             print("\n");
         }
         break;
         case NODE_KIND_RETURN: {
+            print(str::make_spaces(level * 4));
+            print("@return: ");
             node_return* ret = reinterpret_cast<node_return*>(nd);
-            for (auto child = ret->children.next; child != reinterpret_cast<node*>(&ret->children); child = child->next) {
-                print_md(child, print);
-            }
+            print_md(ret->children.next, 0, print);
             print("\n");
         }
         break;
         case NODE_KIND_BCODE: {
+            print(str::make_spaces(level * 4));
             node_bcode* bcode = reinterpret_cast<node_bcode*>(nd);
-            print("```\n");
+            print("```");
+            print(bcode->language);
+            if (!bcode->properties.empty()) {
+                print(": ");
+                for (auto itr = bcode->properties.begin(); itr != bcode->properties.end(); itr++) {
+                    if (itr != bcode->properties.begin()) {
+                        print(", ");
+                    }
+                    print(itr->first);
+                    print("=");
+                    print(itr->second);
+                }
+            }
+            print("\n");
             for (auto& line : bcode->lines) {
+                print(str::make_spaces(level * 4));
                 print(line);
                 print("\n");
             }
+            print(str::make_spaces(level * 4));
             print("```\n");
-        }
-        break;
-        case NODE_KIND_BRIEF: {
-
-        }
-        break;
-        case NODE_KIND_DETIAL: {
-
         }
         break;
         case NODE_KIND_IFORMULA: {
@@ -500,18 +552,11 @@ auto print_md(node* nd, const std::function<void(std::string_view)> print) -> vo
             print("$$\n");
         }
         break;
-        case NODE_KIND_OL: {
+        case NODE_KIND_LIST: {
 
         }
         break;
-        case NODE_KIND_UL: {
-
-        }
-        break;
-        case NODE_KIND_LI: {
-
-        }
-        break;
+            break;
         case NODE_KIND_HLINK: {
             node_hlink* hlink = reinterpret_cast<node_hlink*>(nd);
             print("[");
@@ -675,7 +720,8 @@ struct gendoc_options {
 };
 
 enum class parse_state : uint16_t {
-    WAIT_BLOCK,
+    NORMAL,
+    ENTER_PARAGRAPH,
 };
 
 struct line_type {
@@ -730,6 +776,10 @@ public:
         return true;
     }
 
+    inline auto rollback() -> void {
+        cached_lines_.emplace_back(std::move(line_));
+    }
+
     inline auto rollback(size_t line_no, std::string_view line_text) -> void {
         cached_lines_.emplace_back(line_no, line_text);
     }
@@ -746,29 +796,103 @@ private:
 
 struct render_context {
     explicit render_context(FILE* ifile, FILE* ofile, const std::string& rd)
-        : root_directory{rd}
-        , reader{ifile}
-        , writer{ofile} {
-        root = new node_document;
-        parent = root;
+        : root_directory_{rd}
+        , reader_{ifile}
+        , writer_{ofile} {
+        root_ = new node_project;
+        parent_ = root_;
     }
 
-    const std::string& root_directory;
-    line_reader reader;
-    size_t rpos{0};
-    FILE* writer{nullptr};
+    ~render_context() {
+        delete root_;
+    }
 
-    node* root{nullptr};
-    node* parent{nullptr};
+    inline auto rpos() const -> size_t {
+        return rpos_;
+    }
 
-    // // 所有行
-    // list_head   lines;
+    inline auto rpos(size_t rp) -> void {
+        rpos_ = rp;
+    }
 
-    // 行解析栈
-    std::vector<std::string_view> line_parse_stack;
+    inline auto rollback_line() -> void {
+        reader_.rollback();
+    }
 
-    // 优先级队列
-    std::vector<node*> stack;
+    inline auto rollback_line(size_t ln, std::string_view lt) -> void {
+        reader_.rollback(ln, lt);
+    }
+
+    inline auto line_no() const -> size_t {
+        return reader_.line_no();
+    }
+
+    inline auto line_text() const -> const std::string& {
+        return reader_.line_text();
+    }
+
+    inline auto push(node* child) -> void {
+        parent_->append(child);
+        parent_ = child;
+    }
+
+    inline auto pop() -> node* {
+        parent_ = parent_->parent;
+        return parent_;
+    }
+
+    inline auto append_child(node* child) -> void {
+        assert(child != nullptr);
+        parent_->append(child);
+    }
+
+    inline auto parent(node* p) -> void {
+        assert(p != nullptr);
+        parent_ = p;
+    }
+
+    inline auto parent() -> node* {
+        return parent_;
+    }
+
+    inline auto parent() const -> const node* {
+        return parent_;
+    }
+
+    auto backtrack_parent(const std::function<bool(node* node)>& proc) -> node* {
+        node* curr = parent_;
+        while (!proc(curr)) {
+            if (curr->parent == nullptr) {
+                return nullptr;
+            }
+
+            curr = curr->parent;
+        }
+
+        return curr;
+    }
+
+    inline auto next_line() -> bool {
+        return reader_.next_line();
+    }
+
+    inline auto root() -> node* {
+        return root_;
+    }
+
+    inline auto root() const -> const node* {
+        return root_;
+    }
+
+private:
+    const std::string& root_directory_;
+    line_reader reader_;
+    FILE* writer_{nullptr};
+
+    node* root_{nullptr};
+    node* parent_{nullptr};
+
+    size_t rpos_{0};
 };
 
 
@@ -1069,75 +1193,81 @@ private:
     bool ok_{true};
 };
 
-auto try_parse_line(render_context& context) -> void;
+auto try_parse_line_range(render_context& context, str::range_type range) -> void;
 
-auto try_parse_head(render_context& context) -> void {
-    static std::regex head_pattern{R"(^(#+)\s+(.*))"};
-    const auto& line = context.reader.line_text();
-    std::smatch match;
-    std::regex_match(line, match, head_pattern);
-    int32_t level = static_cast<int32_t>(match[1].length());
+auto try_parse_chapter(render_context& context, int32_t level, str::range_type range) -> void {
+    auto add_to_parent = context.parent();
+    while (true) {
+        if (add_to_parent->kind == NODE_KIND_ARTICLE) {
+            break;
+        }
 
-    node_head* head = new node_head(static_cast<int8_t>(level));
-    context.parent->append(head);
-    context.parent = head;
-    try_parse_line(context);
-    context.parent = context.parent->parent;
+        assert(add_to_parent->kind == NODE_KIND_CHAPTER);
+        auto chapter = reinterpret_cast<node_chapter*>(add_to_parent);
+        if (chapter->level < level) {
+            break;
+        }
+
+        add_to_parent = add_to_parent->parent;
+    }
+
+    context.parent(add_to_parent);
+    context.push(new node_chapter(static_cast<int8_t>(level)));
+    context.push(new node_line);
+
+    try_parse_line_range(context, range);
+
+    context.pop();
 }
 
 // % xxx
-auto try_parse_section(render_context& context) -> void {
-    static std::regex section_pattern{R"(^(%+)\s+(.*))"};
+auto try_parse_section(render_context& context, int32_t level, str::range_type range) -> void {
+    auto add_to_parent = context.parent();
+    while (true) {
+        if ((add_to_parent->kind == NODE_KIND_ARTICLE) || (add_to_parent->kind == NODE_KIND_CHAPTER)) {
+            break;
+        }
 
-    const auto& line = context.reader.line_text();
-    std::smatch match;
-    std::regex_match(line, match, section_pattern);
-    int32_t level = static_cast<int32_t>(match[1].length());
+        assert(add_to_parent->kind == NODE_KIND_SECTION);
+        auto section = reinterpret_cast<node_section*>(add_to_parent);
+        if (section->level < level) {
+            break;
+        }
 
-    node_section* section = new node_section(static_cast<int8_t>(level));
-    context.parent->append(section);
-    context.parent = section;
-    try_parse_line(context);
-    context.parent = context.parent->parent;
+        add_to_parent = add_to_parent->parent;
+    }
+
+    context.parent(add_to_parent);
+    context.push(new node_section(static_cast<int8_t>(level)));
+    context.push(new node_line);
+
+    try_parse_line_range(context, range);
+
+    context.pop();
 }
 
 // * xxx
-auto try_parse_unordered_list(render_context& context) -> void {
-    static std::regex ul_pattern{R"(^(\*+)\s+(.*))"};
-
-    const auto& line = context.reader.line_text();
-    std::smatch match;
-    std::regex_match(line, match, ul_pattern);
-    int32_t level = static_cast<int32_t>(match[1].length());
-
-    node_unorderd_list* ul_new = new node_unorderd_list(level);
-
-    node* add_to_parent = nullptr;
-    for (node* parent = context.parent; true; parent = parent->parent) {
-        assert(parent != nullptr);
-        if (parent->kind != NODE_KIND_UL) {
-            add_to_parent = parent;
+auto try_parse_listitem(render_context& context, int32_t level, str::range_type range) -> void {
+    auto add_to_parent = context.parent();
+    while (true) {
+        if ((add_to_parent->kind == NODE_KIND_ARTICLE) || (add_to_parent->kind == NODE_KIND_CHAPTER) || (add_to_parent->kind == NODE_KIND_SECTION)) {
             break;
         }
 
-        node_unorderd_list* ul_node = reinterpret_cast<node_unorderd_list*>(parent);
-        if (ul_node->level > level) {
-            add_to_parent = ul_node;
+        auto section = reinterpret_cast<node_section*>(add_to_parent);
+        if (section->level < level) {
             break;
         }
+
+        add_to_parent = add_to_parent->parent;
     }
 
     assert(add_to_parent != nullptr);
 
-    add_to_parent->append(ul_new);
-    context.parent = ul_new;
-    assert(context.line_parse_stack.empty());
-    context.line_parse_stack.clear();
-    context.line_parse_stack.emplace_back(str::take_view(line, match.position(2), match.length(2)));
-    try_parse_line(context);
-    assert(context.line_parse_stack.empty());
+    context.parent(add_to_parent);
+    context.push(new node_listitem(level));
 
-    return;
+    try_parse_line_range(context, range);
 }
 
 
@@ -1309,7 +1439,7 @@ auto try_parse_image(std::string_view line, str::range_type& range) -> node* {
 //     ;
 
 auto try_parse_line_range(render_context& context, str::range_type range) -> void {
-    const std::string& line = context.reader.line_text();
+    const std::string& line = context.line_text();
 
     size_t rpos = range.begin();
     size_t curr = rpos;
@@ -1322,10 +1452,10 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                 if (auto node = try_parse_strong(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.parent->append(text);
+                        context.append_child(text);
                     }
 
-                    context.parent->append(node);
+                    context.append_child(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
@@ -1340,10 +1470,10 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                 if (auto node = try_parse_icode(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.parent->append(text);
+                        context.append_child(text);
                     }
 
-                    context.parent->append(node);
+                    context.append_child(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
@@ -1353,10 +1483,10 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                 if (auto node = try_parse_hlink(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.parent->append(text);
+                        context.append_child(text);
                     }
 
-                    context.parent->append(node);
+                    context.append_child(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
@@ -1366,10 +1496,10 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                 if (auto node = try_parse_anno(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.parent->append(text);
+                        context.append_child(text);
                     }
 
-                    context.parent->append(node);
+                    context.append_child(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
@@ -1379,10 +1509,10 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                 if (auto node = try_parse_image(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.parent->append(text);
+                        context.append_child(text);
                     }
 
-                    context.parent->append(node);
+                    context.append_child(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
@@ -1407,61 +1537,33 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
     // 这一行最后一部分
     if (rpos < curr) {
         node_text* text = new node_text(str::take_view(line, str::range(rpos, (curr - rpos))));
-        context.parent->append(text);
-        context.rpos = curr;
+        context.append_child(text);
+        context.rpos(curr);
     }
 }
 
 auto try_parse_line(render_context& context) -> void {
-    try_parse_line_range(context, str::range(0, context.reader.line_text().size()));
-}
+    context.push(new node_line);
 
-auto try_accept_block_text(render_context& context) -> void {
-    node_block* block = new node_block();
-    context.parent->append(block);
-    context.parent = block;
+    try_parse_line_range(context, str::range(0, context.line_text().size()));
 
-    do {
-        auto& line = context.reader.line_text();
-
-        // 连续的文本行遇到了空行或者空白行，字节跳过
-        if (str::is_space_or_empty(line)) {
-            break;
-        }
-
-        node_line* nline = new node_line;
-        context.parent->append(nline);
-        context.parent = nline;
-        try_parse_line(context);
-        context.parent = nline->parent;
-    } while (context.reader.next_line());
-
-    context.parent = context.parent->parent;
+    context.pop();
 }
 
 auto try_parse_comment(render_context& context) -> void {
     node_comment* comment = new node_comment;
-    context.parent->append(comment);
+    context.append_child(comment);
 
     do {
-        comment->lines.emplace_back(context.reader.line_text());
-        if (str::ends_with(context.reader.line_text(), "-->")) {
+        comment->lines.emplace_back(context.line_text());
+        if (str::ends_with(context.line_text(), "-->")) {
             return;
         }
-    } while (context.reader.next_line());
+    } while (context.next_line());
 }
 
 auto try_parse_param(render_context& context) -> void {
-    // static std::regex param_pattern1{R"(^\s*@param\s+([a-zA-Z_][0-9a-zA-Z_]*)(,\s+([a-zA-Z_][0-9a-zA-Z_]*))?:(.*))"};
-    // static std::regex param_pattern2{R"(^\s*@param\{([a-zA-Z_][0-9a-zA-Z_]*)(,\s+[a-zA-Z_][0-9a-zA-Z_]*)?\}(.*))"};
-    //
-    // std::smatch match;
-    // if (std::regex_match(context.reader.line_text(), match, param_pattern1)) {
-    //
-    // } else if (std::regex_match(context.reader.line_text(), match, param_pattern2)) {
-    // }
-
-    const std::string& line = context.reader.line_text();
+    const std::string& line = context.line_text();
     str::range_type range{0, line.size()};
 
     // 形式：@xxx yyy, yyy:
@@ -1499,110 +1601,286 @@ auto try_parse_param(render_context& context) -> void {
         return;
     }
 
-    node_param* param = new node_param(anno_names);
-    context.parent->append(param);
-    context.parent = param;
+    context.push(new node_param(anno_names));
 
     // 后面是一个行内的元素
     auto param_list_range = acceptor.range().shift(range.pos);
     try_parse_line_range(context, str::range(param_list_range.end(), line.size() - param_list_range.end()));
 }
 
-auto try_parse_return(render_context& context) -> void {
-    // static std::regex return_pattern{R"(^\s*@return:\s+(.*))"};
-    // node_return* nret = new node_return;
-    // context.parent->append(nret);
-    node_return* ret = new node_return;
-    context.parent->append(ret);
-    context.parent = ret;
-    try_parse_line(context);
+auto try_parse_return(render_context& context, str::range_type range) -> void {
+    context.push(new node_return);
+    context.push(new node_line);
+
+    try_parse_line_range(context, range);
+
+    context.pop(); // pop line
+    context.pop(); // pop return
 }
 
 auto try_parse_bcode(render_context& context) -> void {
-    node_bcode* bcode = new node_bcode;
-    context.parent->append(bcode);
-    while (context.reader.next_line()) {
-        if (str::starts_with(context.reader.line_text(), "```")) {
+    auto& line = context.line_text();
+
+    // 识别语言识别符
+    std::string language;
+    size_t pos = 3; // 三个前缀符：```
+    auto range = str::accept_until(line, pos, ":");
+    if (!range) {
+        language = str::trim_surrounding(str::take_view(line, 3));
+        pos = line.size();
+    } else {
+        language = str::trim_surrounding(str::take_view(line, *range));
+        pos += range->size();
+    }
+
+    // 识别属性表
+    std::map<std::string, std::string> properties;
+    std::string_view prop_text = str::take_view(line, pos);
+    if (!prop_text.empty()) {
+        str::split_map(prop_text, ",", "=", //
+            [&properties](std::string_view key, std::string_view val) -> int {
+                properties.emplace(str::trim_surrounding(key), str::trim_surrounding(val));
+                return 0;
+            });
+    }
+
+    node_bcode* bcode = new node_bcode(language, properties);
+    context.append_child(bcode);
+    while (context.next_line()) {
+        if (str::starts_with(context.line_text(), "```")) {
             break;
         }
 
-        bcode->lines.emplace_back(context.reader.line_text());
+        bcode->lines.emplace_back(context.line_text());
     }
 }
 
-auto try_parse_block(render_context& context) -> void {
-    parse_state state = parse_state::WAIT_BLOCK;
-    while (context.reader.next_line()) {
-        std::string_view line = context.reader.line_text();
+auto enter_paragraph(parse_state& state, render_context& context) -> void {
+    // paragraph-begin
+    if (state == parse_state::NORMAL) {
+        context.push(new node_paragraph());
+        state = parse_state::ENTER_PARAGRAPH;
+    }
+}
 
-        if (line.empty()) {
-            // if (context.parent->flags & node_flags::FLAG_STANDALONE) {
-            //     context.parent = context.parent->parent;
-            //     continue;
-            // }
+auto leave_paragraph(parse_state& state, render_context& context) -> void {
+    // paragraph-end
+    if (state == parse_state::ENTER_PARAGRAPH) {
+        context.pop();
+        state = parse_state::NORMAL;
+    }
+}
+
+auto try_parse_document(render_context& context) -> void {
+    assert(context.parent() != nullptr);
+    assert(context.parent()->kind == NODE_KIND_PROJECT);
+
+    context.push(new node_article);
+
+    parse_state state = parse_state::NORMAL;
+    std::match_results<std::string_view::const_iterator> matches;
+    while (context.next_line()) {
+        std::string_view line = context.line_text();
+
+        // 遇到空行或者空白行，意味着块结束
+        if (str::is_space_or_empty(line)) {
+            // 可能需要退出block
+            leave_paragraph(state, context);
+
+            // 消费掉所有空行、空白行
+            while (context.next_line()) {
+                line = context.line_text();
+                if (!str::is_space_or_empty(line)) {
+                    // 回退当前行，编译借用外层循环的判断条件，实现统一接口退出
+                    context.rollback_line();
+                    break;
+                }
+            }
             continue;
         }
 
         // @param 开头的行
-        if (str::starts_with_word(line, "@param")) {
+        static std::regex param_pattern{R"((@param)[^a-z0-9_])"};
+        if (std::regex_match(line.begin(), line.end(), matches, param_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
             try_parse_param(context);
             continue;
         }
 
         // @return 开头的行
-        if (str::starts_with_word(line, "@return")) {
-            try_parse_return(context);
+        static std::regex return_pattern{R"(^(@return)(\s+|\s*:\s*).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, return_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            auto prefix_len = matches.length(1) + matches.length(2);
+            try_parse_return(context, str::range(prefix_len, (line.size() - prefix_len)));
             continue;
         }
 
         // 代码块
-        if (str::starts_with_word(line, "```")) {
+        if (str::starts_with(line, "```")) {
+            leave_paragraph(state, context); // 立即打断当前block
             try_parse_bcode(context);
             continue;
         }
 
         //! 注释块: <!-- ... -->
         if (str::starts_with_word(line, "<!--")) {
+            leave_paragraph(state, context); // 立即打断当前block
             try_parse_comment(context);
             continue;
         }
 
         // 标题行：# 号开头的行
-        static std::regex hx_pattern{R"(^#+\s.*)"};
-        if (std::regex_match(line.begin(), line.end(), hx_pattern)) {
-            try_parse_head(context);
+        static std::regex hx_pattern{R"(^(#+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, hx_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            auto level = matches.length(1);
+            auto space_n = matches.length(2);
+            try_parse_chapter(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
+            continue;
+        }
+
+        // 回退到特定标题级别
+        static std::regex back_hx_pattern{R"(^(#+)(\s?)<<(\s.*)?$)"};
+        if (std::regex_match(line.begin(), line.end(), matches, back_hx_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            auto level = matches.length(1);
+            node* parent = context.parent();
+            while (true) {
+                if (parent->kind == NODE_KIND_ARTICLE) {
+                    break;
+                }
+
+                if (parent->kind != NODE_KIND_CHAPTER) {
+                    continue;
+                }
+
+                node_chapter* chapter = reinterpret_cast<node_chapter*>(parent);
+                if (chapter->level < level) {
+                    assert(false);
+                    break;
+                }
+
+                if (chapter->level == level) {
+                    context.parent(parent);
+                    break;
+                }
+
+                parent = parent->parent;
+            }
             continue;
         }
 
         // 章节内分级： % 号开头的行
-        static std::regex gx_pattern{R"(^%+\s.*)"};
-        if (std::regex_match(line.begin(), line.end(), hx_pattern)) {
-            try_parse_head(context);
+        static std::regex sx_pattern{R"(^(%+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, sx_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            auto level = matches.length(1);
+            auto space_n = matches.length(2);
+            try_parse_chapter(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
             continue;
         }
 
-        // 无需列表行
-        static std::regex ul_pattern{R"(\*+\s.*)"};
-        if (std::regex_match(line.begin(), line.end(), ul_pattern)) {
-            try_parse_unordered_list(context);
+        // 回退到特定标题级别
+        static std::regex back_sx_pattern{R"(^(%+)(\s?)<<(\s.*)?$)"};
+        if (std::regex_match(line.begin(), line.end(), matches, back_sx_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            auto level = matches.length(1);
+            node* parent = context.parent();
+            while (true) {
+                if (parent->kind == NODE_KIND_ARTICLE) {
+                    break;
+                }
+
+                if (parent->kind == NODE_KIND_CHAPTER) {
+                    assert(false);
+                    break;
+                }
+
+                if (parent->kind != NODE_KIND_SECTION) {
+                    continue;
+                }
+
+                node_section* section = reinterpret_cast<node_section*>(parent);
+                if (section->level < level) {
+                    assert(false);
+                    break;
+                }
+
+                if (section->level == level) {
+                    context.parent(parent);
+                    break;
+                }
+
+                parent = parent->parent;
+            }
             continue;
         }
 
-        try_accept_block_text(context);
+        // 遇到列表行
+        static std::regex list_pattern{R"(^(\*+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, list_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            // auto last = list_last(&(context.parent()->children));
+            // if () {
+            //
+            // }
+
+            auto level = matches.length(1);
+            auto space_n = matches.length(2);
+            try_parse_listitem(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
+            continue;
+        }
+
+        // 回退到特定标题级别
+        static std::regex back_list_pattern{R"(^(\*+)(\s?)<<(\s.*)?$)"};
+        if (std::regex_match(line.begin(), line.end(), matches, back_sx_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            auto level = matches.length(1);
+            node* parent = context.parent();
+            while (true) {
+                if (parent->kind == NODE_KIND_ARTICLE) {
+                    break;
+                }
+
+                if (parent->kind == NODE_KIND_CHAPTER) {
+                    assert(false);
+                    break;
+                }
+
+                if (parent->kind != NODE_KIND_SECTION) {
+                    continue;
+                }
+
+                node_section* section = reinterpret_cast<node_section*>(parent);
+                if (section->level < level) {
+                    assert(false);
+                    break;
+                }
+
+                if (section->level == level) {
+                    context.parent(parent);
+                    break;
+                }
+
+                parent = parent->parent;
+            }
+            continue;
+        }
+
+        // 可能需要进入block
+        enter_paragraph(state, context);
+
+        // 处理本行（父级一定是block，行必须位于block内才有意义）
+        assert(state == parse_state::ENTER_PARAGRAPH);
+        assert(context.parent()->kind == NODE_KIND_PARAGRAPH);
+        try_parse_line(context);
     }
-}
-
-auto try_parse_document(render_context& context) -> void {
-    try_parse_block(context);
 }
 
 auto render_one_file(render_context& context) -> std::string {
-    if (context.reader) {
-        try_parse_document(context);
-        return "";
-    }
-
-    return "error-1";
+    try_parse_document(context);
+    return {};
 }
 
 auto main(int argc, char* argv[]) -> int {
@@ -1636,7 +1914,7 @@ auto main(int argc, char* argv[]) -> int {
         str::with_file(opts.output_file, "w+", output_repl, [ifile, &opts, &error](FILE* ofile) -> void {
             render_context context{ifile, ofile, opts.root_directory};
             error = render_one_file(context);
-            print_md(context.root, [](std::string_view text) {
+            print_md(context.root(), 0, [](std::string_view text) {
                 std::cout << text;
                 std::cout.flush();
             });
