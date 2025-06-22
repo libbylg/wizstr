@@ -3,10 +3,10 @@
 #include <cassert>
 #include <filesystem>
 #include <iostream>
-#include <tuple>
-#include <variant>
 #include <list>
+#include <tuple>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #if defined(STR_NAMESPACE)
@@ -58,7 +58,7 @@ enum node_kind : int8_t {
     // 错误（用于初始化）
     NODE_KIND_ERROR = 0,
 
-#define DEF_NODEKIND(Priority_, Id_,  Name_, Type_, Desc_) NODE_KIND_##Name_ = (Id_),
+#define DEF_NODEKIND(Priority_, Id_, Name_, Type_, Desc_) NODE_KIND_##Name_ = (Id_),
     NODEKIND_TABLE()
 #undef DEF_NODEKIND
 };
@@ -68,6 +68,19 @@ enum node_priority : int8_t {
     NODEKIND_TABLE()
 #undef DEF_NODEKIND
 };
+
+inline auto node_priority_of(node_kind kind) -> node_priority {
+    switch (kind) {
+#define DEF_NODEKIND(Priority_, Id_, Name_, Type_, Desc_) \
+    case node_kind::NODE_KIND_##Name_:                    \
+        return node_priority::NODE_PRIORITY_##Name_;      \
+        /* (end) */
+        NODEKIND_TABLE()
+#undef DEF_NODEKIND
+        default:
+            return node_priority{-1};
+    }
+}
 
 enum node_limits {
     CHAPTER_LEVEL_MIN = 1,
@@ -145,7 +158,6 @@ static inline auto list_append(H* head, T* new_item) -> void {
     list_insert(head->prev, head, new_item);
 }
 
-
 template <typename H, typename T>
 static auto list_prepend(H* head, T* new_item) -> void {
     assert(new_item != nullptr);
@@ -176,6 +188,9 @@ struct node : public list_head<node> {
     // 符号优先级
     int8_t priority{0};
 
+    // 层级(如果有的话)
+    int8_t level{0};
+
     explicit node() {
         list_head_init(this);
         list_head_init(&children);
@@ -202,12 +217,14 @@ struct node : public list_head<node> {
 struct node_project : public node {
     explicit node_project() {
         kind = NODE_KIND_PROJECT;
+        priority = NODE_PRIORITY_PROJECT;
     }
 };
 
 struct node_projectend : public node {
     explicit node_projectend() {
         kind = NODE_KIND_PROJECTEND;
+        priority = NODE_PRIORITY_PROJECTEND;
     }
 };
 
@@ -219,45 +236,41 @@ struct node_anchor;
 struct node_articleend : public node {
     explicit node_articleend() {
         kind = NODE_KIND_ARTICLEEND;
-        priority = NODE_PRIORITY_ARTICLE;
+        priority = NODE_PRIORITY_ARTICLEEND;
     }
 };
 
 struct node_chapter : public node {
-    int8_t level{0};
-
     explicit node_chapter(int8_t l) {
         assert((l >= CHAPTER_LEVEL_MIN) && (l <= CHAPTER_LEVEL_MAX));
         kind = NODE_KIND_CHAPTER;
+        priority = NODE_PRIORITY_CHAPTER;
         level = l;
     }
 };
 
 struct node_chapterend : public node {
-    int8_t level{0};
-
     explicit node_chapterend(int8_t l) {
         assert((l >= CHAPTER_LEVEL_MIN) && (l <= CHAPTER_LEVEL_MAX));
         kind = NODE_KIND_CHAPTEREND;
+        priority = NODE_PRIORITY_CHAPTEREND;
         level = l;
     }
 };
 
 struct node_section : public node {
-    int8_t level{0};
-
     explicit node_section(int8_t l) {
         assert((l >= SECTION_LEVEL_MIN) && (l <= SECTION_LEVEL_MAX));
         kind = NODE_KIND_SECTION;
+        priority = NODE_PRIORITY_SECTION;
         level = l;
     }
 };
 
 struct node_sectionend : public node {
-    int8_t level{0};
-
     explicit node_sectionend(int8_t l) {
         kind = NODE_KIND_SECTIONEND;
+        priority = NODE_PRIORITY_SECTIONEND;
         level = l;
     }
 };
@@ -265,6 +278,7 @@ struct node_sectionend : public node {
 struct node_paragraph : public node {
     explicit node_paragraph() {
         kind = NODE_KIND_PARAGRAPH;
+        priority = NODE_PRIORITY_PARAGRAPH;
     }
 };
 
@@ -273,6 +287,7 @@ struct node_line : public node {
 
     explicit node_line() {
         kind = NODE_KIND_LINE;
+        priority = NODE_PRIORITY_LINE;
     }
 };
 
@@ -281,6 +296,7 @@ struct node_comment : public node {
 
     explicit node_comment() {
         kind = NODE_KIND_COMMENT;
+        priority = NODE_PRIORITY_COMMENT;
     }
 };
 
@@ -291,6 +307,7 @@ struct node_bcode : public node {
 
     explicit node_bcode(std::string_view lang, std::map<std::string, std::string> prop) {
         kind = NODE_KIND_BCODE;
+        priority = NODE_PRIORITY_BCODE;
         language = lang;
         properties = std::move(prop);
     }
@@ -301,6 +318,7 @@ struct node_icode : public node {
 
     explicit node_icode(std::string_view content) {
         kind = NODE_KIND_ICODE;
+        priority = NODE_PRIORITY_ICODE;
         flags |= node_flags::FLAG_INLINE;
         text = content;
     }
@@ -311,6 +329,7 @@ struct node_iformula : public node {
 
     explicit node_iformula() {
         kind = NODE_KIND_IFORMULA;
+        priority = NODE_PRIORITY_IFORMULA;
     }
 };
 
@@ -319,6 +338,7 @@ struct node_bformula : public node {
 
     explicit node_bformula() {
         kind = NODE_KIND_BFORMULA;
+        priority = NODE_PRIORITY_BFORMULA;
     }
 };
 
@@ -328,33 +348,24 @@ struct node_embded : public node {
 
     explicit node_embded() {
         kind = NODE_KIND_EMBDED;
+        priority = NODE_PRIORITY_EMBDED;
     }
 };
 
 struct node_list : public node {
-    int32_t level{0};
-
-    explicit node_list(int32_t l) {
+    explicit node_list(int8_t l) {
         kind = NODE_KIND_LIST;
+        priority = NODE_PRIORITY_LIST;
         level = l;
     }
 };
-
-// struct node_listitem : public node {
-//     int32_t level{};
-//
-//     explicit node_listitem(int32_t l) {
-//         kind = NODE_KIND_LISTITEM;
-//         level = l;
-//     }
-// };
-
 
 struct node_anchor : public node {
     std::vector<std::string> names;
 
     explicit node_anchor() {
         kind = NODE_KIND_ANCHOR;
+        priority = NODE_PRIORITY_ANCHOR;
     }
 };
 
@@ -363,6 +374,7 @@ struct node_param : public node {
 
     explicit node_param() {
         kind = NODE_KIND_PARAM;
+        priority = NODE_PRIORITY_PARAM;
     }
 
     explicit node_param(std::vector<std::string_view> n)
@@ -376,6 +388,7 @@ struct node_param : public node {
 struct node_return : public node {
     explicit node_return() {
         kind = NODE_KIND_RETURN;
+        priority = NODE_PRIORITY_RETURN;
     }
 };
 
@@ -384,6 +397,7 @@ struct node_text : public node {
 
     explicit node_text(std::string_view content) {
         kind = NODE_KIND_TEXT;
+        priority = NODE_PRIORITY_TEXT;
         text = content;
     }
 };
@@ -393,6 +407,7 @@ struct node_strong : public node {
 
     explicit node_strong(std::string_view content) {
         kind = NODE_KIND_STRONG;
+        priority = NODE_PRIORITY_STRONG;
         text = content;
     }
 };
@@ -402,6 +417,7 @@ struct node_em : public node {
 
     explicit node_em(std::string_view content) {
         kind = NODE_KIND_EM;
+        priority = NODE_PRIORITY_EM;
         text = content;
     }
 };
@@ -412,6 +428,7 @@ struct node_hlink : public node {
 
     explicit node_hlink(std::string_view n, std::string_view u) {
         kind = NODE_KIND_HLINK;
+        priority = NODE_PRIORITY_HLINK;
         name = n;
         url = u;
     }
@@ -423,6 +440,7 @@ struct node_image : public node {
 
     explicit node_image(std::string_view n, std::string_view u) {
         kind = NODE_KIND_IMAGE;
+        priority = NODE_PRIORITY_IMAGE;
         name = n;
         url = u;
     }
@@ -434,6 +452,7 @@ struct node_anno : public node {
 
     explicit node_anno(std::string_view n, const std::vector<std::string_view>& u) {
         kind = NODE_KIND_ANNO;
+        priority = NODE_PRIORITY_ANNO;
         type = n;
         for (auto item : u) {
             names.emplace_back(item);
@@ -490,7 +509,6 @@ struct node_article : public node {
     }
 };
 
-
 auto print_tree(node* nd, size_t ident, const std::function<void(std::string_view)> print) -> void {
     assert((nd != nullptr) && (print != nullptr));
     switch (nd->kind) {
@@ -500,16 +518,14 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             for (auto child = project->children.next; child != reinterpret_cast<node*>(&project->children); child = child->next) {
                 print_tree(child, ident, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_ARTICLE: {
             print(str::make_spaces(ident * 4));
             node_article* article = reinterpret_cast<node_article*>(nd);
             for (auto child = article->children.next; child != reinterpret_cast<node*>(&article->children); child = child->next) {
                 print_tree(child, ident, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_CHAPTER: {
             print(str::make_spaces(ident * 4));
             node_chapter* chapter = reinterpret_cast<node_chapter*>(nd);
@@ -521,32 +537,31 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             for (auto child = line->next; child != reinterpret_cast<node*>(&chapter->children); child = child->next) {
                 print_tree(child, ident + 1, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_SECTION: {
             print(str::make_spaces(ident * 4));
             node_section* section = reinterpret_cast<node_section*>(nd);
             auto tag = str::repeat("%", section->level);
             print(tag);
             print(" ");
-            auto line = section->children.next;
-            print_tree(line, 0, print); // 0: 不需要加空白前缀
-            print("\n");
-            for (auto child = section->children.next; child != reinterpret_cast<node*>(&section->children); child = child->next) {
-                print_tree(child, ident + 1, print);
+            auto line = list_first(&section->children);
+            if (line != list_end(&section->children)) {
+                assert(line->kind == NODE_KIND_LINE);
+                print_tree(line, 0, print); // 0: 不需要加空白前缀
+                print("\n");
+                for (auto child = list_next(line); child != list_end(&section->children); child = list_next(child)) {
+                    print_tree(child, ident + 1, print);
+                }
+                print("\n");
             }
-            print(tag);
-            print("<");
-        }
-        break;
+        } break;
         case NODE_KIND_PARAGRAPH: {
             node_paragraph* paragraph = reinterpret_cast<node_paragraph*>(nd);
             for (auto child = paragraph->children.next; child != reinterpret_cast<node*>(&paragraph->children); child = child->next) {
                 print_tree(child, ident, print);
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_LINE: {
             print(str::make_spaces(ident * 4));
             node_line* line = reinterpret_cast<node_line*>(nd);
@@ -554,8 +569,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print_tree(child, ident + 1, print);
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_COMMENT: {
             print(str::make_spaces(ident * 4));
             node_comment* comment = reinterpret_cast<node_comment*>(nd);
@@ -565,19 +579,15 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print("\n");
             }
             print("-->\n");
-        }
-        break;
+        } break;
         case NODE_KIND_THEAD: {
-        }
-        break;
+        } break;
         case NODE_KIND_TROW: {
 
-        }
-        break;
+        } break;
         case NODE_KIND_TCOL: {
 
-        }
-        break;
+        } break;
         case NODE_KIND_PARAM: {
             print(str::make_spaces(ident * 4));
             node_param* param = reinterpret_cast<node_param*>(nd);
@@ -600,8 +610,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_RETURN: {
             print(str::make_spaces(ident * 4));
             print("@return: ");
@@ -617,8 +626,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_BCODE: {
             print(str::make_spaces(ident * 4));
             node_bcode* bcode = reinterpret_cast<node_bcode*>(nd);
@@ -643,15 +651,13 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             }
             print(str::make_spaces(ident * 4));
             print("```\n");
-        }
-        break;
+        } break;
         case NODE_KIND_IFORMULA: {
             node_iformula* iformula = reinterpret_cast<node_iformula*>(nd);
             print("$");
             print(iformula->text);
             print("$");
-        }
-        break;
+        } break;
         case NODE_KIND_BFORMULA: {
             node_bformula* bformula = reinterpret_cast<node_bformula*>(nd);
             print("$$\n");
@@ -660,8 +666,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print("\n");
             }
             print("$$\n");
-        }
-        break;
+        } break;
         case NODE_KIND_LIST: {
             print(str::make_spaces(ident * 4));
             node_list* list = reinterpret_cast<node_list*>(nd);
@@ -678,8 +683,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             // for (auto child = list_first(&list->children); child != list_end(&list->children); child = list_next(child)) {
             //     print_md(child, level, print);
             // }
-        }
-        break;
+        } break;
         // case NODE_KIND_LISTITEM: {
         //     node_listitem* listitem = reinterpret_cast<node_listitem*>(nd);
         //     print(str::repeat("*", listitem->level));
@@ -701,8 +705,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print("](");
             print(hlink->url);
             print(")");
-        }
-        break;
+        } break;
         case NODE_KIND_IMAGE: {
             node_image* image = reinterpret_cast<node_image*>(nd);
             print("![");
@@ -710,42 +713,35 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print("](");
             print(image->url);
             print(")");
-        }
-        break;
+        } break;
         case NODE_KIND_ANCHOR: {
 
-        }
-        break;
+        } break;
         case NODE_KIND_EMBDED: {
 
-        }
-        break;
+        } break;
         case NODE_KIND_STRONG: {
             node_strong* strong = reinterpret_cast<node_strong*>(nd);
             print("**");
             print(strong->text);
             print("**");
-        }
-        break;
+        } break;
         case NODE_KIND_EM: {
             node_em* em = reinterpret_cast<node_em*>(nd);
             print("*");
             print(em->text);
             print("*");
-        }
-        break;
+        } break;
         case NODE_KIND_TEXT: {
             node_text* text = reinterpret_cast<node_text*>(nd);
             print(text->text);
-        }
-        break;
+        } break;
         case NODE_KIND_ICODE: {
             node_icode* text = reinterpret_cast<node_icode*>(nd);
             print("`");
             print(text->text);
             print("`");
-        }
-        break;
+        } break;
         case NODE_KIND_ANNO: {
             node_anno* anno = reinterpret_cast<node_anno*>(nd);
             print("@");
@@ -758,12 +754,10 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print(anno->names[index]);
             }
             print("}");
-        }
-        break;
+        } break;
         default: {
             assert(false);
-        }
-        break;
+        } break;
     }
 }
 
@@ -1347,20 +1341,17 @@ private:
 
 auto try_parse_line_range(render_context& context, str::range_type range) -> void;
 
-auto try_parse_chapter(render_context& context, int32_t level, str::range_type range) -> void {
+auto try_parse_chapter(render_context& context, int8_t level, str::range_type range) -> void {
     auto add_to_parent = context.parent();
     while (true) {
-        if (add_to_parent->kind == NODE_KIND_ARTICLE) {
+        if (add_to_parent->priority < node_priority_of(NODE_KIND_CHAPTER)) {
             break;
         }
 
-        if (add_to_parent->kind != NODE_KIND_CHAPTER) {
-            break;
-        }
-
-        auto chapter = reinterpret_cast<node_chapter*>(add_to_parent);
-        if (chapter->level < level) {
-            break;
+        if (add_to_parent->priority == node_priority_of(NODE_KIND_CHAPTER)) {
+            if (add_to_parent->level < level) {
+                break;
+            }
         }
 
         add_to_parent = add_to_parent->parent;
@@ -1379,14 +1370,14 @@ auto try_parse_chapter(render_context& context, int32_t level, str::range_type r
 auto try_parse_section(render_context& context, int32_t level, str::range_type range) -> void {
     auto add_to_parent = context.parent();
     while (true) {
-        if ((add_to_parent->kind == NODE_KIND_ARTICLE) || (add_to_parent->kind == NODE_KIND_CHAPTER)) {
+        if (add_to_parent->priority < node_priority_of(NODE_KIND_SECTION)) {
             break;
         }
 
-        assert(add_to_parent->kind == NODE_KIND_SECTION);
-        auto section = reinterpret_cast<node_section*>(add_to_parent);
-        if (section->level < level) {
-            break;
+        if (add_to_parent->priority == node_priority_of(NODE_KIND_SECTION)) {
+            if (add_to_parent->level < level) {
+                break;
+            }
         }
 
         add_to_parent = add_to_parent->parent;
@@ -1402,44 +1393,24 @@ auto try_parse_section(render_context& context, int32_t level, str::range_type r
 }
 
 // * xxx
-auto try_parse_list(render_context& context, int32_t level, str::range_type range) -> void {
+auto try_parse_list(render_context& context, int8_t level, str::range_type range) -> void {
     auto add_to_parent = context.parent();
-    // if ((add_to_parent->kind != NODE_KIND_LIST) && (add_to_parent->kind != NODE_KIND_LISTITEM)) {
-    //     context.push(new node_list);
-    //     add_to_parent = context.parent();
-    // }
-    // if (add_to_parent->kind != NODE_KIND_LIST) {
-    //     context.push(new node_list);
-    //     add_to_parent = context.parent();
-    // }
-
     while (true) {
-        // if (add_to_parent->kind == NODE_KIND_LIST) {
-        //     break;
-        // }
-        //
-        // assert(add_to_parent->kind == NODE_KIND_LISTITEM);
-        // auto listitem = reinterpret_cast<node_listitem*>(add_to_parent);
-        // if (listitem->level < level) {
-        //     break;
-        // }
-
-        if (add_to_parent->kind != NODE_KIND_LIST) {
+        if (add_to_parent->priority < node_priority_of(NODE_KIND_LIST)) {
             break;
         }
 
-        assert(add_to_parent->kind == NODE_KIND_LIST);
-        auto listitem = reinterpret_cast<node_list*>(add_to_parent);
-        if (listitem->level < level) {
-            break;
+        if (add_to_parent->priority == node_priority_of(NODE_KIND_LIST)) {
+            if (add_to_parent->level < level) {
+                break;
+            }
         }
+
         add_to_parent = add_to_parent->parent;
     }
 
-    assert(add_to_parent != nullptr);
-
     context.parent(add_to_parent);
-    //context.push(new node_listitem(level));
+    // context.push(new node_listitem(level));
     context.push(new node_list(level));
     context.push(new node_line());
     try_parse_line_range(context, range);
@@ -1492,11 +1463,11 @@ auto try_parse_hlink(std::string_view line, str::range_type& range) -> node* {
     std::string_view hlink_name;
     std::string_view hlink_url;
     acceptor.from(0)
-            .accept('[')
-            .accept_until(hlink_name, '\\', ']')
-            .skip_spaces()
-            .accept('(')
-            .accept_until(hlink_url, '\\', ')');
+        .accept('[')
+        .accept_until(hlink_name, '\\', ']')
+        .skip_spaces()
+        .accept('(')
+        .accept_until(hlink_url, '\\', ')');
     if (!acceptor) {
         return nullptr;
     }
@@ -1592,9 +1563,9 @@ auto try_parse_image(std::string_view line, str::range_type& range) -> node* {
     std::string_view image_url;
 
     acceptor.accept("![")
-            .accept_until(image_name, '\\', ']')
-            .accept('(')
-            .accept_until(image_url, ')');
+        .accept_until(image_name, '\\', ']')
+        .accept('(')
+        .accept_until(image_url, ')');
     if (!acceptor) {
         return nullptr;
     }
@@ -1602,15 +1573,6 @@ auto try_parse_image(std::string_view line, str::range_type& range) -> node* {
     range = acceptor.range().shift(range.pos);
     return new node_image(image_name, image_url);
 }
-
-// stmt_list
-//     : stmt
-//     ;
-//
-// stmt
-//     : 'begin'  stmt_list 'end'
-//     | '{' stmt_list '}'
-//     ;
 
 auto try_parse_line_range(render_context& context, str::range_type range) -> void {
     const std::string& line = context.line_text();
@@ -1638,8 +1600,7 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                 if (auto node = try_parse_em(line, parse_range); node != nullptr) {
                     continue;
                 }
-            }
-            break;
+            } break;
             case '`': {
                 if (auto node = try_parse_icode(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
@@ -1651,8 +1612,7 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             case '[': {
                 if (auto node = try_parse_hlink(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
@@ -1664,8 +1624,7 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             case '@': {
                 if (auto node = try_parse_anno(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
@@ -1677,8 +1636,7 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             case '!': {
                 if (auto node = try_parse_image(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
@@ -1690,14 +1648,12 @@ auto try_parse_line_range(render_context& context, str::range_type range) -> voi
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             default: {
                 // 扫描字符串行，知道遇到指定的分隔符
                 auto text_range = str::accept_until(line, curr, str::charset("*`[@!"));
                 curr = (text_range ? text_range->end() : parse_range.end());
-            }
-            break;
+            } break;
         }
 
         // 从下一个字符开始解析
@@ -1749,12 +1705,12 @@ auto try_parse_param(render_context& context) -> void {
     std::string_view item;
     while (true) {
         if (!acceptor.skip_spaces(1)) {
-            assert(false); //  格式错误: param 后面无空白
+            assert(false); // 格式错误: param 后面无空白
             return;
         }
 
         if (!acceptor.accept(item, name_pattern)) {
-            assert(false); //  格式错误：param 的参数名称不满足规范
+            assert(false); // 格式错误：param 的参数名称不满足规范
             return;
         }
 
@@ -1832,30 +1788,12 @@ auto try_parse_bcode(render_context& context) -> void {
 auto leave_atuoblock(parse_state& state, render_context& context) -> void;
 
 auto enter_paragraph(parse_state& state, render_context& context) -> void {
-
-    // // 如果在列表状态，进入前需要先退出
-    // if (state == parse_state::ENTER_LIST) {
-    //     leave_atuoblock(state, context);
-    // }
-
     // paragraph-begin
     if (state == parse_state::NORMAL) {
         context.push(new node_paragraph());
         state = parse_state::ENTER_PARAGRAPH;
     }
 }
-
-// auto enter_list(parse_state& state, render_context& context) -> void {
-//     if (state == parse_state::ENTER_PARAGRAPH) {
-//         leave_atuoblock(state, context); // 立即打断当前block
-//     }
-//
-//     // paragraph-list
-//     if (state == parse_state::NORMAL) {
-//         context.push(new node_list());
-//         state = parse_state::ENTER_LIST;
-//     }
-// }
 
 auto leave_atuoblock(parse_state& state, render_context& context) -> void {
     // paragraph-end
@@ -1865,9 +1803,7 @@ auto leave_atuoblock(parse_state& state, render_context& context) -> void {
     }
 }
 
-
 auto try_parse_listend(render_context& context, int32_t level, str::range_type range) -> void {
-
 }
 
 auto try_parse_article(render_context& context) -> void {
@@ -1884,9 +1820,7 @@ auto try_parse_article(render_context& context) -> void {
         // 遇到空行或者空白行，意味着块结束
         if (str::is_space_or_empty(line)) {
             // paragraph 必须是连续的，所以遇到空行需要退出block
-            //if (state == parse_state::ENTER_PARAGRAPH) {
             leave_atuoblock(state, context);
-            //}
 
             // 消费掉所有空行、空白行
             while (context.next_line()) {
@@ -1937,7 +1871,7 @@ auto try_parse_article(render_context& context) -> void {
             leave_atuoblock(state, context); // 立即打断当前block
             auto level = matches.length(1);
             auto space_n = matches.length(2);
-            try_parse_chapter(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
+            try_parse_chapter(context, static_cast<int8_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
             continue;
         }
 
@@ -1948,26 +1882,23 @@ auto try_parse_article(render_context& context) -> void {
             auto level = matches.length(1);
             node* parent = context.parent();
             while (true) {
-                if (parent->kind == NODE_KIND_ARTICLE) {
+                if (parent->priority < node_priority_of(NODE_KIND_CHAPTER)) {
                     break;
                 }
 
-                if (parent->kind != NODE_KIND_CHAPTER) {
-                    continue;
-                }
+                if (parent->priority == node_priority_of(NODE_KIND_CHAPTER)) {
+                    if (parent->level < level) {
+                        // TODO report warning
+                        // ## xxx
+                        // ###<<
+                        break;
+                    }
 
-                node_chapter* chapter = reinterpret_cast<node_chapter*>(parent);
-                if (chapter->level < level) {
-                    // TODO report warning
-                    // ## xxx
-                    // ###<<
-                    break;
-                }
-
-                // 当前level的节点结束，回到当前节点的上层
-                if (chapter->level == level) {
-                    context.parent(parent->parent);
-                    break;
+                    // 当前level的节点结束，回到当前节点的上层
+                    if (parent->level == level) {
+                        context.parent(parent->parent);
+                        break;
+                    }
                 }
 
                 parent = parent->parent;
@@ -1992,30 +1923,22 @@ auto try_parse_article(render_context& context) -> void {
             auto level = matches.length(1);
             node* parent = context.parent();
             while (true) {
-                if (parent->kind == NODE_KIND_ARTICLE) {
+                if (parent->priority < node_priority_of(NODE_KIND_SECTION)) {
                     break;
                 }
 
-                if (parent->kind == NODE_KIND_CHAPTER) {
-                    assert(false);
-                    break;
-                }
+                if (parent->priority == node_priority_of(NODE_KIND_SECTION)) {
+                    if (parent->level < level) {
+                        // TODO report warning
+                        // %% xxx
+                        // %%%<<
+                        break;
+                    }
 
-                if (parent->kind != NODE_KIND_SECTION) {
-                    continue;
-                }
-
-                node_section* section = reinterpret_cast<node_section*>(parent);
-                if (section->level < level) {
-                    // TODO report warning
-                    // %% xxx
-                    // %%%<<
-                    break;
-                }
-
-                if (section->level == level) {
-                    context.parent(parent->parent);
-                    break;
+                    if (parent->level == level) {
+                        context.parent(parent->parent);
+                        break;
+                    }
                 }
 
                 parent = parent->parent;
@@ -2026,14 +1949,11 @@ auto try_parse_article(render_context& context) -> void {
         // 遇到列表行
         static std::regex list_pattern{R"(^(\*+)(\s+).*)"};
         if (std::regex_match(line.begin(), line.end(), matches, list_pattern)) {
-            // if (context.parent()->kind != NODE_KIND_LIST) {
-            //     enter_list(state, context);
-            // }
             leave_atuoblock(state, context);
 
             auto level = matches.length(1);
             auto space_n = matches.length(2);
-            try_parse_list(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
+            try_parse_list(context, static_cast<int8_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
             continue;
         }
 
@@ -2044,37 +1964,22 @@ auto try_parse_article(render_context& context) -> void {
             auto level = matches.length(1);
             node* parent = context.parent();
             while (true) {
-                if (parent->kind == NODE_KIND_ARTICLE) {
+                if (parent->priority < node_priority_of(NODE_KIND_LIST)) {
                     break;
                 }
 
-                if (parent->kind == NODE_KIND_CHAPTER) {
-                    assert(false);
-                    break;
-                }
+                if (parent->priority == node_priority_of(NODE_KIND_LIST)) {
+                    if (parent->level < level) {
+                        // TODO report warning
+                        // ** xxx
+                        // ***<<
+                        break;
+                    }
 
-                if (parent->kind == NODE_KIND_SECTION) {
-                    break;
-                }
-
-                if (parent->kind != NODE_KIND_LIST) {
-                    // TODO report warning
-                    // # abc
-                    // *<< 父级结构中并不是列表
-                    break;
-                }
-
-                node_list* listitem = reinterpret_cast<node_list*>(parent);
-                if (listitem->level < level) {
-                    // TODO report warning
-                    // ** xxx
-                    // ***<<
-                    break;
-                }
-
-                if (listitem->level == level) {
-                    context.parent(parent->parent);
-                    break;
+                    if (parent->level == level) {
+                        context.parent(parent->parent);
+                        break;
+                    }
                 }
 
                 parent = parent->parent;

@@ -1,20 +1,30 @@
-# paragraphs
+# aaa
 
-% block1
+## bbb
 
-UUUUU
+qqqqq $$a=b^{1+c}$$ qqqqq
 
-% block2
-%% block2
+$$$
+$$$
+yyyy
+$$$
+sh -x build.sh compile
+$$$
+qqqqq
 
-## header2
+qqqqq
+$$$
+sh -x build.sh compile
+$$$
 
-% block3
+$$$
+if (rpos < curr) {
+node_text* text = new node_text(str::take_view(line, str::range(rpos, (curr - rpos))));
+context.append_child(text);
+context.rpos(curr);
+}
+$$$
 
-yyyyy
-%% block3
-zzzzzz
-% block3
+# hello`xxx`world
 
-
-
+aaa`bbb`ccc
