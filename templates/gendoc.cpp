@@ -42,11 +42,11 @@ using str = STR_NAMESPACE::str;
     DEF_NODEKIND(7, 52, IMAGE, node_image, "图片")             \
     DEF_NODEKIND(7, 53, ANCHOR, node_anchor, "锚点定义")       \
     DEF_NODEKIND(7, 54, EMBDED, node_embded, "嵌入文字")       \
-    DEF_NODEKIND(7, 55, STRONG, node_strong, "强调")           \
-    DEF_NODEKIND(7, 56, EM, node_em, "重要")                   \
+    DEF_NODEKIND(7, 55, EMPHASIS, node_emphasis, "强调")       \
     DEF_NODEKIND(7, 57, TEXT, node_text, "文本")               \
     DEF_NODEKIND(7, 58, ICODE, node_icode, "行内代码")         \
     DEF_NODEKIND(7, 59, ANNO, node_anno, "注解")               \
+    DEF_NODEKIND(7, 60, COLOR, node_color, "颜色")             \
     /* 特殊节点：行本身 */                                     \
     DEF_NODEKIND(20, 90, LINE, node_line, "行")                \
     DEF_NODEKIND(20, 91, THEAD, node_thead, "表头行")          \
@@ -402,23 +402,22 @@ struct node_text : public node {
     }
 };
 
-struct node_strong : public node {
-    std::string text;
-
-    explicit node_strong(std::string_view content) {
-        kind = NODE_KIND_STRONG;
-        priority = NODE_PRIORITY_STRONG;
-        text = content;
-    }
+enum emphasis_type : uint8_t {
+    ET_BOLD = 0x01,          // b
+    ET_ITALIC = 0x02,        // i
+    ET_UNDERLINE = 0x03,     // u
+    ET_STRIKETHROUGH = 0x08, // s
 };
 
-struct node_em : public node {
+struct node_emphasis : public node {
     std::string text;
+    uint8_t types{0}; // emphasis_type
 
-    explicit node_em(std::string_view content) {
-        kind = NODE_KIND_EM;
-        priority = NODE_PRIORITY_EM;
+    explicit node_emphasis(uint8_t t, std::string_view content) {
+        kind = NODE_KIND_EMPHASIS;
+        priority = NODE_PRIORITY_EMPHASIS;
         text = content;
+        types = t;
     }
 };
 
@@ -457,6 +456,16 @@ struct node_anno : public node {
         for (auto item : u) {
             names.emplace_back(item);
         }
+    }
+};
+
+struct node_color : public node {
+    std::string color;
+
+    explicit node_color(std::string_view c) {
+        kind = NODE_KIND_COLOR;
+        priority = NODE_PRIORITY_COLOR;
+        color = c;
     }
 };
 
@@ -518,14 +527,16 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             for (auto child = project->children.next; child != reinterpret_cast<node*>(&project->children); child = child->next) {
                 print_tree(child, ident, print);
             }
-        } break;
+        }
+        break;
         case NODE_KIND_ARTICLE: {
             print(str::make_spaces(ident * 4));
             node_article* article = reinterpret_cast<node_article*>(nd);
             for (auto child = article->children.next; child != reinterpret_cast<node*>(&article->children); child = child->next) {
                 print_tree(child, ident, print);
             }
-        } break;
+        }
+        break;
         case NODE_KIND_CHAPTER: {
             print(str::make_spaces(ident * 4));
             node_chapter* chapter = reinterpret_cast<node_chapter*>(nd);
@@ -537,7 +548,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             for (auto child = line->next; child != reinterpret_cast<node*>(&chapter->children); child = child->next) {
                 print_tree(child, ident + 1, print);
             }
-        } break;
+        }
+        break;
         case NODE_KIND_SECTION: {
             print(str::make_spaces(ident * 4));
             node_section* section = reinterpret_cast<node_section*>(nd);
@@ -554,14 +566,16 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
                 print("\n");
             }
-        } break;
+        }
+        break;
         case NODE_KIND_PARAGRAPH: {
             node_paragraph* paragraph = reinterpret_cast<node_paragraph*>(nd);
             for (auto child = paragraph->children.next; child != reinterpret_cast<node*>(&paragraph->children); child = child->next) {
                 print_tree(child, ident, print);
             }
             print("\n");
-        } break;
+        }
+        break;
         case NODE_KIND_LINE: {
             print(str::make_spaces(ident * 4));
             node_line* line = reinterpret_cast<node_line*>(nd);
@@ -569,7 +583,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print_tree(child, ident + 1, print);
             }
             print("\n");
-        } break;
+        }
+        break;
         case NODE_KIND_COMMENT: {
             print(str::make_spaces(ident * 4));
             node_comment* comment = reinterpret_cast<node_comment*>(nd);
@@ -579,15 +594,19 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print("\n");
             }
             print("-->\n");
-        } break;
+        }
+        break;
         case NODE_KIND_THEAD: {
-        } break;
+        }
+        break;
         case NODE_KIND_TROW: {
 
-        } break;
+        }
+        break;
         case NODE_KIND_TCOL: {
 
-        } break;
+        }
+        break;
         case NODE_KIND_PARAM: {
             print(str::make_spaces(ident * 4));
             node_param* param = reinterpret_cast<node_param*>(nd);
@@ -610,7 +629,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
             }
             print("\n");
-        } break;
+        }
+        break;
         case NODE_KIND_RETURN: {
             print(str::make_spaces(ident * 4));
             print("@return: ");
@@ -626,7 +646,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
             }
             print("\n");
-        } break;
+        }
+        break;
         case NODE_KIND_BCODE: {
             print(str::make_spaces(ident * 4));
             node_bcode* bcode = reinterpret_cast<node_bcode*>(nd);
@@ -651,13 +672,15 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             }
             print(str::make_spaces(ident * 4));
             print("```\n");
-        } break;
+        }
+        break;
         case NODE_KIND_IFORMULA: {
             node_iformula* iformula = reinterpret_cast<node_iformula*>(nd);
             print("$");
             print(iformula->text);
             print("$");
-        } break;
+        }
+        break;
         case NODE_KIND_BFORMULA: {
             node_bformula* bformula = reinterpret_cast<node_bformula*>(nd);
             print("$$\n");
@@ -666,7 +689,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print("\n");
             }
             print("$$\n");
-        } break;
+        }
+        break;
         case NODE_KIND_LIST: {
             print(str::make_spaces(ident * 4));
             node_list* list = reinterpret_cast<node_list*>(nd);
@@ -683,7 +707,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             // for (auto child = list_first(&list->children); child != list_end(&list->children); child = list_next(child)) {
             //     print_md(child, level, print);
             // }
-        } break;
+        }
+        break;
         // case NODE_KIND_LISTITEM: {
         //     node_listitem* listitem = reinterpret_cast<node_listitem*>(nd);
         //     print(str::repeat("*", listitem->level));
@@ -705,7 +730,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print("](");
             print(hlink->url);
             print(")");
-        } break;
+        }
+        break;
         case NODE_KIND_IMAGE: {
             node_image* image = reinterpret_cast<node_image*>(nd);
             print("![");
@@ -713,35 +739,50 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print("](");
             print(image->url);
             print(")");
-        } break;
+        }
+        break;
         case NODE_KIND_ANCHOR: {
 
-        } break;
+        }
+        break;
         case NODE_KIND_EMBDED: {
 
-        } break;
-        case NODE_KIND_STRONG: {
-            node_strong* strong = reinterpret_cast<node_strong*>(nd);
-            print("**");
-            print(strong->text);
-            print("**");
-        } break;
-        case NODE_KIND_EM: {
-            node_em* em = reinterpret_cast<node_em*>(nd);
-            print("*");
-            print(em->text);
-            print("*");
-        } break;
+        }
+        break;
+        case NODE_KIND_EMPHASIS: {
+            // @[r]**dsdsdsd**
+            node_emphasis* strong = reinterpret_cast<node_emphasis*>(nd);
+            if (strong->types & emphasis_type::ET_BOLD) {
+                print("**");
+                print(strong->text);
+                print("**");
+            } else if (strong->types & emphasis_type::ET_STRIKETHROUGH) {
+                print("~~");
+                print(strong->text);
+                print("~~");
+            } else if (strong->types & emphasis_type::ET_ITALIC) {
+                print("@/[");
+                print(strong->text);
+                print("]");
+            } else if (strong->types & emphasis_type::ET_UNDERLINE) {
+                print("@_[");
+                print(strong->text);
+                print("]");
+            }
+        }
+        break;
         case NODE_KIND_TEXT: {
             node_text* text = reinterpret_cast<node_text*>(nd);
             print(text->text);
-        } break;
+        }
+        break;
         case NODE_KIND_ICODE: {
             node_icode* text = reinterpret_cast<node_icode*>(nd);
             print("`");
             print(text->text);
             print("`");
-        } break;
+        }
+        break;
         case NODE_KIND_ANNO: {
             node_anno* anno = reinterpret_cast<node_anno*>(nd);
             print("@");
@@ -754,10 +795,12 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print(anno->names[index]);
             }
             print("}");
-        } break;
+        }
+        break;
         default: {
             assert(false);
-        } break;
+        }
+        break;
     }
 }
 
@@ -1021,13 +1064,13 @@ struct render_context {
         return project_;
     }
 
-    inline auto state() const -> parse_state {
-        return state_;
-    }
-
-    inline auto state(parse_state st) -> void {
-        state_ = st;
-    }
+    // inline auto state() const -> parse_state {
+    //     return state_;
+    // }
+    //
+    // inline auto state(parse_state st) -> void {
+    //     state_ = st;
+    // }
 
 private:
     const std::string& root_directory_;
@@ -1039,7 +1082,7 @@ private:
     node* parent_{nullptr};
 
     size_t rpos_{0};
-    parse_state state_{parse_state::NORMAL};
+    // parse_state state_{parse_state::NORMAL};
 };
 
 struct acceptor {
@@ -1339,7 +1382,7 @@ private:
     bool ok_{true};
 };
 
-auto try_parse_line_range(render_context& context, str::range_type range) -> void;
+auto try_parse_line_range(node* parent, std::string_view line, str::range_type range) -> void;
 
 auto try_parse_chapter(render_context& context, int8_t level, str::range_type range) -> void {
     auto add_to_parent = context.parent();
@@ -1361,7 +1404,7 @@ auto try_parse_chapter(render_context& context, int8_t level, str::range_type ra
     context.push(new node_chapter(static_cast<int8_t>(level)));
     context.push(new node_line);
 
-    try_parse_line_range(context, range);
+    try_parse_line_range(context.parent(), context.line_text(), range);
 
     context.pop();
 }
@@ -1387,7 +1430,7 @@ auto try_parse_section(render_context& context, int32_t level, str::range_type r
     context.push(new node_section(static_cast<int8_t>(level)));
     context.push(new node_line);
 
-    try_parse_line_range(context, range);
+    try_parse_line_range(context.parent(), context.line_text(), range);
 
     context.pop();
 }
@@ -1413,37 +1456,46 @@ auto try_parse_list(render_context& context, int8_t level, str::range_type range
     // context.push(new node_listitem(level));
     context.push(new node_list(level));
     context.push(new node_line());
-    try_parse_line_range(context, range);
+    try_parse_line_range(context.parent(), context.line_text(), range);
     context.pop();
 }
 
-auto try_parse_strong(std::string_view line, str::range_type& range) -> node* {
+auto try_parse_emphasis(std::string_view line, str::range_type& range) -> node_emphasis* {
     std::string_view range_text = str::take_view(line, range);
     acceptor acceptor(range_text);
     std::string_view content;
 
-    if (!acceptor.from(0).accept("**").accept_until(content, "**")) {
-        return nullptr;
+    // 未支持转义： **abc\***
+    if (acceptor.from(0).accept("**").accept_until(content, "**")) {
+        range = acceptor.range().shift(range.pos);
+        return new node_emphasis(emphasis_type::ET_BOLD, content);
     }
 
-    range = acceptor.range().shift(range.pos);
-    return new node_strong(content);
-}
-
-auto try_parse_em(std::string_view line, str::range_type& range) -> node* {
-    acceptor acceptor(str::take_view(line, range));
-    std::string_view content;
-
-    // em
-    if (!acceptor.from(0).accept("*").accept_until(content, "*")) {
-        return nullptr;
+    // 未支持转义： ~~abc\~~~
+    if (acceptor.from(0).accept("~~").accept_until(content, "~~")) {
+        range = acceptor.range().shift(range.pos);
+        return new node_emphasis(emphasis_type::ET_STRIKETHROUGH, content);
     }
 
-    range = acceptor.range().shift(range.pos);
-    return new node_em(content);
+    // @#*/~_[xxxx]
+
+    return nullptr;
 }
 
-auto try_parse_icode(std::string_view line, str::range_type& range) -> node* {
+// auto try_parse_em(std::string_view line, str::range_type& range) -> node_emphasis* {
+//     acceptor acceptor(str::take_view(line, range));
+//     std::string_view content;
+//
+//     // em
+//     if (!acceptor.from(0).accept("*").accept_until(content, "*")) {
+//         return nullptr;
+//     }
+//
+//     range = acceptor.range().shift(range.pos);
+//     return new node_emphasis(emphasis_type::ET_BOLD, content);
+// }
+
+auto try_parse_icode(std::string_view line, str::range_type& range) -> node_icode* {
     acceptor acceptor(str::take_view(line, range));
     std::string_view content;
 
@@ -1456,18 +1508,18 @@ auto try_parse_icode(std::string_view line, str::range_type& range) -> node* {
     return icode;
 }
 
-auto try_parse_hlink(std::string_view line, str::range_type& range) -> node* {
+auto try_parse_hlink(std::string_view line, str::range_type& range) -> node_hlink* {
     acceptor acceptor(str::take_view(line, range));
     std::string_view content;
 
     std::string_view hlink_name;
     std::string_view hlink_url;
     acceptor.from(0)
-        .accept('[')
-        .accept_until(hlink_name, '\\', ']')
-        .skip_spaces()
-        .accept('(')
-        .accept_until(hlink_url, '\\', ')');
+            .accept('[')
+            .accept_until(hlink_name, '\\', ']')
+            .skip_spaces()
+            .accept('(')
+            .accept_until(hlink_url, '\\', ')');
     if (!acceptor) {
         return nullptr;
     }
@@ -1476,7 +1528,7 @@ auto try_parse_hlink(std::string_view line, str::range_type& range) -> node* {
     return new node_hlink(hlink_name, hlink_url);
 }
 
-auto try_parse_anno(std::string_view line, str::range_type& range) -> node* {
+auto try_parse_anno(std::string_view line, str::range_type& range) -> node_anno* {
     // @xxx{} @xxx{yyy, yyy}
     // @{yyy} @{yyy, yyy}
     // @xxx yyy, yyy:
@@ -1556,16 +1608,16 @@ auto try_parse_anno(std::string_view line, str::range_type& range) -> node* {
     return nullptr;
 }
 
-auto try_parse_image(std::string_view line, str::range_type& range) -> node* {
+auto try_parse_image(std::string_view line, str::range_type& range) -> node_image* {
     // ![]()
     acceptor acceptor(str::take_view(line, range));
     std::string_view image_name;
     std::string_view image_url;
 
     acceptor.accept("![")
-        .accept_until(image_name, '\\', ']')
-        .accept('(')
-        .accept_until(image_url, ')');
+            .accept_until(image_name, '\\', ']')
+            .accept('(')
+            .accept_until(image_url, ')');
     if (!acceptor) {
         return nullptr;
     }
@@ -1574,113 +1626,234 @@ auto try_parse_image(std::string_view line, str::range_type& range) -> node* {
     return new node_image(image_name, image_url);
 }
 
-auto try_parse_line_range(render_context& context, str::range_type range) -> void {
-    const std::string& line = context.line_text();
+auto try_parse_color(std::string_view line, str::range_type& range) -> node_color* {
+    // @#FF0000[xxx]
+    // @#red[xxx]
+    std::string_view remain = str::take_view(line, range);
+    acceptor acceptor(str::take_view(remain, range));
+    std::string_view color_num;
+    if (!acceptor.from(0).accept("@#")) {
+        return nullptr;
+    }
 
+    if (!acceptor.accept(color_num, std::regex("([a-zA-Z][a-zA-Z0-9]*|[0-9a-fA-F]{6})"))) {
+        return nullptr;
+    }
+
+    std::string_view text;
+    if (acceptor.accept('[').accept_until(text, '\\', ']')) {
+        node_color* color = new node_color(color_num);
+        color->append(new node_text(text)); // TODO 需要递归解析
+        return color;
+    }
+
+    if (acceptor.accept(':')) {
+        auto color_range = str::range(acceptor.pos(), remain.size() - acceptor.pos()).shift(range.pos);
+        node_color* color = new node_color(color_num);
+        color->append(new node_text(str::take_view(line, color_range))); // TODO 需要递归解析
+        return color;
+    }
+
+    return nullptr;
+}
+
+auto try_parse_emphasis_scoped(std::string_view line, str::range_type& range) -> node_emphasis* {
+    // @*[xxx]
+    // @/[xxx]
+    // @~[xxx]
+    // @_[xxx]
+    std::string_view remain = str::take_view(line, range);
+    static str::charset_type charset("*/~_");
+    size_t pos = 1;
+    uint8_t emphasis_mask = 0;
+    while (pos < remain.size()) {
+        switch (remain[pos]) {
+            case '*':
+                emphasis_mask |= ET_BOLD;
+                break;
+            case '/':
+                emphasis_mask |= ET_ITALIC;
+                break;
+            case '~':
+                emphasis_mask |= ET_STRIKETHROUGH;
+                break;
+            case '_':
+                emphasis_mask |= ET_UNDERLINE;
+                break;
+            default:
+                break;
+        }
+
+        if (remain[pos] != '[') {
+            break;
+        }
+        pos++;
+    }
+
+    if (pos >= remain.size()) {
+        // TODO 还未识别完
+        return nullptr;
+    }
+
+    assert(remain[pos] != '[');
+    pos++;
+
+    auto result = str::accept_until(remain, pos, '\\', ']');
+    if (!result) {
+        // TODO 为找到结束符
+        return nullptr;
+    }
+
+    return new node_emphasis(emphasis_mask, str::take_view(line, result.value().shift(range.begin())));
+}
+
+
+auto try_parse_line_range(node* parent, std::string_view line, str::range_type range) -> void {
     size_t rpos = range.begin();
     size_t curr = rpos;
     while (curr < range.end()) {
         char c = line[curr];
         str::range_type parse_range{curr, (range.end() - curr)};
         switch (c) {
-            case '*': {
-                // **xxx**
-                if (auto node = try_parse_strong(line, parse_range); node != nullptr) {
+            case '*':
+                [[fallthrough]];
+            case '~': {
+                // **xxx** 或者 ~~xxx~~
+                if (auto node = try_parse_emphasis(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.append_child(text);
+                        parent->append(text);
                     }
 
-                    context.append_child(node);
+                    parent->append(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
-
-                // *xxx*
-                if (auto node = try_parse_em(line, parse_range); node != nullptr) {
-                    continue;
-                }
-            } break;
+            }
+            break;
             case '`': {
                 if (auto node = try_parse_icode(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.append_child(text);
+                        parent->append(text);
                     }
 
-                    context.append_child(node);
+                    parent->append(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            } break;
+            }
+            break;
             case '[': {
                 if (auto node = try_parse_hlink(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.append_child(text);
+                        parent->append(text);
                     }
 
-                    context.append_child(node);
+                    parent->append(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            } break;
+            }
+            break;
             case '@': {
+                // @#xxx[yyy]
+                // @*[yyy]
+                // @~[yyy]
+                // @/[yyy]
+                // @-[yyy]
+                if (line.size() < 2) {
+                    // TODO error 太短
+                    continue;
+                }
+
+                char ch = line[1];
+                switch (ch) {
+                    case '#': {
+                        node_color* color = try_parse_color(line, parse_range);
+                        if (color != nullptr) {
+                            parent->append(color);
+                            rpos = curr = parse_range.end();
+                        }
+                    }
+                    break;
+                    case '/':
+                        [[fallthrough]];
+                    case '*':
+                        [[fallthrough]];
+                    case '~':
+                        [[fallthrough]];
+                    case '_': {
+                        node_emphasis* emphasis = try_parse_emphasis_scoped(line, parse_range);
+                        if (emphasis != nullptr) {
+                            parent->append(emphasis);
+                            rpos = curr = parse_range.end();
+                        }
+                    }
+                    break;
+                    default:
+                        // TODO error: 不识别的符号
+                        break;
+                }
+
                 if (auto node = try_parse_anno(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.append_child(text);
+                        parent->append(text);
                     }
 
-                    context.append_child(node);
+                    parent->append(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            } break;
+            }
+            break;
             case '!': {
                 if (auto node = try_parse_image(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
                         node_text* text = new node_text(str::take_view(line, str::range(rpos, (parse_range.begin() - rpos))));
-                        context.append_child(text);
+                        parent->append(text);
                     }
 
-                    context.append_child(node);
+                    parent->append(node);
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            } break;
+            }
+            break;
             default: {
-                // 扫描字符串行，知道遇到指定的分隔符
-                auto text_range = str::accept_until(line, curr, str::charset("*`[@!"));
-                curr = (text_range ? text_range->end() : parse_range.end());
-            } break;
-        }
+                // // 扫描字符串行，知道遇到指定的分隔符
+                // auto text_range = str::accept_until(line, curr, str::charset("*`[@!~"));
+                // curr = (text_range ? text_range->end() : parse_range.end());
+            }
+            break;
+        } // switch
 
         // 从下一个字符开始解析
         curr++;
 
         // 扫描字符串行，知道遇到指定的分隔符
-        auto text_range = str::accept_until(line, curr, str::charset("*`[@!"));
+        auto text_range = str::accept_until(line, curr, str::charset("*`[@!~"));
         curr = (text_range ? text_range->end() : parse_range.end());
     }
 
     // 这一行最后一部分
     if (rpos < curr) {
         node_text* text = new node_text(str::take_view(line, str::range(rpos, (curr - rpos))));
-        context.append_child(text);
-        context.rpos(curr);
+        parent->append(text);
     }
 }
 
 auto try_parse_line(render_context& context) -> void {
     context.push(new node_line);
 
-    try_parse_line_range(context, str::range(0, context.line_text().size()));
+    try_parse_line_range(context.parent(), context.line_text(), str::range(0, context.line_text().size()));
 
     context.pop();
 }
 
-auto try_parse_comment(render_context& context) -> void {
+auto try_parse_commentblock(render_context& context) -> void {
     node_comment* comment = new node_comment;
     context.append_child(comment);
 
@@ -1690,6 +1863,12 @@ auto try_parse_comment(render_context& context) -> void {
             return;
         }
     } while (context.next_line());
+}
+
+auto try_parse_commentline(render_context& context) -> void {
+    node_comment* comment = new node_comment;
+    comment->lines.emplace_back(context.line_text());
+    context.append_child(comment);
 }
 
 auto try_parse_param(render_context& context) -> void {
@@ -1735,14 +1914,14 @@ auto try_parse_param(render_context& context) -> void {
 
     // 后面是一个行内的元素
     auto param_list_range = acceptor.range().shift(range.pos);
-    try_parse_line_range(context, str::range(param_list_range.end(), line.size() - param_list_range.end()));
+    try_parse_line_range(context.parent(), context.line_text(), str::range(param_list_range.end(), line.size() - param_list_range.end()));
 }
 
 auto try_parse_return(render_context& context, str::range_type range) -> void {
     context.push(new node_return);
     context.push(new node_line);
 
-    try_parse_line_range(context, range);
+    try_parse_line_range(context.parent(), context.line_text(), range);
 
     context.pop(); // pop line
     context.pop(); // pop return
@@ -1785,8 +1964,6 @@ auto try_parse_bcode(render_context& context) -> void {
     }
 }
 
-auto leave_atuoblock(parse_state& state, render_context& context) -> void;
-
 auto enter_paragraph(parse_state& state, render_context& context) -> void {
     // paragraph-begin
     if (state == parse_state::NORMAL) {
@@ -1795,7 +1972,7 @@ auto enter_paragraph(parse_state& state, render_context& context) -> void {
     }
 }
 
-auto leave_atuoblock(parse_state& state, render_context& context) -> void {
+auto leave_paragraph(parse_state& state, render_context& context) -> void {
     // paragraph-end
     if (state != parse_state::NORMAL) {
         context.pop();
@@ -1803,7 +1980,93 @@ auto leave_atuoblock(parse_state& state, render_context& context) -> void {
     }
 }
 
+auto try_parse_chapterend(render_context& context, int32_t level, str::range_type range) -> void {
+    // auto level = matches.length(1);
+    node* parent = context.parent();
+    while (true) {
+        if (parent->priority < node_priority_of(NODE_KIND_CHAPTER)) {
+            break;
+        }
+
+        if (parent->priority == node_priority_of(NODE_KIND_CHAPTER)) {
+            if (parent->level < level) {
+                // TODO report warning
+                // ## xxx
+                // ###<<
+                break;
+            }
+
+            // 当前level的节点结束，回到当前节点的上层
+            if (parent->level == level) {
+                context.parent(parent->parent);
+                break;
+            }
+        }
+
+        parent = parent->parent;
+    }
+}
+
+auto try_parse_sectionend(render_context& context, int32_t level, str::range_type range) -> void {
+    node* parent = context.parent();
+    while (true) {
+        if (parent->priority < node_priority_of(NODE_KIND_SECTION)) {
+            break;
+        }
+
+        if (parent->priority == node_priority_of(NODE_KIND_SECTION)) {
+            if (parent->level < level) {
+                // TODO report warning
+                // %% xxx
+                // %%%<<
+                break;
+            }
+
+            if (parent->level == level) {
+                context.parent(parent->parent);
+                break;
+            }
+        }
+
+        parent = parent->parent;
+    }
+}
+
 auto try_parse_listend(render_context& context, int32_t level, str::range_type range) -> void {
+    node* parent = context.parent();
+    while (true) {
+        if (parent->priority < node_priority_of(NODE_KIND_LIST)) {
+            break;
+        }
+
+        if (parent->priority == node_priority_of(NODE_KIND_LIST)) {
+            if (parent->level < level) {
+                // TODO report warning
+                // ** xxx
+                // ***<<
+                break;
+            }
+
+            if (parent->level == level) {
+                context.parent(parent->parent);
+                break;
+            }
+        }
+
+        parent = parent->parent;
+    }
+}
+
+auto try_parse_spacelines(render_context& context) -> void {
+    // 消费掉所有空行、空白行
+    while (context.next_line()) {
+        auto& line = context.line_text();
+        if (!str::is_space_or_empty(line)) {
+            // 回退当前行，编译借用外层循环的判断条件，实现统一接口退出
+            context.rollback_line();
+            break;
+        }
+    }
 }
 
 auto try_parse_article(render_context& context) -> void {
@@ -1820,24 +2083,15 @@ auto try_parse_article(render_context& context) -> void {
         // 遇到空行或者空白行，意味着块结束
         if (str::is_space_or_empty(line)) {
             // paragraph 必须是连续的，所以遇到空行需要退出block
-            leave_atuoblock(state, context);
-
-            // 消费掉所有空行、空白行
-            while (context.next_line()) {
-                line = context.line_text();
-                if (!str::is_space_or_empty(line)) {
-                    // 回退当前行，编译借用外层循环的判断条件，实现统一接口退出
-                    context.rollback_line();
-                    break;
-                }
-            }
+            leave_paragraph(state, context);
+            try_parse_spacelines(context);
             continue;
         }
 
         // @param 开头的行
         static std::regex param_pattern{R"((@param)[^a-z0-9_])"};
         if (std::regex_match(line.begin(), line.end(), matches, param_pattern)) {
-            leave_atuoblock(state, context); // 立即打断当前block
+            leave_paragraph(state, context); // 立即打断当前block
             try_parse_param(context);
             continue;
         }
@@ -1845,7 +2099,7 @@ auto try_parse_article(render_context& context) -> void {
         // @return 开头的行
         static std::regex return_pattern{R"(^(@return)(\s+|\s*:\s*).*)"};
         if (std::regex_match(line.begin(), line.end(), matches, return_pattern)) {
-            leave_atuoblock(state, context); // 立即打断当前block
+            leave_paragraph(state, context); // 立即打断当前block
             auto prefix_len = matches.length(1) + matches.length(2);
             try_parse_return(context, str::range(prefix_len, (line.size() - prefix_len)));
             continue;
@@ -1853,22 +2107,29 @@ auto try_parse_article(render_context& context) -> void {
 
         // 代码块
         if (str::starts_with(line, "```")) {
-            leave_atuoblock(state, context); // 立即打断当前block
+            leave_paragraph(state, context); // 立即打断当前block
             try_parse_bcode(context);
             continue;
         }
 
         //! 注释块: <!-- ... -->
         if (str::starts_with_word(line, "<!--")) {
-            leave_atuoblock(state, context); // 立即打断当前block
-            try_parse_comment(context);
+            leave_paragraph(state, context); // 立即打断当前block
+            try_parse_commentblock(context);
+            continue;
+        }
+
+        // 行注释
+        if (str::starts_with_word(line, "//!")) {
+            leave_paragraph(state, context); // 立即打断当前block
+            try_parse_commentline(context);
             continue;
         }
 
         // 标题行：# 号开头的行
-        static std::regex hx_pattern{R"(^(#+)(\s+).*)"};
-        if (std::regex_match(line.begin(), line.end(), matches, hx_pattern)) {
-            leave_atuoblock(state, context); // 立即打断当前block
+        static std::regex chapter_pattern{R"(^(#+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, chapter_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
             auto level = matches.length(1);
             auto space_n = matches.length(2);
             try_parse_chapter(context, static_cast<int8_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
@@ -1876,40 +2137,20 @@ auto try_parse_article(render_context& context) -> void {
         }
 
         // 回退到特定标题级别
-        static std::regex back_hx_pattern{R"(^(#+)(\s?)<<(\s.*)?$)"};
-        if (std::regex_match(line.begin(), line.end(), matches, back_hx_pattern)) {
-            leave_atuoblock(state, context); // 立即打断当前block
+        static std::regex chapterend_pattern{R"(^(#+)(\s?)(<<)(\s.*)?$)"};
+        if (std::regex_match(line.begin(), line.end(), matches, chapterend_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
             auto level = matches.length(1);
-            node* parent = context.parent();
-            while (true) {
-                if (parent->priority < node_priority_of(NODE_KIND_CHAPTER)) {
-                    break;
-                }
-
-                if (parent->priority == node_priority_of(NODE_KIND_CHAPTER)) {
-                    if (parent->level < level) {
-                        // TODO report warning
-                        // ## xxx
-                        // ###<<
-                        break;
-                    }
-
-                    // 当前level的节点结束，回到当前节点的上层
-                    if (parent->level == level) {
-                        context.parent(parent->parent);
-                        break;
-                    }
-                }
-
-                parent = parent->parent;
-            }
+            auto space_n = matches.length(2);
+            auto prefix_len = level + space_n + 2; // 2: length of '<<'
+            try_parse_chapterend(context, level, str::range(prefix_len, line.size() - prefix_len));
             continue;
         }
 
         // 章节内分级： % 号开头的行
-        static std::regex sx_pattern{R"(^(%+)(\s+).*)"};
-        if (std::regex_match(line.begin(), line.end(), matches, sx_pattern)) {
-            leave_atuoblock(state, context); // 立即打断当前block
+        static std::regex section_pattern{R"(^(%+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, section_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
             auto level = matches.length(1);
             auto space_n = matches.length(2);
             try_parse_section(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
@@ -1917,73 +2158,35 @@ auto try_parse_article(render_context& context) -> void {
         }
 
         // 回退到特定标题级别
-        static std::regex back_sx_pattern{R"(^(%+)(\s?)<<(\s.*)?$)"};
-        if (std::regex_match(line.begin(), line.end(), matches, back_sx_pattern)) {
-            leave_atuoblock(state, context); // 立即打断当前block
+        static std::regex sectionend_pattern{R"(^(%+)(\s?)<<(\s.*)?$)"};
+        if (std::regex_match(line.begin(), line.end(), matches, sectionend_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
             auto level = matches.length(1);
-            node* parent = context.parent();
-            while (true) {
-                if (parent->priority < node_priority_of(NODE_KIND_SECTION)) {
-                    break;
-                }
-
-                if (parent->priority == node_priority_of(NODE_KIND_SECTION)) {
-                    if (parent->level < level) {
-                        // TODO report warning
-                        // %% xxx
-                        // %%%<<
-                        break;
-                    }
-
-                    if (parent->level == level) {
-                        context.parent(parent->parent);
-                        break;
-                    }
-                }
-
-                parent = parent->parent;
-            }
+            auto space_n = matches.length(2);
+            auto prefix_len = level + space_n + 2; // 2: length of '<<'
+            try_parse_sectionend(context, level, str::range(prefix_len, (line.size() - prefix_len)));
             continue;
         }
 
         // 遇到列表行
         static std::regex list_pattern{R"(^(\*+)(\s+).*)"};
         if (std::regex_match(line.begin(), line.end(), matches, list_pattern)) {
-            leave_atuoblock(state, context);
-
+            leave_paragraph(state, context);
             auto level = matches.length(1);
             auto space_n = matches.length(2);
-            try_parse_list(context, static_cast<int8_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
+            auto prefix_len = level + space_n;
+            try_parse_list(context, static_cast<int8_t>(level), str::range(prefix_len, line.size() - prefix_len));
             continue;
         }
 
         // 回退到特定标题级别
-        static std::regex back_list_pattern{R"(^(\*+)(\s?)<<(\s.*)?$)"};
+        static std::regex back_list_pattern{R"(^(\*+)(\s?)(<<)(\s.*)?$)"};
         if (std::regex_match(line.begin(), line.end(), matches, back_list_pattern)) {
-            leave_atuoblock(state, context); // 立即打断当前block
+            leave_paragraph(state, context); // 立即打断当前block
             auto level = matches.length(1);
-            node* parent = context.parent();
-            while (true) {
-                if (parent->priority < node_priority_of(NODE_KIND_LIST)) {
-                    break;
-                }
-
-                if (parent->priority == node_priority_of(NODE_KIND_LIST)) {
-                    if (parent->level < level) {
-                        // TODO report warning
-                        // ** xxx
-                        // ***<<
-                        break;
-                    }
-
-                    if (parent->level == level) {
-                        context.parent(parent->parent);
-                        break;
-                    }
-                }
-
-                parent = parent->parent;
-            }
+            auto space_n = matches.length(2);
+            auto prefix_len = level + space_n + 2; // 2: length of '<<'
+            try_parse_listend(context, level, str::range(prefix_len, (line.size() - prefix_len)));
             continue;
         }
 
