@@ -10,7 +10,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-/// @block{readme-example}
+/// @block readme-example
 #include <iostream>
 
 #include "str.hpp"
@@ -49,4 +49,4 @@ int main() {
 
     return 0;
 }
-/// @end{readme-example}
+/// @end readme-example

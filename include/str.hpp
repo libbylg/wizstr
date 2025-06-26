@@ -1972,6 +1972,7 @@ struct str {
     /// 到 `(pos + offset)` 的范围。当然在遇到具体字符串时，会根据具体字符串的长度调整。
     static auto range(size_type pos, size_type n) -> range_type;
     static auto range() -> range_type;
+    static auto range(std::string_view s, size_type pos = 0) -> range_type;
     static auto interval(size_type begin, size_type end) -> interval_type;
     static auto shifter(size_type pos, ssize_type offset) -> shifter_type;
 

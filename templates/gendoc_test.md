@@ -1,1 +1,3 @@
-AAA@/[abcdef]BBB
+```c++
+@embed readme-example:example1.cpp
+```

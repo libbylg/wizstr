@@ -20,7 +20,8 @@ list(APPEND INCPATH ${CMAKE_SOURCE_DIR}/include)
 list(APPEND INCPATH ${CMAKE_SOURCE_DIR}/src)
 
 #   Example applications for README
-add_executable(example1 EXCLUDE_FROM_ALL example1.cpp ${SOURCES})
+add_executable(example1 EXCLUDE_FROM_ALL example1.cpp ${SOURCES}
+        gendoc.h)
 target_include_directories(example1 PRIVATE ${INCPATH})
 target_compile_options(example1 PRIVATE ${QUALITY_OPTIONS})
 set_target_properties(example1 PROPERTIES EXCLUDE_FROM_ALL TRUE)

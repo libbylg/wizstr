@@ -5943,6 +5943,14 @@ auto str::range() -> range_type {
     return range_type{};
 }
 
+auto str::range(std::string_view s, size_type pos) -> range_type {
+    if (pos >= s.size()) {
+        return range_type{s.size(), 0};
+    }
+
+    return range_type{pos, (s.size() - pos)};
+}
+
 auto str::interval(size_type begin, size_type end) -> interval_type {
     return interval_type{begin, end};
 }
