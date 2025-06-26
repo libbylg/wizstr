@@ -12,7 +12,6 @@
 #include "gendoc.h"
 
 #include "str.hpp"
-#include "../tests/test-utils.hpp"
 
 #include <cassert>
 #include <filesystem>
@@ -36,17 +35,19 @@ public:
     }
 
     ~scope_guard() {
-        if (proc_) {
+        if (proc_ && !dismissed_) {
             proc_();
         }
+
     }
 
     void dismiss() {
-        proc_ = nullptr;
+        dismissed_ = true;
     }
 
 private:
     const std::function<void()>& proc_;
+    bool dismissed_{false};
 };
 
 auto print_tree(node* nd, size_t ident, const std::function<void(std::string_view)> print) -> void {
@@ -207,15 +208,19 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
         break;
         case NODE_KIND_EMBED: {
             node_embed* embed = reinterpret_cast<node_embed*>(nd);
-            print(str::make_spaces(ident * 4));
-            print("@embed");
-            if (!embed->block_name.empty()) {
-                print(" ");
-                print(embed->block_name);
+            // print(str::make_spaces(ident * 4));
+            // print("@embed");
+            // if (!embed->block_name.empty()) {
+            //     print(" ");
+            //     print(embed->block_name);
+            // }
+            // print(":");
+            // print(embed->file_name);
+            // print("\n");
+            // Output but not ident
+            for (node* child = list_first(&embed->children); child != list_end(&embed->children); child = list_next(child)) {
+                print_tree(child, ident, print);
             }
-            print(":");
-            print(embed->file_name);
-            print("\n");
         }
         break;
         case NODE_KIND_IFORMULA: {
@@ -607,10 +612,69 @@ auto node_traverse(node* root, const std::function<void(node* n)>& enter_proc, c
 
 struct sanitize_context {
 public:
-    explicit sanitize_context() {
+    explicit sanitize_context(const std::string& root_directory)
+        : root_directory_{root_directory} {
     }
 
-    auto save_new_block(const std::string& block_file, const std::string& block_name, std::vector<std::string>&& block_lines) -> void {
+
+    auto haneld_embed(node_embed* embed) -> void {
+        assert(embed != nullptr);
+        const code_block*  block = find_block(embed->file_name, embed->block_name);
+        if (block == nullptr) {
+            if (!load_block_file(root_directory_, embed->file_name)) {
+                // TODO load block file failed
+                return;
+            }
+
+            block = find_block(embed->file_name, embed->block_name);
+            if (block == nullptr) {
+                // TODO load block file failed
+                return;
+            }
+
+            for (auto& line : block->lines) {
+                node_text* text = new node_text(line);
+                embed->append(text);
+            }
+        }
+
+
+
+    }
+
+    struct code_block {
+        std::string block_name;
+        std::vector<std::string> lines;
+    };
+
+    auto enter(node* n) -> void {
+        assert(n != nullptr);
+        switch (n->kind) {
+            case NODE_KIND_IMAGE: {
+                node_image* image = reinterpret_cast<node_image*>(n);
+                std::string full_image_file = str::join_path({root_directory_, image->url});
+                if (!std::filesystem::exists(full_image_file)) {
+                    // TODO report error： file is not exist;
+                }
+            }
+            break;
+            case NODE_KIND_EMBED: {
+                haneld_embed(reinterpret_cast<node_embed*>(n));
+            }
+            break;
+            default: {
+
+            }
+            break;
+        }
+    }
+
+    auto leave(node* n) -> void {
+        assert(n != nullptr);
+    }
+
+private:
+    auto save_new_block(const std::string& block_file, const std::string& block_name, std::vector<std::string>& block_lines) -> void {
         code_block* new_block = new code_block;
         scope_guard guard_new_block([new_block] { delete new_block; });
         new_block->block_name = block_name;
@@ -629,17 +693,30 @@ public:
         guard_new_block.dismiss();
     }
 
-    auto load_file(const std::string& filepath) -> std::string {
-        bool enter_block = true;
+    auto load_block_file(const std::string& root_directory, const std::string& filepath) -> bool {
+        // Return fail if file not exists
+        std::string full_filepath = str::join_path(std::array{root_directory, filepath});
+        if (!std::filesystem::exists(full_filepath)) {
+            return false;
+        }
+
+        // If loaded, just skip
+        auto itr = all_code_blocks_.find(filepath);
+        if (itr != all_code_blocks_.cend()) {
+            return true;
+        }
+
+        // Scan file and save all block
+        bool enter_block = false;
         std::string curr_block_name;
         std::vector<std::string> block_lines;
-        str::read_lines(filepath, true, //
+        str::read_lines(full_filepath, true, //
             [&enter_block, &curr_block_name, &block_lines, &filepath, this](size_t lineno, std::string_view linetext) -> int {
-                static std::regex pattern(R"(/{2,}\s+(@block|@end)\s+([a-zA-Z][a-zA-Z0-9-]*)\s*$)");
+                static std::regex pattern(R"(/{2,}\s+(@block|@end)\s+([a-zA-Z][a-zA-Z0-9_]*)\s*$)");
                 svmatch match_results;
                 bool matched = std::regex_match(linetext.begin(), linetext.end(), match_results, pattern);
                 if (!matched) {
-                    if (!enter_block) {
+                    if (enter_block) {
                         block_lines.emplace_back(linetext);
                     }
                     return 0;
@@ -655,53 +732,32 @@ public:
                 // Block end
                 if (enter_block && (match_results[1] == "@end")) {
                     enter_block = false;
-                    save_new_block(filepath, curr_block_name, std::move(block_lines));
-                    block_lines.clear();
+                    save_new_block(filepath, curr_block_name, block_lines);
                     return 0;
                 }
 
                 return 0;
             });
+        return true;
     }
 
-
-    auto haneld_include(node_embed* embed) -> void {
-        assert(embed != nullptr);
-        auto itr = all_code_blocks_.find(embed->file_name);
-        if (itr == all_code_blocks_.cend()) {
-
+    auto find_block(const std::string& block_file, const std::string& block_name) -> const code_block* {
+        auto itr_file = all_code_blocks_.find(block_file);
+        if (itr_file == all_code_blocks_.cend()) {
+            return nullptr;
         }
-    }
 
-    struct code_block {
-        std::string block_name;
-        std::vector<std::string> lines;
-    };
-
-    auto enter(node* n) -> void {
-        assert(n != nullptr);
-        switch (n->kind) {
-            case NODE_KIND_IMAGE: {
-
-            }
-            break;
-            case NODE_KIND_EMBED: {
-                haneld_include(reinterpret_cast<node_embed*>(n));
-            }
-            break;
-            default: {
-
-            }
-            break;
+        auto itr_block = itr_file->second.find(block_name);
+        if (itr_block == itr_file->second.cend()) {
+            return nullptr;
         }
-    }
 
-    auto leave(node* n) -> void {
-        assert(n != nullptr);
+        return itr_block->second;
     }
 
 private:
     std::map<std::string, std::map<std::string, code_block*>> all_code_blocks_;
+    std::string root_directory_;
 
     // std::list<node_image*> images;
     // std::list<node_hlink*> hlinks;
@@ -1594,7 +1650,7 @@ auto try_parse_embed(std::string_view line, str::range_type range) -> node_embed
     // @embed yyy: "zzz"
     // @embed: "zzz"
     acceptor acceptor(str::take_view(line, range));
-    static std::regex name_pattern{R"([a-zA-Z][a-zA-Z0-9_.]+)"};
+    static std::regex name_pattern{R"([a-zA-Z][a-zA-Z0-9_]*)"};
     std::string_view block_name;
 
     // @embed{yyy} "zzz"
@@ -1957,8 +2013,8 @@ auto main(int argc, char* argv[]) -> int {
     if (!opts.output_file.empty()) {
         std::string output_directory = str::dirname(opts.output_file);
         if (!std::filesystem::exists(opts.output_file)) {
-            std::error_code error;
-            if (!std::filesystem::create_directories(output_directory, error)) {
+            std::error_code sys_error;
+            if (!std::filesystem::create_directories(output_directory, sys_error)) {
                 std::cerr << "Can not create output directory `" << output_directory << "'" << std::endl;
                 return 1;
             }
@@ -1970,25 +2026,42 @@ auto main(int argc, char* argv[]) -> int {
         return 1;
     }
 
+    gendoc::node_project* project = nullptr;
     FILE* input_repl = ((opts.input_file.empty()) ? stdin : nullptr);
-    str::with_file(opts.input_file, "r", input_repl, [&opts, &error](FILE* ifile) -> void {
+    str::with_file(opts.input_file, "r", input_repl, [&opts, &error, &project](FILE* ifile) -> void {
         assert(ifile != nullptr);
         FILE* output_repl = ((opts.output_file.empty()) ? stdout : nullptr);
-        str::with_file(opts.output_file, "w+", output_repl, [ifile, &opts, &error](FILE* ofile) -> void {
+        str::with_file(opts.output_file, "w+", output_repl, [ifile, &opts, &error, &project](FILE* ofile) -> void {
             gendoc::parse_context context{ifile, ofile, opts.root_directory};
             error = try_parse_file(context);
-            print_tree(context.root(), 0, [](std::string_view text) {
-                std::cout << text;
-                std::cout.flush();
-            });
+            if (!error.empty()) {
+                return;
+            }
 
+            project = context.detach_root();
         });
     });
 
     if (!error.empty()) {
+        assert(project == nullptr);
         std::cerr << "Generate document failed: " << error << std::endl;
         return 1;
     }
+
+    // 矫正和整理
+    assert(project != nullptr);
+    gendoc::sanitize_context context(opts.root_directory);
+    gendoc::node_traverse(project, [&context](gendoc::node* nd) -> void {
+            context.enter(nd);
+        }, [&context](gendoc::node* nd) -> void {
+            context.leave(nd);
+        });
+
+    // 输出
+    gendoc::print_tree(project, 0, [](std::string_view text) {
+        std::cout << text;
+        std::cout.flush();
+    });
 
     return 0;
 }

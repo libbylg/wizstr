@@ -1,3 +1,3 @@
 ```c++
-@embed readme-example:example1.cpp
+@embed readme_example:example1.cpp
 ```
