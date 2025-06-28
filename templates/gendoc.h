@@ -44,18 +44,18 @@ namespace gendoc {
     DEF_NODEKIND(5, 31, PARAGRAPH, node_paragraph, "通用段落") \
     DEF_NODEKIND(5, 32, BCODE, node_bcode, "代码块")           \
     DEF_NODEKIND(5, 33, BFORMULA, node_bformula, "行间公式")   \
-    DEF_NODEKIND(6, 34, COMMENT, node_comment, "注释行")       \
+    DEF_NODEKIND(10,34, COMMENT, node_comment, "注释行")       \
     /* 行内元素 */                                             \
-    DEF_NODEKIND(7, 50, IFORMULA, node_iformula, "行内公式")   \
-    DEF_NODEKIND(7, 51, HLINK, node_hlink, "超链接")           \
-    DEF_NODEKIND(7, 52, IMAGE, node_image, "图片")             \
-    DEF_NODEKIND(7, 53, ANCHOR, node_anchor, "锚点定义")       \
-    DEF_NODEKIND(7, 54, EMBED, node_embed, "嵌入文字")         \
-    DEF_NODEKIND(7, 55, EMPHASIS, node_emphasis, "强调")       \
-    DEF_NODEKIND(7, 57, TEXT, node_text, "文本")               \
-    DEF_NODEKIND(7, 58, ICODE, node_icode, "行内代码")         \
-    DEF_NODEKIND(7, 59, ANNO, node_anno, "注解")               \
-    DEF_NODEKIND(7, 60, COLOR, node_color, "颜色")             \
+    DEF_NODEKIND(15, 50, IFORMULA, node_iformula, "行内公式")  \
+    DEF_NODEKIND(15, 51, HLINK, node_hlink, "超链接")          \
+    DEF_NODEKIND(15, 52, IMAGE, node_image, "图片")            \
+    DEF_NODEKIND(15, 53, ANCHOR, node_anchor, "锚点定义")      \
+    DEF_NODEKIND(15, 54, EMBED, node_embed, "嵌入文字")        \
+    DEF_NODEKIND(15, 55, EMPHASIS, node_emphasis, "强调")      \
+    DEF_NODEKIND(15, 57, TEXT, node_text, "文本")              \
+    DEF_NODEKIND(15, 58, ICODE, node_icode, "行内代码")        \
+    DEF_NODEKIND(15, 59, ANNO, node_anno, "注解")              \
+    DEF_NODEKIND(15, 60, COLOR, node_color, "颜色")            \
     /* 特殊节点：行本身 */                                     \
     DEF_NODEKIND(20, 90, LINE, node_line, "行")                \
     DEF_NODEKIND(20, 91, THEAD, node_thead, "表头行")          \
@@ -144,10 +144,20 @@ static inline auto list_prev(T* itr) -> decltype(T::prev) {
     return itr->prev;
 }
 
+// template <typename H>
+// static inline auto list_end(H* head) -> const decltype(H::prev) {
+//     return reinterpret_cast<const decltype(H::prev)>(head);
+// }
 template <typename H>
-static inline auto list_end(H* head) -> const decltype(H::prev) {
-    return reinterpret_cast<const decltype(H::prev)>(head);
+static inline auto list_end(H* head) -> decltype(H::prev) {
+    return reinterpret_cast<decltype(H::prev)>(head);
 }
+
+#define list_foreach(Child_, List_) \
+for (auto Child_ = list_first(List_); child != list_end(List_); Child_ = list_next(Child_))
+
+#define list_foreach_range(Child_, Start_, Stop_) \
+for (auto Child_ = (Start_); Child_ != Stop_; Child_ = list_next(Child_))
 
 template <typename P, typename N, typename T>
 static inline auto list_insert(P* prev, N* next, T* new_item) -> void {
