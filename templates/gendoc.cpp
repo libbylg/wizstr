@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021-2025  libbylg@126.com
+ * Copyright (c) 2021-2025  libbylg@126.com
  * str is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -21,7 +21,6 @@
 #include <variant>
 #include <vector>
 
-
 #if defined(STR_NAMESPACE)
 using str = STR_NAMESPACE::str;
 #endif
@@ -38,7 +37,6 @@ public:
         if (proc_ && !dismissed_) {
             proc_();
         }
-
     }
 
     void dismiss() {
@@ -59,16 +57,14 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             for (auto child = nproject->children.next; child != static_cast<node*>(&nproject->children); child = child->next) {
                 print_tree(child, ident, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_ARTICLE: {
             print(str::make_spaces(ident * 4));
             node_article* narticle = static_cast<node_article*>(nd);
             for (auto child = narticle->children.next; child != static_cast<node*>(&narticle->children); child = child->next) {
                 print_tree(child, ident, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_CHAPTER: {
             print(str::make_spaces(ident * 4));
             node_chapter* nchapter = static_cast<node_chapter*>(nd);
@@ -80,8 +76,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             for (auto child = line->next; child != static_cast<node*>(&nchapter->children); child = child->next) {
                 print_tree(child, ident + 1, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_SECTION: {
             print(str::make_spaces(ident * 4));
             node_section* nsection = static_cast<node_section*>(nd);
@@ -98,16 +93,14 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
                 print("\n");
             }
-        }
-        break;
+        } break;
         case NODE_KIND_PARAGRAPH: {
             node_paragraph* nparagraph = static_cast<node_paragraph*>(nd);
             list_foreach(child, (&nparagraph->children)) {
                 print_tree(child, ident, print);
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_LINE: {
             print(str::make_spaces(ident * 4));
             node_line* nline = static_cast<node_line*>(nd);
@@ -115,8 +108,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print_tree(child, ident + 1, print);
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_COMMENT: {
             print(str::make_spaces(ident * 4));
             node_comment* ncomment = static_cast<node_comment*>(nd);
@@ -126,19 +118,15 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print("\n");
             }
             print("-->\n");
-        }
-        break;
+        } break;
         case NODE_KIND_THEAD: {
-        }
-        break;
+        } break;
         case NODE_KIND_TROW: {
 
-        }
-        break;
+        } break;
         case NODE_KIND_TCOL: {
 
-        }
-        break;
+        } break;
         case NODE_KIND_PARAM: {
             print(str::make_spaces(ident * 4));
             node_param* nparam = static_cast<node_param*>(nd);
@@ -161,8 +149,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_RETURN: {
             print(str::make_spaces(ident * 4));
             print("@return: ");
@@ -178,8 +165,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 }
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_BCODE: {
             print(str::make_spaces(ident * 4));
             node_bcode* nbcode = static_cast<node_bcode*>(nd);
@@ -204,22 +190,19 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
 
             print(str::make_spaces(ident * 4));
             print("```\n");
-        }
-        break;
+        } break;
         case NODE_KIND_EMBED: {
             node_embed* nembed = static_cast<node_embed*>(nd);
             list_foreach(child, &(nembed->children)) {
                 print_tree(child, ident, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_IFORMULA: {
             node_iformula* niformula = static_cast<node_iformula*>(nd);
             print("$");
             print(niformula->text);
             print("$");
-        }
-        break;
+        } break;
         case NODE_KIND_BFORMULA: {
             node_bformula* nbformula = static_cast<node_bformula*>(nd);
             print("$$\n");
@@ -228,8 +211,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print("\n");
             }
             print("$$\n");
-        }
-        break;
+        } break;
         case NODE_KIND_LIST: {
             print(str::make_spaces(ident * 4));
             node_list* nlist = static_cast<node_list*>(nd);
@@ -243,8 +225,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                     print_tree(child, ident + 1, print);
                 }
             }
-        }
-        break;
+        } break;
         case NODE_KIND_HLINK: {
             node_hlink* nhlink = static_cast<node_hlink*>(nd);
             print("[");
@@ -252,8 +233,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print("](");
             print(nhlink->url);
             print(")");
-        }
-        break;
+        } break;
         case NODE_KIND_IMAGE: {
             node_image* nimage = static_cast<node_image*>(nd);
             print("![");
@@ -261,11 +241,9 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print("](");
             print(nimage->url);
             print(")");
-        }
-        break;
+        } break;
         case NODE_KIND_ANCHOR: {
-        }
-        break;
+        } break;
         case NODE_KIND_EMPHASIS: {
             // @[r]**dsdsdsd**
             node_emphasis* nstrong = static_cast<node_emphasis*>(nd);
@@ -286,20 +264,17 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print(nstrong->text);
                 print("]");
             }
-        }
-        break;
+        } break;
         case NODE_KIND_TEXT: {
             node_text* ntext = static_cast<node_text*>(nd);
             print(ntext->text);
-        }
-        break;
+        } break;
         case NODE_KIND_ICODE: {
             node_icode* ntext = static_cast<node_icode*>(nd);
             print("`");
             print(ntext->text);
             print("`");
-        }
-        break;
+        } break;
         case NODE_KIND_ANNO: {
             node_anno* nanno = static_cast<node_anno*>(nd);
             print("@");
@@ -312,12 +287,10 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
                 print(nanno->names[index]);
             }
             print("}");
-        }
-        break;
+        } break;
         default: {
             assert(false);
-        }
-        break;
+        } break;
     }
 }
 
@@ -373,7 +346,6 @@ auto cmd_help(int argc, char* argv[]) -> int {
 
     return 0;
 }
-
 
 enum class parse_state : uint16_t {
     NORMAL,
@@ -624,16 +596,13 @@ public:
                 if (!std::filesystem::exists(full_image_file)) {
                     // TODO report error： file is not exist;
                 }
-            }
-            break;
+            } break;
             case NODE_KIND_EMBED: {
                 node_embed* nembed = static_cast<node_embed*>(n);
                 haneld_embed(nembed);
-            }
-            break;
+            } break;
             default: {
-            }
-            break;
+            } break;
         }
     }
 
@@ -1201,11 +1170,11 @@ auto try_parse_hlink(std::string_view line, str::range_type& range) -> node_hlin
     std::string_view hlink_name;
     std::string_view hlink_url;
     acceptor.from(0)
-            .accept('[')
-            .accept_until(hlink_name, '\\', ']')
-            .skip_spaces()
-            .accept('(')
-            .accept_until(hlink_url, '\\', ')');
+        .accept('[')
+        .accept_until(hlink_name, '\\', ']')
+        .skip_spaces()
+        .accept('(')
+        .accept_until(hlink_url, '\\', ')');
     if (!acceptor) {
         return nullptr;
     }
@@ -1301,9 +1270,9 @@ auto try_parse_image(std::string_view line, str::range_type& range) -> node_imag
     std::string_view image_url;
 
     acceptor.accept("![")
-            .accept_until(image_name, '\\', ']')
-            .accept('(')
-            .accept_until(image_url, ')');
+        .accept_until(image_name, '\\', ']')
+        .accept('(')
+        .accept_until(image_url, ')');
     if (!acceptor) {
         return nullptr;
     }
@@ -1349,7 +1318,7 @@ auto try_parse_emphasis_scoped(std::string_view line, str::range_type& range) ->
     // @~[xxx]
     // @_[xxx]
     std::string_view remain = str::take_view(line, range);
-    //static str::charset_type charset("*/~_");
+    // static str::charset_type charset("*/~_");
     size_t pos = 1;
     uint8_t emphasis_mask = 0;
     while (pos < remain.size()) {
@@ -1393,7 +1362,6 @@ auto try_parse_emphasis_scoped(std::string_view line, str::range_type& range) ->
     return new node_emphasis(emphasis_mask, str::take_view(line, result.value().shift(range.begin())));
 }
 
-
 auto try_parse_line_range(node* parent, std::string_view line, str::range_type range) -> void {
     size_t rpos = range.begin();
     size_t curr = rpos;
@@ -1415,8 +1383,7 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             case '`': {
                 if (auto node = try_parse_icode(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
@@ -1428,8 +1395,7 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             case '[': {
                 if (auto node = try_parse_hlink(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
@@ -1441,8 +1407,7 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             case '@': {
                 // @#xxx[yyy]
                 // @*[yyy]
@@ -1462,8 +1427,7 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                             parent->append(color);
                             rpos = curr = parse_range.end();
                         }
-                    }
-                    break;
+                    } break;
                     case '/':
                         [[fallthrough]];
                     case '*':
@@ -1476,8 +1440,7 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                             parent->append(emphasis);
                             rpos = curr = parse_range.end();
                         }
-                    }
-                    break;
+                    } break;
                     default:
                         // TODO error: 不识别的符号
                         break;
@@ -1493,8 +1456,7 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             case '!': {
                 if (auto node = try_parse_image(line, parse_range); node != nullptr) {
                     if (rpos < parse_range.begin()) {
@@ -1506,14 +1468,12 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                     rpos = curr = parse_range.end();
                     continue;
                 }
-            }
-            break;
+            } break;
             default: {
                 // // 扫描字符串行，知道遇到指定的分隔符
                 // auto text_range = str::accept_until(line, curr, str::charset("*`[@!~"));
                 // curr = (text_range ? text_range->end() : parse_range.end());
-            }
-            break;
+            } break;
         } // switch
 
         // 从下一个字符开始解析
@@ -1954,12 +1914,10 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             list_foreach(child, &(nproject->children)) {
                 print_html(child, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_PROJECTEND: {
-            //const node_projectend* node = static_cast<const node_projectend*>(nd);
-        }
-        break;
+            // const node_projectend* node = static_cast<const node_projectend*>(nd);
+        } break;
         case NODE_KIND_ARTICLE: {
             node_article* narticle = static_cast<node_article*>(nd);
             print("<!DOCTYPE html>\n");
@@ -1974,12 +1932,10 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             }
             print("</body>\n");
             print("</html>\n");
-        }
-        break;
+        } break;
         case NODE_KIND_ARTICLEEND: {
-            //const node_articlend* node = static_cast<const node_articlend*>(nd);
-        }
-        break;
+            // const node_articlend* node = static_cast<const node_articlend*>(nd);
+        } break;
         case NODE_KIND_CHAPTER: {
             node_chapter* nchapter = static_cast<node_chapter*>(nd);
             static const std::string_view all_headers[]{
@@ -2001,12 +1957,10 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             list_foreach_range(child, list_next(first), list_end(&(nchapter->children))) {
                 print_html(child, print);
             }
-        }
-        break;
+        } break;
         case NODE_KIND_CHAPTEREND: {
-            //const node_chapterend* node = static_cast<const node_chapterend*>(nd);
-        }
-        break;
+            // const node_chapterend* node = static_cast<const node_chapterend*>(nd);
+        } break;
         case NODE_KIND_SECTION: {
             node_section* nsection = static_cast<node_section*>(nd);
             print("<section>\n");
@@ -2014,28 +1968,22 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print_html(child, print);
             }
             print("</section>\n");
-        }
-        break;
+        } break;
         case NODE_KIND_SECTIONEND: {
-            //const node_sectionend* node = static_cast<const node_sectionend*>(nd);
-        }
-        break;
+            // const node_sectionend* node = static_cast<const node_sectionend*>(nd);
+        } break;
         case NODE_KIND_PARAM: {
             // const node_param* nparam = static_cast<const node_param*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_RETURN: {
             // const node_return* nreturn = static_cast<const node_return*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_LIST: {
             // const node_list* nlist = static_cast<const node_list*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_TABLE: {
-            //const node_table* node = reinterpret_cast<const node_table*>(nd);
-        }
-        break;
+            // const node_table* node = reinterpret_cast<const node_table*>(nd);
+        } break;
         case NODE_KIND_PARAGRAPH: {
             node_paragraph* nparagraph = static_cast<node_paragraph*>(nd);
             print("<p>\n");
@@ -2043,8 +1991,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print_html(child, print);
             }
             print("</p>\n");
-        }
-        break;
+        } break;
         case NODE_KIND_BCODE: {
             node_bcode* nbcode = static_cast<node_bcode*>(nd);
             print("<pre>\n");
@@ -2052,12 +1999,10 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print_html(child, print);
             }
             print("</pre>\n");
-        }
-        break;
+        } break;
         case NODE_KIND_BFORMULA: {
             // const node_bformula* nbformula = static_cast<const node_bformula*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_COMMENT: {
             node_comment* ncomment = static_cast<node_comment*>(nd);
             print("<!--\n");
@@ -2065,12 +2010,10 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print_html(child, print);
             }
             print("-->\n");
-        }
-        break;
+        } break;
         case NODE_KIND_IFORMULA: {
             // const node_iformula* niformula = static_cast<const node_iformula*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_HLINK: {
             const node_hlink* nhlink = static_cast<const node_hlink*>(nd);
             print("<a href=\"");
@@ -2078,8 +2021,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("\">");
             print(nhlink->name);
             print("</a>");
-        }
-        break;
+        } break;
         case NODE_KIND_IMAGE: {
             const node_image* nimage = static_cast<const node_image*>(nd);
             print("<img src=\"");
@@ -2087,8 +2029,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("\" alt=\"");
             print(nimage->name);
             print("\">");
-        }
-        break;
+        } break;
         case NODE_KIND_ANCHOR: {
             const node_anchor* nanchor = static_cast<const node_anchor*>(nd);
             for (auto& name : nanchor->names) {
@@ -2096,63 +2037,51 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print(name);
                 print("\"/>");
             }
-        }
-        break;
+        } break;
         case NODE_KIND_EMBED: {
             node_embed* nembed = static_cast<node_embed*>(nd);
             list_foreach(child, &(nembed->children)) {
                 print_html(child, print);
                 print("\n");
             }
-        }
-        break;
+        } break;
         case NODE_KIND_EMPHASIS: {
             // const node_emphasis* nemphasis = static_cast<const node_emphasis*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_TEXT: {
             const node_text* ntext = static_cast<const node_text*>(nd);
             print(ntext->text);
-        }
-        break;
+        } break;
         case NODE_KIND_ICODE: {
             const node_icode* nicode = static_cast<const node_icode*>(nd);
             print("<code>");
             print(nicode->text);
             print("</code>");
-        }
-        break;
+        } break;
         case NODE_KIND_ANNO: {
             // const node_anno* nanno = static_cast<const node_anno*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_COLOR: {
             // const node_color* node = static_cast<const node_color*>(nd);
-        }
-        break;
+        } break;
         case NODE_KIND_LINE: {
             node_line* node = static_cast<node_line*>(nd);
             list_foreach(child, &(node->children)) {
                 print_html(child, print);
             }
             print("\n");
-        }
-        break;
+        } break;
         case NODE_KIND_THEAD: {
-            //const node_thead* node = static_cast<const node_thead*>(nd);
-        }
-        break;
+            // const node_thead* node = static_cast<const node_thead*>(nd);
+        } break;
         case NODE_KIND_TROW: {
-            //const node_trow* node = static_cast<const node_trow*>(nd);
-        }
-        break;
+            // const node_trow* node = static_cast<const node_trow*>(nd);
+        } break;
         case NODE_KIND_TCOL: {
-            //const node_tcol* node = static_cast<const node_tcol*>(nd);
-        }
-        break;
+            // const node_tcol* node = static_cast<const node_tcol*>(nd);
+        } break;
         default: {
-        }
-        break;
+        } break;
     }
 }
 } // namespace gendoc
@@ -2245,11 +2174,7 @@ auto main(int argc, char* argv[]) -> int {
     // 矫正和整理
     assert(project != nullptr);
     gendoc::sanitize_context context(opts.root_directory);
-    gendoc::node_traverse(project, [&context](gendoc::node* nd) -> void {
-            context.enter(nd);
-        }, [&context](gendoc::node* nd) -> void {
-            context.leave(nd);
-        });
+    gendoc::node_traverse(project, [&context](gendoc::node* nd) -> void { context.enter(nd); }, [&context](gendoc::node* nd) -> void { context.leave(nd); });
 
     // // 输出
     // gendoc::print_tree(project, 0, [](std::string_view text) {

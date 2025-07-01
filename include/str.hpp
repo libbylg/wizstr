@@ -30,8 +30,7 @@
 
 //! Adaptor for namespace
 #if defined(STR_NAMESPACE)
-namespace
-STR_NAMESPACE {
+namespace STR_NAMESPACE {
 #endif
 
 //! # 简介
@@ -94,7 +93,7 @@ STR_NAMESPACE {
 ///     那么性能会比 `xxx_view` 和 `xxx_inplace` 系列要低一些。当然这类函数的优点也是显而易见的，就是更`安全`。
 struct str {
     using size_type = std::string::size_type;
-    using ssize_type = ssize_t;
+    using ssize_type = std::make_signed_t<size_t>;
     using value_type = std::string::value_type;
     using pointer = std::string::pointer;
     using const_pointer = std::string::const_pointer;
@@ -212,7 +211,7 @@ struct str {
             return result;
         }
 
-        inline auto operator |(const charset_type& b) -> charset_type {
+        inline auto operator|(const charset_type& b) -> charset_type {
             charset_type result;
             result.bits_[0] = bits_[0] | b.bits_[0];
             result.bits_[1] = bits_[1] | b.bits_[1];
@@ -221,7 +220,7 @@ struct str {
             return result;
         }
 
-        inline auto operator |=(const charset_type& b) -> charset_type& {
+        inline auto operator|=(const charset_type& b) -> charset_type& {
             bits_[0] |= b.bits_[0];
             bits_[1] |= b.bits_[1];
             bits_[2] |= b.bits_[2];
@@ -353,7 +352,7 @@ struct str {
 
     //! 单字符映射：将单个字符映射为另一个数据类型的值
     template <typename MappedType>
-    using mapping_proc = std::function<auto(value_type) -> MappedType>;
+    using mapping_proc = std::function<auto(value_type)->MappedType>;
 
     //! 单字符映射器：将一个字符映射为另一个字符
     using char_mapping_proc = mapping_proc<value_type>;
@@ -2257,7 +2256,6 @@ struct str {
     static auto home() -> std::string;
 };
 
-
 template <typename Sequence, typename>
 auto str::append(std::string_view s, const Sequence& items) -> std::string {
     auto itr = items.begin();
@@ -2515,7 +2513,7 @@ auto str::next_opt1(SizeType& next_index, const Container& items) -> std::option
 
 template <typename Iterator>
 auto str::next_opt1(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>> {
-    return next_opt1([&itr, &end]()-> std::optional<std::string_view> {
+    return next_opt1([&itr, &end]() -> std::optional<std::string_view> {
         if (itr == end) {
             return std::nullopt;
         }
