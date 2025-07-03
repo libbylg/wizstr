@@ -1906,6 +1906,51 @@ auto try_parse_file(parse_context& context) -> std::string {
     return {};
 }
 
+auto encode_html_text(std::string_view text) -> std::string {
+    // #define HTML_ESCAPE_CHAR_TABLE()        \
+    //     DEF_HTML_ESCAPE_CHAR('>', "&gt;")   \
+    //     DEF_HTML_ESCAPE_CHAR('<', "&lt;")   \
+    //     DEF_HTML_ESCAPE_CHAR('&', "&amp;")  \
+    //     DEF_HTML_ESCAPE_CHAR('"', "&quot;") \
+    //     DEF_HTML_ESCAPE_CHAR('\'', "&apos;") \
+    //     /* (end) */
+
+    // #define HTML_ESCAPE_U8CHAR_TABLE()   \
+    //     DEF_HTML_ESCAPE_U8CHAR("&nbsp;") \
+    //     DEF_HTML_ESCAPE_U8CHAR("&copy;") \
+    //     DEF_HTML_ESCAPE_U8CHAR("&reg;")  \
+    //     DEF_HTML_ESCAPE_U8CHAR("&euro;") \
+    //     DEF_HTML_ESCAPE_U8CHAR("&bull;") \
+    //     /* (end) */
+
+    std::string result;
+    for (size_t index = 0; index < text.size(); index++) {
+        std::string_view::value_type ch = text[index];
+        switch (ch) {
+            case '>': {
+                result.append("&gt;");
+            } break;
+            case '<': {
+                result.append("&lt;");
+            } break;
+            case '&': {
+                result.append("&amp;");
+            } break;
+            case '"': {
+                result.append("&quot;");
+            } break;
+            case '\'': {
+                result.append("&apos;");
+            } break;
+            default: {
+                result.append( 1, ch);
+            } break;
+        }
+    }
+
+    return result;
+}
+
 auto print_html(node* nd, const std::function<void(std::string_view)>& print) -> void {
     assert((nd != nullptr) && (print != nullptr));
     switch (nd->kind) {
@@ -2019,7 +2064,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("<a href=\"");
             print(nhlink->url);
             print("\">");
-            print(nhlink->name);
+            print(encode_html_text(nhlink->name));
             print("</a>");
         } break;
         case NODE_KIND_IMAGE: {
@@ -2027,14 +2072,14 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("<img src=\"");
             print(nimage->url);
             print("\" alt=\"");
-            print(nimage->name);
+            print(encode_html_text(nimage->name));
             print("\">");
         } break;
         case NODE_KIND_ANCHOR: {
             const node_anchor* nanchor = static_cast<const node_anchor*>(nd);
             for (auto& name : nanchor->names) {
                 print("<a name=\"");
-                print(name);
+                print(encode_html_text(name));
                 print("\"/>");
             }
         } break;
@@ -2050,12 +2095,12 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_TEXT: {
             const node_text* ntext = static_cast<const node_text*>(nd);
-            print(ntext->text);
+            print(encode_html_text(ntext->text));
         } break;
         case NODE_KIND_ICODE: {
             const node_icode* nicode = static_cast<const node_icode*>(nd);
             print("<code>");
-            print(nicode->text);
+            print(encode_html_text(nicode->text));
             print("</code>");
         } break;
         case NODE_KIND_ANNO: {
@@ -2084,6 +2129,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
     }
 }
+
 } // namespace gendoc
 
 struct gendoc_options {

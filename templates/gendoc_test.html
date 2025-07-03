@@ -15,39 +15,39 @@ World
 <a href="https://www.bing.com.cn">linktest</a>
 </p>
 <pre>
-#include <iostream>
+#include &lt;iostream&gt;
 
-#include "str.hpp"
+#include &quot;str.hpp&quot;
 
 #if defined(STR_NAMESPACE)
 using str = STR_NAMESPACE::str;
 #endif
 
 int main() {
-    // split&join
-    auto items = str::split("Welcome to use str library");
-    std::cout << "items: [" << str::join_list(items) << "]" << std::endl;
+    // split&amp;join
+    auto items = str::split(&quot;Welcome to use str library&quot;);
+    std::cout &lt;&lt; &quot;items: [&quot; &lt;&lt; str::join_list(items) &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
 
     // path
-    auto dirname = str::dirname("/home/sam/project/main.cpp");
-    auto basename = str::basename("/home/sam/project/main.cpp");
+    auto dirname = str::dirname(&quot;/home/sam/project/main.cpp&quot;);
+    auto basename = str::basename(&quot;/home/sam/project/main.cpp&quot;);
     auto fullpath = str::join_path({dirname, basename});
-    std::cout << "dirname: " << dirname << std::endl;
-    std::cout << "basename: " << basename << std::endl;
-    std::cout << "fullpath: " << fullpath << std::endl;
+    std::cout &lt;&lt; &quot;dirname: &quot; &lt;&lt; dirname &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;basename: &quot; &lt;&lt; basename &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;fullpath: &quot; &lt;&lt; fullpath &lt;&lt; std::endl;
 
     // trim
-    std::string_view s = "  Hello  World  !  ";
-    std::cout << "trim_left: [" << str::trim_left(s) << "]" << std::endl;
-    std::cout << "trim_right: [" << str::trim_right(s) << "]" << std::endl;
-    std::cout << "trim_surrounding: [" << str::trim_surrounding(s) << "]" << std::endl;
-    std::cout << "simplified: [" << str::simplified(s) << "]" << std::endl;
+    std::string_view s = &quot;  Hello  World  !  &quot;;
+    std::cout &lt;&lt; &quot;trim_left: [&quot; &lt;&lt; str::trim_left(s) &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;trim_right: [&quot; &lt;&lt; str::trim_right(s) &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;trim_surrounding: [&quot; &lt;&lt; str::trim_surrounding(s) &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;simplified: [&quot; &lt;&lt; str::simplified(s) &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
 
     // dump_hex
-    std::string k = "This function is used to dump binnary data to hex string like xxd";
+    std::string k = &quot;This function is used to dump binnary data to hex string like xxd&quot;;
     str::dump_hex(k.data(), k.size(), str::dump_hex_format{.flags = (str::show_ascii | str::show_offset)},
         [](size_t, std::string_view line_text) {
-            std::cout << line_text << std::endl;
+            std::cout &lt;&lt; line_text &lt;&lt; std::endl;
             return 0;
         });
 
