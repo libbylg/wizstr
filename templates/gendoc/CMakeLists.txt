@@ -8,32 +8,27 @@
 # FIT FOR A PARTICULAR PURPOSE.
 # See the Mulan PSL v2 for more details.
 cmake_minimum_required(VERSION 3.24)
-project(templates LANGUAGES CXX)
+project(gendoc LANGUAGES CXX)
 
 #   Import quality configuration
 include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
 
 #   Add major source
-list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/include/str.hpp)
-list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/src/str.cpp)
 list(APPEND INCPATH ${CMAKE_SOURCE_DIR}/include)
-list(APPEND INCPATH ${CMAKE_SOURCE_DIR}/src)
+list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/include/str.hpp)
 
-#   Example applications for README
-add_executable(example1 EXCLUDE_FROM_ALL example1.cpp ${SOURCES}
-        gendoc.h)
-target_include_directories(example1 PRIVATE ${INCPATH})
-target_compile_options(example1 PRIVATE ${QUALITY_OPTIONS})
-set_target_properties(example1 PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(example1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/templates")
+list(APPEND INCPATH ${CMAKE_SOURCE_DIR}/src)
+list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/src/str.cpp)
+
+list(APPEND INCPATH ${CMAKE_CURRENT_LIST_DIR}/src)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/gendoc.cpp)
+
+list(APPEND INCPATH ${CMAKE_CURRENT_LIST_DIR}/include)
+list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/include/gendoc.h)
 
 #   Document generation tools
-add_executable(gendoc EXCLUDE_FROM_ALL gendoc.cpp ${SOURCES})
+add_executable(gendoc EXCLUDE_FROM_ALL ${SOURCES})
 target_include_directories(gendoc PRIVATE ${INCPATH})
 target_compile_options(gendoc PRIVATE ${QUALITY_OPTIONS})
 set_target_properties(gendoc PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(gendoc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/templates")
-
-#   Add fake target for: make doc
-add_custom_target(doc COMMAND /bin/sh "${CMAKE_SOURCE_DIR}/templates/gendoc.sh")
-add_dependencies(doc gendoc example1)

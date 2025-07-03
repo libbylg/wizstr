@@ -259,10 +259,10 @@ list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_windowed.cpp)
 list(APPEND SOURCES ${CMAKE_CURRENT_LIST_DIR}/test_str_windowed_view.cpp)
 
 #   Add unit-testing target
-add_executable(tests ${SOURCES})
+add_executable(tests EXCLUDE_FROM_ALL ${SOURCES})
 target_include_directories(tests PRIVATE ${INCPATH})
 target_compile_options(tests PRIVATE ${QUALITY_OPTIONS})
 
 #   Add fake target for: make test
-add_custom_target(test COMMAND tests)
+add_custom_target(test EXCLUDE_FROM_ALL COMMAND tests )
 add_dependencies(test tests)
