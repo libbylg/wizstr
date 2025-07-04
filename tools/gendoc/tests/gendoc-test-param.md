@@ -1,7 +1,5 @@
 # returns
 
-@param aaa, bbb, ccc:KKK
-@param aaa, bbb, ccc: KKK
-@param aaa:KKK
-@param:KKK
-@param : KKK
+@param aaa, bbb, ccc:XXX
+@param aaa, bbb, ccc: YYY
+@param aaa:ZZZ

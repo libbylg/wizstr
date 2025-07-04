@@ -44,7 +44,8 @@ namespace gendoc {
     DEF_NODEKIND(5, 31, PARAGRAPH, node_paragraph, "通用段落") \
     DEF_NODEKIND(5, 32, BCODE, node_bcode, "代码块")           \
     DEF_NODEKIND(5, 33, BFORMULA, node_bformula, "行间公式")   \
-    DEF_NODEKIND(10,34, COMMENT, node_comment, "注释行")       \
+    DEF_NODEKIND(5, 34, SEPARATOR, node_separator, "分隔线")   \
+    DEF_NODEKIND(10,35, COMMENT, node_comment, "注释行")       \
     /* 行内元素 */                                             \
     DEF_NODEKIND(15, 50, IFORMULA, node_iformula, "行内公式")  \
     DEF_NODEKIND(15, 51, HLINK, node_hlink, "超链接")          \
@@ -298,6 +299,16 @@ struct node_paragraph : public node {
     explicit node_paragraph() {
         kind = NODE_KIND_PARAGRAPH;
         priority = NODE_PRIORITY_PARAGRAPH;
+    }
+};
+
+struct node_separator : public node {
+    std::string::value_type separator;
+
+    explicit node_separator(std::string::value_type sep) {
+        kind = NODE_KIND_SEPARATOR;
+        priority = NODE_PRIORITY_SEPARATOR;
+        separator = sep;
     }
 };
 

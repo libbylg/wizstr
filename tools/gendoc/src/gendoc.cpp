@@ -109,6 +109,12 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             }
             print("\n");
         } break;
+        case NODE_KIND_SEPARATOR: {
+            print(str::make_spaces(ident * 4));
+            node_separator* nseparator = static_cast<node_separator*>(nd);
+            print(str::repeat(nseparator->separator, 4));
+            print("\n");
+        } break;
         case NODE_KIND_COMMENT: {
             print(str::make_spaces(ident * 4));
             node_comment* ncomment = static_cast<node_comment*>(nd);
@@ -1523,7 +1529,7 @@ auto try_parse_param(parse_context& context) -> void {
 
     // 形式：@xxx yyy, yyy:
     acceptor acceptor(str::take_view(line, range));
-    static std::regex name_pattern{R"([a-z]+)"};
+    static std::regex name_pattern{R"([a-zA-Z_][a-zA-Z_0-9]*)"};
     std::vector<std::string_view> anno_names;
 
     acceptor.from(0).accept("@param");
@@ -1557,10 +1563,14 @@ auto try_parse_param(parse_context& context) -> void {
     }
 
     context.push(new node_param(anno_names));
+    context.push(new node_line());
 
     // 后面是一个行内的元素
     auto param_list_range = acceptor.range().shift(range.pos);
     try_parse_line_range(context.parent(), context.line_text(), str::range(param_list_range.end(), line.size() - param_list_range.end()));
+
+    context.pop();
+    context.pop();
 }
 
 auto try_parse_return(parse_context& context, str::range_type range) -> void {
@@ -1750,6 +1760,11 @@ auto try_parse_spacelines(parse_context& context) -> void {
     }
 }
 
+auto try_parse_separator(parse_context& context) -> void {
+    const std::string& line = context.line_text();
+    context.append_child(new node_separator(line[0]));
+}
+
 auto try_parse_article(parse_context& context) -> void {
     assert(context.parent() != nullptr);
     assert(context.parent()->kind == NODE_KIND_PROJECT);
@@ -1769,8 +1784,16 @@ auto try_parse_article(parse_context& context) -> void {
             continue;
         }
 
+        // 不同的分割线 .... ---- ====
+        static std::regex separator_pattern{R"((\.{4,})|(-{4,})|(={4,}))"};
+        if (std::regex_match(line.begin(), line.end(), matches, separator_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            try_parse_separator(context);
+            continue;
+        }
+
         // @param 开头的行
-        static std::regex param_pattern{R"((@param)[^a-z0-9_])"};
+        static std::regex param_pattern{R"(^(@param)(\s+|\s*:\s*).*)"};
         if (std::regex_match(line.begin(), line.end(), matches, param_pattern)) {
             leave_paragraph(state, context); // 立即打断当前block
             try_parse_param(context);
@@ -2086,6 +2109,11 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             }
             print("</pre>\n");
         } break;
+        case NODE_KIND_SEPARATOR: {
+            node_separator* nseparator = static_cast<node_separator*>(nd);
+            print(R"(<div style="border-top: 1px solid black; margin: 10px 0;"></div>)");
+            print("\n");
+        }break;
         case NODE_KIND_BFORMULA: {
             // const node_bformula* nbformula = static_cast<const node_bformula*>(nd);
         } break;
