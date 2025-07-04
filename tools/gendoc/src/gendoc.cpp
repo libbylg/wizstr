@@ -2018,10 +2018,43 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             // const node_sectionend* node = static_cast<const node_sectionend*>(nd);
         } break;
         case NODE_KIND_PARAM: {
-            // const node_param* nparam = static_cast<const node_param*>(nd);
+            node_param* nparam = static_cast<node_param*>(nd);
+            print("<div>");
+
+            print("<div>");
+            for (size_t index = 0; index < nparam->names.size(); index++) {
+                if (index != 0) {
+                    print(", ");
+                }
+                print(encode_html_text(nparam->names[index]));
+            }
+            print("</div>");
+
+            print("<div>");
+            print("-");
+            print("</div>");
+
+            print("<div>");
+            list_foreach(item, &nparam->children) {
+                print_html(item, print);
+            }
+            print("</div>");
+
+            print("</div>");
+            print("\n");
         } break;
         case NODE_KIND_RETURN: {
-            // const node_return* nreturn = static_cast<const node_return*>(nd);
+            node_return* nreturn = static_cast<node_return*>(nd);
+            print("<div>");
+
+            print("<div>");
+            list_foreach(item, &nreturn->children) {
+                print_html(item, print);
+            }
+            print("</div>");
+
+            print("</div>");
+            print("\n");
         } break;
         case NODE_KIND_LIST: {
             node_list* nlist = static_cast<node_list*>(nd);

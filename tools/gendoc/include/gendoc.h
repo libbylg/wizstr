@@ -154,7 +154,7 @@ static inline auto list_end(H* head) -> decltype(H::prev) {
 }
 
 #define list_foreach(Child_, List_) \
-for (auto Child_ = list_first(List_); child != list_end(List_); Child_ = list_next(Child_))
+for (auto Child_ = list_first(List_); Child_ != list_end(List_); Child_ = list_next(Child_))
 
 #define list_foreach_range(Child_, Start_, Stop_) \
 for (auto Child_ = (Start_); Child_ != Stop_; Child_ = list_next(Child_))
