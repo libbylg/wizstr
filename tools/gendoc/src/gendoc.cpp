@@ -9,7 +9,7 @@
  * FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-#include "../gendoc.h"
+#include "gendoc.h"
 
 #include "str.hpp"
 
@@ -1943,7 +1943,7 @@ auto encode_html_text(std::string_view text) -> std::string {
                 result.append("&apos;");
             } break;
             default: {
-                result.append( 1, ch);
+                result.append(1, ch);
             } break;
         }
     }
@@ -1992,12 +1992,12 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 "h6",
             };
             print("<");
-            print(all_headers[nchapter->level + 1]);
+            print(all_headers[nchapter->level - 1]);
             print(">\n");
             node* first = list_first(&(nchapter->children));
             print_html(first, print);
             print("</");
-            print(all_headers[nchapter->level + 1]);
+            print(all_headers[nchapter->level - 1]);
             print(">\n");
             list_foreach_range(child, list_next(first), list_end(&(nchapter->children))) {
                 print_html(child, print);
@@ -2024,10 +2024,18 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             // const node_return* nreturn = static_cast<const node_return*>(nd);
         } break;
         case NODE_KIND_LIST: {
-            // const node_list* nlist = static_cast<const node_list*>(nd);
-        } break;
-        case NODE_KIND_TABLE: {
-            // const node_table* node = reinterpret_cast<const node_table*>(nd);
+            node_list* nlist = static_cast<node_list*>(nd);
+            if ((list_prev(nlist) == list_end(&nd->parent->children)) || (nlist->prev->kind != NODE_KIND_LIST)) {
+                print("<ul>\n");
+            }
+            print("<li>\n");
+            list_foreach(child, &(nlist->children)) {
+                print_html(child, print);
+            }
+            print("</li>\n");
+            if (list_next(nlist) == list_end(&nd->parent->children) || (nlist->next->kind != NODE_KIND_LIST)) {
+                print("</ul>\n");
+            }
         } break;
         case NODE_KIND_PARAGRAPH: {
             node_paragraph* nparagraph = static_cast<node_paragraph*>(nd);
@@ -2115,6 +2123,9 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print_html(child, print);
             }
             print("\n");
+        } break;
+        case NODE_KIND_TABLE: {
+            // const node_table* node = reinterpret_cast<const node_table*>(nd);
         } break;
         case NODE_KIND_THEAD: {
             // const node_thead* node = static_cast<const node_thead*>(nd);

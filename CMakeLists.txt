@@ -56,6 +56,9 @@ add_subdirectory(tests)
 #   All templates
 add_subdirectory(templates)
 
+#   All tools
+add_subdirectory(tools)
+
 #   Install all libs
 install(TARGETS str-shared str-static
         EXPORT str
