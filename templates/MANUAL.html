@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HTML5 示例</title>
+</head>
+<body>
+<!--
+-->
+<h1>
+简介
+</h1>
+<p>
+str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语言功能最丰富的字符串处理函数库。
+</p>
+<p>
+当前主要提供了下列算法：
+</p>
+<ul>
+<li>
+追加插入（<a href="#append">append</a>、<a href="#prepend">prepend</a> 和 <a href="#insert">insert</a> 系列）
+</li>
+<li>
+大小写不敏感的比较（<a href="#icompare">icompare</a> 和 <a href="#iequals">iequals</a> 系列）
+</li>
+<li>
+基于通配符匹配（<a href="#wildcmp">wildcmp</a> 系列）
+</li>
+<li>
+两字符串之间的关系（<a href="#contains">contains</a> 系列）
+</li>
+<li>
+特征字符串统计（<a href="#count">count</a> 系列）
+</li>
+<li>
+前后缀操作（<a href="#prefix">prefix</a> 和 <a href="#suffix">suffix</a> 系列）
+</li>
+<li>
+查找（<a href="#find">find</a> 和 <a href="#iter">iter</a> 系列）
+</li>
+<li>
+特征测试（<a href="#is">is</a>、<a href="#has">has</a> 系列）
+</li>
+<li>
+子串提取（<a href="#take">take</a>、<a href="#drop">drop</a> 系列）
+</li>
+<li>
+修剪和整形（<a href="#align">align</a>、<a href="#surround">surround</a>、<a href="#unsurround">unsurround</a>、<a href="#invert">invert</a>、<a href="#simplified">simplified</a>、<a href="#trim">trim</a> 系列）
+</li>
+<li>
+按多行处理（<a href="#lines">lines</a> 系列）
+</li>
+<li>
+按单词处理（<a href="#words">words</a> 系列）
+</li>
+<li>
+字符串生成（<a href="#repeat">repeat</a> 系列）
+</li>
+<li>
+空白串处理（<a href="#spaces">spaces</a> 系列）
+</li>
+<li>
+字符串遮罩（<a href="#cover">cover</a> 系列）
+</li>
+<li>
+字符串拆分（<a href="#split">split</a>、<a href="#partition">partition</a>、<a href="#chunked">chunked</a>、<a href="#windowed">windowed</a> 系列）
+</li>
+<li>
+字符串拼接（<a href="#join">join</a> 系列）
+</li>
+<li>
+大小写转换（<a href="#to">to</a> 系列）
+</li>
+<li>
+变量或者特殊符号展开（<a href="#expand">expand</a>）
+</li>
+<li>
+文件名路径操作（<a href="#basemame">basemame</a>、<a href="#extname">extname</a>、<a href="#dirname">dirname</a>、<a href="#rawname">rawname</a> 系列）
+</li>
+<li>
+字符串哈希算法（<a href="#hash">hash</a> 系列）
+</li>
+<li>
+字符串转义（<a href="#encode">encode</a>、<a href="#decode">decode</a> 系列）
+</li>
+<li>
+文本文件读取（<a href="#read">read</a> 系列）
+</li>
+<li>
+字符分组和筛选（<a href="#grouping">grouping</a> 和 <a href="#filter">filter</a> 系列）
+</li>
+</ul>
+<section class="section-level-1">
+关于函数的返回值及其使用注意事项：
+<p>
+str 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
+</p>
+<ul>
+<li>
+<code>xxx_view</code> 形式：
+<p>
+通常意味着该函数的返回值是输入参数的一个（或多个）视图，该函数不会发生任何分配行为（返回存放
+容器的 <code>std::string_view</code>，如 <code>std::vector&lt;std::string_view&gt;</code> 类似的除外）。但这种形式的接口
+是的时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些
+接口时，需要确保在使用前其输入参数的地址仍然是有效的。
+</p>
+</li>
+<li>
+<code>xxx_inplace</code> 形式：
+<p>
+这类函数通常意味着该函数返回的是输入参数自身，返回值也通常是 <code>std::string&amp;</code>。该函数在执行
+过程中通常会修改输入参数，并返回。如果使用这类函数，需要确保原始输入串是可以被改写的，否则
+建议使用 <code>xxx_view 形式</code>或者 <code>xxx 形式</code> 的函数代替。
+</p>
+</li>
+<li>
+<code>xxx_range</code> 形式：
+<p>
+这类函数返回的并不是某种形式的子串，而是子串在原始串中的范围，在子串定位场景很常见。
+</p>
+</li>
+<li>
+<code>xxx</code> 形式：
+<p>
+与前面几种对应，这类不带 <code>_view</code> 或者 <code>_inplace</code> 后缀的函数，其返回值不是原始输入的视图，而是一个新的字符串拷贝。
+因此，这类函数既没有类似 <code>_view</code> 系列函数那样的返回值依赖于输入参数的生存期的问题，也没有类似 <code>xxx_inplace</code> 那样会修改
+原始输入参数的问题。但这类函数由于总是会拷贝原始输入字符串的，所以如果返回的字符串无法充分利用字符串的 SSO 特性，
+那么性能会比 <code>xxx_view</code> 和 <code>xxx_inplace</code> 系列要低一些。当然这类函数的优点也是显而易见的，就是更<code>安全</code>。
+</p>
+</li>
+</ul>
+</section>
+<h3>
+几个操作系统强相关的常量
+</h3>
+<pre>
+    static constexpr std::string_view sep_searchpath = &quot;:&quot;;
+    static constexpr value_type sep_searchpath_char = &apos;:&apos;;
+    static constexpr std::string_view sep_path = &quot;/&quot;;
+    static constexpr value_type sep_path_char = &apos;/&apos;;
+    static constexpr std::string_view sep_line_ends = &quot;\n&quot;;
+</pre>
+<ul>
+<li>
+<a href="sep_searchpath">sep_searchpath</a>, <a href="sep_searchpath_char">sep_searchpath_char</a> 搜索路径分隔符
+</li>
+<li>
+<a href="sep_path">sep_path</a>, <a href="sep_path_char">sep_path_char</a> 文件路径分隔符
+</li>
+<li>
+<a href="sep_line_ends">sep_line_ends</a> 行结束符
+</li>
+</ul>
+<h3>
+字符分类
+</h3>
+<pre>
+    static constexpr std::string_view all_uppers = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;;
+    static constexpr std::string_view all_lowers = &quot;abcdefghijklmnopqrstuvwxyz&quot;;
+    static constexpr std::string_view all_leters = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&quot;;
+    static constexpr std::string_view all_alphas = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&quot;;
+    static constexpr std::string_view all_digits = &quot;0123456789&quot;;
+    static constexpr std::string_view all_xdigits = &quot;0123456789ABCDEFabcdef&quot;;
+    static constexpr std::string_view all_alnums = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&quot;;
+    static constexpr std::string_view all_alnumuls = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&quot;;
+    static constexpr std::string_view all_aluls = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_&quot;;
+    static constexpr std::string_view all_spaces = &quot;\x09\x0A\x0B\x0C\x0d\x20&quot;;
+    static constexpr std::string_view all_hex_upper = &quot;0123456789ABCDEF&quot;;
+    static constexpr std::string_view all_hex_lower = &quot;0123456789abcdef&quot;;
+    static constexpr std::string_view all_puncts = R&quot;(!&quot;#$%&amp;&apos;()*+,-./:;&lt;=&gt;?@[\]^_`{|}~)&quot;;
+</pre>
+<ul>
+<li>
+<a href="all_uppers">all_uppers</a> 所有大写字母集合
+</li>
+<li>
+<a href="all_lowers">all_lowers</a> 所有小写字母集合
+</li>
+<li>
+<a href="all_leters">all_leters</a> 所有字母集合
+</li>
+<li>
+<a href="all_alphas">all_alphas</a> 所有字母集合
+</li>
+<li>
+<a href="all_digits">all_digits</a> 所有数字字符
+</li>
+<li>
+<a href="all_xdigits">all_xdigits</a> 所有十六进制数字表示的字符集合
+</li>
+<li>
+<a href="all_alnums">all_alnums</a> 所有的字母和数字集合
+</li>
+<li>
+<a href="all_alnumuls">all_alnumuls</a> 所有的字母、数字、下划线的集合
+</li>
+<li>
+<a href="all_aluls">all_aluls</a> 所有字母和下滑线的集合
+</li>
+<li>
+<a href="all_spaces">all_spaces</a> 所有空白字符
+</li>
+<li>
+<a href="all_hex_upper">all_hex_upper</a> 所有大写字母形式的十六进制字符集
+</li>
+<li>
+<a href="all_hex_lower">all_hex_lower</a> 所有小写字母形式的十六进制字符集
+</li>
+<li>
+<a href="all_puncts">all_puncts</a> 所有标点符号
+</li>
+</ul>
+<h3>
+在尾部追加 
+</h3>
+<pre>
+    static auto append(std::string_view s, std::string_view other, size_type times_n = 1) -&gt; std::string;
+    static auto append(std::string_view s, const view_provider_proc&amp; proc) -&gt; std::string;
+    template &lt;typename Sequence = std::initializer_list&lt;std::string_view&gt;, typename = typename Sequence::const_iterator&gt;
+    static auto append(std::string_view s, const Sequence&amp; items) -&gt; std::string;
+    /// -
+    static auto append_inplace(std::string&amp; s, std::string_view other, size_type times_n = 1) -&gt; std::string&amp;;
+    static auto append_inplace(std::string&amp; s, const view_provider_proc&amp; proc) -&gt; std::string&amp;;
+    template &lt;typename Sequence = std::initializer_list&lt;std::string_view&gt;, typename = typename Sequence::const_iterator&gt;
+    static auto append_inplace(std::string&amp; s, const Sequence&amp; items) -&gt; std::string&amp;;
+</pre>
+<table>
+<tr><td>s</td><td>-</td><td> 指定向哪个字符串后添加新串。  
+</td></tr>
+<tr><td>other</td><td>-</td><td> 被追加的字符串。  
+</td></tr>
+<tr><td>times_n</td><td>-</td><td> 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。  
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。  
+</td></tr>
+<tr><td>items</td><td>-</td><td> 从容器 items 中获取被追加的字符串。  
+</td></tr>
+</table>
+<p>
+提供了向指定字符尾部追加一个或者多个字符串的能力。实际上，STL 中已经提供了比较丰富的追加字符串，这里针对
+大量字符串拼接提供了相对简便的方法。
+</p>
+<p>
+@notice{1} 对于 <a href="append_inplace">append_inplace</a> 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种
+情况。
+</p>
+<h3>
+向头部追加 
+</h3>
+<pre>
+    static auto prepend(std::string_view s, std::string_view other, size_type times_n = 1) -&gt; std::string;
+    static auto prepend(std::string_view s, const view_provider_proc&amp; proc) -&gt; std::string;
+    template &lt;typename Sequence = std::initializer_list&lt;std::string_view&gt;, typename = typename Sequence::const_iterator&gt;
+    static auto prepend(std::string_view s, const Sequence&amp; items) -&gt; std::string;
+    /// -
+    static auto prepend_inplace(std::string&amp; s, std::string_view other, size_type times_n = 1) -&gt; std::string&amp;;
+    static auto prepend_inplace(std::string&amp; s, const view_provider_proc&amp; proc) -&gt; std::string&amp;;
+    template &lt;typename Sequence = std::initializer_list&lt;std::string_view&gt;, typename = typename Sequence::const_iterator&gt;
+    static auto prepend_inplace(std::string&amp; s, const Sequence&amp; items) -&gt; std::string&amp;;
+</pre>
+<table>
+<tr><td>s</td><td>-</td><td> 所有字符串都追加到该字符串之前
+</td></tr>
+<tr><td>other</td><td>-</td><td> 被追加的字符串
+</td></tr>
+<tr><td>times_n</td><td>-</td><td> 重复追加多少次，如果指定为 0，则实际不会做任何追加操作。
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 由 proc 函数提供被追加的字符串，如果 proc 返回 std::nullopt，表示后续无更多字符串需要追加。
+</td></tr>
+<tr><td>items</td><td>-</td><td> 从容器 items 中获取被追加的字符串。
+</td></tr>
+</table>
+<p>
+將一个或者多个字符串追加到指定字符串的前面。实际上，STL 中已经提供了比较丰富的字符串插入函数，这里针对
+大量字符串拼接提供了相对简便的方法。需要注意，对于通过 proc 和 items 来提供被追加串的函数，字符串总是以倒
+序的方式被追加。比如，<code>str::prepend(&quot;abc&quot;, {&quot;123&quot;, &quot;456&quot;, &quot;789&quot;})</code> 返回的结果是 &quot;789456123abc&quot;。
+对于 prepend_inplace 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种情况。
+</p>
+<h3>
+不区分大小写的比较 
+</h3>
+<pre>
+    static auto icompare(std::string_view s, std::string_view other) -&gt; int;
+    static auto icompare(std::string_view s, std::string_view other, size_type max_n) -&gt; int;
+</pre>
+<table>
+<tr><td>s</td><td>-</td><td> 参与比较的字符串
+</td></tr>
+<tr><td>other</td><td>-</td><td> 另一个参与比较的字符串
+</td></tr>
+<tr><td>max_n</td><td>-</td><td> 表示最多比较前 max_n 个字符
+</td></tr>
+<div><div>返回正数，表示 s 大于 other；返回负值，表示 s 小于 other；返回 0，表示 s 和 other 相等。
+</div></div>
+<p>
+<a href="icompare">icompare</a> 提供了不区分大小写比较的能力，其中 max_n 用于限制最多比较字符数量。特别的，如果 max_n 等于 0，
+返回 0；
+</p>
+<h3>
+不区分大小写的相等測試 
+</h3>
+<pre>
+    static auto iequals(std::string_view s, std::string_view other) -&gt; bool;
+    static auto iequals(std::string_view s, std::string_view other, size_type max_n) -&gt; bool;
+</pre>
+<table>
+<tr><td>s</td><td>-</td><td> 参与比较的字符串
+</td></tr>
+<tr><td>other</td><td>-</td><td> 另一个参与比较的字符串
+</td></tr>
+<tr><td>max_n</td><td>-</td><td> 表示最多比较前 <code>max_n</code> 个字符
+</td></tr>
+<div><div>如果相等，返回 true，否则返回 <code>false</code>
+</div></div>
+<p>
+<a href="iequals">iequals</a> 提供了不区分大小写的相等比较，其中 <code>max_n</code> 用于限制最多比较字符数量。特别的，如果
+<code>max_n</code> 等于 0。
+</p>
+<h3>
+基于通配符的匹配检测 
+</h3>
+<pre>
+    static auto wildcmp(const_pointer s, const_pointer pattern) -&gt; bool;
+    static auto wildcmp(std::string_view s, std::string_view pattern) -&gt; bool;
+    /// -
+    static auto iwildcmp(const_pointer s, const_pointer pattern) -&gt; bool;
+    static auto iwildcmp(std::string_view s, std::string_view pattern) -&gt; bool;
+</pre>
+<p>
+测试字符串 s 是否匹配通配符 pattern，<a href="wildcmp">wildcmp</a> 表示区分大小写，<a href="iwildcmp">iwildcmp</a> 表示不区分大小写。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 被测试的字符串。
+</td></tr>
+<tr><td>pattern</td><td>-</td><td> 通配串。
+</td></tr>
+<div><div>如果 s 字符串匹配 pattern，返回 true，否则返回 false。
+</div></div>
+<h3>
+判断两个字符串的包含关系 
+</h3>
+<pre>
+    static auto contains(std::string_view s, std::string_view other) -&gt; bool;
+    static auto contains(std::string_view s, value_type ch) -&gt; bool;
+    static auto contains(std::string_view s, const char_match_proc&amp; proc) -&gt; bool;
+    static auto contains(std::string_view s, const charset_type&amp; charset) -&gt; bool;
+    static auto contains(std::string_view s, const std::regex&amp; pattern) -&gt; bool;
+    /// -
+    static auto icontains(std::string_view s, std::string_view other) -&gt; bool;
+    static auto icontains(std::string_view s, value_type ch) -&gt; bool;
+</pre>
+<p>
+等价于在字符串 s 中查找是否存在指定的字符或者字符串。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 在该字符串查找目标子串
+</td></tr>
+<tr><td>other</td><td>-</td><td> 被查找的目标子串
+</td></tr>
+<tr><td>ch</td><td>-</td><td> 在 s 中查找是否存在指定的字符
+</td></tr>
+<tr><td>proc</td><td>-</td><td> s 中的每个字符都会触发 proc 函数，proc 返回 true，表示当前字符是正在被查找的字符；
+</td></tr>
+<tr><td>ignore_case</td><td>-</td><td> 指定是否采用不区分大小写的方式来查找子串
+</td></tr>
+<tr><td>charset</td><td>-</td><td> 指定一个字符集，s 中只要有任意一个字符在 charset 中就表示 s 中包含 charset
+</td></tr>
+<tr><td>pattern</td><td>-</td><td> 指定一个正则表达式，只要 s 中有任意子串匹配 pattern，表示 s 中包含 pattern
+</td></tr>
+<div><div>如果 s 包含指定的字符或者字符串或者某种模式，返回 true，否则返回 false。
+</div></div>
+<h3>
+子串统计 
+</h3>
+<pre>
+    static auto count(std::string_view s, std::string_view other) -&gt; size_type;
+    static auto count(std::string_view s, value_type ch) -&gt; size_type;
+    static auto count(std::string_view s, const char_match_proc&amp; proc) -&gt; size_type;
+    static auto count(std::string_view s, const charset_type&amp; charset) -&gt; size_type;
+    static auto count(std::string_view s, const std::regex&amp; pattern) -&gt; size_type;
+</pre>
+<p>
+本函数用于统计 s 串中是否包含特定模式的子串的数量。需要注意，count 函数统计的子串是不重叠的子串。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 在该字符串中查找
+</td></tr>
+<tr><td>other, ch, charset</td><td>-</td><td> 被统计的子串或者字符或者字符集
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 用于表示满足特定条件字符，是更抽象的字符查找形式
+</td></tr>
+<tr><td>pattern</td><td>-</td><td> 用于统计满足表达式的子串的数量，多个子串之间可以重叠。
+</td></tr>
+<div><div>返回满足条件的子串或者字符的数量。特别的，当 s 或者 other 为空时，总是返回 0
+</div></div>
+<h3>
+前缀操作 
+</h3>
+<pre>
+    static auto prefix(std::string_view s, std::string_view other) -&gt; size_type;
+    static auto has_prefix(std::string_view s, value_type ch) -&gt; bool;
+    static auto has_prefix(std::string_view s, std::string_view prefix) -&gt; bool;
+    static auto starts_with(std::string_view s, value_type ch) -&gt; bool;
+    static auto starts_with(std::string_view s, std::string_view prefix) -&gt; bool;
+    static auto starts_with(std::string_view s, size_type pos, value_type ch) -&gt; bool;
+    static auto starts_with(std::string_view s, size_type pos, std::string_view prefix) -&gt; bool;
+    static auto remove_prefix_view(std::string_view s, std::string_view prefix) -&gt; std::string_view;
+    static auto remove_prefix_view(std::string_view s, value_type prefix) -&gt; std::string_view;
+    static auto remove_prefix(std::string_view s, std::string_view prefix) -&gt; std::string;
+    static auto remove_prefix(std::string_view s, value_type prefix) -&gt; std::string;
+    /// -
+    static auto remove_prefix_inplace(std::string&amp; s, std::string_view prefix) -&gt; std::string&amp;;
+    static auto remove_prefix_inplace(std::string&amp; s, value_type prefix) -&gt; std::string&amp;;
+</pre>
+<p>
+本组函数提供了常见的前缀操作：
+</p>
+<ul>
+<li>
+<a href="prefix">prefix</a> 提供了计算两个字符串的公共前缀的能力；
+</li>
+<li>
+<a href="has_prefix">has_prefix</a>, <a href="starts_with">starts_with</a> 功能一致，都用于测试字符串 s 是否有指定的前缀。
+</li>
+<li>
+<a href="remove_prefix_view">remove_prefix_view</a>, <a href="remove_prefix">remove_prefix</a>, <a href="remove_prefix_inplace">remove_prefix_inplace</a> 会返回从字符串 s 中去除两个字符串的共同前缀后剩余的部分。
+</li>
+</ul>
+<table>
+<tr><td>s</td><td>-</td><td> 目标字符串
+</td></tr>
+<tr><td>other</td><td>-</td><td> 参与公共前缀计算的另一个字符串，用于 <a href="prefix">prefix</a>
+</td></tr>
+<tr><td>prefix, ch</td><td>-</td><td> 前缀字符串或者字符
+</td></tr>
+</table>
+<h3>
+后缀操作 
+</h3>
+<pre>
+    static auto suffix(std::string_view s, std::string_view other) -&gt; size_type;
+    static auto has_suffix(std::string_view s, value_type ch) -&gt; bool;
+    static auto has_suffix(std::string_view s, std::string_view suffix) -&gt; bool;
+    static auto ends_with(std::string_view s, value_type ch) -&gt; bool;
+    static auto ends_with(std::string_view s, std::string_view suffix) -&gt; bool;
+    static auto remove_suffix_view(std::string_view s, std::string_view suffix) -&gt; std::string_view;
+    static auto remove_suffix_view(std::string_view s, value_type ch) -&gt; std::string_view;
+    static auto remove_suffix(std::string_view s, std::string_view suffix) -&gt; std::string;
+    static auto remove_suffix(std::string_view s, value_type ch) -&gt; std::string;
+    /// -
+    static auto remove_suffix_inplace(std::string&amp; s, std::string_view suffix) -&gt; std::string&amp;;
+    static auto remove_suffix_inplace(std::string&amp; s, value_type ch) -&gt; std::string&amp;;
+</pre>
+<p>
+本组函数提供了常见的前缀操作:
+</p>
+<ul>
+<li>
+<a href="suffix">suffix</a> 提供了计算两个字符串 s 和 other 的公共前缀的长度，返回 0 表示无前缀；
+</li>
+<li>
+<a href="has_suffix">has_suffix</a>, <a href="ends_with">ends_with</a> 功能一致，都用于测试字符串 s 是否有指定的后缀。
+</li>
+<li>
+<a href="remove_suffix_view">remove_suffix_view</a>, <a href="remove_suffix">remove_suffix</a>, <a href="remove_suffix_inplace">remove_suffix_inplace</a> 会返回从字符串 s 中去除两个字符串的共同后剩 余的部分。
+</li>
+</ul>
+<table>
+<tr><td>s</td><td>-</td><td> 目标字符串。
+</td></tr>
+<tr><td>other</td><td>-</td><td> 参与公共前缀计算的另一个字符串，用于 <a href="suffix">suffix</a>。
+</td></tr>
+<tr><td>suffix, ch</td><td>-</td><td> 后缀字符串或者字符。
+</td></tr>
+</table>
+<h3>
+检测是否以特定的模式开头和结束 
+</h3>
+<pre>
+    static auto starts_with_spaces(std::string_view s) -&gt; bool;
+    static auto ends_with_spaces(std::string_view s) -&gt; bool;
+    static auto starts_with_margin(std::string_view s, value_type margin) -&gt; bool;
+</pre>
+<ul>
+<li>
+<a href="starts_with_spaces">starts_with_spaces</a> 如果字符串 <code>s</code> 是否以空白开头，返回 <code>true</code>，否则返回 <code>false</code>。
+</li>
+<li>
+<a href="ends_with_spaces">ends_with_spaces</a> 如果字符串 <code>s</code> 是否以空白结尾，返回 <code>true</code>，否则返回 <code>false</code>。
+</li>
+<li>
+<a href="starts_with_margin">starts_with_margin</a> 如果字符串 <code>s</code> 是否的首个非空白字母为 <code>margin</code> 字符，返回 <code>true</code>，否则返回 <code>false</code>。
+</li>
+</ul>
+<table>
+<tr><td>s</td><td>-</td><td> 被检查的参数。
+</td></tr>
+<tr><td>margin</td><td>-</td><td> 边界字符。
+</td></tr>
+</table>
+<p>
+static auto starts_with_spaces(std::string_view s) -&gt; bool;
+static auto ends_with_spaces(std::string_view s) -&gt; bool;
+static auto starts_with_margin(std::string_view s, value_type margin) -&gt; bool;
+</p>
+<h3>
+定位字符位置 
+</h3>
+<pre>
+    static auto next_char(std::string_view s, size_type&amp; pos, value_type ch) -&gt; std::optional&lt;size_type&gt;;
+    static auto next_char(std::string_view s, size_type&amp; pos, const charset_type&amp; charset) -&gt; std::optional&lt;size_type&gt;;
+    static auto next_char(std::string_view s, size_type&amp; pos, std::string_view charset) -&gt; std::optional&lt;size_type&gt;;
+    static auto next_char(std::string_view s, size_type&amp; pos, const char_match_proc&amp; proc) -&gt; std::optional&lt;size_type&gt;;
+    /// -
+    static auto prev_char(std::string_view s, size_type&amp; pos, value_type ch) -&gt; std::optional&lt;size_type&gt;;
+    static auto prev_char(std::string_view s, size_type&amp; pos, const charset_type&amp; charset) -&gt; std::optional&lt;size_type&gt;;
+    static auto prev_char(std::string_view s, size_type&amp; pos, std::string_view charset) -&gt; std::optional&lt;size_type&gt;;
+    static auto prev_char(std::string_view s, size_type&amp; pos, const char_match_proc&amp; proc) -&gt; std::optional&lt;size_type&gt;;
+</pre>
+<p>
+在字符串 s 从特定的位置 <code>pos</code> 开始向前或者向后查找、定位特定的字符；如果找到，返回该字符在字符串中的位置；
+否则返回 <code>std::nullopt</code> 。
+</p>
+<ul>
+<li>
+<a href="next_char">next_char</a> 总是从 <code>pos</code> 开始向字符串尾部查找特定的字符，并返回找到的该字符的位置。
+</li>
+<li>
+<a href="prev_char">prev_char</a> 总是从 <code>pos - 1</code> 开始向字符串首部查找特定的字符，并返回找到的该字符的位置。
+</li>
+</ul>
+<p>
+@notice{1} 需要特别注意，<a href="next_xxx">next_xxx</a> 总是从 <code>pos - 1</code> 开始，向字符串首部查找（而 <a href="next_char">next_char</a> 总是从
+<code>pos</code> 开始向字符串尾部查找）。因此，如果希望从 <code>s</code> 的最后一个字符开始向前查找时，<code>pos</code> 应该指定为 <code>s.size()</code>。
+当调用 <a href="prev_xxx">prev_xxx</a> 系列函数且 <code>pos</code> 参数指定的值为 <code>0</code> 时， <a href="prev_xxx">prev_xxx</a> 系列函数已无法继续向前查找，
+此时将返回 <code>std::nullopt</code>。同理，当调用 <a href="next_xxx">next_xxx</a> 系列函数，且 <code>pos</code> 参数大于或者等于 <code>s.size()</code> 时，
+<a href="prev_xxx">prev_xxx</a> 系列函数同样无法继续查找，此时也将返回 <code>std::nullopt</code>。
+</p>
+<p>
+@notice{2} 当找到特定的字符时，<a href="next_char">next_char</a> 的 <code>pos</code> 总是为该字符的下一个字符，而 <a href="pref_char">pref_char</a> 的
+<code>pos</code> 总是指向该字符所在的位置。这个设计使得 <a href="next_char">next_char</a> 和 <a href="prev_char">prev_char</a> 可以配合使用。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 在该字符串中查找
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 查找的起始位置，需要注意该字段对于 <code>next_xxx</code> 和 <code>prev_xxx</code> 具有不同的含义（参见 @ref{notice{2}}）。
+</td></tr>
+<tr><td>ch, charset</td><td>-</td><td> 用于定位的字符或者字符集。
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 用于测试某个字符是否满足定位条件，常用于定制场景。
+</td></tr>
+</table>
+<h3>
+定位子串 
+</h3>
+<pre>
+    static auto next_string_range(std::string_view s, size_type&amp; pos, std::string_view substr) -&gt; std::optional&lt;range_type&gt;;
+    static auto next_string_view(std::string_view s, size_type&amp; pos, std::string_view substr) -&gt; std::optional&lt;std::string_view&gt;;
+    static auto next_string(std::string_view s, size_type&amp; pos, std::string_view substr) -&gt; std::optional&lt;std::string&gt;;
+    /// -
+    static auto prev_string_range(std::string_view s, size_type&amp; pos, std::string_view substr) -&gt; std::optional&lt;range_type&gt;;
+    static auto prev_string_view(std::string_view s, size_type&amp; pos, std::string_view substr) -&gt; std::optional&lt;std::string_view&gt;;
+    static auto prev_string(std::string_view s, size_type&amp; pos, std::string_view substr) -&gt; std::optional&lt;std::string&gt;;
+</pre>
+<p>
+在字符串 <code>s</code> 中，查找（定位）子串 <code>substr</code> 的位置。如果找到返回找到的该子串的位置（<code>range_type</code>）、
+视图（<code>std::string_view</code>）、或者子串本身（<code>std::string</code>）；否则，返回 <code>std::nullopt</code>。
+</p>
+<p>
+@notice{1} 需要特别注意，<a href="next_xxx">next_xxx</a> 总是从 <code>pos - 1</code> 开始，向字符串首部查找（而 <a href="next_char">next_char</a> 总是从
+<code>pos</code> 开始向字符串尾部查找）。因此，如果希望从 <code>s</code> 的最后一个字符开始向前查找时，<code>pos</code> 应该指定为 <code>s.size()</code>。
+当调用 <a href="prev_xxx">prev_xxx</a>系列函数且 <code>pos</code> 参数指定的值为 <code>0</code> 时， <a href="prev_xxx">prev_xxx</a> 系列函数已无法继续向前查找，此时
+将返回 <code>std::nullopt</code>。同理，当调用 <a href="next_xxx">next_xxx</a> 系列函数，且 <code>pos</code> 参数大于或者等于 <code>s.size()</code>
+时，<a href="prev_xxx">prev_xxx</a> 系列函数同样无法继续查找，此时也将返回 <code>std::nullopt</code>。
+</p>
+<p>
+@notice{2} 当找到特定的字符时，<a href="next_xxx">next_xxx</a> 的 <code>pos</code> 总是为该字符的下一个字符，而 <a href="pref_xxx">pref_xxx</a> 的 <code>pos</code>
+总是指向该字符所在的位置。这个设计使得 <a href="next_xxx">next_xxx</a> 和 <a href="prev_xxx">prev_xxx</a> 可以配合使用。
+</p>
+<p>
+<a href="next_string_range">next_string_range</a>, <a href="next_string_view">next_string_view</a>, <a href="next_string">next_string</a> 从字符串 <code>s</code> 的 <code>pos</code> 位置开始向字符串尾部，查找 <code>substr</code>。
+<a href="prev_string_range">prev_string_range</a>, <a href="prev_string_view">prev_string_view</a>, <a href="prev_string">prev_string</a> 从字符串 <code>s</code> 的 <code>pos - 1</code> 位置开始向字符串首部，查找 <code>substr</code>。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 在该字符串中查找（定位）子串。
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 查找的起始位置，需要注意该字段对于 <code>next_xxx</code> 和 <code>prev_xxx</code> 具有不同的含义（参见 @ref{notice{2}}）。
+</td></tr>
+<tr><td>substr</td><td>-</td><td> 待查找（定位）的子串。
+</td></tr>
+</table>
+<h3>
+定位行结束符（换行符） 
+</h3>
+<pre>
+    static auto next_eol_range(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;range_type&gt;;
+    static auto next_eol_view(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;std::string_view&gt;;
+    static auto next_eol(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;std::string&gt;;
+    /// -
+    static auto prev_eol_range(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;range_type&gt;;
+    static auto prev_eol_view(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;std::string_view&gt;;
+    static auto prev_eol(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;std::string&gt;;
+</pre>
+<p>
+从 pos 开始查找（定位）行结束符（End-Of-Line）的位置，可用于按行拆分字符串场景。
+</p>
+<p>
+ 由于操作系统的差异，行结束符并非总是 <code>\n</code>，本系列函数采用下面的策略来识别行结束符
+</p>
+<ul>
+<li>
+如果当前字符为 <code>\n</code>，那么将当前字符 <code>\n</code> 识别为行结束符；
+</li>
+<li>
+如果当前字符为 <code>\r</code>，那么还需要额外查看下一个字符，如果下一个字符为 <code>\n</code>，那么将 <code>\r\n</code> 整体视作行结束符；否则将 <code>\r</code> 视作行结束符。
+<table>
+<tr><td>s</td><td>-</td><td> 在该字符串内查找行结束符
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 查找的起始位置，需要注意该字段对于 <code>next_xxx</code> 和 <code>prev_xxx</code> 具有不同的含义（参见 @ref{notice{2}}）。
+</td></tr>
+</table>
+</li>
+</ul>
+<h3>
+行结束符检测 
+</h3>
+<pre>
+    static auto ends_with_eol(std::string_view s) -&gt; bool;
+    static auto has_eol_suffix(std::string_view s) -&gt; bool;
+    static auto eol_suffix(std::string_view s) -&gt; size_type;
+</pre>
+<p>
+<a href="ends_with_eol">ends_with_eol</a>, <a href="has_eol_suffix">has_eol_suffix</a> 检查字符串 <code>s</code> 是否具有行结束符
+<a href="eol_suffix">eol_suffix</a> 检查字符串 <code>s</code> 是否以行结束符结尾，如果有返回行结束符的长度，否则返回 0
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 被检测的字符
+</td></tr>
+</table>
+<h3>
+移除行结束符 
+</h3>
+<pre>
+    static auto remove_eol_suffix_range(std::string_view s) -&gt; range_type;
+    static auto remove_eol_suffix_view(std::string_view s) -&gt; std::string_view;
+    static auto remove_eol_suffix(std::string_view s) -&gt; std::string;
+    static auto remove_eol_suffix_inplace(std::string&amp; s) -&gt; std::string&amp;;
+</pre>
+<p>
+返回去除字符串 <code>s</code> 尾部的行结束符后的新串。需要注意，不同函数返回的数据类型有差别。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 待移出行结束符的原始字符串。
+</td></tr>
+</table>
+<h3>
+定位空白块 
+</h3>
+<pre>
+    static auto next_spaces_pos(std::string_view s, size_type&amp; pos) -&gt; size_type;
+    static auto next_spaces(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;size_type&gt;;
+    static auto next_spaces_range(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;range_type&gt;;
+    static auto next_spaces_view(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;std::string_view&gt;;
+    /// -
+    static auto prev_spaces_pos(std::string_view s, size_type&amp; pos) -&gt; size_type;
+    static auto prev_spaces(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;size_type&gt;;
+    static auto prev_spaces_range(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;range_type&gt;;
+    static auto prev_spaces_view(std::string_view s, size_type&amp; pos) -&gt; std::optional&lt;std::string_view&gt;;
+</pre>
+<p>
+<a href="next_spaces_pos">next_spaces_pos</a> 在字符串 <code>s</code> 中，从 <code>pos</code> 位置开始查找下一个空白块的位置，并返回该空白块的起始位置。
+如果未找到，返回 <code>std::nullopt</code>。
+</p>
+<p>
+@notice{1} “空白块”是指由 <a href="all_spaces">all_spaces</a> 中的字符组成的连续的子串。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 在该字符串中查找空白块
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 作为输入参数时，表示查找空白块的起始位置；作为输出参数时，表示找到的空白块最后一个空白字符的之后的位置。
+</td></tr>
+</table>
+<h3>
+特征测试 
+</h3>
+<pre>
+    static auto is_lower(std::string_view s) -&gt; bool;
+    static auto is_upper(std::string_view s) -&gt; bool;
+    static auto is_title(std::string_view s) -&gt; bool;
+    static auto is_capitalize(std::string_view s) -&gt; bool;
+    static auto is_digit(std::string_view s) -&gt; bool;
+    static auto is_xdigit(std::string_view s) -&gt; bool;
+    static auto is_ascii(std::string_view s) -&gt; bool;
+    static auto is_alpha(std::string_view s) -&gt; bool;
+    static auto is_alnum(std::string_view s) -&gt; bool;
+    static auto is_alnumul(std::string_view s) -&gt; bool;
+    static auto is_space(std::string_view s) -&gt; bool;
+    static auto is_blank(std::string_view s) -&gt; bool;
+    static auto is_print(std::string_view s) -&gt; bool;
+    static auto is_graph(std::string_view s) -&gt; bool;
+</pre>
+<ul>
+<li>
+@ref is_lower: 检测 <code>s</code> 中的所有字母都是小写（参考 <code>std::islower</code>）。
+</li>
+<li>
+@ref is_upper: 检测 <code>s</code> 中的所有字母都是大写字母（参考 <code>std::isupper</code>）。
+</li>
+<li>
+@ref is_capitalize: 检测 <code>s</code> 的首个字符是否为大写字母。
+</li>
+<li>
+@ref is_title:  对于给定的字符串 <code>s</code> 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者
+</li>
+<li>
+是大写字母返回 <code>true</code>。
+</li>
+<li>
+@ref is_digit: 检测 <code>s</code> 否所有的字符都是数字或者十六进制字符（参考 <code>std::xdigit</code>）。
+</li>
+<li>
+@ref is_xdigit: 检测 <code>s</code> 否所有的字符都是数字或者十六进制字符（参考 <code>std::xdigit</code>）。
+</li>
+<li>
+@ref is_ascii: 检测 <code>s</code> 中的所有字符是否都在 ASCII 范围内。
+</li>
+<li>
+@ref is_alpha: 检测 <code>s</code> 是否全都为字母（参考 <code>std::isalpha</code>）。
+</li>
+<li>
+@ref is_alnum: 检测 <code>s</code> 是否全都为字母或者数字（参考 <code>std::isalnum</code>）。
+</li>
+<li>
+@ref is_alnumul: 检测 <code>s</code> 是否全都为字母或者数字或者下划线。
+</li>
+<li>
+@ref is_space: 检测 <code>s</code> 是否全都为空白字符（参考 <code>std::isspace</code>）。
+</li>
+<li>
+@ref is_blank: 检测 <code>s</code> 是否全都为空格字符（参考 <code>std::isblank</code>）。
+</li>
+<li>
+@ref is_print: 检测 <code>s</code> 是否全都为可打印字符（参考 <code>std::isprint</code>）。
+</li>
+<li>
+@ref is_graph: 检测 <code>s</code> 是否全都为图形符（参考 <code>std::isgraph</code>）。
+</li>
+</ul>
+<table>
+<tr><td>s</td><td>-</td><td> 被测试的字符串
+</td></tr>
+<div><div>所有的字符串都必须按组共同的特征，才会返回 <code>true</code>，否则，（包括 <code>s</code> 为空串场景）均返回 <code>false</code>。
+</div></div>
+<h3>
+特征测试：常见词法特征类 
+</h3>
+<pre>
+    static auto is_identifier(std::string_view s) -&gt; bool;
+    static auto is_literal_bool(std::string_view s) -&gt; bool;
+    static auto is_literal_true(std::string_view s) -&gt; bool;
+    static auto is_literal_false(std::string_view s) -&gt; bool;
+    static auto is_literal_integer(std::string_view s) -&gt; bool;
+    static auto is_literal_real(std::string_view s) -&gt; bool;
+</pre>
+<ul>
+<li>
+<a href="is_identifier">is_identifier</a> 检查字符串 <code>s</code> 是否满足一个标识符的特征，即以大小写字母或者下划线开头且后续字符为字母数字或者下划线。
+</li>
+<li>
+<a href="is_literal_bool">is_literal_bool</a> 检查字符串 <code>s</code> 是否是 bool 值的特征，等价于 <code>(is_literal_true(s) || is_literal_false(s))</code>。
+</li>
+<li>
+<a href="is_literal_true">is_literal_true</a> 检查字符串 <code>s</code> 是否可以被视作 <code>true</code>。
+</li>
+<li>
+<a href="is_literal_false">is_literal_false</a> 检查字符串 <code>s</code> 是否可以被视作 <code>false</code>。
+</li>
+<li>
+<a href="is_literal_integer">is_literal_integer</a> 检查字符串 s 是否可以被视作整数。
+</li>
+<li>
+<a href="is_literal_real">is_literal_real</a> 检查字符串 s 是否可以被视作浮点数，需要注意整数本身也可以被视作浮点数。
+</li>
+</ul>
+<p>
+@notice{1} 针对各种字符特征，下面为更具体的解释：
+</p>
+<ul>
+<li>
+被视作 <code>true</code> 的字符串包括 <code>&quot;1&quot;</code>, <code>&quot;on&quot;</code>, <code>&quot;ON&quot;</code>, <code>&quot;Yes&quot;</code>, <code>&quot;yes&quot;</code>, <code>&quot;YES&quot;</code>, <code>&quot;True&quot;</code>, <code>&quot;true&quot;</code>, <code>&quot;TRUE&quot;</code>
+</li>
+<li>
+被视作 <code>false</code> 的字符串包括 <code>&quot;0&quot;</code>, <code>&quot;off&quot;</code>, <code>&quot;OFF&quot;</code>, <code>&quot;No&quot;</code>, <code>&quot;no&quot;</code>, <code>&quot;NO&quot;</code>, <code>&quot;False&quot;</code>, <code>&quot;false&quot;</code>, <code>&quot;FALSE&quot;</code>
+</li>
+<li>
+被视作 <code>real</code> 的字符串，等价于匹配正则表达式 <code>[+-]?(([0-9]+)|([0-9]+\.)|(\.[0-9]+))([Ee][+-]?[0-9]+)?</code>
+</li>
+<li>
+被视作 <code>integer</code> 的字符串，等价于匹配正则表达式 <code>[+-]?[0-9]+</code>
+</li>
+<li>
+被视作 <code>identifier</code> 的字符串，等价于正则表达式 <code>[A-Za-z_][0-9A-Za-z_]*</code>
+</li>
+</ul>
+<table>
+<tr><td>s</td><td>-</td><td> 被测试的字符串。
+</td></tr>
+<div><div>所有的字符串都必须按组共同的特征，才会返回 <code>true</code>，否则，（包括 <code>s</code> 为空串场景）均返回 <code>false</code>。
+</div></div>
+<h3>
+特征测试：指定字符集类 
+</h3>
+<pre>
+
+    //! 是否空白或者控
+    static auto is_space_or_empty(std::string_view s) -&gt; bool;
+</pre>
+<table>
+<tr><td>s</td><td>-</td><td> 被测试的字符串
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 用于测试 s 中的每个字符是否满足给定条件的函数
+</td></tr>
+<tr><td>charset</td><td>-</td><td> 指定需要满足条件的字符集
+</td></tr>
+<div><div>所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
+</div></div>
+<h3>
+特征测试：单一条件类 
+</h3>
+<pre>
+</pre>
+<table>
+<tr><td>s</td><td>-</td><td> 被测试的字符串
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 用于测试 <code>s</code> 中的每个字符是否满足给定条件的函数
+</td></tr>
+<tr><td>charset</td><td>-</td><td> 指定需要满足条件的字符集
+</td></tr>
+<div><div>与 <code>is_xxx</code> 系列函数需要“所有字符必须全部满足指定特征”不同，<code>has_xxx</code> 系列函数只需要有任意一个字符满足特征，立即返回 <code>true</code>。唯一的特例是空串总是返回 <code>false</code>。
+</div></div>
+<h3>
+提取子串：基于位置 
+</h3>
+<pre>
+    static auto take_left_view(std::string_view s, size_type n) -&gt; std::string_view;
+    static auto take_right_view(std::string_view s, size_type n) -&gt; std::string_view;
+    static auto take_view(std::string_view s, size_type pos, size_type n) -&gt; std::string_view;
+    static auto take_view(std::string_view s, size_type pos) -&gt; std::string_view;
+    static auto take_view(std::string_view s, range_type range) -&gt; std::string_view;
+    static auto take_view(std::string_view s, interval_type inter) -&gt; std::string_view;
+    static auto take_view(std::string_view s, shifter_type shifter) -&gt; std::string_view;
+    /// -
+    static auto take_left(std::string_view s, size_type n) -&gt; std::string;
+    static auto take_right(std::string_view s, size_type n) -&gt; std::string;
+    static auto take(std::string_view s, size_type pos, size_type n) -&gt; std::string;
+    static auto take(std::string_view s, size_type pos) -&gt; std::string;
+    static auto take(std::string_view s, range_type range) -&gt; std::string;
+    static auto take(std::string_view s, interval_type inter) -&gt; std::string;
+    static auto take(std::string_view s, shifter_type slider) -&gt; std::string;
+    /// -
+    static auto take_left_inplace(std::string&amp; s, size_type n) -&gt; std::string&amp;;
+    static auto take_right_inplace(std::string&amp; s, size_type n) -&gt; std::string&amp;;
+    static auto take_inplace(std::string&amp; s, size_type pos, size_type n) -&gt; std::string&amp;;
+    static auto take_inplace(std::string&amp; s, range_type range) -&gt; std::string&amp;;
+    static auto take_inplace(std::string&amp; s, size_type pos) -&gt; std::string&amp;;
+    static auto take_inplace(std::string&amp; s, interval_type inter) -&gt; std::string&amp;;
+    static auto take_inplace(std::string&amp; s, shifter_type slider) -&gt; std::string&amp;;
+</pre>
+<ul>
+<li>
+@ref take_left_view, take_left, take_left_inplace: 返回字符串 s 的最左边前 n 个字符的子串
+</li>
+<li>
+@ref take_right_view, take_right, take_right_inplace: 返回字符串 s 的最右边前 n 个字符的子串
+</li>
+<li>
+@ref take_view, take, take_inplace: 返回字符串 s 中，从pos 位置开始的 n个字符组成的子串
+</li>
+<li>
+@ref take_view, take, take_inplace: 返回字符串 s 中，range 范围的子串。
+</li>
+<li>
+@ref take_view, take, take_inplace: 返回字符串 s 中，从 pos 开始偏移 shifter 的字符串。
+</li>
+</ul>
+<table>
+<tr><td>s</td><td>-</td><td> 原始字符串
+</td></tr>
+<tr><td>n</td><td>-</td><td> 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度 时，相关函数总是试图返回尽可能多的字符串。
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 用于指定待提取的子串的起始位置
+</td></tr>
+<tr><td>range</td><td>-</td><td>  指定用于需要提取的子串的范围，用于 <code>pos</code> 和 <code>len</code> 形式的范围。
+</td></tr>
+<tr><td>inter</td><td>-</td><td>  指定用于需要提取的子串的范围，用于 <code>begin</code> 和 <code>end</code> 形式的范围。
+</td></tr>
+<tr><td>shifter</td><td>-</td><td>  指定用于需要提取的子串的范围，用于 <code>ppos</code> 和 <code>offset</code> 形式的范围。
+</td></tr>
+</table>
+<h3>
+删除子串：基于位置 
+</h3>
+<pre>
+</pre>
+<p>
+@ref drop_left_view, drop_left, drop_left_inplace: 返回去掉字符串 s 的最左边前 n 个字符后的子串
+@ref drop_right_view, drop_right, drop_right_inplace: 返回去掉字符串 s 的最右边的 n 个字符后的子串
+@ref drop, drop_inplace: 返回从字符串 s 中剔除指定范围或者模式的字符后的剩余的字符串。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 原始字符串
+</td></tr>
+<tr><td>n</td><td>-</td><td> 指定删除的子串的最大长度。
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 用于指定需要剔除的子串的起始位置。
+</td></tr>
+<tr><td>range</td><td>-</td><td>  指定用于需要剔除的子串的范围，用于 <code>pos</code> 和 <code>len</code> 形式的范围。
+</td></tr>
+<tr><td>inter</td><td>-</td><td>  指定用于需要剔除的子串的范围，用于 <code>begin</code> 和 <code>end</code> 形式的范围。
+</td></tr>
+<tr><td>shifter</td><td>-</td><td>  指定用于需要剔除的子串的范围，用于 <code>ppos</code> 和 <code>offset</code> 形式的范围。
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 用于指定需要剔除的字符。
+</td></tr>
+<tr><td>charset</td><td>-</td><td> 用于指定需要剔除的字符集。
+</td></tr>
+<div><div>返回剔除特定字符或者子串后的剩余部分。
+</div></div>
+<h3>
+对齐 
+</h3>
+<pre>
+    static auto align_left(std::string_view s, size_type width, value_type ch = &apos; &apos;) -&gt; std::string;
+    static auto align_right(std::string_view s, size_type width, value_type ch = &apos; &apos;) -&gt; std::string;
+    static auto align_center(std::string_view s, size_type width, value_type ch = &apos; &apos;) -&gt; std::string;
+    static auto align_zfill(std::string_view s, size_type width) -&gt; std::string;
+    static auto align_left_inplace(std::string&amp; s, size_type width, value_type ch = &apos; &apos;) -&gt; std::string&amp;;
+    static auto align_right_inplace(std::string&amp; s, size_type width, value_type ch = &apos; &apos;) -&gt; std::string&amp;;
+    static auto align_center_inplace(std::string&amp; s, size_type width, value_type ch = &apos; &apos;) -&gt; std::string&amp;;
+    static auto align_zfill_inplace(std::string&amp; s, size_type width) -&gt; std::string&amp;;
+</pre>
+<p>
+ @ref align_left, align_left_inplace: 在字符串 s 尾部填充 ch，直到字符串长度达到 width，以使得字符串看起来是
+ 左对齐的效果
+ @ref align_right, align_right_inplace: 在字符串 s 头部追加 ch，直到字符串长度达到 width，以使得字符串看起来
+ 是左对齐的效果
+ @ref align_center, align_center_inplace: 在字符串 s 首尾添加 ch，直到字符串长度达到 width，以使得字符串看起
+ 来是居中对齐的效果
+ @ref align_zfill, align_zfill_inplace: 在字符串 s 头部添加字符 &apos;0&apos;，使得字符串看起来被补齐了前缀 0，这通常
+ 用于全是数字的字符串的场景
+</p>
+<p>
+ @param s: 被对齐的字符串
+ @param widht: 指定新生成的字符串的宽度，如果 width 小于或者等于 s 的长度，不会追加 ch，也即对齐前后字符串内容不变
+ @param ch: 当 width 大于 s 的长度时，所采用的填充字符
+</p>
+<h3>
+多行文本处理 
+</h3>
+<pre>
+    static auto foreach_lines(std::string_view s, bool keep_ends, const line_consumer_proc&amp; proc) -&gt; void;
+    static auto count_lines(std::string_view s) -&gt; size_type;
+</pre>
+<p>
+@ref foreach_lines: 用于按行遍历。
+@ref count_lines: 字符串 <code>s</code> 中实际有多少行。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 包含多行文本而串。
+</td></tr>
+<tr><td>keep_ends</td><td>-</td><td> 是否保留行结束符。
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 用于接收每个遍历的行。
+</td></tr>
+</table>
+<h3>
+以单词为单位的处理算法 
+</h3>
+<pre>
+    static auto foreach_words(std::string_view s, size_type pos, const range_consumer_proc&amp; proc) -&gt; void;
+    static auto foreach_words(std::string_view s, size_type pos, const view_consumer_proc&amp; proc) -&gt; void;
+    static auto foreach_words(std::string_view s, const range_consumer_proc&amp; proc) -&gt; void;
+    static auto foreach_words(std::string_view s, const view_consumer_proc&amp; proc) -&gt; void;
+    /// -
+    static auto count_words(std::string_view s) -&gt; size_type;
+    /// -
+    static auto next_word_view(std::string_view s, size_type&amp; pos) -&gt; std::string_view;
+    static auto next_word_range(std::string_view s, size_type&amp; pos) -&gt; range_type;
+    static auto next_word(std::string_view s, size_type&amp; pos) -&gt; std::string;
+    /// -
+    static auto prev_word_view(std::string_view s, size_type&amp; pos) -&gt; std::string_view;
+    static auto prev_word_range(std::string_view s, size_type&amp; pos) -&gt; range_type;
+    static auto prev_word(std::string_view s, size_type&amp; pos) -&gt; std::string;
+    /// -
+    static auto split_words(std::string_view s, size_type max_n = npos) -&gt; std::vector&lt;std::string&gt;;
+    /// -
+    static auto starts_with_word(std::string_view s, std::string_view word) -&gt; bool;
+    static auto ends_with_word(std::string_view s, std::string_view word) -&gt; bool;
+</pre>
+<p>
+@notice{1} 这里的单词（word）是指连续的非空白字符序列。
+</p>
+<ul>
+<li>
+@ref foreach_words: 用于遍历字符串中的每个单词
+</li>
+<li>
+@ref count_words: 用于统计字符串中的单词的数量
+</li>
+<li>
+@ref next_word_view, next_word_range, next_word: 用于从指定的位置开始向字符串的尾部查找下一个单词
+</li>
+<li>
+@ref prev_word_view, prev_word_range, prev_word: 用于从指定的位置开始向字符串的首部查找前一个单词
+</li>
+<li>
+@ref split_words: 以空格为分隔符从字符串 s 中拆分出多个单词
+<table>
+<tr><td>s</td><td>-</td><td> 被查找或者统计的原始字符串
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 指定起始位置，需要注意在 next_xxx 和 prev_xxx 函数中，pos 的含义的区别。
+</td></tr>
+<tr><td>proc</td><td>-</td><td> 指定一个函数，用来接受遍历每一个被视作单词的子串
+</td></tr>
+<tr><td>max_n</td><td>-</td><td> 用于 <a href="split_words">split_words</a> 函数，用于限制拆分出来的单词的数量（注意并非拆分次数）
+</td></tr>
+</table>
+</li>
+</ul>
+<h3>
+用指定的模式串环绕字符串 
+</h3>
+<pre>
+</pre>
+<p>
+<a href="surround">surround</a> 和 <a href="unsurround">unsurround</a> 系列函数，同时在字符串两端操作，常用于添加括号和去掉括号场景。
+其中，<code>left</code> 和 <code>right</code> 表示字符串首尾需要添加或者去掉的子串。对于 unsurround 系列函数，如果字符串的首
+或者尾，分别无法匹配 <code>left</code> 或者 <code>right</code> 子串，那么不进行任何操作。
+</p>
+<ul>
+<li>
+<a href="surround">surround</a>, <a href="surround_inplace">surround_inplace</a> 向给定的字符串的首位添加特定的子串
+</li>
+<li>
+<a href="unsurround">unsurround</a>, <a href="unsurround_view">unsurround_view</a>, <a href="unsurround_inplace">unsurround_inplace</a> 同时去掉指定字符串前后满足特定模式的子串
+<table>
+<tr><td>s</td><td>-</td><td> 被处理的字符串
+</td></tr>
+<tr><td>left, right</td><td>-</td><td> 表示在字符串首尾的需要添加或者去掉的子串
+</td></tr>
+</table>
+</li>
+</ul>
+<h3>
+反转：字符串逆序 
+</h3>
+<pre>
+</pre>
+<p>
+将 <code>s</code> 中指定范围内的子串的前后字符串的逐个字符交换位置。
+</p>
+<table>
+<tr><td>s</td><td>-</td><td> 被反转的字符串
+</td></tr>
+<tr><td>pos</td><td>-</td><td> 指定反转的起始位置
+</td></tr>
+<tr><td>max_n</td><td>-</td><td> 指定从 pos 位置开始最多反转多少字符
+</td></tr>
+<div><div>返回颠倒位置后的字符串
+</div></div>
+<h3>
+重复序列生成 
+</h3>
+<pre>
+</pre>
+<p>
+生成字 <code>s</code> 或者 <code>ch</code> 的内容重复出现 <code>times</code> 次后的新字符串。如果是生成空白字符的重复序列，
+可考虑用 <a href="spaces">spaces</a>。
+</p>
+<table>
+<tr><td>ch, s</td><td>-</td><td> 指定重复的字符或者字符串模板。
+</td></tr>
+<tr><td>times</td><td>-</td><td> 重复次数。
+</td></tr>
+</table>
+<h3>
+空白串生成 
+</h3>
+<pre>
+</pre>
+<ul>
+<li>
+<a href="spaces">spaces</a> 用于生成指定宽度 <code>width</code> 的空白字符序列。
+</li>
+<li>
+@ref{make_spaces，make_spaces_inplace} 只要内存允许，支持生成任意长度 ` 的空白串。
+</li>
+<li>
+@notice{1} <a href="spaces">spaces</a>，<a href="make_spaces">make_spaces</a>，<a href="make_spaces_inplace">make_spaces_inplace</a> 这三个函数的功能类似。但主要差别 是 <a href="space">space</a> 利用的是预生成的字符串常量，所以速度会更快，但最大长度有限（<code>UNIT8_MAX</code>），大部分情况下
+</li>
+<li>
+<a href="space">space</a> 函数都是够用的。当需要生成超过 <a href="space">space</a> 支持空白串时，使用 <a href="make_spaces">make_spaces</a> 或者 <a href="make_spaces_inplace">make_spaces_inplace</a> 是更合适的选择。但显然 <code>make_xxx</code> 系列函数更慢。
+</li>
+</ul>
+<table>
+<tr><td>s</td><td>-</td><td> 在 make_spaces_inplace 中表示用于接收数据的字符串
+</td></tr>
+<tr><td>witdh</td><td>-</td><td> 指定待生成的空白串的宽度，这里的空白串采用 ASCII 码为 0x20 的字符填充
+</td></tr>
+<div><div><a href="spaces">spaces</a> 函数返回内部预生成的空白串的视图；<a href="make_space">make_space</a> 为返回新生成的字符串（内存重新分配）；而 <a href="make_spaces_inplace">make_spaces_inplace</a> 函数会将生成的空白串直接原位替换原始输入字符串。
+</div></div>
+<!--
+-->
+</body>
+</html>

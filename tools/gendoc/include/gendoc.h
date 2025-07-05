@@ -479,13 +479,13 @@ struct node_image : public node {
 };
 
 struct node_anno : public node {
-    std::string type;
+    std::string tag;
     std::vector<std::string> names;
 
     explicit node_anno(std::string_view n, const std::vector<std::string_view>& u) {
         kind = NODE_KIND_ANNO;
         priority = NODE_PRIORITY_ANNO;
-        type = n;
+        tag = n;
         for (auto item : u) {
             names.emplace_back(item);
         }

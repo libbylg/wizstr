@@ -284,7 +284,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
         case NODE_KIND_ANNO: {
             node_anno* nanno = static_cast<node_anno*>(nd);
             print("@");
-            print(nanno->type);
+            print(nanno->tag);
             print("{");
             for (size_t index = 0; index < nanno->names.size(); index++) {
                 if (index != 0) [[likely]] {
@@ -435,10 +435,9 @@ private:
 using svmatch = std::match_results<std::string_view::const_iterator>;
 
 struct parse_context {
-    explicit parse_context(FILE* ifile, FILE* ofile, const std::string& rd)
+    explicit parse_context(FILE* ifile, const std::string& rd)
         : root_directory_{rd}
-        , reader_{ifile}
-        , writer_{ofile} {
+        , reader_{ifile} {
         project_ = new node_project;
         parent_ = project_;
     }
@@ -541,7 +540,7 @@ struct parse_context {
 private:
     const std::string& root_directory_;
     line_reader reader_;
-    FILE* writer_{nullptr};
+    // FILE* writer_{nullptr};
 
     node_project* project_{nullptr};
     node_article* article_{nullptr};
@@ -580,11 +579,12 @@ public:
                 // TODO load block file failed
                 return;
             }
+        }
 
-            for (auto& line : block->lines) {
-                node_text* text = new node_text(line);
-                embed->append(text);
-            }
+        assert(block != nullptr);
+        for (auto& line : block->lines) {
+            node_text* text = new node_text(line);
+            embed->append(text);
         }
     }
 
@@ -624,7 +624,7 @@ private:
         std::swap(new_block->lines, block_lines);
 
         // 文件如果是首次添加
-        auto itr = all_code_blocks_.find(block_name);
+        auto itr = all_code_blocks_.find(block_file);
         if (itr == all_code_blocks_.cend()) {
             std::map<std::string, code_block*> block_maping;
             auto add_result = all_code_blocks_.emplace(block_file, block_maping);
@@ -655,7 +655,7 @@ private:
         std::vector<std::string> block_lines;
         str::read_lines(full_filepath, false, //
             [&enter_block, &curr_block_name, &block_lines, &filepath, this](size_t lineno, std::string_view linetext) -> int {
-                static std::regex pattern(R"(/{2,}\s+(@block|@end)\s+([a-zA-Z][a-zA-Z0-9_]*)\s*$)");
+                static std::regex pattern(R"(\s*//.*(@block|@end)\s+([a-zA-Z][a-zA-Z0-9_]*)\s*$)");
                 svmatch match_results;
                 bool matched = std::regex_match(linetext.begin(), linetext.end(), match_results, pattern);
                 if (!matched) {
@@ -1194,7 +1194,7 @@ auto try_parse_anno(std::string_view line, str::range_type& range) -> node_anno*
     // @{yyy} @{yyy, yyy}
     // @xxx yyy, yyy:
     acceptor acceptor(str::take_view(line, range));
-    static std::regex name_pattern{R"([a-z]+)"};
+    static std::regex name_pattern{R"(#?[a-zA-z_][a-zA-z0-9_]*)"};
     std::string_view anno_type;
     std::vector<std::string_view> anno_names;
 
@@ -1254,6 +1254,8 @@ auto try_parse_anno(std::string_view line, str::range_type& range) -> node_anno*
             if (!acceptor.starts_with(",")) {
                 break;
             }
+
+            acceptor.skip_n(1);
         }
 
         if (!acceptor.starts_with("}")) {
@@ -1420,12 +1422,12 @@ auto try_parse_line_range(node* parent, std::string_view line, str::range_type r
                 // @~[yyy]
                 // @/[yyy]
                 // @-[yyy]
-                if (line.size() < 2) {
+                if ((line.size() - curr) < 2) {
                     // TODO error 太短
                     continue;
                 }
 
-                char ch = line[1];
+                char ch = line[curr + 1];
                 switch (ch) {
                     case '#': {
                         node_color* color = try_parse_color(line, parse_range);
@@ -1593,17 +1595,17 @@ auto try_parse_embed(std::string_view line, str::range_type range) -> node_embed
 
     // @embed{yyy} "zzz"
     if (acceptor.from(0).accept("@embed").accept('{').skip_spaces().accept(block_name, name_pattern).skip_spaces().accept('}')) {
-        return new node_embed(block_name, acceptor.remain());
+        return new node_embed(str::trim_surrounding(block_name), str::trim_surrounding(acceptor.remain()));
     }
 
     // @embed yyy: "zzz"
     if (acceptor.from(0).accept("@embed").skip_spaces(1).accept(block_name, name_pattern).skip_spaces().accept(':')) {
-        return new node_embed(block_name, acceptor.remain());
+        return new node_embed(str::trim_surrounding(block_name), str::trim_surrounding(acceptor.remain()));
     }
 
     // @embed: "zzz"
     if (acceptor.from(0).accept("@embed").skip_spaces().accept(':')) {
-        return new node_embed(block_name, acceptor.remain());
+        return new node_embed(str::trim_surrounding(block_name), str::trim_surrounding(acceptor.remain()));
     }
 
     return nullptr;
@@ -2031,7 +2033,10 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_SECTION: {
             node_section* nsection = static_cast<node_section*>(nd);
-            print("<section>\n");
+            print("<section class=\"section-level-");
+            str::value_type level_ch = nsection->level + '0';
+            print(std::string_view{&level_ch, 1});
+            print("\">\n");
             list_foreach(child, &(nsection->children)) {
                 print_html(child, print);
             }
@@ -2042,29 +2047,37 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_PARAM: {
             node_param* nparam = static_cast<node_param*>(nd);
-            print("<div>");
+            if ((list_prev(nparam) == list_end(&nd->parent->children)) || ((nparam->prev->kind != NODE_KIND_PARAM) && (nparam->prev->kind != NODE_KIND_RETURN))) {
+                print("<table>\n");
+            }
 
-            print("<div>");
+            print("<tr>");
+
+            print("<td>");
             for (size_t index = 0; index < nparam->names.size(); index++) {
                 if (index != 0) {
                     print(", ");
                 }
                 print(encode_html_text(nparam->names[index]));
             }
-            print("</div>");
+            print("</td>");
 
-            print("<div>");
+            print("<td>");
             print("-");
-            print("</div>");
+            print("</td>");
 
-            print("<div>");
+            print("<td>");
             list_foreach(item, &nparam->children) {
                 print_html(item, print);
             }
-            print("</div>");
+            print("</td>");
 
-            print("</div>");
-            print("\n");
+            print("</tr>\n");
+            if ((list_next(nparam) == list_end(&nd->parent->children))
+                || ((nparam->next->kind != NODE_KIND_PARAM)
+                    && (nparam->next->kind != NODE_KIND_RETURN))) {
+                print("</table>\n");
+            }
         } break;
         case NODE_KIND_RETURN: {
             node_return* nreturn = static_cast<node_return*>(nd);
@@ -2113,7 +2126,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             node_separator* nseparator = static_cast<node_separator*>(nd);
             print(R"(<div style="border-top: 1px solid black; margin: 10px 0;"></div>)");
             print("\n");
-        }break;
+        } break;
         case NODE_KIND_BFORMULA: {
             // const node_bformula* nbformula = static_cast<const node_bformula*>(nd);
         } break;
@@ -2173,7 +2186,20 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("</code>");
         } break;
         case NODE_KIND_ANNO: {
-            // const node_anno* nanno = static_cast<const node_anno*>(nd);
+            node_anno* nanno = static_cast<node_anno*>(nd);
+            if ((nanno->tag == "ref") || nanno->tag.empty()) {
+                for (size_t index = 0; index < nanno->names.size(); index++) {
+                    if (index != 0) {
+                        print(", ");
+                    }
+                    auto& name = nanno->names[index];
+                    print("<a href=\"");
+                    print(encode_html_text(name));
+                    print("\">");
+                    print(encode_html_text(str::remove_prefix_view(name, "#")));
+                    print("</a>");
+                }
+            }
         } break;
         case NODE_KIND_COLOR: {
             // const node_color* node = static_cast<const node_color*>(nd);
@@ -2253,7 +2279,7 @@ auto main(int argc, char* argv[]) -> int {
 
     if (!opts.output_file.empty()) {
         std::string output_directory = str::dirname(opts.output_file);
-        if (!std::filesystem::exists(opts.output_file)) {
+        if (!std::filesystem::exists(output_directory)) {
             std::error_code sys_error;
             if (!std::filesystem::create_directories(output_directory, sys_error)) {
                 std::cerr << "Can not create output directory `" << output_directory << "'" << std::endl;
@@ -2271,16 +2297,13 @@ auto main(int argc, char* argv[]) -> int {
     FILE* input_repl = ((opts.input_file.empty()) ? stdin : nullptr);
     str::with_file(opts.input_file, "r", input_repl, [&opts, &error, &project](FILE* ifile) -> void {
         assert(ifile != nullptr);
-        FILE* output_repl = ((opts.output_file.empty()) ? stdout : nullptr);
-        str::with_file(opts.output_file, "w+", output_repl, [ifile, &opts, &error, &project](FILE* ofile) -> void {
-            gendoc::parse_context context{ifile, ofile, opts.root_directory};
-            error = try_parse_file(context);
-            if (!error.empty()) {
-                return;
-            }
+        gendoc::parse_context context{ifile, opts.root_directory};
+        error = try_parse_file(context);
+        if (!error.empty()) {
+            return;
+        }
 
-            project = context.detach_root();
-        });
+        project = context.detach_root();
     });
 
     if (!error.empty()) {
@@ -2301,9 +2324,12 @@ auto main(int argc, char* argv[]) -> int {
     // });
 
     // 输出
-    gendoc::print_html(project, [](std::string_view text) {
-        std::cout << text;
-        std::cout.flush();
+    FILE* output_repl = ((opts.output_file.empty()) ? stdout : nullptr);
+    str::with_file(opts.output_file, "w+", output_repl, [project](FILE* ofile) -> void {
+        gendoc::print_html(project, [ofile](std::string_view text) {
+            fwrite(text.data(), 1, text.size(), ofile);
+            fflush(ofile);
+        });
     });
 
     return 0;
