@@ -27,6 +27,24 @@ using str = STR_NAMESPACE::str;
 
 namespace gendoc {
 
+static const std::string_view all_headers[]{
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+};
+
+static const std::string_view all_levels[]{
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+};
+
 class scope_guard {
 public:
     explicit scope_guard(const std::function<void()>& proc)
@@ -1585,6 +1603,16 @@ auto try_parse_return(parse_context& context, str::range_type range) -> void {
     context.pop(); // pop return
 }
 
+auto try_parse_notice(parse_context& context, str::range_type range) -> void {
+    context.push(new node_notice);
+    context.push(new node_line);
+
+    try_parse_line_range(context.parent(), context.line_text(), range);
+
+    context.pop(); // pop line
+    context.pop(); // pop notice
+}
+
 auto try_parse_embed(std::string_view line, str::range_type range) -> node_embed* {
     // @embed{yyy} "zzz"
     // @embed yyy: "zzz"
@@ -1811,6 +1839,15 @@ auto try_parse_article(parse_context& context) -> void {
             continue;
         }
 
+        // @notice 开头的行
+        static std::regex notice_pattern{R"(^(@notice)(\s+|\s*:\s*).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, param_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
+            auto prefix_len = matches.length(1) + matches.length(2);
+            try_parse_notice(context, str::range(prefix_len, (line.size() - prefix_len)));
+            continue;
+        }
+
         // 代码块
         if (str::starts_with(line, "```")) {
             leave_paragraph(state, context); // 立即打断当前block
@@ -1981,43 +2018,42 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
     switch (nd->kind) {
         case NODE_KIND_PROJECT: {
             node_project* nproject = static_cast<node_project*>(nd);
+            print("<!DOCTYPE html>\n");
+            print("<html lang=\"en\">\n");
+            print("<head>\n");
+            print("<meta charset=\"UTF-8\">\n");
+            print("<title>HTML5 示例</title>\n");
+            print("<link rel=\"stylesheet\" href=\"cppreference.css\">\n");
+            print("</head>\n");
+            print("<body>\n");
             list_foreach(child, &(nproject->children)) {
                 print_html(child, print);
             }
+            print("</body>\n");
+            print("</html>\n");
         } break;
         case NODE_KIND_PROJECTEND: {
             // const node_projectend* node = static_cast<const node_projectend*>(nd);
         } break;
         case NODE_KIND_ARTICLE: {
             node_article* narticle = static_cast<node_article*>(nd);
-            print("<!DOCTYPE html>\n");
-            print("<html lang=\"en\">\n");
-            print("<head>\n");
-            print("<meta charset=\"UTF-8\">\n");
-            print("<title>HTML5 示例</title>\n");
-            print("</head>\n");
-            print("<body>\n");
             print("<main>\n");
             list_foreach(child, &(narticle->children)) {
                 print_html(child, print);
             }
             print("</main>\n");
-            print("</body>\n");
-            print("</html>\n");
         } break;
         case NODE_KIND_ARTICLEEND: {
             // const node_articlend* node = static_cast<const node_articlend*>(nd);
         } break;
         case NODE_KIND_CHAPTER: {
             node_chapter* nchapter = static_cast<node_chapter*>(nd);
-            static const std::string_view all_headers[]{
-                "h1",
-                "h2",
-                "h3",
-                "h4",
-                "h5",
-                "h6",
-            };
+            // <section class="chapter-?">
+            print("<section class=\"chapter-");
+            print(all_levels[nchapter->level - 1]);
+            print("\">\n");
+
+            // <h? class="chapter-?-head">
             print("<");
             print(all_headers[nchapter->level - 1]);
             print(">\n");
@@ -2026,22 +2062,60 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("</");
             print(all_headers[nchapter->level - 1]);
             print(">\n");
+
+            // <p class="chapter-?-body">
+            print("<p class=\"chapter-");
+            print(all_levels[nchapter->level - 1]);
+            print("-body\">\n");
+
             list_foreach_range(child, list_next(first), list_end(&(nchapter->children))) {
                 print_html(child, print);
             }
+
+            // </p>
+            print("</p>\n");
+
+            // </section>
+            print("</section>\n");
         } break;
         case NODE_KIND_CHAPTEREND: {
             // const node_chapterend* node = static_cast<const node_chapterend*>(nd);
         } break;
         case NODE_KIND_SECTION: {
             node_section* nsection = static_cast<node_section*>(nd);
-            print("<section class=\"section-level-");
-            str::value_type level_ch = nsection->level + '0';
-            print(std::string_view{&level_ch, 1});
+
+            // <section class="section-?">
+            print("<section class=\"section-");
+            print(all_levels[nsection->level - 1]);
             print("\">\n");
-            list_foreach(child, &(nsection->children)) {
+
+            // <h? class="section-?-head">
+            print("<");
+            print(all_headers[nsection->level - 1]);
+            print(" class=\"section-");
+            print(all_levels[nsection->level - 1]);
+            print("-head\">\n");
+            node* first = list_first(&(nsection->children));
+            print_html(first, print);
+
+            // </h?>
+            print("</");
+            print(all_headers[nsection->level - 1]);
+            print(">\n");
+
+            // <p class="section-?-body">
+            print("<p class=\"section-");
+            print(all_levels[nsection->level - 1]);
+            print("-body\">\n");
+
+            list_foreach_range(child, list_next(first), list_end(&(nsection->children))) {
                 print_html(child, print);
             }
+
+            // </p>
+            print("</p>\n");
+
+            // </section>
             print("</section>\n");
         } break;
         case NODE_KIND_SECTIONEND: {
@@ -2087,6 +2161,14 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             }
             print("</p>\n");
         } break;
+        case NODE_KIND_NOTICE: {
+            node_notice* nnotice = static_cast<node_notice*>(nd);
+            print("<p class=\"notice\">");
+            list_foreach(item, &nnotice->children) {
+                print_html(item, print);
+            }
+            print("</p>\n");
+        } break;
         case NODE_KIND_LIST: {
             node_list* nlist = static_cast<node_list*>(nd);
             if ((list_prev(nlist) == list_end(&nd->parent->children)) || (nlist->prev->kind != NODE_KIND_LIST)) {
@@ -2111,7 +2193,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_BCODE: {
             node_bcode* nbcode = static_cast<node_bcode*>(nd);
-            print("<pre>\n");
+            print("<pre  class=\"source\">\n");
             list_foreach(child, &(nbcode->children)) {
                 print_html(child, print);
             }
@@ -2176,7 +2258,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_ICODE: {
             const node_icode* nicode = static_cast<const node_icode*>(nd);
-            print("<code>");
+            print("<code class=\"source\">");
             print(encode_html_text(nicode->text));
             print("</code>");
         } break;

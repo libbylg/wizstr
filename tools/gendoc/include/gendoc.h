@@ -38,7 +38,8 @@ namespace gendoc {
     /* 段落：会挂子节点 */                                     \
     DEF_NODEKIND(4, 20, PARAM, node_param, "参数定义")         \
     DEF_NODEKIND(4, 21, RETURN, node_return, "返回值")         \
-    DEF_NODEKIND(4, 22, LIST, node_list, "列表块")             \
+    DEF_NODEKIND(4, 22, NOTICE, node_notice, "注意")           \
+    DEF_NODEKIND(4, 23, LIST, node_list, "列表块")             \
     /* 段落：不挂子节点 */                                     \
     DEF_NODEKIND(5, 30, TABLE, node_table, "表块")             \
     DEF_NODEKIND(5, 31, PARAGRAPH, node_paragraph, "通用段落") \
@@ -421,6 +422,13 @@ struct node_param : public node {
 struct node_return : public node {
     explicit node_return() {
         kind = NODE_KIND_RETURN;
+        priority = NODE_PRIORITY_RETURN;
+    }
+};
+
+struct node_notice : public node {
+    explicit node_notice() {
+        kind = NODE_KIND_NOTICE;
         priority = NODE_PRIORITY_RETURN;
     }
 };

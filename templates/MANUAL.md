@@ -10,7 +10,7 @@ FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
 -->
 
-# 简介
+### 简介
 
 str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语言功能最丰富的字符串处理函数库。
 
