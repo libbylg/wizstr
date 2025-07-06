@@ -1997,9 +1997,11 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("<title>HTML5 示例</title>\n");
             print("</head>\n");
             print("<body>\n");
+            print("<main>\n");
             list_foreach(child, &(narticle->children)) {
                 print_html(child, print);
             }
+            print("</main>\n");
             print("</body>\n");
             print("</html>\n");
         } break;
@@ -2047,13 +2049,13 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_PARAM: {
             node_param* nparam = static_cast<node_param*>(nd);
-            if ((list_prev(nparam) == list_end(&nd->parent->children)) || ((nparam->prev->kind != NODE_KIND_PARAM) && (nparam->prev->kind != NODE_KIND_RETURN))) {
-                print("<table>\n");
+            if ((list_prev(nparam) == list_end(&nd->parent->children)) || (nparam->prev->kind != NODE_KIND_PARAM)) {
+                print("<table class=\"table-param\">\n");
             }
 
-            print("<tr>");
+            print("<tr class=\"tr-param\">");
 
-            print("<td>");
+            print("<td class=\"td-param-names\">");
             for (size_t index = 0; index < nparam->names.size(); index++) {
                 if (index != 0) {
                     print(", ");
@@ -2062,35 +2064,28 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             }
             print("</td>");
 
-            print("<td>");
+            print("<td class=\"td-param-sep\">");
             print("-");
             print("</td>");
 
-            print("<td>");
+            print("<td class=\"td-param-desc\">");
             list_foreach(item, &nparam->children) {
                 print_html(item, print);
             }
             print("</td>");
 
             print("</tr>\n");
-            if ((list_next(nparam) == list_end(&nd->parent->children))
-                || ((nparam->next->kind != NODE_KIND_PARAM)
-                    && (nparam->next->kind != NODE_KIND_RETURN))) {
+            if ((list_next(nparam) == list_end(&nd->parent->children)) || (nparam->next->kind != NODE_KIND_PARAM)) {
                 print("</table>\n");
             }
         } break;
         case NODE_KIND_RETURN: {
             node_return* nreturn = static_cast<node_return*>(nd);
-            print("<div>");
-
-            print("<div>");
+            print("<p class=\"return\">");
             list_foreach(item, &nreturn->children) {
                 print_html(item, print);
             }
-            print("</div>");
-
-            print("</div>");
-            print("\n");
+            print("</p>\n");
         } break;
         case NODE_KIND_LIST: {
             node_list* nlist = static_cast<node_list*>(nd);

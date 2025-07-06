@@ -33,64 +33,6 @@
 namespace STR_NAMESPACE {
 #endif
 
-//! # 简介
-///
-/// str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语言功能最丰富的字符串处理函数库。
-///
-/// %# 提供了下列算法：
-///
-/// * 追加插入（@{#append}、@{#prepend} 和 @{#insert} 系列）
-/// * 大小写不敏感的比较（@{#icompare} 和 @{#iequals} 系列）
-/// * 基于通配符匹配（@{#wildcmp} 系列）
-/// * 两字符串之间的关系（@{#contains} 系列）
-/// * 特征字符串统计（@{#count} 系列）
-/// * 前后缀操作（@{#prefix} 和 @{#suffix} 系列）
-/// * 查找（@{#find} 和 @{#iter} 系列）
-/// * 特征测试（@{#is}、@{#has} 系列）
-/// * 子串提取（@{#take}、@{#drop} 系列）
-/// * 修剪和整形（@{#align}、@{#surround}、@{#unsurround}、@{#invert}、@{#simplified}、@{#trim} 系列）
-/// * 按多行处理（@{#lines} 系列）
-/// * 按单词处理（@{#words} 系列）
-/// * 字符串生成（@{#repeat} 系列）
-/// * 空白串处理（@{#spaces} 系列）
-/// * 字符串遮罩（@{#cover} 系列）
-/// * 字符串拆分（@{#split}、@{#partition}、@{#chunked}、@{#windowed} 系列）
-/// * 字符串拼接（@{#join} 系列）
-/// * 大小写转换（@{#to} 系列）
-/// * 变量或者特殊符号展开（@{#expand}）
-/// * 文件名路径操作（@{#basemame}、@{#extname}、@{#dirname}、@{#rawname} 系列）
-/// * 字符串哈希算法（@{#hash} 系列）
-/// * 字符串转义（encode、decode 系列）
-/// * 文本文件读取（@{#read} 系列）
-/// * 字符分组和筛选（@{#grouping} 和 @{#filter} 系列）
-///
-/// %# 关于函数的返回值及其使用注意事项：
-///
-/// str 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
-///
-/// * `xxx_view` 形式：
-///
-///     通常意味着该函数的返回值是输入参数的一个（或多个）视图，该函数不会发生任何分配行为（返回存放
-///     容器的 `std::string_view`，如 `std::vector<std::string_view>` 类似的除外）。但这种形式的接口
-///     是**不安全**的时也需要格外注意，其返回值可能会因为输入参数提前析构，导致失效。所以在调用这些
-///     接口时，需要确保在使用前其输入参数的地址仍然是有效的。
-///
-/// * `xxx_inplace` 形式：
-///
-///     这类函数通常意味着该函数返回的是输入参数自身，返回值也通常是 `std::string&`。该函数在执行
-///     过程中通常会修改输入参数，并返回。如果使用这类函数，需要确保原始输入串是可以被改写的，否则
-///     建议使用 `xxx_view 形式`或者 `xxx 形式` 的函数代替。
-///
-/// * `xxx_range` 形式：
-///
-///     这类函数返回的并不是某种形式的子串，而是子串在原始串中的范围，在子串定位场景很常见。
-///
-/// * `xxx` 形式：
-///
-///     与前面几种对应，这类不带 `_view` 或者 `_inplace` 后缀的函数，其返回值不是原始输入的视图，而是一个新的字符串拷贝。
-///     因此，这类函数既没有类似 `_view` 系列函数那样的返回值依赖于输入参数的生存期的问题，也没有类似 `xxx_inplace` 那样会修改
-///     原始输入参数的问题。但这类函数由于总是会拷贝原始输入字符串的，所以如果返回的字符串无法充分利用字符串的 SSO 特性，
-///     那么性能会比 `xxx_view` 和 `xxx_inplace` 系列要低一些。当然这类函数的优点也是显而易见的，就是更`安全`。
 struct str {
     using size_type = std::string::size_type;
     using ssize_type = std::make_signed_t<size_t>;
@@ -99,7 +41,9 @@ struct str {
     using const_pointer = std::string::const_pointer;
 
     //! 用于表示无效位置的值，等价于 std::string::npos 或者 std::string_view::npos
+    /// @block npos
     static inline constexpr size_type npos = std::string::npos;
+    /// @end npos
 
     //! 字符集 @anchor{charset_type}
     ///
@@ -699,7 +643,7 @@ struct str {
     static auto take_after(std::string_view s, range_type sep_range, bool with_sep = false) -> std::string;
 #endif // STR_UNTESTED
 
-    /// @begin drop
+    /// @block drop
     static auto drop_left_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_right_view(std::string_view s, size_type n) -> std::string_view;
     static auto drop_left(std::string_view s, size_type n) -> std::string;
@@ -821,18 +765,7 @@ struct str {
     static auto split_words_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
 #endif // STR_UNTESTED
 
-    //! 用指定的模式串环绕字符串 @anchor{surround, unsurround}
-    ///
-    /// @ref{surround} 和 @ref{unsurround} 系列函数，同时在字符串两端操作，常用于添加括号和去掉括号场景。
-    /// 其中，`left` 和 `right` 表示字符串首尾需要添加或者去掉的子串。对于 unsurround 系列函数，如果字符串的首
-    /// 或者尾，分别无法匹配 `left` 或者 `right` 子串，那么不进行任何操作。
-    ///
-    /// * @ref{surround, surround_inplace} 向给定的字符串的首位添加特定的子串
-    /// * @ref{unsurround, unsurround_view, unsurround_inplace} 同时去掉指定字符串前后满足特定模式的子串
-    ///
-    /// @param s: 被处理的字符串
-    /// @param left, right: 表示在字符串首尾的需要添加或者去掉的子串
-    /// @begin surround_unsurround
+    /// @block surround_unsurround
     static auto surround(std::string_view s, std::string_view left = "(", std::string_view right = ")") -> std::string;
     static auto surround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
     /// -
@@ -841,26 +774,15 @@ struct str {
     static auto unsurround_inplace(std::string& s, std::string_view left = "(", std::string_view right = ")") -> std::string&;
     /// @end surround_unsurround
 
-    //! 反转：字符串逆序 @anchor{invert}
-    ///
-    /// 将 `s` 中指定范围内的子串的前后字符串的逐个字符交换位置。
-    ///
-    /// @param s: 被反转的字符串
-    /// @param pos: 指定反转的起始位置
-    /// @param max_n: 指定从 pos 位置开始最多反转多少字符
-    /// @return 返回颠倒位置后的字符串
+    /// @block invert
     static auto invert(std::string_view s, size_type pos = 0, size_type max_n = npos) -> std::string;
     static auto invert_inplace(std::string& s, size_type pos = 0, size_type max_n = npos) -> std::string&;
+    /// @end invert
 
-    //! 重复序列生成 @ancho{repeat}
-    ///
-    /// 生成字 `s` 或者 `ch` 的内容重复出现 `times` 次后的新字符串。如果是生成空白字符的重复序列，
-    /// 可考虑用 @ref{spaces}。
-    ///
-    /// @param ch, s: 指定重复的字符或者字符串模板。
-    /// @param times: 重复次数。
+    /// @block repeat
     static auto repeat(std::string_view s, size_type times) -> std::string;
     static auto repeat(value_type ch, size_type times) -> std::string;
+    /// @end repeat
 
 #ifdef STR_UNTESTED
     //! 随机字符序列生成
@@ -899,23 +821,11 @@ struct str {
     static auto random_reorder(std::string& s, const number_provider_proc& proc) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 空白串生成 @anchor{spaces}
-    ///
-    /// * @ref{spaces} 用于生成指定宽度 `width` 的空白字符序列。
-    /// * @ref{make_spaces，make_spaces_inplace} 只要内存允许，支持生成任意长度 ` 的空白串。
-    ///
-    ///  @notice{1} @ref{spaces}，@ref{make_spaces}，@ref{make_spaces_inplace} 这三个函数的功能类似。但主要差别
-    ///  是 @ref{space} 利用的是预生成的字符串常量，所以速度会更快，但最大长度有限（`UNIT8_MAX`），大部分情况下
-    ///  @ref{space} 函数都是够用的。当需要生成超过 @ref{space} 支持空白串时，使用 @ref{make_spaces}
-    ///  或者 @ref{make_spaces_inplace} 是更合适的选择。但显然 `make_xxx` 系列函数更慢。
-    ///
-    /// @param s: 在 make_spaces_inplace 中表示用于接收数据的字符串
-    /// @param witdh: 指定待生成的空白串的宽度，这里的空白串采用 ASCII 码为 0x20 的字符填充
-    /// @return @ref{spaces} 函数返回内部预生成的空白串的视图；@{make_space} 为返回新生成的字符串（内存重新分配）；
-    /// 而 @ref{make_spaces_inplace} 函数会将生成的空白串直接原位替换原始输入字符串。
+    /// @block spaces
     static auto spaces(uint8_t width) -> std::string_view;
     static auto make_spaces(size_type width) -> std::string;
     static auto make_spaces_inplace(std::string& s, size_type width) -> std::string&;
+    /// @end spaces
 #ifdef STR_UNTESTED
     static auto after_skip_spaces_view(std::string_view s) -> std::string_view;
     static auto after_skip_spaces(std::string_view s) -> std::string;
@@ -925,133 +835,64 @@ struct str {
     static auto after_skip_spaces_inplace(std::string& s, size_type pos) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 字符串遮罩 @anchor{cover}
-    ///
-    /// 使用指定的掩码字符串 mask 对原始字符串中的关键文字替换，以遮蔽原始字符串中的敏感信息。常用于
-    /// 敏感信息脱敏，长串简略缩短等场景。
-    ///
-    /// @ref{cover} 和 @ref{cover_inplace} 对 `s` 的中间部分使用遮罩字符串 `mask` 替换，其中 `left_n` 和 `right_n` 用于
-    /// 控住遮罩之后，首尾各自保留多少长度的明文子串。
-    ///
-    /// @notice{1} 当 `left_n` 或者 `right_n` 或者 `left_n + right_n` 大于或者等于原始串 s 的长度时，本函数将失去
-    /// 遮罩作用。对于这种情况 @ref{cover} 和 @ref{cover_inplace} 函数将返回空串，以避免无意间的信息泄露。因此，
-    /// 在使用本函数之前，最好确保字符串 s 的长度达到本算法的最小值 `left_n + right_n`。
-    ///
-    /// @param s 被遮罩的字符串
-    /// @param mask 用于遮罩的字符串，特别的，mask 为空也是允许的，但效果等价于去掉被遮罩的字符。
-    /// @param left_n, right_n 用于指定字符串 `s` 的首尾两端分别保留多长的明文串
-    /// @return 返回遮罩后的字符串
+    /// @block cover
     static auto cover(std::string_view s, std::string_view mask = "***", size_type left_n = 1, size_type right_n = 3) -> std::string;
     static auto cover_inplace(std::string& s, std::string_view mask = "***", size_type left_n = 1, size_type right_n = 3) -> std::string&;
+    /// @end cover
 
 #ifdef STR_UNIMPL
     //! 元音（aeiou）化简算法：去掉单词中的元音字符 除非他们为单词的首字母
 #endif // STR_UNIMPL
 
-    //! 字符串拼接 @anchor{join}
-    ///
-    /// 以 `s` 作为分隔符，拼接多个字符串。输入串可以通过 `proc` 或者 `items` 供给。如果 `proc` 无法提供任何字符串
-    /// 或者 `items` 为空，返回空串。
-    ///
-    /// @param s: 分隔符。
-    /// @param proc: 用于通过回调函数的方式供给被拼接的字符串。
-    /// @param items: 被字符串容器序列。
-    /// @return 返回拼接后的字符串。
+    /// @block join
     static auto join(std::string_view s, const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join(std::string_view s, const Sequence& items) -> std::string;
+    /// @end join
 
-    //! 拼接列表 @anchor{join_list}
-    ///
-    /// 使用逗号作为分隔符，拼接多个子串。输入串可以通过 proc 或者 items 供给。如果 proc 无法提供任何字符串或者 items 为空，返回空串。
-    ///
-    /// @param proc: 用于通过回调函数的方式供给被拼接的字符串
-    /// @param items: 被字符串容器序列
-    /// @return 返回合并后的字符串
+    /// @block join_list
     static auto join_list(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_list(const Sequence& items) -> std::string;
+    /// @end join
 
-    //! 映射拼接 @anchor{join_map}
-    ///
-    /// 使用 `sep_pair` 拼接每个 key-value 对的 key 和 value 部分，并使用 `sep_list` 拼接多个 key-value 对。
-    /// 该函数拼接的结果接近 json 的字典的内部结构（没有外围的花括号）。
-    ///
-    /// @param sep_pair: 用于拼接每个 key-value 对，当未指定该参数或者为空时，自动采用 `":"`
-    /// @param sep_list: 用于拼接多个拼接好的 key-value 对，当未指定该参数或者为空时，自动采用 `","`
-    /// @param proc: 用于供给 key-value 对， key-value 对由 `pair<std::string_view>` 来表示
-    /// @param items: 用于存储 key-value 对的容器
-    /// @return 返回拼接后的字符串
+    /// @block join_map
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const view_pair_provider_proc& proc) -> std::string;
     static auto join_map(const view_pair_provider_proc& proc) -> std::string;
     template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(std::string_view sep_pair, std::string_view sep_list, const Map& items) -> std::string;
     template <typename Map, typename = typename Map::const_iterator>
     static auto join_map(const Map& items) -> std::string;
+    /// @end join_map
 
-    //! 按行拼接 @anchor{join_lines}
-    ///
-    /// 将每个字符串视作一行，然后用换行符拼接成一个字符串，并返回。
-    ///
-    /// @param line_ends: 指定行结束符，如果未指定，默认使用 @ref{sep_line_ends} 作为分隔符
-    /// @param items: 指定存储行的容器
-    /// @param proc: 通过 proc 回调函数供给值，当 proc 返回 `std::nullopt` 时，终止拼接过程
+    /// @block join_lines
     static auto join_lines(std::string_view line_ends, const view_provider_proc& proc) -> std::string;
     static auto join_lines(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_lines(std::string_view line_ends, const Sequence& items) -> std::string;
     template <typename Sequence = std::initializer_list<std::string_view>, typename = typename Sequence::const_iterator>
     static auto join_lines(const Sequence& items) -> std::string;
+    /// @end join
 
-    //! 拼接路径 @anchor{join_path}
-    ///
-    /// 使用指定的分隔符 `sep` 或者系统默认的路径分隔符，将不同来源的路径片段拼接成完整的文件路径。
-    ///
-    /// @notice{1} 需要注意：@ref{join_path} 会主动去除路径片段间的路径分隔符 '/'，但只会去除一次。
-    ///
-    /// @param sep: 指定的路径分隔符，如果不带该参数，默认使用 @ref{sep_path}
-    /// @param proc: 通过回调函数指定路径片段，当 proc 返回 `std::nullopt` 时，拼接过程终止。
-    /// @param items: 存储路径片段的容器
-    /// @return 返回拼接后的路径
+    /// @block join_path
     static auto join_path(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_path(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_path(std::string_view sep, const Sequence& items) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_path(const Sequence& items) -> std::string;
+    /// @end join
 
-    //! 拼接搜索路径 @anchor{join_searchpath}
-    ///
-    /// 使用搜索路径分隔符拼接由 `proc` 或者 `items` 供给的字符串，并返回拼接后的结果。
-    /// 路径分隔符可以通过 `sep` 参数指定，当调用没有该参数的形式的函数时，自动使用系统默认的分隔
-    /// 符（参见 @ref{sep_searchpath}）。对于提供 `proc` 参数的接口，`proc` 会持续调用该哈数获得数据直到该函数
-    /// 返回 `std::nullopt`。如果 `proc` 在第一次调用时就返回 `std::nullopt`，返回的搜索路径为空串。
-    ///
-    /// @param sep: 搜索路径分隔符。对于未指定该参数的函数，自动采用 @ref{sep_searchpath} 作为分隔符。
-    /// @param proc: 提供搜素路径片段的函数。
-    /// @param items: 存放路径片段的容器。
-    /// @return 返回以当前系统的搜索路径分隔符拼接好的字符串。
+    /// @block join_searchpath
     static auto join_searchpath(std::string_view sep, const view_provider_proc& proc) -> std::string;
     static auto join_searchpath(const view_provider_proc& proc) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_searchpath(std::string_view sep, const Sequence& items) -> std::string;
     template <typename Sequence = std::initializer_list<std::string>, typename = typename Sequence::const_iterator>
     static auto join_searchpath(const Sequence& items) -> std::string;
+    /// @end join_searchpath
 
-    //! 通用字符串拆分 @anchor{split}
-    ///
-    /// 将字符串 `s` 以指定的分隔符（比如，字符集 `sep_charset`、字符串 `sep_str`、某抽象函数 `search_proc`）拆分为
-    /// 多个子串。
-    ///
-    /// @param s: 被拆分的字符串。
-    /// @param search_proc: 更抽象的分隔符定位方法，需要返回找到的分隔符的范围，或者返回 `std::nullopt` 表示找不到
-    /// 分隔符。
-    /// @param sep_charset: 分隔符集合，可以有多种形式组成，集合中的每个字符都是分隔符。
-    /// @param sep_str: 以字符串为分隔符，如果该参数指定为空串，自动以连续的空白符为分隔符。
-    /// @param max_n: 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。
-    /// 需要注意，当字符串 `s` 中实际的分隔符的数量大于 `max_n` 时，会返回 `max_n + 1` 个子串。
-    /// @param proc: 指定如何接受拆分出来的字符串。需要注意，不同函数 proc 的原型是不同的。
-    /// @return 当未指定 proc 参数时，会返回字符串列表。
+    /// @block split
     static auto split(std::string_view s, const substr_search_proc& search_proc, size_type max_n, const range_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sep_charset, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const charset_type& sep_charset, const view_consumer_proc& proc) -> void;
@@ -1059,115 +900,53 @@ struct str {
     static auto split(std::string_view s, std::string_view sep_str, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, std::string_view sep_str, size_type max_n = npos) -> std::vector<std::string>;
-#ifdef STR_UNIMPL
-    static auto split(std::string_view s, const std::regex& sep_regex, size_type max_n, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, const std::regex& sep_regex, const view_consumer_proc& proc) -> void;
-    static auto split(std::string_view s, const std::regex& sep_regex, size_type max_n = npos) -> std::vector<std::string>;
-#endif // STR_UNIMPL
     static auto split(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split(std::string_view s, size_type max_n = npos) -> std::vector<std::string>;
     static auto split_view(std::string_view s, const charset_type& sep_charset, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_view(std::string_view s, std::string_view sep_str, size_type max_n = npos) -> std::vector<std::string_view>;
     static auto split_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
+    /// @end split
+#ifdef STR_UNIMPL
+    static auto split(std::string_view s, const std::regex& sep_regex, size_type max_n, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const std::regex& sep_regex, const view_consumer_proc& proc) -> void;
+    static auto split(std::string_view s, const std::regex& sep_regex, size_type max_n = npos) -> std::vector<std::string>;
+#endif // STR_UNIMPL
 
-    //! 按逗号拆分 @anchor{split_list}
-    ///
-    /// 以逗号 `,` 为分隔符，将字符串 `s` 拆分成多个子串。
-    ///
-    /// @param s: 被拆分的字符串。
-    /// @param proc: 指定如何接受拆分出来的字符串。
-    /// @param max_n: 最多拆分多少次。如果为 0 表示不做任何拆分，将返回原始字符串。如果为 `npos` 表示不限制拆分次数。
-    /// 需要注意，当字符串 `s` 中实际的分隔符的数量大于或者等于 `max_n` 时，会返回 `max_n + 1` 个子串。
-    /// @return 当未指定 `proc` 参数时，会返回字符串列表。
+    /// @block split_list
     static auto split_list(std::string_view s, size_type max_n, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_list(std::string_view s, size_type max_n = npos) -> std::vector<std::string>;
     static auto split_list_view(std::string_view s, size_type max_n = npos) -> std::vector<std::string_view>;
+    /// @end split_list
 
-    //! 拆分 key-value 对 @anchor{split_pair}
-    ///
-    /// @ref{split_pair} 等价于 @ref{split} 系列函数，指定 `max_n` 参数为 `1` 时的功能。
-    ///
-    /// @param s: 被拆分的字符串。
-    /// @param sep: 用作分隔符的字符串，当 `sep` 被指定为空串时，自动以 `":"` 为分隔符。
-    /// @return 返回被拆分处理的字符串。如果字符串中未找到分隔符，整个字符串作为返回值的第一个字符串，而第二个字符
-    /// 串为空。
+    /// @block split_pair
     static auto split_pair(std::string_view s, std::string_view sep = ":") -> pair<std::string>;
     static auto split_pair_view(std::string_view s, std::string_view sep = ":") -> pair<std::string_view>;
+    /// @end split_pair
 
-    //! 拆分多个 key-value 对 @anchor{split_map{}
-    ///
-    /// @ref{split_map} 会对字符串做两轮拆分：
-    /// 第一轮先以 `sep_list` 为分隔符，将字符串拆分成一组字串；
-    /// 第二轮再以 `sep_pair` 为分隔符将前一轮拆分出来的每个字串拆分成键值对，并将该该键值对存入 map 对象返回，
-    /// 或者通过 proc 输出。
-    /// 总之，@ref{split_map} 是拆分的是类型下面的数据格式的算法（以 `sep_list` 和 `sep_pair` 为缺省值时为例）：
-    ///
-    ///     item1:value1,item2:value2,item3:value3 ...
-    ///
-    /// @param s: 被拆分的字符串。
-    /// @param sep_list: 用作第一轮拆分的分隔符。
-    /// @param sep_pair: 用作第二轮拆分的分隔符。
-    /// @param max_n: 最多拆分多少次。`max_n` 主要用于控制第一轮拆分的次数，如果指定为 0 将返回空 map 或者不
-    /// 触发 proc。当次数达到后，后续的数据会被舍弃，且不会被放入 map 中，也不会再触发 proc。由于调用方无法感
-    /// 知是否有剩余数据未拆分完，因此，`max_n` 通常只用在舍弃剩余字符串是无关紧要的情况下使用。
-    /// @param proc: 输出拆分出来的每个键值对。
-    /// @return 返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
+    /// @block split_map
     static auto split_map(std::string_view s, std::string_view sep_list, std::string_view sep_pair, const view_pair_consumer_proc& proc) -> void;
     static auto split_map(std::string_view s, std::string_view sep_list = ",", std::string_view sep_pair = ":", size_type max_n = npos) -> std::map<std::string, std::string>;
+    /// @end split_map
 
-    //! 按行拆分 @anchor{split_lines}
-    ///
-    /// 以行结束符为分隔符，将字符串 `s` 拆分成多行。
-    ///
-    /// @param s: 待拆分字符串。
-    /// @param keep_ends: 是否保留行尾的分隔符。
-    /// @param proc: 用于接收拆分出的子串。
-    /// @return 通过 proc 接收拆分后的行或者返回存储拆分后的所有行的容器。
+    /// @block split_lines
     static auto split_lines(std::string_view s, bool keep_ends, const view_consumer_proc& proc) -> void;
     static auto split_lines(std::string_view s, bool keep_ends = false) -> std::vector<std::string>;
     static auto split_lines_view(std::string_view s, bool keep_ends = false) -> std::vector<std::string_view>;
+    /// @end split_lines
 
-    //! 路径拆分 @anchor{split_path}
-    ///
-    /// 将字符串 `s` 视作文件或者目录的路径，按照路径分隔符 @ref{sep_path_char}，拆分成多个组成部分。
-    ///
-    /// @notice{1} 本函数并不支持 windows 下同时可以使用 `'/'` 和 `'\\'` 为分隔符的场景。如果有必要，可以使用
-    /// 更加强大的 @ref{split} 函数代替。
-    ///
-    /// @notice{2} 对于以 '/' 字符开头的绝对路径，拆分出来的第一个字符串，总是 '/'。
-    ///
-    /// @notice{3} 对于重复的路径分隔符（比如，"a///b" 中的 "///"），会自动视作一个路径分隔符。
-    ///
-    /// @param s: 待拆分的路径。
-    /// @param proc: 用于接收被拆分出来的字符串。
-    /// @return 当返回值类型为 `void` 时，可以通过 proc 函数接收输出数据；否则，返回值表示拆分出来的多个子串。
+    /// @block split_path
     static auto split_path(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto split_path(std::string_view s) -> std::vector<std::string>;
     static auto split_path_view(std::string_view s) -> std::vector<std::string_view>;
+    /// @end split_path
 
-    //! 拆分搜索路径 @anchor{split_searchpath}
-    ///
-    /// 将字符串 `s` 视作搜索目录（可以以 Linux 系统下的 `$PATH` 环境变量为参考），按照搜索路径分隔
-    /// 符 @ref{sep_searchpath_char} 将 `s` 拆分成多个路径。
-    ///
-    /// @notice{1} 需要注意 POSIX 系统标准并不允许文件路径中存在冒号的情况，
-    /// 参考: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03。
-    ///
-    /// @notice{2} 需要注意本函数默认支持的是 `*nix` 系统的默认的搜索路径分隔符，对于 Windows 系统，可以
-    /// 指定 `sep` 参数为 `";"`。
-    ///
-    /// @notice{3} 本系列函数并不会主动去除路径前后的空白，也对于重复路径也不去重。当 `keep_empty` 指定
-    /// 为 `true` 时，空串会被传递给 proc 或者返回。
-    ///
-    /// @param s: 待拆分的路径
-    /// @param keep_empty: 是否保留空路径（注意：POSIX 中空搜索路径通常表示当前工作路径，是有意义的）
-    /// @param sep: 指定搜索路径分隔符。对于 Windows 下的搜索路径，需要额外指定该参数。
-    /// @return 当返回值类型为 `void` 时，可以通过 proc 函数接收输出数据；否则，返回值表示拆分出来的多个子串。
+    /// @block split_searchpath
     static auto split_searchpath(std::string_view s, bool keep_empty, value_type sep, const view_consumer_proc& proc) -> void;
     static auto split_searchpath(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string>;
     static auto split_searchpath_view(std::string_view s, bool keep_empty = false, value_type sep = ':') -> std::vector<std::string_view>;
+    /// @end split_searchpath
 
 #ifdef STR_UNIMPL
     // 拆分 csv 数据
@@ -1182,37 +961,27 @@ struct str {
     static auto join_properties(std::string& s, properties_sep sep) -> std::string&;
 #endif // STR_UNIMPL
 
-    //! 分片 @anchor{partition}
-    ///
-    /// @ref{partition_range, partition_view, partition} 从 s 左侧查找首个 sep 分隔符或者满足 proc 的字符的位置，
-    /// 并将字符串分割为分隔符左侧，分隔符，分隔符右侧三个部分，并返回。
-    ///
-    /// @param s: 输入字符串
-    /// @param charset, proc, sep: 不同形式的分隔符。
-    /// @return 返回依次由分隔符左侧的子串，分隔符自身，分隔符右侧子串组成的三元组（ternary）。
+    /// @block partition
     static auto partition_range(std::string_view s, const charset_type& charset) -> ternary<range_type>;
     static auto partition_range(std::string_view s, const char_match_proc& proc) -> ternary<range_type>;
     static auto partition_range(std::string_view s, std::string_view sep) -> ternary<range_type>;
-#ifdef STR_UNTESTED
-    static auto partition_range(std::string_view s, const std::regex& pattern) -> ternary<range_type>;
-    static auto partition_range(std::string_view s, const substr_search_proc& proc) -> ternary<range_type>;
-#endif // STR_UNTESTED
     /// -
     static auto partition_view(std::string_view s, const charset_type& charset) -> ternary<std::string_view>;
     static auto partition_view(std::string_view s, const char_match_proc& proc) -> ternary<std::string_view>;
     static auto partition_view(std::string_view s, std::string_view sep) -> ternary<std::string_view>;
-#ifdef STR_UNTESTED
-    static auto partition_view(std::string_view s, const std::regex& pattern) -> ternary<std::string_view>;
-#endif // STR_UNTESTED
     static auto partition_view(std::string_view s, const view_search_proc& proc) -> ternary<std::string_view>;
     /// -
     static auto partition(std::string_view s, const charset_type& charset) -> ternary<std::string>;
     static auto partition(std::string_view s, const char_match_proc& proc) -> ternary<std::string>;
     static auto partition(std::string_view s, std::string_view sep) -> ternary<std::string>;
+    static auto partition(std::string_view s, const view_search_proc& proc) -> ternary<std::string>;
+    /// @end partition
 #ifdef STR_UNTESTED
+    static auto partition_range(std::string_view s, const std::regex& pattern) -> ternary<range_type>;
+    static auto partition_range(std::string_view s, const substr_search_proc& proc) -> ternary<range_type>;
+    static auto partition_view(std::string_view s, const std::regex& pattern) -> ternary<std::string_view>;
     static auto partition(std::string_view s, const std::regex& pattern) -> ternary<std::string>;
 #endif // STR_UNTESTED
-    static auto partition(std::string_view s, const view_search_proc& proc) -> ternary<std::string>;
     /// -
 #ifdef STR_UNIMPL
     /// @ref{rpartition_view, rpartition} 从 s 右侧查找首个 sep 分隔符或者满足 proc 的字符的位置，并将字符串分
@@ -1230,45 +999,31 @@ struct str {
     static auto rpartition(std::string_view s, const view_search_proc& sep) -> ternary<std::string>;
 #endif // STR_UNIMPL
 
-    //! 字符串分块 @anchor{next_chunk}
-    ///
-    /// 从字符串 `s` 的 `pos` 位置开始，最多提取 `max_n` 长度的子串。本函数支持迭代。本函数可多次调用，
-    /// 实现迭代式提取子串。当 `pos` 大于或者等于 `s` 的长度时，返回 `std::nullopt`。
-    ///
-    /// @param s:
+    /// @block next_chunk
     static auto next_chunk_range(std::string_view s, size_type& pos, size_type max_n) -> std::optional<range_type>;
     static auto next_chunk_view(std::string_view s, size_type& pos, size_type max_n) -> std::optional<std::string_view>;
     static auto next_chunk(std::string_view s, size_type& pos, size_type max_n) -> std::optional<std::string>;
+    /// @end next_chunk
 
-    //! 指定宽度拆分字符串
-    ///
-    /// 将字符串 s 拆分成宽度为 width 的多个子串
-    ///
-    /// @param s 将被拆分的字符串
-    /// @param width 执行拆分宽度，如果 width 为 0 自动校正为 1；当 width 大于 s 的长度时，等价于不拆分
-    /// @param proc 数据输出函数
-    /// @return 通过 proc 或者返回值返回拆分后的子串列表
+    /// @block chunked
     static auto chunked(std::string_view s, size_type width, const view_consumer_proc& proc) -> void;
     static auto chunked(std::string_view s, size_type width) -> std::vector<std::string>;
     static auto chunked_view(std::string_view s, size_type width) -> std::vector<std::string_view>;
+    /// @end chunked
 
-    //! 字符串分块
+    /// @block next_window
     static auto next_window_range(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<range_type>;
     static auto next_window_view(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<std::string_view>;
     static auto next_window(std::string_view s, size_type& pos, size_type max_n, size_type step) -> std::optional<std::string>;
+    /// @end next_window
 
-    // 基于窗口拆分字符串
+    /// @block windowed
     static auto windowed(std::string_view s, size_type width, size_type step, const view_consumer_proc& proc) -> void;
     static auto windowed(std::string_view s, size_type width, size_type step) -> std::vector<std::string>;
     static auto windowed_view(std::string_view s, size_type width, size_type step) -> std::vector<std::string_view>;
+    /// @end windowed
 
-    //! 大小写转换
-    ///
-    /// * @ref{to_lower, to_lower_inplace} 将 s 中的所有大写字母转换为小写字母
-    /// * @ref{to_upper, to_upper_inplace} 将 s 中的所有小写字母转换为大写字母
-    /// * @ref{to_title, to_title_inplace} 将 s 每个单词的首字母转换为大写形式
-    /// * @ref{to_capitalize, to_capitalize_inplace} 将 s 首字母转换为大写形式
-    /// * @ref{swap_case, swap_case_inplace} 将 s 中的所有大写字母转换为小写字母，同时将消息字母转换为大写字母
+    /// @block case_conversion
     static auto to_lower(std::string_view s) -> std::string;
     static auto to_upper(std::string_view s) -> std::string;
     static auto to_title(std::string_view s) -> std::string;
@@ -1280,6 +1035,7 @@ struct str {
     static auto to_title_inplace(std::string& s) -> std::string&;
     static auto to_capitalize_inplace(std::string& s) -> std::string&;
     static auto swap_case_inplace(std::string& s) -> std::string&;
+    /// @end case_conversion
 
     //! 剔除 @anchor{trim}
     ///
@@ -1294,6 +1050,7 @@ struct str {
     /// @param proc: 字符匹配条件，所有满足条件的字符都将剔除。
     /// @param charset: 表示可以满足条件的字符集，`s` 中的任何字符集中的字符都将被剔除。
     /// @return 返回剔除指定字符后的剩余部分。
+    /// @block trims
     static auto trim_left_view(std::string_view s, const char_match_proc& proc) -> std::string_view;
     static auto trim_left_view(std::string_view s) -> std::string_view;
     static auto trim_left_view(std::string_view s, const charset_type& charset) -> std::string_view;
@@ -1344,21 +1101,9 @@ struct str {
     static auto trim_anywhere_inplace(std::string& s, std::string_view charset) -> std::string&;
     static auto trim_anywhere_inplace(std::string& s, value_type charset) -> std::string&;
     static auto trim_anywhere_inplace(std::string& s) -> std::string&;
+    /// @end trims
 
-    //! 化简 @anchor{simplified}
-    ///
-    /// * @ref{simplified, simplified_inplace} 将 s 中连续匹配 proc 条件的字符替换为 sep，对于不带 fill 和 proc 形式
-    ///   的函数，表示将所有的空白字符替换成单个空格字符（0x20）。
-    /// * @ref{simplified_integer, simplified_integer_inplace} 将字符串 s 视作整数（integer）在不影响其值的前提
-    ///   下，清除多余的前缀正号和前缀 0。
-    /// * @ref{simplified_decimal, simplified_decimal_inplace} 将字符串 s 视作小数（decimal）在不影响其值的前提
-    ///   下，清除多余的前缀正号、整数部分的前缀0、小数部分尾部的多余的0。如果 s 是指数形式，指数中的多余 0 以及指数形式本身
-    ///   也会被纳入化简考虑。
-    ///
-    /// @param s 将被化简的字符串
-    /// @param fill 如果可以化简，那么化简后改用什么填充
-    /// @param proc 连续字符匹配条件
-    /// @return 返回化简后的字符串
+    /// @block simplified
     static auto simplified(std::string_view s, std::string_view sep, const char_match_proc& proc) -> std::string;
     static auto simplified(std::string_view s) -> std::string;
     static auto simplified_inplace(std::string& s, std::string_view sep, const char_match_proc& proc) -> std::string&;
@@ -1366,6 +1111,7 @@ struct str {
     //
     static auto simplified_integer(std::string_view s) -> std::string;
     static auto simplified_integer_inplace(std::string& s) -> std::string&;
+    /// @end simplified
     //
 #ifdef STR_UNIMPL
     static auto simplified_real(std::string_view s) -> std::string;
@@ -1384,19 +1130,7 @@ struct str {
     static auto copy(pointer buffer, size_type size, std::string_view s) -> size_type;
 #endif // STR_UNTESTED
 
-    //! 展开 @anchor{expand_envs}
-    ///
-    /// 将字符串 `s` 中 `$xxx` 和 `${xxx}` 形式的子串看做环境变量的占位子串，将其中的 `xxx` 视作环境变量的名字，
-    /// 将整个占位子串替换为环境变量的值。本系列函数提供了多种方式获取环境变量值的方式。其中，如果没带任何获取环
-    /// 境变量值的方式的话，将自动通过 `getenv` 函数，从当前系统环境变量表中获取。
-    ///
-    /// @param s: 模板字符串
-    /// @param keep_unexpanded: 当无法通过 `key` 确定被替换的值时，由 `keep_unexpanded` 参数决定是保留原样。如果
-    /// 不原样保留会直接去除占位子串。
-    /// @param proc: 通过 `proc` 查询环境变量的值。
-    /// @param kvs: 直接从一个指定的 map 中检索环境变量的值。
-    /// @param key, val: 只将 `key` 替换为 `val`，其他的原样保留。
-    /// @return 返回替换后的新串。
+    /// @block expand_envs
     static auto expand_envs(std::string_view s, bool keep_unexpanded, const string_mapping_proc& proc) -> std::string;
     static auto expand_envs(std::string_view s, bool keep_unexpanded = false) -> std::string;
     static auto expand_envs(std::string_view s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string;
@@ -1408,39 +1142,22 @@ struct str {
     static auto expand_envs_inplace(std::string& s, bool keep_unexpanded, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, const std::map<std::string, std::string>& kvs) -> std::string&;
     static auto expand_envs_inplace(std::string& s, std::string_view key, std::string_view val) -> std::string&;
+    /// @end expand_envs
 
-    //! tab 扩展 @anchor{expand_tabs}
-    ///
-    /// 将字符串中的 tab 符号（`\t`）按照 `tab_size` 宽度替换成空格（对 应ASCII 码 0x20）。每个 tab 实际被替换成
-    /// 的空格的数量，并不是固定的，而是取决于 tab 字符在字符串 s 中的位置。该函数模拟了在编辑器中按 tab 键时的视
-    /// 觉效果。
-    ///
-    /// @param s: 将被扩展的字符串
-    /// @param tab_size: 指定一个 tab 应该等价于多少个空格字符（0x20）。
-    /// @return 返回扩展后的字符串
+    /// @block expand_tabs
     static auto expand_tabs(std::string_view s, size_type tab_size = 8) -> std::string;
     static auto expand_tabs_inplace(std::string& s, size_type tab_size = 8) -> std::string&;
+    /// @end expand_tabs
 
-    //! HOME 字符扩展 @anchor{expand_user}
-    ///
-    /// 扩展字符串中的 `~` 前缀为 `${HOME}` 的值，该函数模拟了 Shell 的行为。
-    ///
-    /// @param s: 将被扩展的字符串
-    /// @return 返回扩展后的字符串
+    /// @block expand_user
     static auto expand_user(std::string_view s) -> std::string;
     static auto expand_user_inplace(std::string& s) -> std::string&;
+    /// @end expand_tabs
 
-    //! 路径正规化 @anchor{normpath}
-    ///
-    /// 将输入字符串 `s` 视作文件或者目录的路径，消除路径中的相对路径（`.` 和 `..`）。
-    ///
-    /// @notice{1} 需要注意，本算法（函数）只是做字符串的操作，并不会访问文件系统。但这也意味着，在部分场景下
-    /// 并不能完全去掉相对路径。
-    ///
-    /// @param s: 被视作路径的字符串。
-    /// @return 返回正规化之后的路径。
+    /// @block normpath
     static auto normpath(std::string_view s) -> std::string;
     static auto normpath_inplace(std::string& s) -> std::string&;
+    /// @end expand_user
 
 #ifdef STR_UNIMPL
     //! 路径处理 @anchor{is_absolute, is_relative}
@@ -1450,27 +1167,13 @@ struct str {
     static auto is_relative(std::string_view s) -> bool;
 #endif // STR_UNIMPL
 
-    //! 路径的基本部分的长度 @anchor{basename_pos, extname_pos, dirname_pos}
-    ///
-    /// * @ref{basename_pos} 返回路径 `s` 中的文件的基本名（basename）的长度。
-    /// * @ref{dirname_pos} 返回路径 `s` 中的文件的目录部分（dirname）的长度，如果 `s` 是目录，返回其父目录。
-    /// * @ref{extname_pos} 返回路径 `s` 中的文件的的基本名中的扩展名部分（extname）。
-    ///
-    /// @param s: 被视作路径的字符串
-    /// @return  返回路径几个基本部分的路径的长度
+    /// @block path_pos
     static auto basename_pos(std::string_view s) -> size_type;
     static auto dirname_pos(std::string_view s) -> size_type;
     static auto extname_pos(std::string_view s) -> size_type;
+    /// @end path_pos
 
-    //! 路径处理函数：目录 @anchor{dirname}
-    ///
-    /// @ref{dirname_view, dirname, dirname_inplace} 获取路径 `s` 的目录部分
-    /// @ref{remove_dirname_view, remove_dirname, remove_dirname_inplace} 删除路径 `s` 的目录部分，返回剩余部分
-    /// @ref{replace_dirname, replace_dirname_inplace} 使用 `new_dir` 替换路径 `s` 中的目录部分
-    /// @ref{split_diename} 将路径 `s` 拆分为目录部分和剩余部分
-    ///
-    /// @param s: 路径字符串
-    /// @param new_dir: 表示被替换成的新名字，用于 replace_xxx 函数
+    /// @block dirname
     static auto dirname_range(std::string_view s) -> range_type;
     static auto dirname_view(std::string_view s) -> std::string_view;
     static auto dirname(std::string_view s) -> std::string;
@@ -1481,20 +1184,13 @@ struct str {
     static auto split_dirname(std::string_view s) -> pair<std::string>;
     //
     static auto dirname_inplace(std::string& s) -> std::string&;
+    /// @end dirname
 #ifdef STR_UNTESTED
     static auto remove_dirname_inplace(std::string& s) -> std::string&;
     static auto replace_dirname_inplace(std::string& s, std::string_view new_name) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 路径处理函数：文件名 @anchor{basename}
-    ///
-    /// @ref basename_view, basename, basename_inplace: 获取路径 `s` 的文件名部分
-    /// @ref remove_basename_view, remove_basename, remove_basename_inplace: 删除路径 `s` 的文件名部分，返回剩余部分
-    /// @ref replace_basename, replace_basename_inplace: 使用 `new_name` 替换路径 `s` 中的文件名
-    /// @ref split_basename: 将路径 `s` 拆分为文件名和剩余部分
-    ///
-    /// @param s: 路径字符串。
-    /// @param new_name: 表示被替换成的新名字。
+    /// @block basename
     static auto basename_range(std::string_view s) -> range_type;
     static auto basename_view(std::string_view s) -> std::string_view;
     static auto basename(std::string_view s) -> std::string;
@@ -1505,22 +1201,17 @@ struct str {
     static auto split_basename(std::string_view s) -> pair<std::string>;
     /// -
     static auto basename_inplace(std::string& s) -> std::string&;
+    /// @end basename
 #ifdef STR_UNTESTED
     static auto remove_basename_inplace(std::string& s) -> std::string&;
     static auto replace_basename_inplace(std::string& s, std::string_view new_name) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 路径处理函数：扩展名 @anchor{extname}
-    ///
-    /// @ref extname_view, extname, extname_inplace: 获取路径 s 的扩展名部分。
-    /// @ref remove_extname_view, remove_extname, remove_extname_inplace: 删除路径 s 的扩展名，返回剩余部分。
-    /// @ref replace_extname, replace_extname_inplace: 使用 new_name 替换路径 s 中的扩展名。
-    /// @ref split_extname: 将路径 s 拆分为扩展名和剩余部分。
-    ///
-    /// @param s: 路径字符串。
+    /// @block extname
     static auto extname_range(std::string_view s) -> range_type;
     static auto extname_view(std::string_view s) -> std::string_view;
     static auto extname(std::string_view s) -> std::string;
+    /// @end basename
 #ifdef STR_UNTESTED
     static auto remove_extname_view(std::string_view s) -> std::string_view;
     static auto remove_extname(std::string_view s) -> std::string;
@@ -1535,18 +1226,11 @@ struct str {
     static auto replace_extname_inplace(std::string& s, std::string_view new_name) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 路径处理函数：裸文件名 @anchor{rawname}
-    ///
-    /// @notice{1} 这里的“裸文件名”是指不包含文件后缀名的部分，等价于 basename 中去掉 extname 之后的部分。
-    ///
-    /// @ref rawname_view, rawname, rawname_inplace: 获取路径 s 的中裸文件名部分
-    /// @ref replace_rawname, replace_rawname_inplace: 使用 new_name 替换路径 s 中的裸文件名
-    /// @ref split_rawname: 将路径 s 拆分为目录、裸文件名，扩展名三个部分
-    ///
-    /// @param s: 路径字符串
+    /// @block rawname
     static auto rawname_range(std::string_view s) -> range_type;
     static auto rawname_view(std::string_view s) -> std::string_view;
     static auto rawname(std::string_view s) -> std::string;
+    /// @end rawname
 #ifdef STR_UNTESTED
     static auto replace_rawname(std::string_view s, std::string_view new_name) -> std::string;
     static auto split_rawname_view(std::string_view s) -> ternary<std::string_view>;
@@ -1603,13 +1287,7 @@ struct str {
     static auto decode_url_inplace(std::string& s) -> std::string&;
 #endif // STR_UNIMPL
 
-    //! 转义：C语言字符串 @anchor{encode_cstr}
-    ///
-    /// 将 s 中属于 C 语言字符串中的特殊字符，转义为 C 语言字符串的转义表示形式，或者反过来。
-    ///
-    /// @param s: 被编码或者解码的字符串
-    /// @param proc: 用于接收转换后，生成的字符串
-    /// @return 返回编码或者解码后的字符串
+    /// @block encode_cstr
     static auto encode_cstr(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_cstr(std::string_view s) -> std::string;
     static auto decode_cstr(std::string_view s, const view_consumer_proc& proc) -> size_type;
@@ -1617,14 +1295,9 @@ struct str {
     /// -
     static auto encode_cstr_inplace(std::string& s) -> std::string;
     static auto decode_cstr_inplace(std::string& s) -> size_type;
+    /// @end encode_cstr
 
-    //! 编解码：base64 @anchor{encode_base64}
-    ///
-    /// 将 s 中属于 url 的特殊字符，转义为 url 中可表示的形式，或者反过来
-    ///
-    /// @param s: 被编码或者解码的字符串
-    /// @param proc: 用于接收转换后，生成的字符串
-    /// @return 返回编码或者解码后的字符串
+    /// @block encode_base64
     static auto encode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
     static auto encode_base64(std::string_view s) -> std::string;
     static auto decode_base64(std::string_view s, const view_consumer_proc& proc) -> void;
@@ -1632,15 +1305,9 @@ struct str {
     //
     static auto encode_base64_inplace(std::string& s) -> std::string&;
     static auto decode_base64_inplace(std::string& s) -> std::string&;
+    /// @end encode_base64
 
-    //! 编解码：base16 @anchor{encode_base16}
-    ///
-    /// 将 s 中属于 url 的特殊字符，转义为 url 中可表示的形式，或者反过来
-    ///
-    /// @param s: 被编码或者解码的字符串
-    /// @param proc: 用于接收转换后，生成的字符串
-    /// @param upper: 转换出来的十六进制是否采用大写形式
-    /// @return 返回编码或者解码后的字符串
+    /// @block encode_base16
     static auto encode_base16(std::string_view s, bool upper, const view_consumer_proc& proc) -> void;
     static auto encode_base16(std::string_view s, bool upper = false) -> std::string;
     static auto decode_base16(std::string_view s, const view_consumer_proc& proc) -> void;
@@ -1648,6 +1315,7 @@ struct str {
     /// -
     static auto encode_base16_inplace(std::string& s, bool upper = false) -> std::string&;
     static auto decode_base16_inplace(std::string& s) -> std::string&;
+    /// @end encode_base16
 
     //! dump_hex 时的选项，可以微组合 @anchor{dump_hex_flags}
     enum dump_hex_flags : uint8_t {
@@ -1667,89 +1335,42 @@ struct str {
         std::string_view ascii_margin{" "};   ///< 显示 ascii 时，在此之前显示的 margin 字符
     };
 
-    //! 数据按十六进制 dump @anchor{dump_hex}
-    ///
-    /// 按照十六进制编辑器的样式格式化数据
-    ///
-    /// @param data, len: 被格式化的数据的地址和数据长度
-    /// @param format: 指定 dump_hex 时的格式化信息，参考 @ref{dump_hex_format}
-    /// @param proc: 用于接收格式化数据
+    /// @block dump_hex
     static auto dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void;
+    /// @end dump_hex
 
-    //! 求和 @anchor{sump}
-    ///
-    /// 将字符串 `s` 中的每个字符先用 `proc` 做映射，然后做求和计算，并返回最终的结果。
-    ///
-    /// @param s: 被映射的字符串
-    /// @param proc: 映射函数
-    /// @return 返回求和后的结果
+    /// @block sum
     template <typename T>
     static auto sum(std::string_view s, const mapping_proc<T>& proc) -> T;
+    /// @end sum
 
-    //! 字符集对象生成 @anchor{charset}
-    ///
-    /// @ref{charset} 用于将 `s` 中的所有字符设置到字符集对象中，无参版本标识生成空字符集。
-    ///
-    /// @param s: 从 `s` 中的每个不重复字符作为字符集的一部分
-    /// @return 返回生成的字符集
+    /// @block charset
     static auto charset(std::string_view s) -> charset_type;
     static auto charset() -> charset_type;
+    /// @end charset
 
-    //! 范围对象生成 @anchor{range, interval, shifter}
-    ///
-    /// * @ref{range} 用于根据指定的 `pos` 和 `n` 生成一个 @ref{range_type} 类型的范围对象。
-    /// * @ref{interval} 用于根据指定的 `begin` 和 `end` 生成一个 @ref{interval_type} 类型的范围对象。
-    /// * @ref{shifter} 用于给定起始点 `pos` 以及偏移量 `offset` 来数据的范围，其返回的是 @ref{shifter_type} 类型的对象。
-    ///
-    /// @notice{1} 需要特别注意 range 在某些边界场景下并不是完全等价的。比如:
-    /// `str::range(pos, n)` 并非总是等价于 `str::interval(pos, (pos + n))`，因为考虑到 `pos` 或者 `n`
-    /// 的值可能为 `str::npos`，此时简单地用 `(pos + n)` 做等价表示。
-    ///
-    /// @notice{2} @ref{shifter} 函数相对比较特殊，其 `offset` 参数可以为正值也可以为负值。如果 `offset` 为负值，
-    /// 可以理解为 `(pos + offset)` 到 `pos` 的范围（不包含 `pos`）。如果 `offset` 为正值，可以理解为 `pos`
-    /// 到 `(pos + offset)` 的范围。当然在遇到具体字符串时，会根据具体字符串的长度调整。
+    /// @block range_interval_shifter
     static auto range(size_type pos, size_type n) -> range_type;
     static auto range() -> range_type;
     static auto range(std::string_view s, size_type pos = 0) -> range_type;
     static auto interval(size_type begin, size_type end) -> interval_type;
     static auto shifter(size_type pos, ssize_type offset) -> shifter_type;
+    /// @end range_interval_shifter
 
-    //! 读取一行 @anchor{read_next_line}
-    ///
-    /// 以迭代的方式，从指定的文件读取一行文字并返回，本函数可以连续调用，以实现逐行读取效果。但如果需要逐行
-    /// 读取文件的功能，可参考 @ref{read_lines}。
-    ///
-    /// @param filename, file: 指定计划读取的文件的文件名，或者一个已经打开的文件对象，或者文件输入流对象
-    /// @param keeo_ends: 是否保留行尾的续行符
+    /// @block read_next_line
     static auto read_next_line(FILE* file, bool keep_ends, std::string& line_text) -> bool;
     static auto read_next_line(FILE* file, bool keep_ends = false) -> std::optional<std::string>;
     static auto read_next_line(std::istream& file, std::string& line_text) -> bool;
     static auto read_next_line(std::istream& file) -> std::optional<std::string>;
+    /// @end read_next_line
 
-    //! 读取文件的全部内容 @anchor{read_all}
-    ///
-    /// 将文本文件 filename 中的所有内容读取出来并返回。需要注意，读取大文件很容易触发内存分配失败。
-    /// 因此，read_all 主要为尺寸比较小的文本文件提供了简便的函数。
-    ///
-    /// @param filename: 待读取文件内容的文件名
-    /// @return 返回读取的文本文件的内容。
+    /// @block read_all
     static auto read_all(const std::string& filename) -> std::string;
     static auto read_all(const char* filename) -> std::string;
+    /// @end read_all
 
-    //! 按行读取多行 @anchor{read_lines}
-    ///
-    /// 从指定的文件（`FILE*` 或者 `std::istream` 或者 `filename`）中连续读取多行文本。
-    ///
-    /// @notice{1} 本系列函数和 @ref{read_all} 类型，只适合文件内容较少的文本文件的读取，并不适合大型文件。
-    /// 如果需要按行读取大型文件内容，可考虑基于 @ref{read_next_line} 系列函数自行实现。
-    ///
-    /// @param file, filename: 指定读取的数据的来源，如果是`FILE*` 或者 `std::istream` 类型的形式，表示从该文
-    /// 件的当前位置开始读取。如果是 `std::string` 或者 `const char*` 形式，将自动打开文件，并逐行读取文件所
-    /// 有内容。
-    /// @param keep_ends: 指定指定是否需要保留每行行位的结束符（如果有的话）。
-    /// @param max_n: 用于限制读取行数，当年读取的行数达到 max_n 时，自动停止读取。
-    /// @param proc: 通过 proc 函数接收行输出。
-    /// @return 通过 proc 或者返回值返回读取到的多行。
+
+    /// @block read_lines
     static auto read_lines(FILE* file, bool keep_ends, const line_consumer_proc& proc) -> void;
     static auto read_lines(FILE* file, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
     static auto read_lines(std::istream& file, const line_consumer_proc& proc) -> void;
@@ -1759,42 +1380,14 @@ struct str {
     static auto read_lines(const char* filename, bool keep_ends, const line_consumer_proc& proc) -> void;
     static auto read_lines(const std::string& filename, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
     static auto read_lines(const char* filename, bool keep_ends = false, size_type max_n = npos) -> std::vector<std::string>;
+    /// @end read_lines
 
-    //! 打开文件并自动关闭文件 @anchor{with_file}
-    ///
-    /// @ref{with_file} 根据指定的路径 `filepath` 和 `mode` 打开一个文件，并将这个文件交个 `proc` 函数使用。
-    /// 当 `proc` 函数使用完毕后，@ref{with_file} 函数会自动关闭该文件。本函数设计的相对特殊，其核心目的是
-    /// 避免用户去处理打开和关闭文件的操作。在一定程度上可以避免文件忘记关闭问题。
-    ///
-    /// @param filepath: 指定文件路径
-    /// @param mode: 文件打开的模式
-    /// @param repl: 当遇到任何问题导致打开文件失败时，自动采用 repl 参数指定的文件对象代替。需要
-    /// 注意，@with_file 函数并不会自动关闭 `repl` 文件。
-    /// @param proc: 用于接收并使用被 @ref{with_file} 打开的文件对象的函数。
+    /// @block with_file
     static auto with_file(const std::string& filepath, const char* mode, FILE* repl, const std::function<void(FILE* f)>& proc) -> void;
     static auto with_file(const std::string& filepath, const char* mode, const std::function<void(FILE* f)>& proc) -> void;
+    /// @end with_file
 
-    //! 命令行选项识别 @anchor{opt1}
-    ///
-    /// 将一组字符串列表视作命令行的参数（选项）序列，@ref{next_opt1} 函数从该序列中按照特定的模式读取和识别
-    /// 出单个的命令行选项。
-    ///
-    /// @notice{1} 与很多其他的命令行参数识别库不同，@anchor{next_opt1} 函数所支持的命令行参数的识别模式是一
-    /// 种无 schema 的模式，其优点是不需要在参数识别前定义一堆的 schema 信息（比如，需要定义有哪些命令行参
-    /// 数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，@anchor{next_opt1} 无法实现很复杂的命令
-    /// 行参数设计。@anchor{next_opt1} 很适合具有少量命令行参数的情况。下面是 @anchor{next_opt1} 函数的识别算
-    /// 法：
-    ///
-    /// * `-` 为选项识别符，所有以 `-` 开头的串均会作为键值对形式的参数，除非在此之前用 `--` 转义；
-    /// * `-key` 定义一个独立的、无 `value` 选项，常常用来定义开关型的选项；`key` 部分为空也是允许的；
-    /// * `-key=value` 识别为名字为 `key` 且值为 `value` 的键值对参数；若 `value` 部分为空，与 `-key` 等价；
-    /// * `value` 识别为一个没有 `key`，但是有 `value` 的参数；
-    /// * `-- value` 用于对选项识别符号进行转义，用于处理 value 部分本身已以 `-` 开头的情况；
-    ///
-    /// @param next_index: 从该位置的字符串开始识别下一个选项。
-    /// @param argc, argv: 指定命令行参数序列的大小和起始地址，常用于匹配 `main` 函数的参数。
-    /// @param items: 存放命令行参数的容器，用于代替 `argc` 与 `argv` 的组合。
-    /// @return 以键值对的形式返回读取到的选项，并提前将 next_index 移动到选项的结尾。
+    /// @block next_opt1
     static auto next_opt1(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>>;
     static auto next_opt1(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>>;
     template <typename Container, typename SizeType = typename Container::size_type>
@@ -1803,76 +1396,19 @@ struct str {
     static auto next_opt1(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>>;
     template <typename IterProc>
     static auto next_opt1(const IterProc& proc) -> std::optional<pair<std::string_view>>;
+    /// @end next_opt1
 
-    //! 命令行选项识别 @anchor{opt2}
-    ///
-    /// 将一组字符串列表视作命令行的参数（选项）序列，@ref{next_opt2} 函数从该序列中按照特定的模式读取和识别
-    /// 出单个的命令行选项。
-    ///
-    /// @notice{1} 与很多其他的命令行参数识别库不同，@anchor{next_opt2} 函数所支持的命令行参数的识别模式是一
-    /// 种无 schema 的模式，其优点是不需要在参数识别前定义一堆的 schema 信息（比如，需要定义有哪些命令行参
-    /// 数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，@anchor{next_opt2} 无法实现很复杂的命令
-    /// 行参数设计。@anchor{next_opt2} 很适合具有少量命令行参数的情况。下面是 @anchor{next_opt2} 函数的识别算
-    /// 法：
-    ///
-    /// * `-` 为选项识别符，所有以 `-` 开头的串均会作为键值对形式的参数，除非在此之前用 `--` 转义；
-    /// * `-key value` 识别为名字为 `key` 且值为 `value` 的键值对参数；若 `value` 部分为空，与 `-key` 等价；
-    /// * `-key -` 定义一个独立的、无 `value` 选项，常常用来定义开关型的选项；`key` 部分为空也是允许的；
-    /// 如果 `-key` 后面是另一个 key，那么，`-` 可以省略
-    /// * `value` 识别为一个没有 `key`，但是有 `value` 的参数；
-    /// * `-- value` 用于对选项识别符号进行转义，用于处理 value 部分本身已以 `-` 开头的情况；
-    ///
-    /// @param next_index: 从该位置的字符串开始识别下一个选项。
-    /// @param argc, argv: 指定命令行参数序列的大小和起始地址，常用于匹配 `main` 函数的参数。
-    /// @param items: 存放命令行参数的容器，用于代替 `argc` 与 `argv` 的组合。
-    /// @return 以键值对的形式返回读取到的选项，并提前将 next_index 移动到选项的结尾。
+
+    /// @block next_opt2
     static auto next_opt2(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>>;
     static auto next_opt2(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>>;
     template <typename Container, typename SizeType = typename Container::size_type>
     static auto next_opt2(SizeType& next_index, const Container& items) -> std::optional<pair<std::string_view>>;
     template <typename Iterator>
     static auto next_opt2(Iterator& itr, Iterator end) -> std::optional<pair<std::string_view>>;
+    /// @end next_opt2
 
-    //! 简单词法识别 @anchor{accept}
-    ///
-    /// * @ref{accept_until} 从 `pos` 位置开始逐个扫描 `s` 中的每个字符，如果遇到哨兵字符或者字符串
-    /// 或者其他形式的哨兵，则返回截止到哨兵起始位置的字符范围。当指定 `escape` 字符时，表示扫描到 `escape` 字符时，
-    /// 自动忽略下一个字符，即使这个字符就是哨兵字符本身。最终，accept_until 会返回哨兵之前的字符序列的范围。
-    ///
-    /// * @ref{accept} 从 `pos` 位置开始逐个扫描 `s` 中的每个字符，收集满足条件的字符序列，
-    /// 直到下一个字符无法满足条件为止。最终，accept 会返回满足条件的字符序列的范围。
-    ///
-    /// @notice{0} 如果扫描失败，那么所有函数都会返回 `std::nullopt`，且输出参数 `pos` 不会发生改变。
-    ///
-    /// @notice{1} accept 和 accept_until 这两组函数的行为的重要区别是：accept 系列函数总是 '盯着' 满足
-    /// 条件的字符，而 accept_until 总是 '盯着' 不满足条件的字符。
-    ///
-    /// @notice{2} 虽然 accept 和 accept_until 这两组函数都是可以连续调用的，但是需要注意 accept_until 总是
-    /// 会自动跳过已经识别出来的哨兵。因此，如果连续调用 accept_until，总是不可能得到哨兵序列的范围。如果确
-    /// 实有必要获得的哨兵字符串，可以通过 pos 与返回的 range_type 来组合计算出来。如下示例：
-    ///
-    /// ```c++
-    /// auto range = str::accept_until(s, pos, token);
-    /// auto token_range = str::range(range->end_pos(), pos - range->end_pos());
-    /// ```
-    ///
-    /// @param s: 待扫描的字符串
-    /// @param pos: 扫描的起始位置，该参数为输入输出参数。如果符号识别成功，对于 accept_until 来说，pos 总是
-    /// 位于哨兵序列最后一个字符的下一个字符；而对于 accept 由于并没有哨兵，它总是指向找到的第一个不满足条件
-    /// 的字符的位置。
-    /// @param guard_ch: 以单个字符作为哨兵
-    /// @param guard_charset: 以字符集（多个可选的字符）为哨兵
-    /// @param guard_proc: 更抽象的单字符的哨兵，在扫描时只要字符满足条件即表示遇到哨兵
-    /// @param guard_token: 以一个字符序列为哨兵
-    /// @param guard_pattern: 以一个正则表达式为哨兵（需要确保不匹配到空串）
-    /// @param escape: 扫描过程中如果遇到 escape 字符，将自动忽略下一个字符，以实现字符转义的效果
-    /// @param expect_ch: 用于 accept 函数，表示待识别的字符
-    /// @param expect_token: 用于 accept 函数，表示待识别的字符串
-    /// @param expect_pattern: 用于 accept 函数，表示需要识别的字符序列的模式
-    /// @param expect_charset: 用于 accept 函数，表示待识别的满足条件的字符集
-    /// @param expect_proc: 用于 accept 函数，表示待识别的字符需要满足的条件
-    /// @return: accept_until 系列函数总是返回找到的哨兵字符序列之前的字符序列的范围；而 accept 系列
-    /// 函数总是返回满足条件的字符序列的范围。
+    /// @block accept
     static auto accept_until(std::string_view s, size_type& pos, value_type guard_ch) -> std::optional<range_type>;
     static auto accept_until(std::string_view s, size_type& pos, value_type escape, value_type guard_ch) -> std::optional<range_type>;
     static auto accept_until(std::string_view s, size_type& pos, std::string_view guard_token) -> std::optional<range_type>;
@@ -1887,25 +1423,14 @@ struct str {
     static auto accept(std::string_view s, size_type& pos, const std::regex& expect_pattern) -> std::optional<range_type>;
     static auto accept(std::string_view s, size_type& pos, const charset_type& expect_charset) -> std::optional<range_type>;
     static auto accept(std::string_view s, size_type& pos, const char_match_proc& expect_proc) -> std::optional<range_type>;
+    /// @end accept
 
-    //! @anchor skip: 跳过满足条件的字符
-    ///
-    /// * @ref{skip_n} 从 `pos` 开始跳过 `n` 个字符，并返回 `true`；如果长度不够，返回 `false`；
-    /// * @ref{skip_max} 从 `pos` 开始跳过最多 `max_n` 个字符，跳过实际跳过的长度；
-    /// * @ref{skip_spaces} 从 `pos` 开始，跳过所有空白字符；如果指定了 `min_n` 参数，那么空白数量不够 min_n 时，
-    /// 会返回 `false`；
-    ///
-    /// @param s: 被视作符号识别的缓冲区的字符串
-    /// @param pos: 作为输入参数是表示指定识别的起始位置，作为输出参数时表示下一个还未被识别的字符的位置
-    /// @param n: 跳过 n 个字符
-    /// @param max_n: 最多跳过的字符的数量，如果剩余字符数量不够将自动返回
-    /// @param min_n: 指定至少需要跳过的字符数量
-    /// @return 如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值
-    ///         将大于或者等于 `s.size()`。因此，可以通过测试 `(pos >= s.size())` 来确定是否所有数据已经识别完。
+    /// @block skip
     static auto skip_n(std::string_view s, size_type& pos, size_type n) -> bool;
     static auto skip_max(std::string_view s, size_type& pos, size_type max_n) -> std::optional<size_type>;
     static auto skip_spaces(std::string_view s, size_type& pos) -> void;
     static auto skip_spaces(std::string_view s, size_type& pos, size_type min_n) -> bool;
+    /// @end skip
 
 #ifdef STR_UNIMPL
     static auto accept_literal_integer(std::string_view s, size_type& pos) -> range_type;
@@ -1986,13 +1511,9 @@ struct str {
     static auto mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std::string&;
 #endif // STR_UNTESTED
 
-    //! 用户根目录 @anchor{home}
-    ///
-    /// 返回当前用户的根目录，等价于 `*nix` 下的 `${HOME}` 环境变量的值，主要被用于 @ref{expand_user} 函数。
-    ///
-    /// @notice{1} 由于 Windows 下并无严格意义上的与 `*nix` 下对等的用户根目录的概念，因此，
-    /// 在 Windows 下会以 `USERPROFILE` 环境变量的值来作为 `${HOME}` 的值。
+    /// @block home
     static auto home() -> std::string;
+    /// @end home
 };
 
 template <typename Sequence, typename>
