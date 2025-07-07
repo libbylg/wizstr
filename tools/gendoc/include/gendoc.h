@@ -51,7 +51,7 @@ namespace gendoc {
     DEF_NODEKIND(15, 50, IFORMULA, node_iformula, "行内公式")  \
     DEF_NODEKIND(15, 51, HLINK, node_hlink, "超链接")          \
     DEF_NODEKIND(15, 52, IMAGE, node_image, "图片")            \
-    DEF_NODEKIND(15, 53, ANCHOR, node_anchor, "锚点定义")      \
+    /*DEF_NODEKIND(15, 53, ANCHOR, node_anchor, "锚点定义") */ \
     DEF_NODEKIND(15, 54, EMBED, node_embed, "嵌入文字")        \
     DEF_NODEKIND(15, 55, EMPHASIS, node_emphasis, "强调")      \
     DEF_NODEKIND(15, 57, TEXT, node_text, "文本")              \
@@ -394,14 +394,14 @@ struct node_list : public node {
     }
 };
 
-struct node_anchor : public node {
-    std::vector<std::string> names;
-
-    explicit node_anchor() {
-        kind = NODE_KIND_ANCHOR;
-        priority = NODE_PRIORITY_ANCHOR;
-    }
-};
+// struct node_anchor : public node {
+//     std::vector<std::string> names;
+//
+//     explicit node_anchor() {
+//         kind = NODE_KIND_ANCHOR;
+//         priority = NODE_PRIORITY_ANCHOR;
+//     }
+// };
 
 struct node_param : public node {
     std::vector<std::string> names;

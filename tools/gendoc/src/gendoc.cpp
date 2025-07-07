@@ -266,8 +266,8 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print(nimage->url);
             print(")");
         } break;
-        case NODE_KIND_ANCHOR: {
-        } break;
+        // case NODE_KIND_ANCHOR: {
+        // } break;
         case NODE_KIND_EMPHASIS: {
             // @[r]**dsdsdsd**
             node_emphasis* nstrong = static_cast<node_emphasis*>(nd);
@@ -2125,6 +2125,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             node_param* nparam = static_cast<node_param*>(nd);
             if ((list_prev(nparam) == list_end(&nd->parent->children)) || (nparam->prev->kind != NODE_KIND_PARAM)) {
                 print("<table class=\"table-param\">\n");
+                print("<tbody class=\"tbody-param\">\n");
             }
 
             print("<tr class=\"tr-param\">");
@@ -2149,7 +2150,9 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("</td>");
 
             print("</tr>\n");
+
             if ((list_next(nparam) == list_end(&nd->parent->children)) || (nparam->next->kind != NODE_KIND_PARAM)) {
+                print("</tbody>");
                 print("</table>\n");
             }
         } break;
@@ -2234,14 +2237,14 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print(encode_html_text(nimage->name));
             print("\">");
         } break;
-        case NODE_KIND_ANCHOR: {
-            const node_anchor* nanchor = static_cast<const node_anchor*>(nd);
-            for (auto& name : nanchor->names) {
-                print("<a name=\"");
-                print(encode_html_text(name));
-                print("\"/>");
-            }
-        } break;
+        // case NODE_KIND_ANCHOR: {
+        //     const node_anchor* nanchor = static_cast<const node_anchor*>(nd);
+        //     for (auto& name : nanchor->names) {
+        //         print("<a name=\"");
+        //         print(encode_html_text(name));
+        //         print("\"/>");
+        //     }
+        // } break;
         case NODE_KIND_EMBED: {
             node_embed* nembed = static_cast<node_embed*>(nd);
             list_foreach(child, &(nembed->children)) {
@@ -2275,6 +2278,12 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                     print("\">");
                     print(encode_html_text(str::remove_prefix_view(name, "#")));
                     print("</a>");
+                }
+            } else if (nanno->tag == "anchor") {
+                for (auto& name : nanno->names) {
+                    print("<a id=\"");
+                    print(encode_html_text(name));
+                    print("\"></a>");
                 }
             }
         } break;
