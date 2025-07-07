@@ -2063,8 +2063,8 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print(all_headers[nchapter->level - 1]);
             print(">\n");
 
-            // <p class="chapter-?-body">
-            print("<p class=\"chapter-");
+            // <div class="chapter-?-body">
+            print("<div class=\"chapter-");
             print(all_levels[nchapter->level - 1]);
             print("-body\">\n");
 
@@ -2072,8 +2072,8 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print_html(child, print);
             }
 
-            // </p>
-            print("</p>\n");
+            // </div>
+            print("</div>\n");
 
             // </section>
             print("</section>\n");
@@ -2103,8 +2103,8 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print(all_headers[nsection->level - 1]);
             print(">\n");
 
-            // <p class="section-?-body">
-            print("<p class=\"section-");
+            // <div class="section-?-body">
+            print("<div class=\"section-");
             print(all_levels[nsection->level - 1]);
             print("-body\">\n");
 
@@ -2112,8 +2112,8 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
                 print_html(child, print);
             }
 
-            // </p>
-            print("</p>\n");
+            // </div>
+            print("</div>\n");
 
             // </section>
             print("</section>\n");
