@@ -22,7 +22,7 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语�
 * 两字符串之间的关系：@{#contains} 
 * 特征字符串统计：@{#count} 
 * 前后缀操作：@{#prefix}、@{#suffix}、 
-* 查找： @{#next_char}、@{#prev_char}、@{#next_string}、@{#prev_string}、@{#next_spaces}、@{next_eol}
+* 查找： @{#next_char}、@{#prev_char}、@{#next_string}、@{#prev_string}、@{#next_spaces}、@{#next_eol}
 * 特征测试：@{#is_xx}、@{#is_literal}、@{#is_identifier}、@{#is_all_in}、@{#has_any_one}
 * 子串提取：@{#take}、@{#drop} 
 * 修剪和整形：@{#align}、@{#surround}、@{#unsurround}、@{#invert}、@{#simplified}、@{#trim} 
@@ -674,7 +674,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 ```
 
 * `spaces` 用于生成指定宽度 `width` 的空白字符序列。
-* `make_spaces`，`make_spaces_inplace` 只要内存允许，支持生成任意长度 ` 的空白串。
+* `make_spaces`，`make_spaces_inplace` 只要内存允许，支持生成任意长度的空白串。
 *<<
 
 @notice{1} `spaces`，`make_spaces`，`make_spaces_inplace` 这三个函数的功能类似。

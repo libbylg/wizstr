@@ -2022,13 +2022,16 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("<html lang=\"en\">\n");
             print("<head>\n");
             print("<meta charset=\"UTF-8\">\n");
-            print("<title>HTML5 示例</title>\n");
-            print("<link rel=\"stylesheet\" href=\"cppreference.css\">\n");
+            print("<title>str - 一个字符串函数库</title>\n");
+            print("<link rel=\"stylesheet\" href=\"cppreference.css\"/>\n");
+            //print("<link rel=\"stylesheet\" href=\"https:///prismjs@v1.x/themes/prism.css\"/>\n");
             print("</head>\n");
             print("<body>\n");
             list_foreach(child, &(nproject->children)) {
                 print_html(child, print);
             }
+            // print("<script src=\"https:///prismjs@v1.x/components/prism-core.min.js\"></script>\n");
+            // print("<script src=\"https:///prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js\"></script>\n");
             print("</body>\n");
             print("</html>\n");
         } break;
