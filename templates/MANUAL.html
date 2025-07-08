@@ -9,6 +9,7 @@
 <main>
 <!--
 -->
+<div class="separator-1"></div>
 <section class="chapter-3">
 <h3>
 简介
@@ -22,22 +23,22 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语�
 </p>
 <ul>
 <li>
-批量追加：<a href="#append">append</a>、<a href="#prepend">prepend</a> 
+批量追加：<a href="#append">append</a>、<a href="#prepend">prepend</a>
 </li>
 <li>
-大小写不敏感的比较：<a href="#icompare">icompare</a> 和 <a href="#iequals">iequals</a> 
+大小写不敏感的比较：<a href="#icompare">icompare</a> 和 <a href="#iequals">iequals</a>
 </li>
 <li>
-基于通配符匹配：<a href="#wildcmp">wildcmp</a> 
+基于通配符匹配：<a href="#wildcmp">wildcmp</a>
 </li>
 <li>
-两字符串之间的关系：<a href="#contains">contains</a> 
+两字符串之间的关系：<a href="#contains">contains</a>
 </li>
 <li>
-特征字符串统计：<a href="#count">count</a> 
+特征字符串统计：<a href="#count">count</a>
 </li>
 <li>
-前后缀操作：<a href="#prefix">prefix</a>、<a href="#suffix">suffix</a>、 
+前后缀操作：<a href="#prefix">prefix</a>、<a href="#suffix">suffix</a>、
 </li>
 <li>
 查找： <a href="#next_char">next_char</a>、<a href="#prev_char">prev_char</a>、<a href="#next_string">next_string</a>、<a href="#prev_string">prev_string</a>、<a href="#next_spaces">next_spaces</a>、<a href="#next_eol">next_eol</a>
@@ -46,34 +47,34 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语�
 特征测试：<a href="#is_xx">is_xx</a>、<a href="#is_literal">is_literal</a>、<a href="#is_identifier">is_identifier</a>、<a href="#is_all_in">is_all_in</a>、<a href="#has_any_one">has_any_one</a>
 </li>
 <li>
-子串提取：<a href="#take">take</a>、<a href="#drop">drop</a> 
+子串提取：<a href="#take">take</a>、<a href="#drop">drop</a>
 </li>
 <li>
-修剪和整形：<a href="#align">align</a>、<a href="#surround">surround</a>、<a href="#unsurround">unsurround</a>、<a href="#invert">invert</a>、<a href="#simplified">simplified</a>、<a href="#trim">trim</a> 
+修剪和整形：<a href="#align">align</a>、<a href="#surround">surround</a>、<a href="#unsurround">unsurround</a>、<a href="#invert">invert</a>、<a href="#simplified">simplified</a>、<a href="#trim">trim</a>
 </li>
 <li>
-按多行处理：<a href="#lines">lines</a> 
+按多行处理：<a href="#lines">lines</a>
 </li>
 <li>
-按单词处理：<a href="#words">words</a> 
+按单词处理：<a href="#words">words</a>
 </li>
 <li>
-字符串生成：<a href="#repeat">repeat</a> 
+字符串生成：<a href="#repeat">repeat</a>
 </li>
 <li>
-空白串处理：<a href="#spaces">spaces</a> 
+空白串处理：<a href="#spaces">spaces</a>
 </li>
 <li>
-字符串遮罩：<a href="#cover">cover</a> 
+字符串遮罩：<a href="#cover">cover</a>
 </li>
 <li>
-字符串拆分：<a href="#split">split</a>、<a href="#partition">partition</a>、<a href="#chunked">chunked</a>、<a href="#windowed">windowed</a> 
+字符串拆分：<a href="#split">split</a>、<a href="#partition">partition</a>、<a href="#chunked">chunked</a>、<a href="#windowed">windowed</a>
 </li>
 <li>
-字符串拼接：<a href="#join">join</a> 
+字符串拼接：<a href="#join">join</a>
 </li>
 <li>
-大小写转换：<a href="#case_conversion">case_conversion</a> 
+大小写转换：<a href="#case_conversion">case_conversion</a>
 </li>
 <li>
 变量或者特殊符号展开：<a href="#expand_tabs">expand_tabs</a>, <a href="#expand_envs">expand_envs</a>, <a href="#expand_user">expand_user</a>
@@ -101,6 +102,9 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语�
 </li>
 <li>
 换行符检测和处理：<a href="#ends_with_eol">ends_with_eol</a>、<a href="#eol_suffix">eol_suffix</a>、<a href="#next_eol">next_eol</a>、<a href="#prev_eol">prev_eol</a>、<a href="#remove_eol">remove_eol</a>
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -145,6 +149,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </p>
 </li>
 </ul>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -171,6 +176,10 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <li>
 <code class="source">sep_line_ends</code> 换行符
 </li>
+<li>
+&lt;&lt;
+<div class="separator-1"></div>
+</li>
 </ul>
 </div>
 </section>
@@ -196,7 +205,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </pre>
 <ul>
 <li>
-<code class="source">all_uppers</code> 所有大写字母集合 <a id="all_uppers"></a> 
+<code class="source">all_uppers</code> 所有大写字母集合 <a id="all_uppers"></a>
 </li>
 <li>
 <code class="source">all_lowers</code> 所有小写字母集合 <a id="all_lowers"></a>
@@ -233,6 +242,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">all_puncts</code> 所有标点符号 <a id="all_puncts"></a>
+<div class="separator-1"></div>
 </li>
 </ul>
 </div>
@@ -272,13 +282,14 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 由 proc 函数提供被追加的字符串，如果 proc 返回 <code class="source">std::nullopt</code>，表示后续无更多字符串需要追加。  
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">items</td><td class="td-param-sep">-</td><td class="td-param-desc"> 从容器 items 中获取被追加的字符串。  
+<tr class="tr-param"><td class="td-param-names">items</td><td class="td-param-sep">-</td><td class="td-param-desc"> 从容器 items 中获取被追加的字符串。
 </td></tr>
 </tbody></table>
 <p>
 @notice{1} 对于 <code class="source">append_inplace</code> 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种
 情况。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -323,6 +334,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">items</td><td class="td-param-sep">-</td><td class="td-param-desc"> 从容器 items 中获取被追加的字符串。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -363,6 +375,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回正数，表示 s 大于 other；返回负值，表示 s 小于 other；返回 0，表示 s 和 other 相等。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -403,6 +416,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">如果相等，返回 true，否则返回 <code class="source">false</code>
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -443,6 +457,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">如果 s 字符串匹配 pattern，返回 true，否则返回 false。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -496,6 +511,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">如果 s 包含指定的字符或者字符串或者某种模式，返回 true，否则返回 false。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -540,6 +556,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回满足条件的子串或者字符的数量。特别的，当 s 或者 other 为空时，总是返回 0
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -577,6 +594,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">remove_prefix_view</code>, <code class="source">remove_prefix</code>,  <code class="source">remove_prefix_inplace</code> 会返回从字符串 s 中去除两个字符串的共同前缀后剩余的部分。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -593,6 +613,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">prefix, ch</td><td class="td-param-sep">-</td><td class="td-param-desc"> 前缀字符串或者字符
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -628,6 +649,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">remove_suffix_view</code>, <code class="source">remove_suffix</code>, <code class="source">remove_suffix_inplace</code> 会返回从字符串 s 中去除两个字符串的共同后剩 余的部分。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -644,6 +668,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">suffix, ch</td><td class="td-param-sep">-</td><td class="td-param-desc"> 后缀字符串或者字符。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -667,6 +692,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">starts_with_margin</code> 如果字符串 <code class="source">s</code> 的首个非空白字母为 <code class="source">margin</code> 字符，返回 <code class="source">true</code>，否则返回 <code class="source">false</code>。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -681,6 +709,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">margin</td><td class="td-param-sep">-</td><td class="td-param-desc"> 边界字符。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -711,8 +740,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">prev_char</code> 总是从 <code class="source">pos - 1</code> 开始向字符串首部查找特定的字符，并返回找到的该字符的位置。
-</li>
-</ul>
+<p>
+  *&lt;&lt;
+</p>
 <p>
 @notice{1} 需要特别注意，next_xxx 总是从 <code class="source">pos - 1</code> 开始，向字符串首部查找（而 <code class="source">next_char</code> 总是从
 <code class="source">pos</code> 开始向字符串尾部查找）。因此，如果希望从 <code class="source">s</code> 的最后一个字符开始向前查找时，<code class="source">pos</code> 应该指定为 <code class="source">s.size()</code>。
@@ -724,6 +754,8 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 @notice{2} 当找到特定的字符时，<code class="source">next_char</code> 的 <code class="source">pos</code> 总是为该字符的下一个字符，而 <code class="source">pref_char</code> 的
 <code class="source">pos</code> 总是指向该字符所在的位置。这个设计使得 <code class="source">next_char</code> 和 <code class="source">prev_char</code> 可以配合使用。
 </p>
+</li>
+</ul>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -740,6 +772,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于测试某个字符是否满足定位条件，常用于定制场景。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -795,6 +828,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">substr</td><td class="td-param-sep">-</td><td class="td-param-desc"> 待查找（定位）的子串。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -824,7 +858,10 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 如果当前字符为 <code class="source">\n</code>，那么将当前字符 <code class="source">\n</code> 识别为行结束符；
 </li>
 <li>
-如果当前字符为 <code class="source">\r</code>，那么还需要额外查看下一个字符，如果下一个字符为 <code class="source">\n</code>，那么将 <code class="source">\r\n</code> 整体视作行结束符；否则将 <code class="source">\r</code> 视作行结束符。
+如果当前字符为 <code class="source">\r</code>，那么还需要额外查看下一个字符，如果下一个字符为 <code class="source">\n</code>，那么将 <code class="source">\r\n</code> 整体视作行结束符；否则将 <code class="source">\r</code>
+<p>
+  视作行结束符。
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -839,6 +876,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 查找的起始位置，需要注意该字段对于 <code class="source">next_xxx</code> 和 <code class="source">prev_xxx</code> 具有不同的含义（参见 @ref{#notice{2}}）。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -871,6 +909,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 被检测的字符
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -899,6 +938,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 待移出行结束符的原始字符串。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -938,6 +978,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 作为输入参数时，表示查找空白块的起始位置；作为输出参数时，表示找到的空白块最后一个空白字符的之后的位置。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -974,7 +1015,10 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">s_capitalize</code>: 检测 <code class="source">s</code> 的首个字符是否为大写字母。
 </li>
 <li>
-<code class="source">s_title</code>:  对于给定的字符串 <code class="source">s</code> 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回 <code class="source">true</code>。
+<code class="source">s_title</code>:  对于给定的字符串 <code class="source">s</code> 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回
+<p>
+  <code class="source">true</code>。
+</p>
 </li>
 <li>
 <code class="source">s_digit</code>: 检测 <code class="source">s</code> 否所有的字符都是数字或者十六进制字符（参考 <code class="source">std::xdigit</code>）。
@@ -1005,6 +1049,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">s_graph</code>: 检测 <code class="source">s</code> 是否全都为图形符（参考 <code class="source">std::isgraph</code>）。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -1026,6 +1073,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">所有的字符串都必须按组共同的特征，才会返回 <code class="source">true</code>，否则，（包括 <code class="source">s</code> 为空串场景）均返回 <code class="source">false</code>。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1061,12 +1109,13 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">is_literal_real</code> 检查字符串 s 是否可以被视作浮点数，需要注意整数本身也可以被视作浮点数。
-</li>
-</ul>
+<p>
+  *&lt;&lt;
+</p>
 <p>
 @notice{1} 针对各种字符特征，下面为更具体的解释：
 </p>
-<ul>
+</li>
 <li>
 被视作 <code class="source">true</code> 的字符串包括 <code class="source">&quot;1&quot;</code>, <code class="source">&quot;on&quot;</code>, <code class="source">&quot;ON&quot;</code>, <code class="source">&quot;Yes&quot;</code>, <code class="source">&quot;yes&quot;</code>, <code class="source">&quot;YES&quot;</code>, <code class="source">&quot;True&quot;</code>, <code class="source">&quot;true&quot;</code>, <code class="source">&quot;TRUE&quot;</code>
 </li>
@@ -1081,6 +1130,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 被视作 <code class="source">identifier</code> 的字符串，等价于正则表达式 <code class="source">[A-Za-z_][0-9A-Za-z_]*</code>
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -1102,6 +1154,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">所有的字符串都必须按组共同的特征，才会返回 <code class="source">true</code>，否则，（包括 <code class="source">s</code> 为空串场景）均返回 <code class="source">false</code>。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1139,6 +1192,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">所有的字符串都必须按组共同的特征，才会返回 true，否则，（包括 s 为空串场景）均返回 false。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1171,8 +1225,12 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 返回值
 </h1>
 <div class="section-1-body">
-<p class="return">与 <code class="source">is_xxx</code> 系列函数需要“所有字符必须全部满足指定特征”不同，<code class="source">has_xxx</code> 系列函数只需要有任意一个字符满足特征，立即返回 <code class="source">true</code>。唯一的特例是空串总是返回 <code class="source">false</code>。
+<p class="return">与 <code class="source">is_xxx</code> 系列函数需要“所有字符必须全部满足指定特征”不同，<code class="source">has_xxx</code> 系列函数只需要有任意一个字符满足特征，立即返回
 </p>
+<p>
+<code class="source">true</code>。唯一的特例是空串总是返回 <code class="source">false</code>。
+</p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1222,6 +1280,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">take_view</code>, <code class="source">take</code>, <code class="source">take_inplace</code>: 返回字符串 s 中，从 pos 开始偏移 shifter 的字符串。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -1233,8 +1294,14 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 原始字符串
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">n</td><td class="td-param-sep">-</td><td class="td-param-desc"> 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度 时，相关函数总是试图返回尽可能多的字符串。
+<tr class="tr-param"><td class="td-param-names">n</td><td class="td-param-sep">-</td><td class="td-param-desc"> 指定提取的子串的最大长度。当 n 为 0 时，总是返回空串。当按照指定的方式无法获得 n 个字符的长度
 </td></tr>
+</tbody></table>
+<p>
+时，相关函数总是试图返回尽可能多的字符串。
+</p>
+<table class="table-param">
+<tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于指定待提取的子串的起始位置
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">range</td><td class="td-param-sep">-</td><td class="td-param-desc">  指定用于需要提取的子串的范围，用于 <code class="source">pos</code> 和 <code class="source">len</code> 形式的范围。
@@ -1244,6 +1311,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">shifter</td><td class="td-param-sep">-</td><td class="td-param-desc">  指定用于需要提取的子串的范围，用于 <code class="source">ppos</code> 和 <code class="source">offset</code> 形式的范围。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1285,6 +1353,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">drop</code>, <code class="source">drop_inplace</code>: 返回从字符串 s 中剔除指定范围或者模式的字符后的剩余的字符串。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -1320,6 +1391,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回剔除特定字符或者子串后的剩余部分。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1367,6 +1439,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">ch</td><td class="td-param-sep">-</td><td class="td-param-desc"> 当 width 大于 s 的长度时，所采用的填充字符
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1402,6 +1475,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于接收每个遍历的行。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1450,6 +1524,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 @ref #split_words: 以空格为分隔符从字符串 s 中拆分出多个单词
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -1468,6 +1545,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">max_n</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于 <code class="source">split_words</code> 函数，用于限制拆分出来的单词的数量（注意并非拆分次数）
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1510,6 +1588,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">left, right</td><td class="td-param-sep">-</td><td class="td-param-desc"> 表示在字符串首尾的需要添加或者去掉的子串
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1549,6 +1628,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回颠倒位置后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1578,6 +1658,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">times</td><td class="td-param-sep">-</td><td class="td-param-desc"> 重复次数。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1598,14 +1679,17 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </li>
 <li>
 <code class="source">make_spaces</code>，<code class="source">make_spaces_inplace</code> 只要内存允许，支持生成任意长度的空白串。
-</li>
-</ul>
+<p>
+  *&lt;&lt;
+</p>
 <p>
 @notice{1} <code class="source">spaces</code>，<code class="source">make_spaces</code>，<code class="source">make_spaces_inplace</code> 这三个函数的功能类似。
 但主要差别 是 <code class="source">space</code> 利用的是预生成的字符串常量，所以速度会更快，但最大长度有限（<code class="source">UNIT8_MAX</code>），
-大部分情况下 <code class="source">space</code> 函数都是够用的。当需要生成超过 <code class="source">space</code> 支持空白串时，使用 <code class="source">make_spaces</code> 
+大部分情况下 <code class="source">space</code> 函数都是够用的。当需要生成超过 <code class="source">space</code> 支持空白串时，使用 <code class="source">make_spaces</code>
 或者 <code class="source">make_spaces_inplace</code> 是更合适的选择。但显然 <code class="source">make_xxx</code> 系列函数更慢。
 </p>
+</li>
+</ul>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -1630,6 +1714,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <p>
 而 <code class="source">make_spaces_inplace</code> 函数会将生成的空白串直接原位替换原始输入字符串。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1679,6 +1764,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回遮罩后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1720,6 +1806,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回拼接后的字符串。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1758,6 +1845,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回合并后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1804,6 +1892,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回拼接后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1838,6 +1927,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 通过 proc 回调函数供给值，当 proc 返回 <code class="source">std::nullopt</code> 时，终止拼接过程
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1884,6 +1974,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回拼接后的路径
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1930,6 +2021,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回以当前系统的搜索路径分隔符拼接好的字符串。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -1973,8 +2065,14 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">sep_str</td><td class="td-param-sep">-</td><td class="td-param-desc"> 以字符串为分隔符，如果该参数指定为空串，自动以连续的空白符为分隔符。
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">max_n</td><td class="td-param-sep">-</td><td class="td-param-desc"> 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。需要注意，当字符串 <code class="source">s</code> 中实际的分隔符的数量大于 <code class="source">max_n</code> 时，会返回 <code class="source">max_n + 1</code> 个子串。
+<tr class="tr-param"><td class="td-param-names">max_n</td><td class="td-param-sep">-</td><td class="td-param-desc"> 最多拆分多少次。如果为 0 表示不做任何拆分，返回原始字符串。如果为 npos 表示不限制拆分次数。需要注意，当字符串
 </td></tr>
+</tbody></table>
+<p>
+<code class="source">s</code> 中实际的分隔符的数量大于 <code class="source">max_n</code> 时，会返回 <code class="source">max_n + 1</code> 个子串。
+</p>
+<table class="table-param">
+<tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 指定如何接受拆分出来的字符串。需要注意，不同函数 proc 的原型是不同的。
 </td></tr>
 </tbody></table>
@@ -1987,6 +2085,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">当未指定 proc 参数时，会返回字符串列表。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2031,6 +2130,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">当未指定 <code class="source">proc</code> 参数时，会返回字符串列表。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2047,6 +2147,9 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <ul>
 <li>
 <a href="#split_pair">split_pair</a> 等价于 <a href="#split">split</a> 系列函数，指定 <code class="source">max_n</code> 参数为 <code class="source">1</code> 时的功能。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -2070,6 +2173,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回被拆分处理的字符串。如果字符串中未找到分隔符，整个字符串作为返回值的第一个字符串，而第二个字符串为空。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2132,6 +2236,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回组合成的 map，对于返回值为 void 的形式，数据通过 proc 返回。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2172,6 +2277,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">通过 proc 接收拆分后的行或者返回存储拆分后的所有行的容器。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2220,6 +2326,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">当返回值类型为 <code class="source">void</code> 时，可以通过 proc 函数接收输出数据；否则，返回值表示拆分出来的多个子串。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2273,6 +2380,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">当返回值类型为 <code class="source">void</code> 时，可以通过 proc 函数接收输出数据；否则，返回值表示拆分出来的多个子串。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2322,6 +2430,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回依次由分隔符左侧的子串，分隔符自身，分隔符右侧子串组成的三元组（ternary）。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2350,6 +2459,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc">
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2390,6 +2500,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">通过 proc 或者返回值返回拆分后的子串列表
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2404,6 +2515,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
     static auto next_window_view(std::string_view s, size_type&amp; pos, size_type max_n, size_type step) -&gt; std::optional&lt;std::string_view&gt;;
     static auto next_window(std::string_view s, size_type&amp; pos, size_type max_n, size_type step) -&gt; std::optional&lt;std::string&gt;;
 </pre>
+<div class="separator-1"></div>
 </div>
 </section>
 <section class="chapter-3">
@@ -2428,6 +2540,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 返回值
 </h1>
 <div class="section-1-body">
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2467,6 +2580,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">swap_case</code>, <code class="source">swap_case_inplace</code> 将 s 中的所有大写字母转换为小写字母，同时将消息字母转换为大写字母
 </li>
 </ul>
+<div class="separator-1"></div>
 </div>
 </section>
 <section class="chapter-3">
@@ -2489,13 +2603,10 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <li>
 <code class="source">trim_anywhere</code>, <code class="source">trim_anywhere_inplace</code> 去掉 <code class="source">s</code> 中任何满足条件的满足条件的字符
 </li>
-<li>
-&lt;&lt;
+</ul>
 <p>
 @notice{1} 对于未指定 <code class="source">proc</code> 或者 <code class="source">charset</code> 等定制条件的回到函数，表示去除空白字符。
 </p>
-</li>
-</ul>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -2519,6 +2630,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回剔除指定字符后的剩余部分。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2541,20 +2653,20 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <li>
 <code class="source">simplified</code>, <code class="source">simplified_inplace</code> 将 s 中连续匹配 proc 条件的字符替换为 sep，对于不带 fill 和 proc 形式
 <p>
-的函数，表示将所有的空白字符替换成单个空格字符（0x20）。
+  的函数，表示将所有的空白字符替换成单个空格字符（0x20）。
 </p>
 </li>
 <li>
 <code class="source">simplified_integer</code>, <code class="source">simplified_integer_inplace</code> 将字符串 s 视作整数（integer）在不影响其值的前提
 <p>
-下，清除多余的前缀正号和前缀 0。
+  下，清除多余的前缀正号和前缀 0。
 </p>
 </li>
 <li>
 <code class="source">simplified_decimal</code>, <code class="source">simplified_decimal_inplace</code> 将字符串 s 视作小数（decimal）在不影响其值的前提
 <p>
-下，清除多余的前缀正号、整数部分的前缀0、小数部分尾部的多余的0。如果 s 是指数形式，指数中的多余 0 以及指数形式本身
-也会被纳入化简考虑。
+  下，清除多余的前缀正号、整数部分的前缀0、小数部分尾部的多余的0。如果 s 是指数形式，指数中的多余 0 以及指数形式本身
+  也会被纳入化简考虑。
 </p>
 </li>
 </ul>
@@ -2581,6 +2693,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回化简后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2641,6 +2754,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="section-1-body">
 <p class="return">返回替换后的新串。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2680,6 +2794,7 @@ tab 扩展 <a id="expand_tabs"></a>
 <div class="section-1-body">
 <p class="return">返回扩展后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2715,6 +2830,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回扩展后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2754,6 +2870,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回正规化之后的路径。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2777,6 +2894,9 @@ HOME 字符扩展 <a id="expand_user"></a>
 </li>
 <li>
 <code class="source">extname_pos</code> 返回路径 <code class="source">s</code> 中的文件的的基本名中的扩展名部分（extname）。
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -2798,6 +2918,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回路径几个基本部分的路径的长度
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2845,6 +2966,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <tr class="tr-param"><td class="td-param-names">new_dir</td><td class="td-param-sep">-</td><td class="td-param-desc"> 表示被替换成的新名字，用于 replace_xxx 函数
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2892,6 +3014,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <tr class="tr-param"><td class="td-param-names">new_name</td><td class="td-param-sep">-</td><td class="td-param-desc"> 表示被替换成的新名字。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2930,6 +3053,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 路径字符串。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -2956,6 +3080,9 @@ HOME 字符扩展 <a id="expand_user"></a>
 </li>
 <li>
 <code class="source">split_rawname</code>: 将路径 s 拆分为目录、裸文件名，扩展名三个部分
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -2968,6 +3095,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 路径字符串
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3010,6 +3138,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回编码或者解码后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3052,6 +3181,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回编码或者解码后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3096,6 +3226,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回编码或者解码后的字符串
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3125,6 +3256,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于接收格式化数据
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3162,6 +3294,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回求和后的结果
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3197,6 +3330,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="section-1-body">
 <p class="return">返回生成的字符集
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3222,8 +3356,9 @@ interval 用于根据指定的 <code class="source">begin</code> 和 <code class
 </li>
 <li>
 shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <code class="source">offset</code> 来数据的范围，其返回的是 <a href="#shifter_type">shifter_type</a> 类型的对象。
-</li>
-</ul>
+<p>
+  *&lt;&lt;
+</p>
 <p>
 @notice{1} 需要特别注意 range 在某些边界场景下并不是完全等价的。比如:
 <code class="source">str::range(pos, n)</code> 并非总是等价于 <code class="source">str::interval(pos, (pos + n))</code>，因为考虑到 <code class="source">pos</code> 或者 <code class="source">n</code>
@@ -3234,6 +3369,9 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 可以理解为 <code class="source">(pos + offset)</code> 到 <code class="source">pos</code> 的范围（不包含 <code class="source">pos</code>）。如果 <code class="source">offset</code> 为正值，可以理解为 <code class="source">pos</code>
 到 <code class="source">(pos + offset)</code> 的范围。当然在遇到具体字符串时，会根据具体字符串的长度调整。
 </p>
+<div class="separator-1"></div>
+</li>
+</ul>
 </div>
 </section>
 <section class="chapter-3">
@@ -3263,6 +3401,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <tr class="tr-param"><td class="td-param-names">keeo_ends</td><td class="td-param-sep">-</td><td class="td-param-desc"> 是否保留行尾的续行符
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3299,6 +3438,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="section-1-body">
 <p class="return">返回读取的文本文件的内容。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3358,6 +3498,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="section-1-body">
 <p class="return">通过 proc 或者返回值返回读取到的多行。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3398,6 +3539,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于接收并使用被 <a href="#with_file">with_file</a> 打开的文件对象的函数。
 </td></tr>
 </tbody></table>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3443,6 +3585,9 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 </li>
 <li>
 <code class="source">-- value</code> 用于对选项识别符号进行转义，用于处理 value 部分本身已以 <code class="source">-</code> 开头的情况；
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -3468,6 +3613,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="section-1-body">
 <p class="return">以键值对的形式返回读取到的选项，并提前将 next_index 移动到选项的结尾。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3506,7 +3652,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <li>
 <code class="source">-key -</code> 定义一个独立的、无 <code class="source">value</code> 选项，常常用来定义开关型的选项；<code class="source">key</code> 部分为空也是允许的；
 <p>
-如果 <code class="source">-key</code> 后面是另一个 key，那么，<code class="source">-</code> 可以省略
+  如果 <code class="source">-key</code> 后面是另一个 key，那么，<code class="source">-</code> 可以省略
 </p>
 </li>
 <li>
@@ -3514,6 +3660,9 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 </li>
 <li>
 <code class="source">-- value</code> 用于对选项识别符号进行转义，用于处理 value 部分本身已以 <code class="source">-</code> 开头的情况；
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -3539,6 +3688,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="section-1-body">
 <p class="return">以键值对的形式返回读取到的选项，并提前将 next_index 移动到选项的结尾。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3568,17 +3718,16 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <li>
 <code class="source">accept_until</code> 从 <code class="source">pos</code> 位置开始逐个扫描 <code class="source">s</code> 中的每个字符，如果遇到哨兵字符或者字符串
 <p>
-或者其他形式的哨兵，则返回截止到哨兵起始位置的字符范围。当指定 <code class="source">escape</code> 字符时，表示扫描到 <code class="source">escape</code> 字符时，
-自动忽略下一个字符，即使这个字符就是哨兵字符本身。最终，<code class="source">accept_until</code> 会返回哨兵之前的字符序列的范围。
+  或者其他形式的哨兵，则返回截止到哨兵起始位置的字符范围。当指定 <code class="source">escape</code> 字符时，表示扫描到 <code class="source">escape</code> 字符时，
+  自动忽略下一个字符，即使这个字符就是哨兵字符本身。最终，<code class="source">accept_until</code> 会返回哨兵之前的字符序列的范围。
 </p>
 </li>
 <li>
 <code class="source">accept</code> 从 <code class="source">pos</code> 位置开始逐个扫描 <code class="source">s</code> 中的每个字符，收集满足条件的字符序列，
 <p>
-直到下一个字符无法满足条件为止。最终，accept 会返回满足条件的字符序列的范围。
+  直到下一个字符无法满足条件为止。最终，accept 会返回满足条件的字符序列的范围。
+  *&lt;&lt;
 </p>
-</li>
-</ul>
 <p>
 @notice{0} 如果扫描失败，那么所有函数都会返回 <code class="source">std::nullopt</code>，且输出参数 <code class="source">pos</code> 不会发生改变。
 </p>
@@ -3593,6 +3742,8 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 </p>
 <pre  class="source">
 auto range = str::accept_until(s, pos, token);auto token_range = str::range(range-&gt;end_pos(), pos - range-&gt;end_pos());</pre>
+</li>
+</ul>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -3646,6 +3797,7 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 <p>
 函数总是返回满足条件的字符序列的范围。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3670,6 +3822,9 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 </li>
 <li>
 <code class="source">skip_spaces</code> 从 <code class="source">pos</code> 开始，跳过所有空白字符；如果指定了 <code class="source">min_n</code> 参数，那么空白数量不够 min_n 时，会返回 <code class="source">false</code>；
+<p>
+  *&lt;&lt;
+</p>
 </li>
 </ul>
 <section class="section-1">
@@ -3702,6 +3857,7 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 <p>
 将大于或者等于 <code class="source">s.size()</code>。因此，可以通过测试 <code class="source">(pos &gt;= s.size())</code> 来确定是否所有数据已经识别完。
 </p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3735,8 +3891,12 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 返回值
 </h1>
 <div class="section-1-body">
-<p class="return">如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值将大于或者等于 <code class="source">s.size()</code>。因此，可以通过测试 <code class="source">(pos &gt;= s.size())</code> 来确定是否所有数据已经识别完。
+<p class="return">如果识别成功，将返回符号的范围，如果识别失败，返回的范围对象长度为 0，如果 pos 已经不在 s 的范围内，pos 的值将大于或者等于
 </p>
+<p>
+<code class="source">s.size()</code>。因此，可以通过测试 <code class="source">(pos &gt;= s.size())</code> 来确定是否所有数据已经识别完。
+</p>
+<div class="separator-1"></div>
 </div>
 </section>
 </div>
@@ -3755,7 +3915,7 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 <li>
 @notice{1} 由于 Windows 下并无严格意义上的与 <code class="source">*nix</code> 下对等的用户根目录的概念，因此，
 <p>
-在 Windows 下会以 <code class="source">USERPROFILE</code> 环境变量的值来作为 <code class="source">${HOME}</code> 的值。
+  在 Windows 下会以 <code class="source">USERPROFILE</code> 环境变量的值来作为 <code class="source">${HOME}</code> 的值。
 </p>
 </li>
 <li>

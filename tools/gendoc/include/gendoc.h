@@ -12,13 +12,13 @@
 #ifndef GENDOC_H
 #define GENDOC_H
 
+#include <cassert>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <optional>
 #include <string>
 #include <string_view>
-#include <functional>
-#include <cstdint>
-#include <optional>
-#include <cassert>
-#include <map>
 #include <vector>
 
 namespace gendoc {
@@ -46,7 +46,7 @@ namespace gendoc {
     DEF_NODEKIND(5, 32, BCODE, node_bcode, "代码块")           \
     DEF_NODEKIND(5, 33, BFORMULA, node_bformula, "行间公式")   \
     DEF_NODEKIND(5, 34, SEPARATOR, node_separator, "分隔线")   \
-    DEF_NODEKIND(10,35, COMMENT, node_comment, "注释行")       \
+    DEF_NODEKIND(10, 35, COMMENT, node_comment, "注释行")      \
     /* 行内元素 */                                             \
     DEF_NODEKIND(15, 50, IFORMULA, node_iformula, "行内公式")  \
     DEF_NODEKIND(15, 51, HLINK, node_hlink, "超链接")          \
@@ -63,7 +63,7 @@ namespace gendoc {
     DEF_NODEKIND(20, 91, THEAD, node_thead, "表头行")          \
     DEF_NODEKIND(20, 92, TROW, node_trow, "表的行")            \
     DEF_NODEKIND(20, 93, TCOL, node_tcol, "表的列")            \
-/* (end) */
+    /* (end) */
 
 enum node_kind : int8_t {
     // 错误（用于初始化）
@@ -83,9 +83,9 @@ enum node_priority : int8_t {
 inline auto node_priority_of(node_kind kind) -> node_priority {
     switch (kind) {
 #define DEF_NODEKIND(Priority_, Id_, Name_, Type_, Desc_) \
-case node_kind::NODE_KIND_##Name_:                    \
-return node_priority::NODE_PRIORITY_##Name_;      \
-/* (end) */
+    case node_kind::NODE_KIND_##Name_:                    \
+        return node_priority::NODE_PRIORITY_##Name_;      \
+        /* (end) */
         NODEKIND_TABLE()
 #undef DEF_NODEKIND
         default:
@@ -156,10 +156,10 @@ static inline auto list_end(H* head) -> decltype(H::prev) {
 }
 
 #define list_foreach(Child_, List_) \
-for (auto Child_ = list_first(List_); Child_ != list_end(List_); Child_ = list_next(Child_))
+    for (auto Child_ = list_first(List_); Child_ != list_end(List_); Child_ = list_next(Child_))
 
 #define list_foreach_range(Child_, Start_, Stop_) \
-for (auto Child_ = (Start_); Child_ != Stop_; Child_ = list_next(Child_))
+    for (auto Child_ = (Start_); Child_ != Stop_; Child_ = list_next(Child_))
 
 template <typename P, typename N, typename T>
 static inline auto list_insert(P* prev, N* next, T* new_item) -> void {
@@ -304,12 +304,10 @@ struct node_paragraph : public node {
 };
 
 struct node_separator : public node {
-    std::string::value_type separator;
-
-    explicit node_separator(std::string::value_type sep) {
+    explicit node_separator(int8_t l) {
         kind = NODE_KIND_SEPARATOR;
         priority = NODE_PRIORITY_SEPARATOR;
-        separator = sep;
+        level = l;
     }
 };
 
@@ -332,13 +330,13 @@ struct node_comment : public node {
 };
 
 struct node_bcode : public node {
-    std::string language;
+    std::string lang_alias;
     std::map<std::string, std::string> properties;
 
     explicit node_bcode(std::string_view lang, std::map<std::string, std::string> prop) {
         kind = NODE_KIND_BCODE;
         priority = NODE_PRIORITY_BCODE;
-        language = lang;
+        lang_alias = lang;
         properties = std::move(prop);
     }
 };
@@ -520,5 +518,7 @@ struct node_article : public node {
     }
 };
 
+extern auto lang_register(std::string_view lang_style, const std::vector<std::string>& lang_alias) -> bool;
+
 } // namespace gendoc
-#endif //GENDOC_H
+#endif // GENDOC_H

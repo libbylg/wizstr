@@ -16,6 +16,7 @@
 #include <cassert>
 #include <filesystem>
 #include <iostream>
+#include <set>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -130,7 +131,13 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
         case NODE_KIND_SEPARATOR: {
             print(str::make_spaces(ident * 4));
             node_separator* nseparator = static_cast<node_separator*>(nd);
-            print(str::repeat(nseparator->separator, 4));
+            std::string::value_type level_chars[]{
+                '\0',
+                '.',
+                '-',
+                '=',
+            };
+            print(str::repeat(level_chars[nseparator->level], 4));
             print("\n");
         } break;
         case NODE_KIND_COMMENT: {
@@ -194,7 +201,7 @@ auto print_tree(node* nd, size_t ident, const std::function<void(std::string_vie
             print(str::make_spaces(ident * 4));
             node_bcode* nbcode = static_cast<node_bcode*>(nd);
             print("```");
-            print(nbcode->language);
+            print(nbcode->lang_alias);
             if (!nbcode->properties.empty()) {
                 print(": ");
                 for (auto itr = nbcode->properties.begin(); itr != nbcode->properties.end(); itr++) {
@@ -1792,7 +1799,16 @@ auto try_parse_spacelines(parse_context& context) -> void {
 
 auto try_parse_separator(parse_context& context) -> void {
     const std::string& line = context.line_text();
-    context.append_child(new node_separator(line[0]));
+    int8_t level = 0;
+    if (line[0] == '.') {
+        level = 1;
+    } else if (line[0] == '-') {
+        level = 2;
+    } else if (line[0] == '=') {
+        level = 3;
+    }
+
+    context.append_child(new node_separator(level));
 }
 
 auto try_parse_article(parse_context& context) -> void {
@@ -1968,6 +1984,68 @@ auto try_parse_file(parse_context& context) -> std::string {
     return {};
 }
 
+struct lang_style {
+    std::set<std::string> lang_alias;
+    std::string style_name;
+
+    explicit lang_style(std::string style, const std::vector<std::string>& alias) {
+        style_name = style;
+        for (auto& item : alias) {
+            lang_alias.insert(item);
+        }
+    }
+};
+
+struct gendoc_environment {
+    auto lang_register(std::string_view style_name, const std::vector<std::string>& lang_alias) -> bool;
+    auto lang_find_by_alias(std::string_view style_name) -> const lang_style*;
+
+private:
+    std::vector<lang_style> all_lang_styles_;
+    std::map<std::string, size_t, std::less<>> all_lang_style_indexes_;
+    std::map<std::string, size_t, std::less<>> all_lang_mapping_;
+};
+
+auto gendoc_environment::lang_register(std::string_view style_name, const std::vector<std::string>& lang_alias) -> bool {
+    auto itr = all_lang_style_indexes_.find(style_name);
+    if (itr != all_lang_style_indexes_.cend()) {
+        return false; // TODO redefined
+    }
+
+    // Register style
+    all_lang_styles_.emplace_back(std::string{style_name}, lang_alias);
+
+    // Register style index
+    all_lang_style_indexes_.emplace(style_name, (all_lang_styles_.size() - 1));
+
+    // Register alias
+    for (const auto& alias : lang_alias) {
+        // If registered, just skip
+        if (all_lang_mapping_.find(alias) != all_lang_mapping_.cend()) {
+            continue;
+        }
+
+        all_lang_mapping_.emplace(alias, (all_lang_mapping_.size() - 1));
+    }
+
+    return true;
+}
+
+auto gendoc_environment::lang_find_by_alias(std::string_view alias_name) -> const lang_style* {
+    auto itr = all_lang_mapping_.find(alias_name);
+    if (itr == all_lang_mapping_.cend()) {
+        return nullptr;
+    }
+
+    return &all_lang_styles_[itr->second];
+}
+
+static gendoc_environment environment_;
+
+extern auto lang_register(std::string_view style_name, const std::vector<std::string>& lang_alias) -> bool {
+    return environment_.lang_register(style_name, lang_alias);
+}
+
 auto encode_html_text(std::string_view text) -> std::string {
     // #define HTML_ESCAPE_CHAR_TABLE()        \
     //     DEF_HTML_ESCAPE_CHAR('>', "&gt;")   \
@@ -2024,7 +2102,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("<meta charset=\"UTF-8\">\n");
             print("<title>str - 一个字符串函数库</title>\n");
             print("<link rel=\"stylesheet\" href=\"cppreference.css\"/>\n");
-            //print("<link rel=\"stylesheet\" href=\"https:///prismjs@v1.x/themes/prism.css\"/>\n");
+            // print("<link rel=\"stylesheet\" href=\"https:///prismjs@v1.x/themes/prism.css\"/>\n");
             print("</head>\n");
             print("<body>\n");
             list_foreach(child, &(nproject->children)) {
@@ -2199,7 +2277,16 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_BCODE: {
             node_bcode* nbcode = static_cast<node_bcode*>(nd);
-            print("<pre  class=\"source\">\n");
+
+            print("<pre  class=\"source");
+            if (!nbcode->lang_alias.empty()) {
+                const lang_style* style = environment_.lang_find_by_alias(nbcode->lang_alias);
+                if (style != nullptr) {
+                    print(" ");
+                    print(encode_html_text(style->style_name));
+                }
+            }
+            print("\">\n");
             list_foreach(child, &(nbcode->children)) {
                 print_html(child, print);
             }
@@ -2207,7 +2294,10 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
         } break;
         case NODE_KIND_SEPARATOR: {
             node_separator* nseparator = static_cast<node_separator*>(nd);
-            print(R"(<div style="border-top: 1px solid black; margin: 10px 0;"></div>)");
+            print(R"(<div class="separator-)");
+            std::string::value_type ch = nseparator->level + '0';
+            print(std::string_view{&ch, 1});
+            print(R"("></div>)");
             print("\n");
         } break;
         case NODE_KIND_BFORMULA: {
