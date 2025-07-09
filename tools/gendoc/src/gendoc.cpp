@@ -1885,16 +1885,6 @@ auto try_parse_article(parse_context& context) -> void {
             continue;
         }
 
-        // 标题行：# 号开头的行
-        static std::regex chapter_pattern{R"(^(#+)(\s+).*)"};
-        if (std::regex_match(line.begin(), line.end(), matches, chapter_pattern)) {
-            leave_paragraph(state, context); // 立即打断当前block
-            auto level = matches.length(1);
-            auto space_n = matches.length(2);
-            try_parse_chapter(context, static_cast<int8_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
-            continue;
-        }
-
         // 回退到特定标题级别
         static std::regex chapterend_pattern{R"(^(#+)(\s?)(<<)(\s.*)?$)"};
         if (std::regex_match(line.begin(), line.end(), matches, chapterend_pattern)) {
@@ -1906,13 +1896,13 @@ auto try_parse_article(parse_context& context) -> void {
             continue;
         }
 
-        // 章节内分级： % 号开头的行
-        static std::regex section_pattern{R"(^(%+)(\s+).*)"};
-        if (std::regex_match(line.begin(), line.end(), matches, section_pattern)) {
+        // 标题行：# 号开头的行
+        static std::regex chapter_pattern{R"(^(#+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, chapter_pattern)) {
             leave_paragraph(state, context); // 立即打断当前block
             auto level = matches.length(1);
             auto space_n = matches.length(2);
-            try_parse_section(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
+            try_parse_chapter(context, static_cast<int8_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
             continue;
         }
 
@@ -1927,14 +1917,13 @@ auto try_parse_article(parse_context& context) -> void {
             continue;
         }
 
-        // 遇到列表行
-        static std::regex list_pattern{R"(^(\*+)(\s+).*)"};
-        if (std::regex_match(line.begin(), line.end(), matches, list_pattern)) {
-            leave_paragraph(state, context);
+        // 章节内分级： % 号开头的行
+        static std::regex section_pattern{R"(^(%+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, section_pattern)) {
+            leave_paragraph(state, context); // 立即打断当前block
             auto level = matches.length(1);
             auto space_n = matches.length(2);
-            auto prefix_len = level + space_n;
-            try_parse_list(context, static_cast<int8_t>(level), str::range(prefix_len, line.size() - prefix_len));
+            try_parse_section(context, static_cast<int32_t>(level), str::range((level + space_n), line.size() - (level + space_n)));
             continue;
         }
 
@@ -1946,6 +1935,17 @@ auto try_parse_article(parse_context& context) -> void {
             auto space_n = matches.length(2);
             auto prefix_len = level + space_n + 2; // 2: length of '<<'
             try_parse_listend(context, level, str::range(prefix_len, (line.size() - prefix_len)));
+            continue;
+        }
+
+        // 遇到列表行
+        static std::regex list_pattern{R"(^(\*+)(\s+).*)"};
+        if (std::regex_match(line.begin(), line.end(), matches, list_pattern)) {
+            leave_paragraph(state, context);
+            auto level = matches.length(1);
+            auto space_n = matches.length(2);
+            auto prefix_len = level + space_n;
+            try_parse_list(context, static_cast<int8_t>(level), str::range(prefix_len, line.size() - prefix_len));
             continue;
         }
 
@@ -2125,7 +2125,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("</main>\n");
         } break;
         case NODE_KIND_ARTICLEEND: {
-            // const node_articlend* node = static_cast<const node_articlend*>(nd);
+            // node_articlend* node = static_cast<node_articlend*>(nd);
         } break;
         case NODE_KIND_CHAPTER: {
             node_chapter* nchapter = static_cast<node_chapter*>(nd);
@@ -2156,11 +2156,16 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             // </div>
             print("</div>\n");
 
+            // <div class="chapterend-?"></div>
+            print("<div class=\"chapterend-");
+            print(all_levels[nchapter->level - 1]);
+            print("\"></div>");
+
             // </section>
             print("</section>\n");
         } break;
         case NODE_KIND_CHAPTEREND: {
-            // const node_chapterend* node = static_cast<const node_chapterend*>(nd);
+            // node_chapterend* nchapterend = static_cast<node_chapterend*>(nd);
         } break;
         case NODE_KIND_SECTION: {
             node_section* nsection = static_cast<node_section*>(nd);
