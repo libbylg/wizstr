@@ -2122,6 +2122,9 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             list_foreach(child, &(narticle->children)) {
                 print_html(child, print);
             }
+
+            // <div class="articleend"></div>
+            print("<div class=\"articleend\"></div>");
             print("</main>\n");
         } break;
         case NODE_KIND_ARTICLEEND: {
@@ -2200,6 +2203,11 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
 
             // </div>
             print("</div>\n");
+
+            // <div class="sectionend-?"></div>
+            print("<div class=\"sectionend-");
+            print(all_levels[nsection->level - 1]);
+            print("\"></div>");
 
             // </section>
             print("</section>\n");
