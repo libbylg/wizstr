@@ -247,7 +247,7 @@ BSD-like License ： [木兰宽松许可v2（MulanPSL2）](LICENSE)
 
 - 首先，如果只是不知道某个函数的用法，str 库的用例十分丰富，没有什么查看 str 的用例更好的办法了。
 - 其次，如果您想自己上手写一些试用代码，str 的 playgroud 应该是你需要的；不过 playground 当前正在装修，可能还要等一段时间。
-- 然后，您可以在 [docs/FAQ.md](#) 中检索你遇到的问题，看看是否有现成的解决方案。
+- 然后，您可以在 [docs/FAQ.md](docs/FAQ.md) 中检索你遇到的问题，看看是否有现成的解决方案。
 - 接着，您可以通过 StackOverflow 提问，但注意带上 `gitee-str` 标签；
 - 最后，您可以通过提 [issue](https://gitee.com/libbylg/str/issues) 来直接向维护人员寻求帮助，但请带上 `help` 标签的；
 
