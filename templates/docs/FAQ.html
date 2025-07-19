@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>str - 一个字符串函数库</title>
+<link rel="stylesheet" href="cppreference.css"/>
+</head>
+<body>
+<main>
+<section class="chapter-1">
+<h1>
+FAQ
+</h1>
+<div class="chapter-1-body">
+<section class="chapter-2">
+<h2>
+为什么没有用 googletest 等测试框架？
+</h2>
+<div class="chapter-2-body">
+<p>
+测试框架也是自己写的，参见项目 
+</p>
+</div>
+<div class="chapterend-2"></div></section>
+<section class="chapter-2">
+<h2>
+为什么有时候 <code class="source">str::dirname</code> 与 <code class="source">std::dirname_view</code> 的返回值不同？
+</h2>
+<div class="chapter-2-body">
+<p>
+这其实是一个很无奈的设计：
+<code class="source">str::dirname_view(s)</code> 函数返回的数据类型是 <code class="source">std::string_view</code>。
+而 <code class="source">str::dirname(s)</code> 函数返回值是 <code class="source">std::string</code> 类型。
+<code class="source">str::dirname_view(s)</code> 必须确保返回值必须是输入串的子串，但 <code class="source">str::dirname(s)</code> 却没有这个限制。 
+</p>
+<p>
+假设表示路径的字符串 s 被赋值为 <code class="source">std::string s = &quot;foo.txt&quot;;</code> ， 
+显然其目录名（即 dirname）应该是 <code class="source">&quot;.&quot;</code>。
+然而 <code class="source">&quot;.&quot;</code> 并不是 <code class="source">&quot;foo.txt&quot;</code> 的子串， 这导致 <code class="source">str::dirname_view(s)</code> 没有办法返回 <code class="source">&quot;.&quot;</code>。
+</p>
+<p>
+所以，<code class="source">str::dirname</code> 与 <code class="source">std::dirname_view</code> 的功能并非总是一致的。
+大部分场景下，我们应该使用 <code class="source">str::dirname</code> 而非 <code class="source">std::dirname_view</code>，<code class="source">str::dirname</code> 
+总是确保返回一个有意义的字符串路径，它不仅更安全，也不容易遇到一些边角场景的错误。
+</p>
+</div>
+<div class="chapterend-2"></div></section>
+</div>
+<div class="chapterend-1"></div></section>
+<div class="articleend"></div></main>
+</body>
+</html>

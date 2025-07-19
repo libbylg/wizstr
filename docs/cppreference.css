@@ -1,0 +1,92 @@
+html {
+    font-variant-ligatures: no-common-ligatures;
+}
+
+body {
+    font: normal normal 1em/1.2em monospace;
+    font-family: DejaVuSans, "DejaVu Sans", arial, sans-serif;
+    font-size: 16px;
+    vertical-align: center;
+    line-height: normal;
+
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    min-height: 100vh; /* 确保高度撑满整个视口 */
+    margin: 0; /* 移除默认边距 */
+}
+
+main {
+    width: 70%; /* 宽度占屏幕70% */
+}
+
+/*body {*/
+/*    font-family: "DejaVuSansMono", "DejaVu Sans Mono", "Source Code Pro", monospace !important;*/
+/*}*/
+
+.source {
+    font: normal normal 1em/1.2em monospace;
+    font-family: DejaVuSansMono, "DejaVu Sans Mono", courier, monospace !important;
+    background-color: rgba(0, 0, 0, 0.031);
+    border: 1px solid #D6D6D6;
+    border-radius: 3px;
+    margin: 0 2px;
+    padding: 0 2px;
+}
+
+code {
+    display: inline-block;
+}
+
+pre {
+    /*display: inline-block;*/
+}
+
+
+p {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    unicode-bidi: isolate;
+}
+
+.td-param-names {
+    text-align: right;
+    font: normal normal bold 1em/1.2em "DejaVu Sans Mono";
+    /*推荐顺序：style → variant → weight → stretch → size/line-height → family。*/
+    font-weight: bold;
+}
+
+.separator-1 {
+    border-top: 1px solid gray;
+    margin: 10px 0;
+}
+
+.separator-2 {
+    border-top: 2px solid gray;
+    margin: 10px 0;
+}
+
+.separator-3 {
+    border-top: 3px solid gray;
+    margin: 10px 0;
+}
+
+.chapterend-3 {
+    height: 3em;
+    font-size: 18px;
+}
+
+.chapter-3-head {
+    font-size: 18px;
+}
+
+.section-1-head {
+    font-size: 16px;
+}
+
+/*.section-1 {*/
+/*    font-weight: bold; !* 加粗 *!*/
+/*}*/

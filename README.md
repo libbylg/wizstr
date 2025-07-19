@@ -14,7 +14,7 @@ str 库提供了一系列字符串处理函数算法，str 的目标是希望能
 
 str 库聚焦丰富的功能、完善的测试、完备的接口设计。
 
-当前 str 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [docs/MANUAL.md](#)）
+当前 str 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [MANUAL.html](https://libbylg.github.io/str/docs/MANUAL.html)）
 
 * 批量追加插入（append、insert）
 * 大小写不敏感的比较（icompare）
@@ -132,7 +132,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=<InstallTargetDirectory>
 
 其中，`<InstallTargetDirectory>` 这里需要替换给您自己的安装目录。
 
-@notice{1} 关于 `CMAKE_INSTALL_PREFIX` 的含义和用法用法可以参考 cmake 官方文档。
+**注意：** 关于 `CMAKE_INSTALL_PREFIX` 的含义和用法用法可以参考 cmake 官方文档。
 
 * 方式2：通过 `build.sh` (适合 `*nix` 系统，含 `msys2` 和 `mingw`)
 
@@ -167,7 +167,7 @@ sh build.sh install <InstallTargetDirectory>`
 其中，如果取消 `#define STR_NAMESPACE MyStr` 这一行的注释，表示您想为本 str 库指定一个名字空间。你可以将 `MyStr` 
 替换为您喜欢的名字空间名字即可。
 
-@notice{3} 这种方式并不是很推荐，主要是一旦采用这种方式，很容易对 str 的这部分代码造成侵入式修改，
+**注意：** 这种方式并不是很推荐，主要是一旦采用这种方式，很容易对 str 的这部分代码造成侵入式修改，
 最终会导致丧失简单即可升级 str 库到新版本的能力。 
 考虑到某些特殊的闭源项目或者存在网络隔离环境的项目必须这样做，那么我们仍然建议您做好代码隔离，
 当需要对 str 的代码做修改时，也尽可能用打 patch 的方式来修改，而非直接修改 str 的源码。
@@ -239,17 +239,17 @@ BSD-like License ： [木兰宽松许可v2（MulanPSL2）](LICENSE)
 
 文档正在装修（正在基于 str 来开发 gendoc），现阶段可直接参考 [include/str.hpp](include/str.hpp) 中的文档注释。
 
-@notice{2} 如果您发现文档中的问题，欢迎提 issue 或者 PR。
+**注意：** 如果您发现文档中的问题，欢迎提 issue 或者 PR。
 
 ## 如何求助和参与贡献
 
 #### 寻求帮助?
 
-- 首先，如果只是不知道某个函数的用法，str 库的用例十分丰富，没有什么查看 str 的用例更好的办法了。
-- 其次，如果您想自己上手写一些试用代码，str 的 playgroud 应该是你需要的；不过 playground 当前正在装修，可能还要等一段时间。
-- 然后，您可以在 [docs/FAQ.md](#) 中检索你遇到的问题，看看是否有现成的解决方案。
+- 首先，如果只是不知道某个函数的用法，str 库的用例十分丰富，没有什么查看 str 的用例更好的办法了；
+- 其次，如果您想自己上手写一些试用代码，str 的 playgroud 应该是你需要的；不过 playground 当前正在装修，可能还要等一段时间；
+- 然后，您可以在 [FAQ](https://libbylg.github.io/str/docs/FAQ.html) 中检索你遇到的问题，看看是否有现成的解决方案；
 - 接着，您可以通过 StackOverflow 提问，但注意带上 `gitee-str` 标签；
-- 最后，您可以通过提 [issue](https://gitee.com/libbylg/str/issues) 来直接向维护人员寻求帮助，但请带上 `help` 标签的；
+- 最后，您可以通过提 [issue](https://gitee.com/libbylg/str/issues) 来直接向维护人员寻求帮助；
 
 #### 发现 bug?
 

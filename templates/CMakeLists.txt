@@ -27,5 +27,5 @@ set_target_properties(example1 PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(example1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/templates")
 
 #   Add fake target for: make doc
-add_custom_target(doc EXCLUDE_FROM_ALL COMMAND /bin/sh "${CMAKE_SOURCE_DIR}/templates/gendoc.sh")
+add_custom_target(doc COMMAND /bin/sh "${CMAKE_SOURCE_DIR}/templates/gendoc.sh")
 add_dependencies(doc gendoc example1)
