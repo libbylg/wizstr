@@ -2,9 +2,9 @@
 <img src='https://gitee.com/libbylg/str/badge/star.svg?theme=dark' alt='star'/>
 </a>
 
-`GitHub`: https://github.com/libbylg/str
+`GitHub`: [https://github.com/libbylg/str](https://github.com/libbylg/str)
 
-`Gitee`: https://gitee.com/libbylg/str
+`Gitee`: [https://gitee.com/libbylg/str](https://gitee.com/libbylg/str)
 
 # str
 
