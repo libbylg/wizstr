@@ -154,8 +154,8 @@ sh build.sh install <InstallTargetDirectory>`
 #### 方式1：直接源码集成
 
 这种方式就是直接将 `include/str_config.hpp`, `include/str.hpp` 和 `src/str.cpp` 这三个文件直接拷贝到您的项目中去，
-并随项目的其他代码一起编译。需要注意，`include/str_config.hpp` 在源码仓中并不存在，这个文件需要手工生成。
-其内容可参照下面的修改：
+并随项目的其他代码一起编译。需要注意，`include/str_config.hpp` 在源码仓中并不存在，如果采用源码方式集成，这个文件
+需要手工生成。其内容可参照下面的代码修改：
 
 ```c++
 #ifndef STR_CONFIG_H
@@ -237,7 +237,7 @@ BSD-like License ： [木兰宽松许可v2（MulanPSL2）](LICENSE)
 
 #### 阅读文档
 
-文档正在装修（正在基于 str 来开发 gendoc），现阶段可直接参考 [include/str.hpp](include/str.hpp) 中的文档注释。
+str 库的文档在 `docs` 目录下。如果想在线查看，可以参考页面：https://libbylg.github.io/str/docs/MANUAL.html
 
 **注意：** 如果您发现文档中的问题，欢迎提 issue 或者 PR。
 
