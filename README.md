@@ -2,9 +2,15 @@
 <img src='https://gitee.com/libbylg/str/badge/star.svg?theme=dark' alt='star'/>
 </a>
 
-`GitHub`: [https://github.com/libbylg/str](https://github.com/libbylg/str)
+* 源码仓库地址：
 
-`Gitee`: [https://gitee.com/libbylg/str](https://gitee.com/libbylg/str)
+  - `GitHub`: [https://github.com/libbylg/str](https://github.com/libbylg/str)
+  - `Gitee`: [https://gitee.com/libbylg/str](https://gitee.com/libbylg/str)
+
+* 下载地址：
+
+  - `GitHub`: [https://github.com/libbylg/str/releases](https://github.com/libbylg/str/releases)
+  - `Gitee`: [https://gitee.com/libbylg/str/releases](https://gitee.com/libbylg/str/releases)
 
 # str
 
