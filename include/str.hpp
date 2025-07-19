@@ -179,11 +179,13 @@ struct str {
 
     //! 基于位置的范围类型
     struct range_type {
+        /// @block range_type
         //! 起始位置
         size_type pos{0};
 
         //! 长度
         size_type len{0};
+        /// @end range_type
 
         //! 空范围，长度为 0
         explicit range_type() = default;
@@ -235,6 +237,7 @@ struct str {
     };
 
     //! 基于起始位置和偏移量的范围类型。
+    /// @block shifter_type
     struct shifter_type {
         size_type pos{0};
         ssize_type offset{0};
@@ -243,8 +246,10 @@ struct str {
             return offset == 0;
         }
     };
+    /// @end shifter_type
 
     //! 基于上下界的范围类型。
+    /// @block interval_type
     struct interval_type {
         size_type begin{0};
         size_type end{0};
@@ -253,6 +258,7 @@ struct str {
             return begin == end;
         }
     };
+    /// @end interval_type
 
     //! 二元组（相同类型的 2 个元素）。
     template <typename T>
@@ -1318,13 +1324,13 @@ struct str {
     /// @end encode_base16
 
     //! dump_hex 时的选项，可以微组合 @anchor{dump_hex_flags}
+    /// @block dump_hex_format
     enum dump_hex_flags : uint8_t {
         show_offset = 0x01, ///< 限制当前行的数据的偏移量
         show_ascii = 0x02,  ///< 显示 dump_hex 的 ASCII 码区域
         show_upper = 0x04,  ///< dump_hex 时，对于大于 9 的十六进制数字部分是否显示为大写
     };
 
-    //! @ref{dump_hex} 时，用于控制输出数据格式的字段 @anchor{dump_hex_format}
     struct dump_hex_format {
         uint8_t flags{0};                     ///< 可选标记位
         uint8_t offset_width{0};              ///< shifter 的宽度
@@ -1334,6 +1340,7 @@ struct str {
         std::string_view offset_margin{": "}; ///< 显示 offset 时，shifter 右侧与文本段的分隔符
         std::string_view ascii_margin{" "};   ///< 显示 ascii 时，在此之前显示的 margin 字符
     };
+    /// @end dump_hex_format
 
     /// @block dump_hex
     static auto dump_hex(const void* data, size_type len, const dump_hex_format& format, const line_consumer_proc& proc) -> void;

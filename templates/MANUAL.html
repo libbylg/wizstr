@@ -9,6 +9,11 @@
 <main>
 <!--
 -->
+<section class="chapter-1">
+<h1>
+str 函数库手册
+</h1>
+<div class="chapter-1-body">
 <section class="chapter-3">
 <h3>
 简介
@@ -73,7 +78,7 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语�
 字符串拼接：<a href="#join">join</a>
 </li>
 <li>
-大小写转换：<a href="#case_conversion">case_conversion</a>
+大小写转换：<a href="#to_upper">to_upper</a>, <a href="#to_lower">to_lower</a>, <a href="#to_capitalize">to_capitalize</a>, <a href="#swap_case">swap_case</a>
 </li>
 <li>
 变量或者特殊符号展开：<a href="#expand_tabs">expand_tabs</a>, <a href="#expand_envs">expand_envs</a>, <a href="#expand_user">expand_user</a>
@@ -239,7 +244,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-在尾部追加 <a id="append"></a>
+在尾部追加 - append <a id="append"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -275,8 +280,15 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tr class="tr-param"><td class="td-param-names">items</td><td class="td-param-sep">-</td><td class="td-param-desc"> 从容器 items 中获取被追加的字符串。
 </td></tr>
 </tbody></table>
+</div>
+<div class="sectionend-1"></div></section>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 对于 <code class="source">append_inplace</code> 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种
+对于 <code class="source">append_inplace</code> 函数，如果 s 与 被插入字符串存在重叠时，函数的行为是不确定的，应该避免出现这种
 情况。
 </p>
 </div>
@@ -285,7 +297,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-向头部追加 <a id="prepend"></a>
+向头部追加 - prepend <a id="prepend"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -329,7 +341,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-不区分大小写的比较 <a id="icompare"></a>
+不区分大小写的比较 - icompare <a id="icompare"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -369,7 +381,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-不区分大小写的相等測試 <a id="iequals"></a>
+不区分大小写的相等測試 - iequals <a id="iequals"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -409,7 +421,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-基于通配符的匹配检测 <a id="wildcmp"></a><a id="iwildcmp"></a>
+基于通配符的匹配检测 - wildcmp, iwildcmp <a id="wildcmp"></a><a id="iwildcmp"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -420,7 +432,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
     static auto iwildcmp(std::string_view s, std::string_view pattern) -&gt; bool;
 </pre>
 <p>
-测试字符串 s 是否匹配通配符 pattern，<a href="#wildcmp">wildcmp</a> 表示区分大小写，<a href="#iwildcmp">iwildcmp</a> 表示不区分大小写。
+测试字符串 s 是否匹配通配符 pattern，<code class="source">wildcmp</code> 表示区分大小写，<code class="source">iwildcmp</code> 表示不区分大小写。
 </p>
 <section class="section-1">
 <h1 class="section-1-head">
@@ -449,7 +461,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-判断两个字符串的包含关系 <a id="contains"></a>
+判断两个字符串的包含关系 - contains <a id="contains"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -502,7 +514,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-子串统计 <a id="count"></a>
+子串统计 - count <a id="count"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -546,7 +558,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-前缀操作 <a id="prefix"></a>
+前缀操作 - prefix <a id="prefix"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -588,7 +600,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 目标字符串
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">other</td><td class="td-param-sep">-</td><td class="td-param-desc"> 参与公共前缀计算的另一个字符串，用于 <a href="#prefix">prefix</a>
+<tr class="tr-param"><td class="td-param-names">other</td><td class="td-param-sep">-</td><td class="td-param-desc"> 参与公共前缀计算的另一个字符串，用于 <code class="source">prefix</code>
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">prefix, ch</td><td class="td-param-sep">-</td><td class="td-param-desc"> 前缀字符串或者字符
 </td></tr>
@@ -599,7 +611,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-后缀操作 <a id="suffix"></a>
+后缀操作 - suffix <a id="suffix"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -639,7 +651,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 目标字符串。
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">other</td><td class="td-param-sep">-</td><td class="td-param-desc"> 参与公共前缀计算的另一个字符串，用于 <a href="#suffix">suffix</a>。
+<tr class="tr-param"><td class="td-param-names">other</td><td class="td-param-sep">-</td><td class="td-param-desc"> 参与公共前缀计算的另一个字符串，用于 <code class="source">suffix</code>。
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">suffix, ch</td><td class="td-param-sep">-</td><td class="td-param-desc"> 后缀字符串或者字符。
 </td></tr>
@@ -650,7 +662,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-检测是否以特定的模式开头和结束 <a id="spaces_margin"></a>
+检测是否以特定的模式开头和结束 - spaces, margin <a id="spaces_margin"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -687,7 +699,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-定位字符位置 <a id="next_char"></a><a id="prev_char"></a>
+定位字符位置 - next_char, prev_char <a id="next_char"></a><a id="prev_char"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -713,17 +725,24 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">prev_char</code> 总是从 <code class="source">pos - 1</code> 开始向字符串首部查找特定的字符，并返回找到的该字符的位置。
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 需要特别注意，next_xxx 总是从 <code class="source">pos - 1</code> 开始，向字符串首部查找（而 <code class="source">next_char</code> 总是从
+需要特别注意，next_xxx 总是从 <code class="source">pos - 1</code> 开始，向字符串首部查找（而 <code class="source">next_char</code> 总是从
 <code class="source">pos</code> 开始向字符串尾部查找）。因此，如果希望从 <code class="source">s</code> 的最后一个字符开始向前查找时，<code class="source">pos</code> 应该指定为 <code class="source">s.size()</code>。
 当调用 <code class="source">prev_xxx</code> 系列函数且 <code class="source">pos</code> 参数指定的值为 <code class="source">0</code> 时， <code class="source">prev_xxx</code> 系列函数已无法继续向前查找，
 此时将返回 <code class="source">std::nullopt</code>。同理，当调用 next_xxx 系列函数，且 <code class="source">pos</code> 参数大于或者等于 <code class="source">s.size()</code> 时，
 <code class="source">prev_xxx</code> 系列函数同样无法继续查找，此时也将返回 <code class="source">std::nullopt</code>。
 </p>
 <p>
-@notice{2} 当找到特定的字符时，<code class="source">next_char</code> 的 <code class="source">pos</code> 总是为该字符的下一个字符，而 <code class="source">pref_char</code> 的
+当找到特定的字符时，<code class="source">next_char</code> 的 <code class="source">pos</code> 总是为该字符的下一个字符，而 <code class="source">pref_char</code> 的
 <code class="source">pos</code> 总是指向该字符所在的位置。这个设计使得 <code class="source">next_char</code> 和 <code class="source">prev_char</code> 可以配合使用。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -733,7 +752,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 在该字符串中查找
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 查找的起始位置，需要注意该字段对于 <code class="source">next_xxx</code> 和 <code class="source">prev_xxx</code> 具有不同的含义（参见 @ref{#notice{2}}）。
+<tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 查找的起始位置，需要注意该字段对于 <code class="source">next_xxx</code> 和 <code class="source">prev_xxx</code> 具有不同的含义。
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">ch, charset</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于定位的字符或者字符集。
 </td></tr>
@@ -746,7 +765,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-定位子串 <a id="next_string"></a><a id="prev_string"></a>
+定位子串 - next_string, prev_string <a id="next_string"></a><a id="prev_string"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -762,15 +781,20 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 在字符串 <code class="source">s</code> 中，查找（定位）子串 <code class="source">substr</code> 的位置。如果找到返回找到的该子串的位置（<code class="source">range_type</code>）、
 视图（<code class="source">std::string_view</code>）、或者子串本身（<code class="source">std::string</code>）；否则，返回 <code class="source">std::nullopt</code>。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 需要特别注意，next_xxx 总是从 <code class="source">pos - 1</code> 开始，向字符串首部查找（而 next_char 总是从
+需要特别注意，next_xxx 总是从 <code class="source">pos - 1</code> 开始，向字符串首部查找（而 next_char 总是从
 <code class="source">pos</code> 开始向字符串尾部查找）。因此，如果希望从 <code class="source">s</code> 的最后一个字符开始向前查找时，<code class="source">pos</code> 应该指定为 <code class="source">s.size()</code>。
 当调用 prev_xxx 系列函数且 <code class="source">pos</code> 参数指定的值为 <code class="source">0</code> 时， prev_xxx 系列函数已无法继续向前查找，此时
 将返回 <code class="source">std::nullopt</code>。同理，当调用 next_xxx 系列函数，且 <code class="source">pos</code> 参数大于或者等于 <code class="source">s.size()</code>
 时，prev_xxx 系列函数同样无法继续查找，此时也将返回 <code class="source">std::nullopt</code>。
 </p>
 <p>
-@notice{2} 当找到特定的字符时，next_xxx 的 <code class="source">pos</code> 总是为该字符的下一个字符，而 pref_xxx 的 <code class="source">pos</code>
+当找到特定的字符时，next_xxx 的 <code class="source">pos</code> 总是为该字符的下一个字符，而 pref_xxx 的 <code class="source">pos</code>
 总是指向该字符所在的位置。这个设计使得 next_xxx 和 prev_xxx 可以配合使用。
 </p>
 <ul>
@@ -781,6 +805,8 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">prev_string_range</code>, <code class="source">prev_string_view</code>, <code class="source">prev_string</code> 从字符串 <code class="source">s</code> 的 <code class="source">pos - 1</code> 位置开始向字符串首部，查找 <code class="source">substr</code>。
 </li>
 </ul>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -790,7 +816,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 在该字符串中查找（定位）子串。
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 查找的起始位置，需要注意该字段对于 <code class="source">next_xxx</code> 和 <code class="source">prev_xxx</code> 具有不同的含义（参见 @ref{#notice{2}}）。
+<tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 查找的起始位置，需要注意该字段对于 <code class="source">next_xxx</code> 和 <code class="source">prev_xxx</code> 具有不同的含义。
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">substr</td><td class="td-param-sep">-</td><td class="td-param-desc"> 待查找（定位）的子串。
 </td></tr>
@@ -801,7 +827,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-定位行结束符（换行符） <a id="next_eol"></a><a id="prev_eol"></a>
+定位行结束符（换行符）- next_eol, prev_eol <a id="next_eol"></a><a id="prev_eol"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -816,8 +842,13 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <p>
 从 pos 开始查找（定位）行结束符（End-Of-Line）的位置，可用于按行拆分字符串场景。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
- 由于操作系统的差异，行结束符并非总是 <code class="source">\n</code>，本系列函数采用下面的策略来识别行结束符
+由于操作系统的差异，行结束符并非总是 <code class="source">\n</code>，本系列函数采用下面的策略来识别行结束符。
 </p>
 <ul>
 <li>
@@ -830,6 +861,8 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </p>
 </li>
 </ul>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -839,7 +872,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 在该字符串内查找行结束符
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 查找的起始位置，需要注意该字段对于 <code class="source">next_xxx</code> 和 <code class="source">prev_xxx</code> 具有不同的含义（参见 @ref{#notice{2}}）。
+<tr class="tr-param"><td class="td-param-names">pos</td><td class="td-param-sep">-</td><td class="td-param-desc"> 查找的起始位置，需要注意该字段对于 <code class="source">next_xxx</code> 和 <code class="source">prev_xxx</code> 具有不同的含义。
 </td></tr>
 </tbody></table>
 </div>
@@ -848,7 +881,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-行结束符检测 <a id="eol"></a><a id="ends_with_eol"></a><a id="eol_suffix"></a>
+行结束符检测 - ends_with_eol <a id="eol"></a><a id="ends_with_eol"></a><a id="eol_suffix"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -880,7 +913,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-移除行结束符 <a id="remove_eol"></a>
+移除行结束符 - remove_eol <a id="remove_eol"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -908,7 +941,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-定位空白块 <a id="next_spaces"></a>
+定位空白块 - next_spaces <a id="next_spaces"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -926,9 +959,16 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">next_spaces_pos</code> 在字符串 <code class="source">s</code> 中，从 <code class="source">pos</code> 位置开始查找下一个空白块的位置，并返回该空白块的起始位置。
 如果未找到，返回 <code class="source">std::nullopt</code>。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} “空白块”是指由 <a href="#all_spaces">all_spaces</a> 中的字符组成的连续的子串。
+“空白块”是指由 <a href="#all_spaces">all_spaces</a> 中的字符组成的连续的子串。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -947,7 +987,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-特征测试 <a id="is_xx"></a>
+特征测试 - is_xx <a id="is_xx"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -968,49 +1008,49 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </pre>
 <ul>
 <li>
-<code class="source">s_lower</code>: 检测 <code class="source">s</code> 中的所有字母都是小写（参考 <code class="source">std::islower</code>）。
+<code class="source">is_lower</code>: 检测 <code class="source">s</code> 中的所有字母都是小写（参考 <code class="source">std::islower</code>）。
 </li>
 <li>
-<code class="source">s_upper</code>: 检测 <code class="source">s</code> 中的所有字母都是大写字母（参考 <code class="source">std::isupper</code>）。
+<code class="source">is_upper</code>: 检测 <code class="source">s</code> 中的所有字母都是大写字母（参考 <code class="source">std::isupper</code>）。
 </li>
 <li>
-<code class="source">s_capitalize</code>: 检测 <code class="source">s</code> 的首个字符是否为大写字母。
+<code class="source">is_capitalize</code>: 检测 <code class="source">s</code> 的首个字符是否为大写字母。
 </li>
 <li>
-<code class="source">s_title</code>:  对于给定的字符串 <code class="source">s</code> 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回
+<code class="source">is_title</code>:  对于给定的字符串 <code class="source">s</code> 中，以空白分割的每个子串(单词)，如果其每个子串的首字符都是非字母或者是大写字母返回
 <p>
   <code class="source">true</code>。
 </p>
 </li>
 <li>
-<code class="source">s_digit</code>: 检测 <code class="source">s</code> 否所有的字符都是数字或者十六进制字符（参考 <code class="source">std::xdigit</code>）。
+<code class="source">is_digit</code>: 检测 <code class="source">s</code> 否所有的字符都是数字或者十六进制字符（参考 <code class="source">std::xdigit</code>）。
 </li>
 <li>
-<code class="source">s_xdigit</code>: 检测 <code class="source">s</code> 否所有的字符都是数字或者十六进制字符（参考 <code class="source">std::xdigit</code>）。
+<code class="source">is_xdigit</code>: 检测 <code class="source">s</code> 否所有的字符都是数字或者十六进制字符（参考 <code class="source">std::xdigit</code>）。
 </li>
 <li>
-<code class="source">s_ascii</code>: 检测 <code class="source">s</code> 中的所有字符是否都在 ASCII 范围内。
+<code class="source">is_ascii</code>: 检测 <code class="source">s</code> 中的所有字符是否都在 ASCII 范围内。
 </li>
 <li>
-<code class="source">s_alpha</code>: 检测 <code class="source">s</code> 是否全都为字母（参考 <code class="source">std::isalpha</code>）。
+<code class="source">is_alpha</code>: 检测 <code class="source">s</code> 是否全都为字母（参考 <code class="source">std::isalpha</code>）。
 </li>
 <li>
-<code class="source">s_alnum</code>: 检测 <code class="source">s</code> 是否全都为字母或者数字（参考 <code class="source">std::isalnum</code>）。
+<code class="source">is_alnum</code>: 检测 <code class="source">s</code> 是否全都为字母或者数字（参考 <code class="source">std::isalnum</code>）。
 </li>
 <li>
-<code class="source">s_alnumul</code>: 检测 <code class="source">s</code> 是否全都为字母或者数字或者下划线。
+<code class="source">is_alnumul</code>: 检测 <code class="source">s</code> 是否全都为字母或者数字或者下划线。
 </li>
 <li>
-<code class="source">s_space</code>: 检测 <code class="source">s</code> 是否全都为空白字符（参考 <code class="source">std::isspace</code>）。
+<code class="source">is_space</code>: 检测 <code class="source">s</code> 是否全都为空白字符（参考 <code class="source">std::isspace</code>）。
 </li>
 <li>
-<code class="source">s_blank</code>: 检测 <code class="source">s</code> 是否全都为空格字符（参考 <code class="source">std::isblank</code>）。
+<code class="source">is_blank</code>: 检测 <code class="source">s</code> 是否全都为空格字符（参考 <code class="source">std::isblank</code>）。
 </li>
 <li>
-<code class="source">s_print</code>: 检测 <code class="source">s</code> 是否全都为可打印字符（参考 <code class="source">std::isprint</code>）。
+<code class="source">is_print</code>: 检测 <code class="source">s</code> 是否全都为可打印字符（参考 <code class="source">std::isprint</code>）。
 </li>
 <li>
-<code class="source">s_graph</code>: 检测 <code class="source">s</code> 是否全都为图形符（参考 <code class="source">std::isgraph</code>）。
+<code class="source">is_graph</code>: 检测 <code class="source">s</code> 是否全都为图形符（参考 <code class="source">std::isgraph</code>）。
 </li>
 </ul>
 <section class="section-1">
@@ -1038,7 +1078,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-特征测试：常见词法特征类 <a id="is_literal"></a><a id="is_identifier"></a>
+特征测试：常见词法特征类 - is_literal, is_identifier <a id="is_literal"></a><a id="is_identifier"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1069,8 +1109,13 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">is_literal_real</code> 检查字符串 s 是否可以被视作浮点数，需要注意整数本身也可以被视作浮点数。
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 针对各种字符特征，下面为更具体的解释：
+针对各种字符特征，下面为更具体的解释：
 </p>
 <ul>
 <li>
@@ -1089,6 +1134,8 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 被视作 <code class="source">identifier</code> 的字符串，等价于正则表达式 <code class="source">[A-Za-z_][0-9A-Za-z_]*</code>
 </li>
 </ul>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -1114,7 +1161,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-特征测试：指定字符集类 <a id="is_all_in"></a>
+特征测试：指定字符集类 - is_all_in <a id="is_all_in"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1151,7 +1198,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-特征测试：单一条件类 <a id="has_any_one"></a>
+特征测试：单一条件类 - has_any_one <a id="has_any_one"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1188,7 +1235,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-提取子串：基于位置 <a id="take"></a>
+提取子串：基于位置 - take <a id="take"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1265,7 +1312,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-删除子串：基于位置 <a id="drop"></a>
+删除子串：基于位置 - drop <a id="drop"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1341,7 +1388,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-对齐 <a id="align"></a>
+对齐 - align <a id="align"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1388,7 +1435,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-多行文本处理 <a id="lines"></a><a id="foreach_lines"></a><a id="count_lines"></a>
+多行文本处理 - lines <a id="lines"></a><a id="foreach_lines"></a><a id="count_lines"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1423,7 +1470,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-以单词为单位的处理算法 <a id="words"></a>
+以单词为单位的处理算法 - words <a id="words"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1447,26 +1494,33 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
     static auto starts_with_word(std::string_view s, std::string_view word) -&gt; bool;
     static auto ends_with_word(std::string_view s, std::string_view word) -&gt; bool;
 </pre>
-<p>
-@notice{1} 这里的单词（word）是指连续的非空白字符序列。
-</p>
 <ul>
 <li>
-@ref #foreach_words: 用于遍历字符串中的每个单词
+<code class="source">foreach_words</code>: 用于遍历字符串中的每个单词
 </li>
 <li>
-@ref #count_words: 用于统计字符串中的单词的数量
+<code class="source">count_words</code>: 用于统计字符串中的单词的数量
 </li>
 <li>
-@ref #next_word_view, #next_word_range, #next_word: 用于从指定的位置开始向字符串的尾部查找下一个单词
+<code class="source">next_word_view</code>, <code class="source">next_word_range</code>, <code class="source">next_word</code>: 用于从指定的位置开始向字符串的尾部查找下一个单词
 </li>
 <li>
-@ref #prev_word_view, #prev_word_range, #prev_word: 用于从指定的位置开始向字符串的首部查找前一个单词
+<code class="source">prev_word_view</code>, <code class="source">prev_word_range</code>, <code class="source">prev_word</code>: 用于从指定的位置开始向字符串的首部查找前一个单词
 </li>
 <li>
-@ref #split_words: 以空格为分隔符从字符串 s 中拆分出多个单词
+<code class="source">split_words</code>: 以空格为分隔符从字符串 s 中拆分出多个单词
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
+<p>
+这里的单词（word）是指连续的非空白字符序列。
+</p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -1489,7 +1543,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-用指定的模式串环绕字符串 <a id="surround"></a><a id="unsurround"></a>
+用指定的模式串环绕字符串 - surround, unsurround <a id="surround"></a><a id="unsurround"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1531,7 +1585,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-反转：字符串逆序 <a id="invert"></a>
+反转：字符串逆序 - invert <a id="invert"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1570,7 +1624,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-重复序列生成 <a id="repeat"></a>
+重复序列生成 - repeat <a id="repeat"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1599,7 +1653,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-空白串生成 <a id="spaces"></a>
+空白串生成 - spaces <a id="spaces"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1615,12 +1669,19 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">make_spaces</code>，<code class="source">make_spaces_inplace</code> 只要内存允许，支持生成任意长度的空白串。
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} <code class="source">spaces</code>，<code class="source">make_spaces</code>，<code class="source">make_spaces_inplace</code> 这三个函数的功能类似。
+<code class="source">spaces</code>，<code class="source">make_spaces</code>，<code class="source">make_spaces_inplace</code> 这三个函数的功能类似。
 但主要差别 是 <code class="source">space</code> 利用的是预生成的字符串常量，所以速度会更快，但最大长度有限（<code class="source">UNIT8_MAX</code>），
 大部分情况下 <code class="source">space</code> 函数都是够用的。当需要生成超过 <code class="source">space</code> 支持空白串时，使用 <code class="source">make_spaces</code>
 或者 <code class="source">make_spaces_inplace</code> 是更合适的选择。但显然 <code class="source">make_xxx</code> 系列函数更慢。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -1651,7 +1712,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-字符串遮罩 <a id="cover"></a>
+字符串遮罩 - cover <a id="cover"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1666,11 +1727,18 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">cover</code> 和 <code class="source">cover_inplace</code> 对 <code class="source">s</code> 的中间部分使用遮罩字符串 <code class="source">mask</code> 替换，其中 <code class="source">left_n</code> 和 <code class="source">right_n</code> 用于
 控住遮罩之后，首尾各自保留多少长度的明文子串。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 当 <code class="source">left_n</code> 或者 <code class="source">right_n</code> 或者 <code class="source">left_n + right_n</code> 大于或者等于原始串 s 的长度时，本函数将失去
+当 <code class="source">left_n</code> 或者 <code class="source">right_n</code> 或者 <code class="source">left_n + right_n</code> 大于或者等于原始串 s 的长度时，本函数将失去
 遮罩作用。对于这种情况 <code class="source">cover</code> 和 <code class="source">cover_inplace</code> 函数将返回空串，以避免无意间的信息泄露。因此，
 在使用本函数之前，最好确保字符串 s 的长度达到本算法的最小值 <code class="source">left_n + right_n</code>。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -1700,7 +1768,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-字符串拼接 <a id="join"></a>
+字符串拼接 - join <a id="join"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1741,7 +1809,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-拼接列表 <a id="join_list"></a>
+拼接列表 - join_list <a id="join_list"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1779,7 +1847,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-映射拼接 <a id="join_map"></a>
+映射拼接 - join_map <a id="join_map"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1825,7 +1893,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-按行拼接 <a id="join_lines"></a>
+按行拼接 - join_lines <a id="join_lines"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1859,7 +1927,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-拼接路径 <a id="join_path"></a>
+拼接路径 - join_path <a id="join_path"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1873,9 +1941,16 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <p>
 使用指定的分隔符 <code class="source">sep</code> 或者系统默认的路径分隔符，将不同来源的路径片段拼接成完整的文件路径。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 需要注意：<a href="#join_path">join_path</a> 会主动去除路径片段间的路径分隔符 &apos;/&apos;，但只会去除一次。
+需要注意 <code class="source">join_path</code> 会主动去除路径片段间的路径分隔符 &apos;/&apos;，但只会去除一次。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -1905,7 +1980,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-拼接搜索路径 <a id="join_searchpath"></a>
+拼接搜索路径 - join_searchpath <a id="join_searchpath"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -1951,7 +2026,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-通用字符串拆分 <a id="split"></a>
+通用字符串拆分 - split <a id="split"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2014,7 +2089,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-按逗号拆分 <a id="split_list"></a>
+按逗号拆分 - split_list <a id="split_list"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2058,7 +2133,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-拆分 key-value 对 <a id="split_pair"></a>
+拆分 key-value 对 - split_pair <a id="split_pair"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2067,7 +2142,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 </pre>
 <ul>
 <li>
-<a href="#split_pair">split_pair</a> 等价于 <a href="#split">split</a> 系列函数，指定 <code class="source">max_n</code> 参数为 <code class="source">1</code> 时的功能。
+split_pair 等价于 <a href="#split">split</a> 系列函数，指定 <code class="source">max_n</code> 参数为 <code class="source">1</code> 时的功能。
 </li>
 </ul>
 <section class="section-1">
@@ -2097,7 +2172,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-拆分多个 key-value 对 <a id="split_map"></a>
+拆分多个 key-value 对 - split_map <a id="split_map"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2118,7 +2193,8 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 总之，<code class="source">split_map</code> 是拆分的是类型下面的数据格式的算法（以 <code class="source">sep_list</code> 和 <code class="source">sep_pair</code> 为缺省值时为例）：
 </p>
 <pre  class="source">
-  item1:value1,item2:value2,item3:value3 ...</pre>
+  item1:value1,item2:value2,item3:value3 ...
+</pre>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -2159,7 +2235,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-按行拆分 <a id="split_lines"></a>
+按行拆分 - split_lines <a id="split_lines"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2199,7 +2275,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-路径拆分 <a id="split_path"></a>
+路径拆分 - split_path <a id="split_path"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2210,16 +2286,23 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <p>
 将字符串 <code class="source">s</code> 视作文件或者目录的路径，按照路径分隔符 <a href="#sep_path_char">sep_path_char</a>，拆分成多个组成部分。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 本函数并不支持 windows 下同时可以使用 <code class="source">&apos;/&apos;</code> 和 <code class="source">&apos;\\&apos;</code> 为分隔符的场景。如果有必要，可以使用
+本函数并不支持 windows 下同时可以使用 <code class="source">&apos;/&apos;</code> 和 <code class="source">&apos;\\&apos;</code> 为分隔符的场景。如果有必要，可以使用
 更加强大的 <a href="#split">split</a> 函数代替。
 </p>
 <p>
-@notice{2} 对于以 &apos;/&apos; 字符开头的绝对路径，拆分出来的第一个字符串，总是 &apos;/&apos;。
+对于以 &apos;/&apos; 字符开头的绝对路径，拆分出来的第一个字符串，总是 &apos;/&apos;。
 </p>
 <p>
-@notice{3} 对于重复的路径分隔符（比如，&quot;ab&quot; 中的 &quot;&quot;），会自动视作一个路径分隔符。
+对于重复的路径分隔符（比如，&quot;ab&quot; 中的 &quot;&quot;），会自动视作一个路径分隔符。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -2247,7 +2330,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-拆分搜索路径 <a id="split_searchpath"></a>
+拆分搜索路径 - split_searchpath <a id="split_searchpath"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2259,18 +2342,25 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 将字符串 <code class="source">s</code> 视作搜索目录（可以以 Linux 系统下的 <code class="source">$PATH</code> 环境变量为参考），按照搜索路径分隔
 符 <a href="#sep_searchpath_char">sep_searchpath_char</a> 将 <code class="source">s</code> 拆分成多个路径。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 需要注意 POSIX 系统标准并不允许文件路径中存在冒号的情况，
+需要注意 POSIX 系统标准并不允许文件路径中存在冒号的情况，
 参考: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03。
 </p>
 <p>
-@notice{2} 需要注意本函数默认支持的是 <code class="source">*nix</code> 系统的默认的搜索路径分隔符，对于 Windows 系统，可以
+需要注意本函数默认支持的是 <code class="source">*nix</code> 系统的默认的搜索路径分隔符，对于 Windows 系统，可以
 指定 <code class="source">sep</code> 参数为 <code class="source">&quot;;&quot;</code>。
 </p>
 <p>
-@notice{3} 本系列函数并不会主动去除路径前后的空白，也对于重复路径也不去重。当 <code class="source">keep_empty</code> 指定
+本系列函数并不会主动去除路径前后的空白，也对于重复路径也不去重。当 <code class="source">keep_empty</code> 指定
 为 <code class="source">true</code> 时，空串会被传递给 proc 或者返回。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -2280,7 +2370,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <tbody class="tbody-param">
 <tr class="tr-param"><td class="td-param-names">s</td><td class="td-param-sep">-</td><td class="td-param-desc"> 待拆分的路径
 </td></tr>
-<tr class="tr-param"><td class="td-param-names">keep_empty</td><td class="td-param-sep">-</td><td class="td-param-desc"> 是否保留空路径（注意：POSIX 中空搜索路径通常表示当前工作路径，是有意义的）
+<tr class="tr-param"><td class="td-param-names">keep_empty</td><td class="td-param-sep">-</td><td class="td-param-desc"> 是否保留空路径（注意POSIX 中空搜索路径通常表示当前工作路径，是有意义的）
 </td></tr>
 <tr class="tr-param"><td class="td-param-names">sep</td><td class="td-param-sep">-</td><td class="td-param-desc"> 指定搜索路径分隔符。对于 Windows 下的搜索路径，需要额外指定该参数。
 </td></tr>
@@ -2300,7 +2390,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-分片 <a id="partition"></a>
+分片 - partition <a id="partition"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2349,7 +2439,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-字符串分块 <a id="next_chunk"></a>
+字符串分块 - next_chunk <a id="next_chunk"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2377,7 +2467,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-指定宽度拆分字符串 <a id="chunked"></a>
+指定宽度拆分字符串 - chunked <a id="chunked"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2417,7 +2507,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-字符串分块 <a id="next_window"></a>
+字符串分块 - next_window <a id="next_window"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2429,7 +2519,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-基于窗口拆分字符串 <a id="windowed"></a>
+基于窗口拆分字符串 - windowed <a id="windowed"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2455,7 +2545,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-大小写转换 <a id="case_conversion"></a>
+大小写转换 - to_upper, to_lower, to_capitalize, swap_case  <a id="to_upper"></a><a id="to_lower"></a><a id="to_capitalize"></a><a id="swap_case"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2492,7 +2582,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-剔除 <a id="trim"></a>
+剔除 - trim <a id="trim"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2511,9 +2601,16 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <code class="source">trim_anywhere</code>, <code class="source">trim_anywhere_inplace</code> 去掉 <code class="source">s</code> 中任何满足条件的满足条件的字符
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 对于未指定 <code class="source">proc</code> 或者 <code class="source">charset</code> 等定制条件的回到函数，表示去除空白字符。
+对于未指定 <code class="source">proc</code> 或者 <code class="source">charset</code> 等定制条件的回到函数，表示去除空白字符。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -2543,7 +2640,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-化简 <a id="simplified"></a>
+化简 - simplified <a id="simplified"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2605,7 +2702,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-展开 <a id="expand_envs"></a>
+展开 - expand_envs <a id="expand_envs"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2665,7 +2762,7 @@ str 中提供的函数根据返回值的不同可以分为三种不同的形式�
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-tab 扩展 <a id="expand_tabs"></a>
+tab 扩展 - expand_tabs <a id="expand_tabs"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2704,7 +2801,7 @@ tab 扩展 <a id="expand_tabs"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-HOME 字符扩展 <a id="expand_user"></a>
+HOME 字符扩展 - expand_user <a id="expand_user"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2739,7 +2836,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-路径正规化 <a id="normpath"></a>
+路径正规化 - normpath <a id="normpath"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2749,10 +2846,17 @@ HOME 字符扩展 <a id="expand_user"></a>
 <p>
 将输入字符串 <code class="source">s</code> 视作文件或者目录的路径，消除路径中的相对路径（<code class="source">.</code> 和 <code class="source">..</code>）。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 需要注意，本算法（函数）只是做字符串的操作，并不会访问文件系统。但这也意味着，在部分场景下
+需要注意，本算法（函数）只是做字符串的操作，并不会访问文件系统。但这也意味着，在部分场景下
 并不能完全去掉相对路径。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -2778,7 +2882,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-路径的基本部分的长度 <a id="basename_pos"></a><a id="extname_pos"></a><a id="dirname_pos"></a>
+路径的基本部分的长度 - basename_pos, extname_pos, dirname_pos <a id="basename_pos"></a><a id="extname_pos"></a><a id="dirname_pos"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2822,7 +2926,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-路径处理函数：目录 <a id="dirname"></a>
+路径处理函数：目录 - dirname <a id="dirname"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2869,7 +2973,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-路径处理函数：文件名 <a id="basename"></a>
+路径处理函数：文件名 - basename <a id="basename"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2916,7 +3020,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-路径处理函数：扩展名 <a id="extname"></a>
+路径处理函数：扩展名 - extname <a id="extname"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2954,7 +3058,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-路径处理函数：裸文件名 <a id="rawname"></a>
+路径处理函数：裸文件名 - rawname <a id="rawname"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -2962,9 +3066,6 @@ HOME 字符扩展 <a id="expand_user"></a>
     static auto rawname_view(std::string_view s) -&gt; std::string_view;
     static auto rawname(std::string_view s) -&gt; std::string;
 </pre>
-<p>
-@notice{1} 这里的“裸文件名”是指不包含文件后缀名的部分，等价于 basename 中去掉 extname 之后的部分。
-</p>
 <ul>
 <li>
 <code class="source">rawname_view</code>, <code class="source">rawname</code>, <code class="source">rawname_inplace</code>: 获取路径 s 的中裸文件名部分
@@ -2976,6 +3077,16 @@ HOME 字符扩展 <a id="expand_user"></a>
 <code class="source">split_rawname</code>: 将路径 s 拆分为目录、裸文件名，扩展名三个部分
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
+<p>
+这里的“裸文件名”是指不包含文件后缀名的部分，等价于 basename 中去掉 extname 之后的部分。
+</p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -2992,7 +3103,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-转义：C语言字符串 <a id="encode_cstr"></a><a id="decode_cstr"></a>
+转义：C语言字符串 - encode_cstr, decode_cstr <a id="encode_cstr"></a><a id="decode_cstr"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3034,7 +3145,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-编解码：base64 <a id="encode_base64"></a><a id="decode_base64"></a>
+编解码：base64 - encode_base64, decode_base64 <a id="encode_base64"></a><a id="decode_base64"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3076,7 +3187,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-编解码：base16 <a id="encode_base16"></a><a id="decode_base16"></a>
+编解码：base16 - encode_base16, decode_base16 <a id="encode_base16"></a><a id="decode_base16"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3120,7 +3231,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-数据按十六进制 dump <a id="dump_hex"></a>
+数据按十六进制 - dump_hex <a id="dump_hex"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3129,6 +3240,91 @@ HOME 字符扩展 <a id="expand_user"></a>
 <p>
 按照十六进制编辑器的样式格式化数据
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+格式控制 - dump_hex_format <a id="dump_hex_format"></a>
+</h1>
+<div class="section-1-body">
+<p>
+下面为数据格式控制的数据结构，最终会作为 <code class="source">dump_hex</code> 的第三个参数。
+</p>
+<pre  class="source">
+    enum dump_hex_flags : uint8_t {
+        show_offset = 0x01, ///&lt; 限制当前行的数据的偏移量
+        show_ascii = 0x02,  ///&lt; 显示 dump_hex 的 ASCII 码区域
+        show_upper = 0x04,  ///&lt; dump_hex 时，对于大于 9 的十六进制数字部分是否显示为大写
+    };
+
+    struct dump_hex_format {
+        uint8_t flags{0};                     ///&lt; 可选标记位
+        uint8_t offset_width{0};              ///&lt; shifter 的宽度
+        uint8_t line_groups{4};               ///&lt; 每行格式化多少个字节
+        uint8_t group_bytes{4};               ///&lt; 多少字节一组，如果大于 line_size，自动校正为 line_size
+        value_type ascii_mask{&apos;.&apos;};           ///&lt; 显示 ascii 时，对不打印字符显示的掩码字符
+        std::string_view offset_margin{&quot;: &quot;}; ///&lt; 显示 offset 时，shifter 右侧与文本段的分隔符
+        std::string_view ascii_margin{&quot; &quot;};   ///&lt; 显示 ascii 时，在此之前显示的 margin 字符
+    };
+</pre>
+<p>
+下面是 <code class="source">dump_hex</code> 格式化数据的一个示例。可以看出<code class="source">dump_hex</code> 函数输出的格式完整形式可分为三个区域。
+这个的示例是以冒号 <code class="source">:</code> 分隔了每个区域：
+</p>
+<ul>
+<li>
+offset 区：为数据的偏移量；
+</li>
+<li>
+hex 区：为数据的十六进制表示，这部分为输出数据的核心，不可以省略。但这部分可以通过 <code class="source">show_upper</code> 来控制是否按照大写方式显示十六进制数据。
+</li>
+<li>
+ascii 区：为可视化数据部分的展示；可以通过 <code class="source">show_ascii</code> 枚举控制。
+</li>
+</ul>
+<pre  class="source">
+0000: 54686973 2066756e 6374696f 6e206973 : This function is
+0010: 20757365 6420746f 2064756d 70206269 :  used to dump bi
+0020: 6e617279 20646174 6120746f 20686578 : nary data to hex
+0030: 20737472 696e6720 6c696b65 20787864 :  string like xxd
+</pre>
+<p>
+我们可以通过 <code class="source">struct dump_hex_format</code> 的各个字段的控制数据的输出格式。其各个字段含义如下：
+</p>
+<ul>
+<li>
+<code class="source">flags</code> 用于控制基本的格式化特征。各个特征由枚举 <code class="source">dump_hex_flags</code> 定义：
+<ul>
+<li>
+<code class="source">show_offset</code> 用于控制是否显示 offset 区，也就是上述示例的最左边的部分。
+</li>
+<li>
+<code class="source">show_ascii</code> 用于控制是否显示 ascii 区，也就是上述示例的最右边部分。
+</li>
+<li>
+<code class="source">show_upper</code> hex 区是必定输出的，没有设置控制开关，但是我们需要通过 <code class="source">show_upper</code> 枚举来控制这部分显示的十六进制数据是否采用大写字母的形式。
+</li>
+</ul>
+</li>
+<li>
+<code class="source">offset_width</code> 用于指定 offset 区的显示的数据的宽度。上述示例中指定的宽度为 <code class="source">4</code>。
+</li>
+<li>
+<code class="source">line_groups</code> 对于 hex 区，数据一般会分成多组（group），<code class="source">line_groups</code> 用于指定一行最多显示多少组数据。
+</li>
+<li>
+<code class="source">group_bytes</code> 该字段一般与 <code class="source">line_groups</code> 字段配合使用，<code class="source">group_bytes</code> 用于指定每组显示多少字节的数据。
+</li>
+<li>
+<code class="source">ascii_mask</code> 用于控制 ascii 区，对于非可打印字符，应该用什么字符代替，默认是点 <code class="source">.</code>；
+</li>
+<li>
+<code class="source">offset_margin</code> offset 区与 hex 区采用什么字符串分隔。
+</li>
+<li>
+<code class="source">ascii_margin</code> hex 区与 ascii 区蔡一宁什么字符串分隔。
+</li>
+</ul>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -3149,7 +3345,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-求和 <a id="sum"></a>
+求和 - sum <a id="sum"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3186,7 +3382,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-字符集对象生成 <a id="charset"></a>
+字符集对象生成 - charset <a id="charset"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3221,7 +3417,7 @@ HOME 字符扩展 <a id="expand_user"></a>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-范围对象生成 <a id="range"></a><a id="interval"></a><a id="shifter"></a><a id="range_interval_shifter"></a>
+范围对象生成 - range, interval, shifter <a id="range"></a><a id="interval"></a><a id="shifter"></a><a id="range_interval_shifter"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3242,21 +3438,84 @@ interval 用于根据指定的 <code class="source">begin</code> 和 <code class
 shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <code class="source">offset</code> 来数据的范围，其返回的是 <a href="#shifter_type">shifter_type</a> 类型的对象。
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 需要特别注意 range 在某些边界场景下并不是完全等价的。比如:
+需要特别注意 range 在某些边界场景下并不是完全等价的。比如:
 <code class="source">str::range(pos, n)</code> 并非总是等价于 <code class="source">str::interval(pos, (pos + n))</code>，因为考虑到 <code class="source">pos</code> 或者 <code class="source">n</code>
 的值可能为 <code class="source">str::npos</code>，此时简单地用 <code class="source">(pos + n)</code> 做等价表示。
 </p>
 <p>
-@notice{2} <a href="#shifter">shifter</a> 函数相对比较特殊，其 <code class="source">offset</code> 参数可以为正值也可以为负值。如果 <code class="source">offset</code> 为负值，
+<code class="source">shifter</code> 函数相对比较特殊，其 <code class="source">offset</code> 参数可以为正值也可以为负值。如果 <code class="source">offset</code> 为负值，
 可以理解为 <code class="source">(pos + offset)</code> 到 <code class="source">pos</code> 的范围（不包含 <code class="source">pos</code>）。如果 <code class="source">offset</code> 为正值，可以理解为 <code class="source">pos</code>
 到 <code class="source">(pos + offset)</code> 的范围。当然在遇到具体字符串时，会根据具体字符串的长度调整。
 </p>
 </div>
+<div class="sectionend-1"></div></section>
+<section class="section-1">
+<h1 class="section-1-head">
+类型
+</h1>
+<div class="section-1-body">
+<ul>
+<li>
+range_type <a id="range_type"></a>
+<p>
+使用 <code class="source">pos</code> 和 <code class="source">len</code> 表示一个字符串片段的范围：
+</p>
+<pre  class="source">
+    struct range_type {
+        //! 起始位置
+        size_type pos{0};
+
+        //! 长度
+        size_type len{0};
+    };
+</pre>
+</li>
+<li>
+shifter_type <a id="shifter_type"></a>
+<p>
+使用 <code class="source">pos</code> 和 <code class="source">offset</code> 来表示一个字符串片段的范围，需要注意 <code class="source">offset</code> 为正或者负时，含义不同。
+</p>
+<pre  class="source">
+    struct shifter_type {
+        size_type pos{0};
+        ssize_type offset{0};
+
+        auto empty() const -&gt; bool {
+            return offset == 0;
+        }
+    };
+</pre>
+</li>
+<li>
+interval_type <a id="interval_type"></a>
+<p>
+使用 <code class="source">begin</code> 和 <code class="source">end</code> 表示的一个字符串片段的范围。需要注意，<code class="source">begin</code> 必须不大于 <code class="source">end</code>。
+</p>
+<pre  class="source">
+    struct interval_type {
+        size_type begin{0};
+        size_type end{0};
+
+        auto empty() const -&gt; bool {
+            return begin == end;
+        }
+    };
+</pre>
+</li>
+</ul>
+</div>
+<div class="sectionend-1"></div></section>
+</div>
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-读取一行 <a id="read_next_line"></a>
+读取一行 - read_next_line <a id="read_next_line"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3287,7 +3546,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-读取文件的全部内容 <a id="read_all"></a>
+读取文件的全部内容 - read_all <a id="read_all"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3323,7 +3582,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-按行读取多行 <a id="read_lines"></a>
+按行读取多行 - read_lines <a id="read_lines"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3340,10 +3599,17 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <p>
 从指定的文件（<code class="source">FILE*</code> 或者 <code class="source">std::istream</code> 或者 <code class="source">filename</code>）中连续读取多行文本。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 本系列函数和 <a href="#read_all">read_all</a> 类型，只适合文件内容较少的文本文件的读取，并不适合大型文件。
+本系列函数和 <a href="#read_all">read_all</a> 函数，只适合文件内容较少的文本文件的读取，并不适合大型文件。
 如果需要按行读取大型文件内容，可考虑基于 <a href="#read_next_line">read_next_line</a> 系列函数自行实现。
 </p>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -3382,7 +3648,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-打开文件并自动关闭文件 <a id="with_file"></a>
+打开文件并自动关闭文件 - with_file <a id="with_file"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3391,7 +3657,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 </pre>
 <p>
 <code class="source">with_file</code> 根据指定的路径 <code class="source">filepath</code> 和 <code class="source">mode</code> 打开一个文件，并将这个文件交个 <code class="source">proc</code> 函数使用。
-当 <code class="source">proc</code> 函数使用完毕后，<a href="#with_file">with_file</a> 函数会自动关闭该文件。本函数设计的相对特殊，其核心目的是
+当 <code class="source">proc</code> 函数使用完毕后，<code class="source">with_file</code> 函数会自动关闭该文件。本函数设计的相对特殊，其核心目的是
 避免用户去处理打开和关闭文件的操作。在一定程度上可以避免文件忘记关闭问题。
 </p>
 <section class="section-1">
@@ -3409,11 +3675,11 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 </td></tr>
 </tbody></table>
 <p>
-注意，@with_file 函数并不会自动关闭 <code class="source">repl</code> 文件。
+注意，<code class="source">with_file</code> 函数并不会自动关闭 <code class="source">repl</code> 文件。
 </p>
 <table class="table-param">
 <tbody class="tbody-param">
-<tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于接收并使用被 <a href="#with_file">with_file</a> 打开的文件对象的函数。
+<tr class="tr-param"><td class="td-param-names">proc</td><td class="td-param-sep">-</td><td class="td-param-desc"> 用于接收并使用被 <code class="source">with_file</code> 打开的文件对象的函数。
 </td></tr>
 </tbody></table>
 </div>
@@ -3422,7 +3688,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-命令行选项识别 <a id="next_opt1"></a>
+命令行选项识别 - next_opt1 <a id="next_opt1"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3436,14 +3702,19 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
     static auto next_opt1(const IterProc&amp; proc) -&gt; std::optional&lt;pair&lt;std::string_view&gt;&gt;;
 </pre>
 <p>
-将一组字符串列表视作命令行的参数（选项）序列，<a href="#next_opt1">next_opt1</a> 函数从该序列中按照特定的模式读取和识别
+将一组字符串列表视作命令行的参数（选项）序列，<code class="source">next_opt1</code> 函数从该序列中按照特定的模式读取和识别
 出单个的命令行选项。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 与很多其他的命令行参数识别库不同，<a href="#next_opt1">next_opt1</a> 函数所支持的命令行参数的识别模式是一
+与很多其他的命令行参数识别库不同，<code class="source">next_opt1</code> 函数所支持的命令行参数的识别模式是一
 种无 schema 的模式，其优点是不需要在参数识别前定义一堆的 schema 信息（比如，需要定义有哪些命令行参
-数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，<a href="#next_opt1">next_opt1</a> 无法实现很复杂的命令
-行参数设计。<a href="#next_opt1">next_opt1</a> 很适合具有少量命令行参数的情况。下面是 <a href="#next_opt1">next_opt1</a> 函数的识别算
+数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，<code class="source">next_opt1</code> 无法实现很复杂的命令
+行参数设计。<code class="source">next_opt1</code> 很适合具有少量命令行参数的情况。下面是 <code class="source">next_opt1</code> 函数的识别算
 法：
 </p>
 <ul>
@@ -3463,6 +3734,8 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <code class="source">-- value</code> 用于对选项识别符号进行转义，用于处理 value 部分本身已以 <code class="source">-</code> 开头的情况；
 </li>
 </ul>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -3492,7 +3765,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-命令行选项识别 <a id="next_opt2"></a>
+命令行选项识别 - next_opt2 <a id="next_opt2"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3504,11 +3777,16 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
     static auto next_opt2(Iterator&amp; itr, Iterator end) -&gt; std::optional&lt;pair&lt;std::string_view&gt;&gt;;
 </pre>
 <p>
-将一组字符串列表视作命令行的参数（选项）序列，<a href="#next_opt2">next_opt2</a> 函数从该序列中按照特定的模式读取和识别
+将一组字符串列表视作命令行的参数（选项）序列，<code class="source">next_opt2</code> 函数从该序列中按照特定的模式读取和识别
 出单个的命令行选项。
 </p>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{1} 与很多其他的命令行参数识别库不同，<a href="#next_opt2">next_opt2</a> 函数所支持的命令行参数的识别模式是一
+与很多其他的命令行参数识别库不同，<a href="#next_opt2">next_opt2</a> 函数所支持的命令行参数的识别模式是一
 种无 schema 的模式，其优点是不需要在参数识别前定义一堆的 schema 信息（比如，需要定义有哪些命令行参
 数，每个参数的类型），所以使用起来相对方便快捷。但，相应的，<a href="#next_opt2">next_opt2</a> 无法实现很复杂的命令
 行参数设计 <a href="#next_opt2">next_opt2</a> 很适合具有少量命令行参数的情况。下面是 <a href="#next_opt2">next_opt2</a> 函数的识别算
@@ -3534,6 +3812,8 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <code class="source">-- value</code> 用于对选项识别符号进行转义，用于处理 value 部分本身已以 <code class="source">-</code> 开头的情况；
 </li>
 </ul>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -3563,7 +3843,7 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-简单词法识别 <a id="accept"></a>
+简单词法识别 - accept <a id="accept"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3597,20 +3877,29 @@ shifter 用于给定起始点 <code class="source">pos</code> 以及偏移量 <c
 </p>
 </li>
 </ul>
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-@notice{0} 如果扫描失败，那么所有函数都会返回 <code class="source">std::nullopt</code>，且输出参数 <code class="source">pos</code> 不会发生改变。
+如果扫描失败，那么所有函数都会返回 <code class="source">std::nullopt</code>，且输出参数 <code class="source">pos</code> 不会发生改变。
 </p>
 <p>
-@notice{1} accept 和 accept_until 这两组函数的行为的重要区别是：accept 系列函数总是 &apos;盯着&apos; 满足
+accept 和 accept_until 这两组函数的行为的重要区别是：accept 系列函数总是 &apos;盯着&apos; 满足
 条件的字符，而 accept_until 总是 &apos;盯着&apos; 不满足条件的字符。
 </p>
 <p>
-@notice{2} 虽然 accept 和 accept_until 这两组函数都是可以连续调用的，但是需要注意 accept_until 总是
+虽然 accept 和 accept_until 这两组函数都是可以连续调用的，但是需要注意 accept_until 总是
 会自动跳过已经识别出来的哨兵。因此，如果连续调用 accept_until，总是不可能得到哨兵序列的范围。如果确
 实有必要获得的哨兵字符串，可以通过 pos 与返回的 range_type 来组合计算出来。如下示例：
 </p>
 <pre  class="source">
-auto range = str::accept_until(s, pos, token);auto token_range = str::range(range-&gt;end_pos(), pos - range-&gt;end_pos());</pre>
+auto range = str::accept_until(s, pos, token);
+auto token_range = str::range(range-&gt;end_pos(), pos - range-&gt;end_pos());
+</pre>
+</div>
+<div class="sectionend-1"></div></section>
 <section class="section-1">
 <h1 class="section-1-head">
 参数
@@ -3670,7 +3959,7 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-跳过满足条件的字符 <a id="skip"></a>
+跳过满足条件的字符 - skip <a id="skip"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3726,7 +4015,7 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-符号识别 <a id="skip_spaces"></a>
+符号识别 - skip_spaces <a id="skip_spaces"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
@@ -3764,24 +4053,30 @@ auto range = str::accept_until(s, pos, token);auto token_range = str::range(rang
 <div class="chapterend-3"></div></section>
 <section class="chapter-3">
 <h3>
-用户根目录 <a id="home"></a>
+用户根目录 - home <a id="home"></a>
 </h3>
 <div class="chapter-3-body">
 <pre  class="source">
+    static auto home() -&gt; std::string;
 </pre>
 <p>
 返回当前用户的根目录，等价于 <code class="source">*nix</code> 下的 <code class="source">${HOME}</code> 环境变量的值，主要被用于 <a href="#expand_user">expand_user</a> 函数。
 </p>
-<ul>
-<li>
-@notice{1} 由于 Windows 下并无严格意义上的与 <code class="source">*nix</code> 下对等的用户根目录的概念，因此，
+<section class="section-1">
+<h1 class="section-1-head">
+注意
+</h1>
+<div class="section-1-body">
 <p>
-  在 Windows 下会以 <code class="source">USERPROFILE</code> 环境变量的值来作为 <code class="source">${HOME}</code> 的值。
+由于 Windows 下并无严格意义上的与 <code class="source">*nix</code> 下对等的用户根目录的概念，因此，
+在 Windows 下会以 <code class="source">USERPROFILE</code> 环境变量的值来作为 <code class="source">${HOME}</code> 的值。
 </p>
-</li>
-</ul>
+</div>
+<div class="sectionend-1"></div></section>
 </div>
 <div class="chapterend-3"></div></section>
+</div>
+<div class="chapterend-1"></div></section>
 <div class="articleend"></div></main>
 </body>
 </html>

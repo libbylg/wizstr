@@ -1687,7 +1687,9 @@ auto try_parse_bcode(parse_context& context) -> void {
             }
             bcode->append(embed);
         } else {
-            bcode->append(new node_text(context.line_text()));
+            auto line_node = new node_line();
+            line_node->append(new node_text(context.line_text()));
+            bcode->append(line_node);
         }
     }
 }
