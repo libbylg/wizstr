@@ -2,8 +2,8 @@
 
 #include "str.hpp"
 
-#if defined(STR_NAMESPACE)
-using str = STR_NAMESPACE::str;
+#if defined(WIZSTR_NAMESPACE)
+using str = WIZSTR_NAMESPACE::str;
 #endif
 
 TEST(test_str, next_spaces_range) {

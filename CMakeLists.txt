@@ -1,5 +1,5 @@
 # Copyright (c) 2021-2025  libbylg@126.com
-# str is licensed under Mulan PSL v2.
+# wizstr is licensed under Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
 #          http://license.coscl.org.cn/MulanPSL2
@@ -15,21 +15,21 @@ set(PROJECT_VERSION "${PROJECT_VERSION_FILE}")
 string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
 
 #   Definition of the top project
-project(str VERSION ${PROJECT_VERSION})
+project(wizstr VERSION ${PROJECT_VERSION})
 
 #   Support custom the namespace
-set(STR_NAMESPACE "" CACHE STRING "Used to given a namespace for this library, The default is empty")
-if (STR_NAMESPACE STREQUAL "")
+set(WIZSTR_NAMESPACE "" CACHE STRING "Used to given a namespace for this library, The default is empty")
+if (WIZSTR_NAMESPACE STREQUAL "")
     file(WRITE "${CMAKE_SOURCE_DIR}/include/str_config.hpp"
-            "#ifndef STR_CONFIG_H\n"
-            "#define STR_CONFIG_H\n"
+            "#ifndef WIZSTR_CONFIG_H\n"
+            "#define WIZSTR_CONFIG_H\n"
             "#endif\n"
     )
 else ()
     file(WRITE "${CMAKE_SOURCE_DIR}/include/str_config.hpp"
-            "#ifndef STR_CONFIG_H\n"
-            "#define STR_CONFIG_H\n"
-            "#define STR_NAMESPACE ${STR_NAMESPACE}\n"
+            "#ifndef WIZSTR_CONFIG_H\n"
+            "#define WIZSTR_CONFIG_H\n"
+            "#define WIZSTR_NAMESPACE ${WIZSTR_NAMESPACE}\n"
             "#endif\n"
     )
 endif ()
@@ -38,17 +38,17 @@ endif ()
 include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
 
 #   Generate shared library
-add_library(str-shared SHARED src/str.cpp include/str.hpp)
-target_include_directories(str-shared PRIVATE include src)
-target_compile_options(str-shared PRIVATE ${QUALITY_OPTIONS})
-set_target_properties(str-shared PROPERTIES OUTPUT_NAME "str")
-set_target_properties(str-shared PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION})
+add_library(wizstr-shared SHARED src/str.cpp include/str.hpp)
+target_include_directories(wizstr-shared PRIVATE include src)
+target_compile_options(wizstr-shared PRIVATE ${QUALITY_OPTIONS})
+set_target_properties(wizstr-shared PROPERTIES OUTPUT_NAME "wizstr")
+set_target_properties(wizstr-shared PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION})
 
 #   Generate static library
-add_library(str-static STATIC src/str.cpp include/str.hpp)
-target_include_directories(str-static PRIVATE include src)
-target_compile_options(str-static PRIVATE ${QUALITY_OPTIONS})
-set_target_properties(str-static PROPERTIES OUTPUT_NAME "str")
+add_library(wizstr-static STATIC src/str.cpp include/str.hpp)
+target_include_directories(wizstr-static PRIVATE include src)
+target_compile_options(wizstr-static PRIVATE ${QUALITY_OPTIONS})
+set_target_properties(wizstr-static PROPERTIES OUTPUT_NAME "wizstr")
 
 #   Unit-testing
 add_subdirectory(tests)
@@ -60,8 +60,8 @@ add_subdirectory(templates)
 add_subdirectory(tools)
 
 #   Install all libs
-install(TARGETS str-shared str-static
-        EXPORT str
+install(TARGETS wizstr-shared wizstr-static
+        EXPORT wizstr
         LIBRARY DESTINATION lib         # Shared library install target directory
         ARCHIVE DESTINATION lib         # Static library install target directory
 )
@@ -69,10 +69,10 @@ install(TARGETS str-shared str-static
 install(FILES include/str.hpp DESTINATION include)
 install(FILES include/str_config.hpp DESTINATION include)
 
-install(EXPORT str
-        FILE strTargets.cmake
-        NAMESPACE str::
-        DESTINATION lib/cmake/str
+install(EXPORT wizstr
+        FILE wizstrTargets.cmake
+        NAMESPACE wizstr::
+        DESTINATION lib/cmake/wizstr
 )
 
 
@@ -81,18 +81,18 @@ include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
         "${CMAKE_SOURCE_DIR}/cmake/config.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/strConfig.cmake"
-        INSTALL_DESTINATION lib/cmake/str
+        "${CMAKE_CURRENT_BINARY_DIR}/wizstrConfig.cmake"
+        INSTALL_DESTINATION lib/cmake/wizstr
 )
 
 write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/strConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/wizstrConfigVersion.cmake"
         VERSION "${PROJECT_VERSION}"
         COMPATIBILITY AnyNewerVersion
 )
 
 install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/strConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/strConfigVersion.cmake"
-        DESTINATION lib/cmake/str
+        "${CMAKE_CURRENT_BINARY_DIR}/wizstrConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/wizstrConfigVersion.cmake"
+        DESTINATION lib/cmake/wizstr
 )

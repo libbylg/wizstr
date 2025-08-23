@@ -1,26 +1,26 @@
-<a href='https://gitee.com/libbylg/str/stargazers'>
-<img src='https://gitee.com/libbylg/str/badge/star.svg?theme=dark' alt='star'/>
+<a href='https://gitee.com/libbylg/wizstr/stargazers'>
+<img src='https://gitee.com/libbylg/wizstr/badge/star.svg?theme=dark' alt='star'/>
 </a>
 
 * 源码仓库地址：
 
-  - `GitHub`: [https://github.com/libbylg/str](https://github.com/libbylg/str)
-  - `Gitee`: [https://gitee.com/libbylg/str](https://gitee.com/libbylg/str)
+  - `GitHub`: [https://github.com/libbylg/wizstr](https://github.com/libbylg/wizstr)
+  - `Gitee`: [https://gitee.com/libbylg/wizstr](https://gitee.com/libbylg/wizstr)
 
 * 下载地址：
 
-  - `GitHub`: [https://github.com/libbylg/str/releases](https://github.com/libbylg/str/releases)
-  - `Gitee`: [https://gitee.com/libbylg/str/releases](https://gitee.com/libbylg/str/releases)
+  - `GitHub`: [https://github.com/libbylg/wizstr/releases](https://github.com/libbylg/wizstr/releases)
+  - `Gitee`: [https://gitee.com/libbylg/wizstr/releases](https://gitee.com/libbylg/wizstr/releases)
 
-# str
+# wizstr
 
 ## 简介
 
-str 库提供了一系列字符串处理函数算法，str 的目标是希望能成为 C++ 中，功能最丰富的字符串处理函数库。
+wizstr 库提供了一系列字符串处理函数算法，wizstr 的目标是希望能成为 C++ 中，功能最丰富的字符串处理函数库。
 
-str 库聚焦丰富的功能、完善的测试、完备的接口设计。
+wizstr 库聚焦丰富的功能、完善的测试、完备的接口设计。
 
-当前 str 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [MANUAL.html](https://libbylg.github.io/str/docs/MANUAL.html)）
+当前 wizstr 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [MANUAL.html](https://libbylg.github.io/wizstr/docs/MANUAL.html)）
 
 * 批量追加插入（append、insert）
 * 大小写不敏感的比较（icompare）
@@ -55,7 +55,7 @@ str 库聚焦丰富的功能、完善的测试、完备的接口设计。
 
 int main() {
     // split&join
-    auto items = str::split("Welcome to use str library");
+    auto items = str::split("Welcome to use wizstr library");
     std::cout << "items: [" << str::join_list(items) << "]" << std::endl;
 
     // path
@@ -88,7 +88,7 @@ int main() {
 输出结果如下：
 
 ```text
-items: [Welcome,to,use,str,library]
+items: [Welcome,to,use,wizstr,library]
 dirname: /home/sam/project
 basename: main.cpp
 fullpath: /home/sam/project/main.cpp
@@ -166,69 +166,69 @@ sh build.sh install <InstallTargetDirectory>`
 ```c++
 #ifndef STR_CONFIG_H
 #define STR_CONFIG_H
-// #define STR_NAMESPACE MyStr  
+// #define WIZSTR_NAMESPACE MyStr  
 #endif
 ```
 
-其中，如果取消 `#define STR_NAMESPACE MyStr` 这一行的注释，表示您想为本 str 库指定一个名字空间。你可以将 `MyStr` 
+其中，如果取消 `#define WIZSTR_NAMESPACE MyStr` 这一行的注释，表示您想为本 wizstr 库指定一个名字空间。你可以将 `MyStr` 
 替换为您喜欢的名字空间名字即可。
 
-**注意：** 这种方式并不是很推荐，主要是一旦采用这种方式，很容易对 str 的这部分代码造成侵入式修改，
-最终会导致丧失简单即可升级 str 库到新版本的能力。 
+**注意：** 这种方式并不是很推荐，主要是一旦采用这种方式，很容易对 wizstr 的这部分代码造成侵入式修改，
+最终会导致丧失简单即可升级 wizstr 库到新版本的能力。 
 考虑到某些特殊的闭源项目或者存在网络隔离环境的项目必须这样做，那么我们仍然建议您做好代码隔离，
-当需要对 str 的代码做修改时，也尽可能用打 patch 的方式来修改，而非直接修改 str 的源码。
+当需要对 wizstr 的代码做修改时，也尽可能用打 patch 的方式来修改，而非直接修改 wizstr 的源码。
 
-#### 方式2：链接 str 的静态库或者动态库
+#### 方式2：链接 wizstr 的静态库或者动态库
 
 这种方式，需要您先完成编译和安装（参见 "构建" 小节）。
-剩余的就是配置 Makefile 使得编译器和连接器能正确找到并使用 str 库的头文件和动态或者静态库。
+剩余的就是配置 Makefile 使得编译器和连接器能正确找到并使用 wizstr 库的头文件和动态或者静态库。
 
-下面，我们假设您已经将 str 库安装到了 ${HOME}/cpp/depends/str 下了，
+下面，我们假设您已经将 wizstr 库安装到了 ${HOME}/cpp/depends/wizstr 下了，
 那么，接着您还需要在您自己的软件的编译和连接脚本中增加下面的处理：
 
-* 指定 str 库的头文件的搜索路径：
+* 指定 wizstr 库的头文件的搜索路径：
 
-gcc 和 clang 中一般是 `-I${HOME}/cpp/depends/str/include`
+gcc 和 clang 中一般是 `-I${HOME}/cpp/depends/wizstr/include`
 
-* 指定 str 库的库文件的搜索路径：
+* 指定 wizstr 库的库文件的搜索路径：
 
-gcc 和 clang 中一般是 `-L${HOME}/cpp/depends/str/lib`
+gcc 和 clang 中一般是 `-L${HOME}/cpp/depends/wizstr/lib`
 
-* 指定链接的 str 库的名称：
+* 指定链接的 wizstr 库的名称：
 
-gcc 和 clang 中，链接动态库一般是直接 `-lstr`，如果连接静态库一般是 `-llibstr.a`
+gcc 和 clang 中，链接动态库一般是直接 `-lwizstr`，如果连接静态库一般是 `-llibwizstr.a`
 
 
-#### 方式3：使用 cmake 自动发现和引入 str 库
+#### 方式3：使用 cmake 自动发现和引入 wizstr 库
 
-这种方式在您使用 cmake 才是可行的，假设您的项目的的某个名字为 MyApp 的构建目标需要用到 str 库。
+这种方式在您使用 cmake 才是可行的，假设您的项目的的某个名字为 MyApp 的构建目标需要用到 wizstr 库。
 那么，配置方式如下：
 
 * 用想使用动态库：
 
 ```cmake
-find_package(str)
+find_package(wizstr)
 # ... 
-target_link_libraries(MyApp PRIVATE str::str-shared)
+target_link_libraries(MyApp PRIVATE wizstr::wizstr-shared)
 ```
 
 * 用想使用静态库：
 
 ```cmake
-find_package(str)
+find_package(wizstr)
 # ... 
-target_link_libraries(MyApp PRIVATE str::str-static)
+target_link_libraries(MyApp PRIVATE wizstr::wizstr-static)
 ```
 
 ## 关于名字空间
 
-str 库中所有的函数都是 `struct str` 的静态成员函数。这种方式的优点是：你无法绕过 `str` 类名来调用其任何成员函数。
-相对于 `namespace str` 来说更加严格。这主要是因为 str 库中有不少函数已知与一些其他的 C/C++ 库存在名字冲突。
-然而，`str` 本身也可能与用户的某些类名相同。因此，权衡考虑，允许 `str` 库的用户在编译阶段指定一个自定义的名字空间
+wizstr 库中所有的函数都是 `struct str` 的静态成员函数。这种方式的优点是：你无法绕过 `str` 类名来调用其任何成员函数。
+相对于 `namespace str` 来说更加严格。这主要是因为 wizstr 库中有不少函数已知与一些其他的 C/C++ 库存在名字冲突。
+然而，`str` 本身也可能与用户的某些类名相同。因此，权衡考虑，允许 `wizstr` 库的用户在编译阶段指定一个自定义的名字空间
 将有助于更灵活地解决类名冲突问题。具体方法如下：
 
-* 如果采用源码集成，此时不涉及对 str 库的单独编译，此时可以自行通过 `include/str_config.hpp` 文件类指定；
-* 如果采用 cmake 命令来编译，可以通过增加 cmake 命令行参数 `-DSTR_NAMESPACE=xxx` 的方式来指定名字空间名称（注意 xxx 需要替换成您期望的名字空间名）；
+* 如果采用源码集成，此时不涉及对 wizstr 库的单独编译，此时可以自行通过 `include/str_config.hpp` 文件类指定；
+* 如果采用 cmake 命令来编译，可以通过增加 cmake 命令行参数 `-DWIZSTR_NAMESPACE=xxx` 的方式来指定名字空间名称（注意 xxx 需要替换成您期望的名字空间名）；
 * 如果采用 build.sh 命令来编译，当前不支持定制名字空间名称。
 
 ## LICENSE
@@ -243,7 +243,7 @@ BSD-like License ： [木兰宽松许可v2（MulanPSL2）](LICENSE)
 
 #### 阅读文档
 
-str 库的文档在 `docs` 目录下。如果想在线查看，可以参考页面：https://libbylg.github.io/str/docs/MANUAL.html
+wizstr 库的文档在 `docs` 目录下。如果想在线查看，可以参考页面：https://libbylg.github.io/wizstr/docs/MANUAL.html
 
 **注意：** 如果您发现文档中的问题，欢迎提 issue 或者 PR。
 
@@ -251,15 +251,14 @@ str 库的文档在 `docs` 目录下。如果想在线查看，可以参考页�
 
 #### 寻求帮助?
 
-- 首先，如果只是不知道某个函数的用法，str 库的用例十分丰富，没有什么查看 str 的用例更好的办法了；
-- 其次，如果您想自己上手写一些试用代码，str 的 playgroud 应该是你需要的；不过 playground 当前正在装修，可能还要等一段时间；
-- 然后，您可以在 [FAQ](https://libbylg.github.io/str/docs/FAQ.html) 中检索你遇到的问题，看看是否有现成的解决方案；
-- 接着，您可以通过 StackOverflow 提问，但注意带上 `gitee-str` 标签；
-- 最后，您可以通过提 [issue](https://gitee.com/libbylg/str/issues) 来直接向维护人员寻求帮助；
+- 首先，如果只是不知道某个函数的用法，wizstr 库的用例十分丰富，没有什么查看 wizstr 的用例更好的办法了；
+- 其次，如果您想自己上手写一些试用代码，wizstr 的 playgroud 应该是你需要的；不过 playground 当前正在装修，可能还要等一段时间；
+- 接收，您可以在 [FAQ](https://libbylg.github.io/wizstr/docs/FAQ.html) 中检索你遇到的问题，看看是否有现成的解决方案；
+- 最后，您可以通过提 [issue](https://gitee.com/libbylg/wizstr/issues) 来直接向维护人员寻求帮助；
 
 #### 发现 bug?
 
-恳请提 [issue](https://gitee.com/libbylg/str/issues)，并附上 **最小代码示例**
+恳请提 [issue](https://gitee.com/libbylg/wizstr/issues)，并附上 **最小代码示例**
 以及问题现象以及您的预期。 如果能附上您的解决思路的话，那更不胜感激！
 
 #### 新想法?

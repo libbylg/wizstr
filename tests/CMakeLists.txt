@@ -1,5 +1,5 @@
 # Copyright (c) 2021-2025  libbylg@126.com
-# str is licensed under Mulan PSL v2.
+# wizstr is licensed under Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
 #          http://license.coscl.org.cn/MulanPSL2
@@ -8,7 +8,7 @@
 # FIT FOR A PARTICULAR PURPOSE.
 # See the Mulan PSL v2 for more details.
 cmake_minimum_required(VERSION 3.24)
-project(str_test LANGUAGES CXX)
+project(wizstr_test LANGUAGES CXX)
 
 #   Import quality configuration
 include(${CMAKE_SOURCE_DIR}/cmake/quality.cmake)
@@ -264,5 +264,5 @@ target_include_directories(tests PRIVATE ${INCPATH})
 target_compile_options(tests PRIVATE ${QUALITY_OPTIONS})
 
 #   Add fake target for: make test
-add_custom_target(test EXCLUDE_FROM_ALL COMMAND tests )
+add_custom_target(test COMMAND tests )
 add_dependencies(test tests)

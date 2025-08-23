@@ -1,6 +1,6 @@
 <!--
 Copyright (c) 2021-2025 libbylg@126.com
-str is licensed under Mulan PSL v2.
+wizstr is licensed under Mulan PSL v2.
 You can use this software according to the terms and conditions of the Mulan PSL v2.
 You may obtain a copy of Mulan PSL v2 at:
 http://license.coscl.org.cn/MulanPSL2
@@ -11,12 +11,12 @@ See the Mulan PSL v2 for more details.
 -->
 
 
-# str 函数库手册
+# wizstr 函数库手册
 
 
 ### 简介
 
-str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语言功能最丰富的字符串处理函数库。
+wizstr 库提供了一系列字符串处理函数算法，目标是成为 C++ 领域功能最丰富的字符串处理函数库。
 
 当前主要提供了下列算法：
 
@@ -51,7 +51,7 @@ str 库提供了一系列字符串处理函数算法，目标是成为 C++ 语�
 
 % 关于函数的返回值及其使用注意事项：
 
-str 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
+wizstr 中提供的函数根据返回值的不同可以分为三种不同的形式，使用者需要根据情况合理地选择。
 
 * `xxx_view` 形式：
 

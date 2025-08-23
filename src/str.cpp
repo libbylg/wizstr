@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2021-2025  libbylg@126.com
- * str is licensed under Mulan PSL v2.
+ * wizstr is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *          http://license.coscl.org.cn/MulanPSL2
@@ -19,9 +19,9 @@
 #include <filesystem>
 #include <fstream>
 
-#if defined(STR_NAMESPACE)
+#if defined(WIZSTR_NAMESPACE)
 namespace
-STR_NAMESPACE {
+WIZSTR_NAMESPACE {
 #endif
 
 auto str::append(std::string_view s, std::string_view other, size_type times_n) -> std::string {
@@ -6758,6 +6758,6 @@ auto str::home() -> std::string {
     return ((ptr_home == nullptr) ? "" : ptr_home);
 }
 
-#if defined(STR_NAMESPACE)
+#if defined(WIZSTR_NAMESPACE)
 };
 #endif

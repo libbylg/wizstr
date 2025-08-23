@@ -13,7 +13,7 @@ SELFDIR=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 
 PROJECT_ROOT="${SELFDIR}"
 while [[ 0 -eq 0 ]]; do
-    if [[ "${PROJECT_ROOT}/PROJECT" ]]; then
+    if [[ -f "${PROJECT_ROOT}/PROJECT" ]]; then
         break
     fi
 
