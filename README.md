@@ -259,8 +259,8 @@ wizstr 库的文档在 `docs` 目录下。如果想在线查看，可以参考�
 
 #### 发现 bug?
 
-恳请提 [github-issue](https://github.com/libbylg/wizstr/issues) 或者 [gitee-issue](https://gitee.com/libbylg/wizstr/issues)，并附上 **最小代码示例**
-以及问题现象以及您的预期。 如果能附上您的解决思路的话，那更不胜感激！
+恳请提 [github-issue](https://github.com/libbylg/wizstr/issues) 或者 [gitee-issue](https://gitee.com/libbylg/wizstr/issues)，
+并附上 **最小代码示例** 以及问题现象以及您的预期。 如果能附上您的解决思路的话，那更不胜感激！
 
 #### 新想法?
 
