@@ -20,7 +20,7 @@ wizstr 库提供了一系列字符串处理函数算法，wizstr 的目标是希
 
 wizstr 库聚焦丰富的功能、完善的测试、完备的接口设计。
 
-当前 wizstr 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [MANUAL.html](https://libbylg.github.io/str/docs/MANUAL.html)）
+当前 wizstr 库基于 `std::string` 和 `std::string_view`，提供了下面的功能。（详情可参考文档 [MANUAL.html](https://libbylg.github.io/wizstr/docs/MANUAL.html)）
 
 * 批量追加插入（append、insert）
 * 大小写不敏感的比较（icompare）
@@ -170,8 +170,8 @@ sh build.sh install <InstallTargetDirectory>`
 #endif
 ```
 
-其中，如果取消 `#define WIZSTR_NAMESPACE MyStr` 这一行的注释，表示您想为本 wizstr 库指定一个名字空间。你可以将 `MyStr` 
-替换为您喜欢的名字空间名字即可。
+其中，如果取消 `#define WIZSTR_NAMESPACE MyStr` 这一行的注释，表示您想为本 wizstr 库指定一个名字空间。
+你可以将 `MyStr`替换为您喜欢的名字空间名字即可。
 
 **注意：** 这种方式并不是很推荐，主要是一旦采用这种方式，很容易对 wizstr 的这部分代码造成侵入式修改，
 
