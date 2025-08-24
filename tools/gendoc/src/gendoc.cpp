@@ -2102,7 +2102,7 @@ auto print_html(node* nd, const std::function<void(std::string_view)>& print) ->
             print("<html lang=\"en\">\n");
             print("<head>\n");
             print("<meta charset=\"UTF-8\">\n");
-            print("<title>str - 一个字符串函数库</title>\n");
+            print("<title>wizstr - 一个功能丰富且易用的字符串处理函数库</title>\n");
             print("<link rel=\"stylesheet\" href=\"cppreference.css\"/>\n");
             // print("<link rel=\"stylesheet\" href=\"https:///prismjs@v1.x/themes/prism.css\"/>\n");
             print("</head>\n");
