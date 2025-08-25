@@ -5,11 +5,13 @@
 * 源码仓库地址：
 
   - `GitHub`: [https://github.com/libbylg/wizstr](https://github.com/libbylg/wizstr)
+  - `GitCode`: [https://gitcode.com/libbylg/wizstr](https://gitcode.com/libbylg/wizstr)
   - `Gitee`: [https://gitee.com/libbylg/wizstr](https://gitee.com/libbylg/wizstr)
 
 * 下载地址：
 
   - `GitHub`: [https://github.com/libbylg/wizstr/releases](https://github.com/libbylg/wizstr/releases)
+  - `GitHub`: [https://gitcode.com/libbylg/wizstr/releases](https://gitcode.com/libbylg/wizstr/releases)
   - `Gitee`: [https://gitee.com/libbylg/wizstr/releases](https://gitee.com/libbylg/wizstr/releases)
 
 # wizstr
@@ -255,11 +257,11 @@ wizstr 库的文档在 `docs` 目录下。如果想在线查看，可以参考�
 - 首先，如果只是不知道某个函数的用法，wizstr 库的用例十分丰富，没有什么查看 wizstr 的用例更好的办法了；
 - 其次，如果您想自己上手写一些试用代码，wizstr 的 playgroud 应该是你需要的；不过 playground 当前正在装修，可能还要等一段时间；
 - 接收，您可以在 [FAQ](https://libbylg.github.io/wizstr/docs/FAQ.html) 中检索你遇到的问题，看看是否有现成的解决方案；
-- 最后，您可以通过提 [github-issue](https://github.com/libbylg/wizstr/issues) 或者 [gitee-issue](https://gitee.com/libbylg/wizstr/issues) 来直接向维护人员寻求帮助；
+- 最后，您可以通过提 [github-issue](https://github.com/libbylg/wizstr/issues) 或者 [gitcode-issue](https://gitcode.com/libbylg/wizstr/issues)  或者 [gitee-issue](https://gitee.com/libbylg/wizstr/issues) 来直接向维护人员寻求帮助；
 
 #### 发现 bug?
 
-恳请提 [github-issue](https://github.com/libbylg/wizstr/issues) 或者 [gitee-issue](https://gitee.com/libbylg/wizstr/issues)，
+恳请提 [github-issue](https://github.com/libbylg/wizstr/issues) 或者 [gitcode-issue](https://gitcode.com/libbylg/wizstr/issues) 或者 [gitee-issue](https://gitee.com/libbylg/wizstr/issues)，
 并附上 **最小代码示例** 以及问题现象以及您的预期。 如果能附上您的解决思路的话，那更不胜感激！
 
 #### 新想法?
